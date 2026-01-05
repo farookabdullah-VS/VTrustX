@@ -1,0 +1,76 @@
+.dashboard {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.creation-actions {
+    margin-bottom: 40px;
+}
+
+.card-container {
+    display: flex;
+    gap: 20px;
+}
+
+.card {
+    padding: 20px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    cursor: pointer;
+    flex: 1;
+    background: white;
+    transition: all 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    border-color: #cbd5e1;
+}
+
+.card h3 {
+    margin-top: 0;
+    color: #1e293b;
+}
+
+.card p {
+    color: #64748b;
+    font-size: 0.9em;
+}
+
+.content-grid {
+    display: flex;
+    gap: 40px;
+}
+
+.recent-forms ul,
+.recent-submissions ul {
+    list-style: none;
+    padding: 0;
+}
+
+.recent-forms li,
+.recent-submissions li {
+    padding: 12px;
+    border-bottom: 1px solid #f1f5f9;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.recent-forms li:hover,
+.recent-submissions li:hover {
+    background: #f8fafc;
+}
+
+.status {
+    font-size: 0.75em;
+    margin-left: 10px;
+    background: #f1f5f9;
+    padding: 4px 8px;
+    border-radius: 12px;
+    color: #475569;
+    font-weight: 500;
+}

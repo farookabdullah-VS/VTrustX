@@ -1,0 +1,168 @@
+/* GEMINI AI / NANO BANANO DESIGN SYSTEM */
+:root {
+  font-family: 'Outfit', 'Inter', system-ui, -apple-system, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light;
+
+  /* User VTrustX Pale Green Theme */
+  --deep-bg: #D9F8E5;
+  --surface-bg: #ffffff;
+  --glass-bg: rgba(255, 255, 255, 0.85);
+  --glass-border: rgba(4, 120, 87, 0.2);
+
+  /* Logo Colors & Button Style */
+  --primary-color: #064e3b;
+  /* Metallic Green */
+  --primary-rgb: 6, 78, 59;
+  --primary-gradient: linear-gradient(135deg, #064e3b 0%, #047857 100%);
+  --primary-glow: 0 0 20px rgba(6, 78, 59, 0.4);
+
+  --secondary-color: #10b981;
+  --accent-color: #064e3b;
+
+  --text-color: #022c22;
+  --text-muted: #065f46;
+
+  --sidebar-width: 260px;
+  --sidebar-collapsed-width: 80px;
+  --border-radius: 16px;
+
+  --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  width: 100vw;
+  overflow-x: hidden;
+  background-color: var(--deep-bg);
+  background-image:
+    radial-gradient(rgba(4, 120, 87, 0.05) 1px, transparent 1px);
+  background-size: 30px 30px;
+  color: var(--text-color);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+input,
+select,
+textarea {
+  background: white;
+  border: 1px solid rgba(4, 120, 87, 0.2);
+  color: var(--text-color);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-family: inherit;
+  transition: var(--transition-fast);
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(6, 78, 59, 0.15);
+}
+
+/* Metallic Green Buttons */
+button {
+  cursor: pointer;
+  border: none;
+  outline: none;
+  background-image: var(--primary-gradient);
+  background-color: var(--primary-color);
+  color: #D9F8E5;
+  /* Pale Green Text on Dark Button */
+  padding: 0.75em 1.5em;
+  border-radius: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  transition: var(--transition-fast);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -1px rgba(0, 0, 0, 0.1);
+  text-transform: uppercase;
+  font-size: 0.9em;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+button:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--primary-glow);
+  filter: brightness(1.1);
+}
+
+/* Glassmorphism Card Utility */
+.glass-panel {
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
+  border-radius: var(--border-radius);
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(4, 120, 87, 0.3);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(4, 120, 87, 0.5);
+}
+
+.svc-creator__banner {
+  display: none !important;
+}
+
+body {
+  --sjs-primary-backcolor: #064e3b;
+  --sjs-primary-forecolor: #ffffff;
+}
+
+/* Fix SurveyJS Three-Dot Menu Font Size */
+.sv-list__item,
+.sv-list__item-body span,
+.sv-list__item-body {
+  font-size: 13px !important;
+  line-height: 20px !important;
+}
+
+/* Increase size of text in property grid and other popups */
+.sv-popup__content {
+  font-size: 13px !important;
+}
+
+/* Fix SurveyJS Adorner/Action Bar Text Colors */
+.svc-question__adorner .sv-action-bar-item,
+.svc-question__adorner .svc-action-button,
+.svc-question__content-actions .sv-action-bar-item,
+.svc-question__content-actions .svc-action-button {
+  color: #ecfdf5 !important;
+  fill: #ecfdf5 !important;
+  /* For the SVGs */
+}
+
+/* Ensure icons are also pale green */
+.svc-question__adorner .sv-svg-icon,
+.svc-question__content-actions .sv-svg-icon {
+  fill: #ecfdf5 !important;
+}
+
+/* Specific fix for text labels */
+.svc-question__adorner .sv-action-bar-item__title {
+  color: #ecfdf5 !important;
+}

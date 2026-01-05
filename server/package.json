@@ -1,0 +1,35 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "db:init": "node scripts/initDb.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@codious/sav-reader-writer": "^1.1.4",
+    "@google-cloud/vertexai": "^1.10.0",
+    "axios": "^1.13.2",
+    "cors": "^2.8.5",
+    "cursor": "^0.1.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1",
+    "imap-simple": "^5.1.0",
+    "jsonwebtoken": "^9.0.3",
+    "mailparser": "^3.9.1",
+    "moment": "^2.30.1",
+    "multer": "^2.0.2",
+    "nodemailer": "^7.0.12",
+    "passport": "^0.7.0",
+    "passport-google-oauth20": "^2.0.0",
+    "passport-microsoft": "^2.1.0",
+    "pg": "^8.16.3",
+    "sharp": "^0.34.5"
+  }
+}

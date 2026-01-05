@@ -1,0 +1,15 @@
+**/node_modules
+**/.git
+.env
+**/.env
+cloud_sql_proxy.exe
+**/dist
+dist
+**/build
+build
+server/logs
+server/uploads
+**/*.log
+**/*.sav
+coverage
+**/coverage

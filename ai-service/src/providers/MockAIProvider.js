@@ -1,0 +1,39 @@
+class MockAIProvider {
+    async analyze(submission, formDefinition) {
+        // Simulate AI Latency
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        const insights = [];
+
+        // Simple heuristic rules to mock "AI"
+        if (submission.data) {
+            Object.entries(submission.data).forEach(([key, value]) => {
+                if (typeof value === 'number' && value < 3) {
+                    insights.push({
+                        type: 'sentiment',
+                        field: key,
+                        value: 'negative',
+                        summary: `Low score detected on ${key}.`
+                    });
+                } else if (typeof value === 'string' && value.length > 20) {
+                    insights.push({
+                        type: 'topic',
+                        field: key,
+                        value: 'detailed_feedback',
+                        summary: 'User provided detailed feedback.'
+                    });
+                }
+            });
+        }
+
+        return {
+            submissionId: submission.id,
+            timestamp: new Date(),
+            provider: 'MockAI',
+            insights: insights,
+            summary: "Automated analysis completed successfully."
+        };
+    }
+}
+
+module.exports = new MockAIProvider();

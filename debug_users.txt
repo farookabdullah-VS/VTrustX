@@ -1,0 +1,21 @@
+{
+  "body": {
+    "username": "Farook Abdullah"
+  },
+  "user": {
+    "id": 8,
+    "username": "farook",
+    "password": "manual-creation",
+    "role": "admin",
+    "created_at": "2025-12-27T16:42:17.078Z",
+    "email": "farook.abdullah@gmail.com",
+    "team_id": null,
+    "status": "active",
+    "tenant_id": 2,
+    "role_id": null
+  },
+  "updates": {
+    "username": "Farook Abdullah"
+  },
+  "id": "8"
+}

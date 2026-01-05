@@ -1,0 +1,65 @@
+.dashboard {
+  padding: 2rem;
+  font-family: 'Inter', sans-serif;
+}
+
+.creation-actions {
+  margin-bottom: 3rem;
+}
+
+.card-container {
+  display: flex;
+  gap: 2rem;
+  margin-top: 1rem;
+}
+
+.card {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 1.5rem;
+  width: 250px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: white;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+  border-color: #3b82f6;
+}
+
+.card h3 {
+  margin-top: 0;
+  color: #1f2937;
+}
+
+.card p {
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+.recent-forms ul {
+  list-style: none;
+  padding: 0;
+}
+
+.recent-forms li {
+  padding: 1rem;
+  border-bottom: 1px solid #f3f4f6;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+}
+
+.recent-forms li:hover {
+  background-color: #f9fafb;
+}
+
+.status {
+  font-size: 0.8rem;
+  padding: 2px 8px;
+  border-radius: 12px;
+  background: #e5e7eb;
+}

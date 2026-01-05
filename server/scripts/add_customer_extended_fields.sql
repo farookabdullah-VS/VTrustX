@@ -1,0 +1,5 @@
+-- Add extended profile fields
+ALTER TABLE customers 
+ADD COLUMN IF NOT EXISTS gender VARCHAR(20),
+ADD COLUMN IF NOT EXISTS occupation VARCHAR(100),
+ADD COLUMN IF NOT EXISTS city VARCHAR(100);
