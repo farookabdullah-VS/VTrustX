@@ -15,6 +15,7 @@
   "dependencies": {
     "@codious/sav-reader-writer": "^1.1.4",
     "@google-cloud/vertexai": "^1.10.0",
+    "@google/generative-ai": "^0.24.1",
     "axios": "^1.13.2",
     "cors": "^2.8.5",
     "cursor": "^0.1.5",

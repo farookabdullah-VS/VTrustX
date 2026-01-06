@@ -18,8 +18,55 @@ const getInitialGroups = (user) => [
         ]
     },
     {
+        id: 'surveys',
+        title: "Surveys & Feedback",
+        items: [
+            { id: 'form-viewer', label: 'sidebar.item.surveys', icon: <ClipboardList size={16} /> },
+            { id: 'templates', label: 'sidebar.item.templates', icon: <Library size={16} /> }
+        ]
+    },
+    {
+        id: 'ai-agents',
+        title: "AI Agents",
+        items: [
+            { id: 'ai-surveyor', label: 'sidebar.item.voice_agent', icon: <PhoneCall size={16} /> },
+            { id: 'ai-video-agent', label: 'sidebar.item.video_agent', icon: <Video size={16} /> }
+        ]
+    },
+    {
+        id: 'engagement',
+        title: "Engagement",
+        items: [
+            { id: 'tickets', label: 'sidebar.item.tickets', icon: <Ticket size={16} /> },
+            { id: 'ticket-settings', label: 'sidebar.item.ticket_config', icon: <Settings size={16} /> }
+        ]
+    },
+    {
+        id: 'journey',
+        title: "Customer Journey",
+        items: [
+            { id: 'journeys', label: 'sidebar.item.journey_builder', icon: <Map size={16} /> }
+        ]
+    },
+    {
+        id: 'personas',
+        title: "Personas & Segments",
+        items: [
+            { id: 'personas', label: 'sidebar.item.personas', icon: <UserCog size={16} /> },
+            { id: 'persona-templates', label: 'Templates', icon: <Library size={16} /> }
+        ]
+    },
+    {
+        id: 'analytics',
+        title: "Analytics & Insights",
+        items: [
+            { id: 'cx-ratings', label: 'sidebar.item.cx_dashboards', icon: <BarChart3 size={16} /> },
+            { id: 'survey-reports', label: 'sidebar.item.survey_reports', icon: <PieChart size={16} /> }
+        ]
+    },
+    {
         id: 'c360',
-        title: "sidebar.group.c360",
+        title: "Customer 360",
         items: [
             { id: 'customer360', label: 'sidebar.item.unified_profile', icon: <UserCircle size={16} /> },
             { id: 'contact-master', label: 'sidebar.item.contacts', icon: <Contact size={16} /> }
@@ -27,81 +74,36 @@ const getInitialGroups = (user) => [
     },
     {
         id: 'identity',
-        title: "sidebar.group.identity",
+        title: "Identity & Consent",
         items: [
             { id: 'identity', label: 'sidebar.item.identity', icon: <Fingerprint size={16} /> }
         ]
     },
     {
-        id: 'journey',
-        title: "sidebar.group.journey",
+        id: 'ai-decisioning',
+        title: "AI & Decisioning",
         items: [
-            { id: 'journeys', label: 'sidebar.item.journey_builder', icon: <Map size={16} /> }
-        ]
-    },
-    {
-        id: 'personas',
-        title: "sidebar.group.personas",
-        items: [
-            { id: 'personas', label: 'sidebar.item.personas', icon: <UserCog size={16} /> }
-        ]
-    },
-    {
-        id: 'analytics',
-        title: "sidebar.group.analytics",
-        items: [
-            { id: 'cx-ratings', label: 'sidebar.item.cx_dashboards', icon: <BarChart3 size={16} /> },
-            { id: 'survey-reports', label: 'sidebar.item.survey_reports', icon: <PieChart size={16} /> }
-        ]
-    },
-    {
-        id: 'ai-agents',
-        title: "sidebar.group.ai_agents",
-        items: [
-            { id: 'ai-surveyor', label: 'sidebar.item.voice_agent', icon: <PhoneCall size={16} /> },
-            { id: 'ai-video-agent', label: 'sidebar.item.video_agent', icon: <Video size={16} /> }
-        ]
-    },
-    {
-        id: 'ai',
-        title: "sidebar.group.ai",
-        items: [
-            { id: 'ai-settings', label: 'sidebar.item.ai_models', icon: <Bot size={16} /> }
-        ]
-    },
-    {
-        id: 'surveys',
-        title: "sidebar.group.surveys",
-        items: [
-            { id: 'form-viewer', label: 'sidebar.item.surveys', icon: <ClipboardList size={16} /> },
-            { id: 'templates', label: 'sidebar.item.templates', icon: <Library size={16} /> }
-        ]
-    },
-    {
-        id: 'engagement',
-        title: "sidebar.group.engagement",
-        items: [
-            { id: 'tickets', label: 'sidebar.item.tickets', icon: <Ticket size={16} /> },
-            { id: 'ticket-settings', label: 'sidebar.item.ticket_config', icon: <Settings size={16} /> }
+            { id: 'workflows', label: 'Rules Engine', icon: <Bot size={16} /> },
+            { id: 'ai-settings', label: 'sidebar.item.ai_models', icon: <Settings size={16} /> }
         ]
     },
     {
         id: 'integrations',
-        title: "sidebar.group.integrations",
+        title: "Integrations & APIs",
         items: [
             { id: 'integrations', label: 'sidebar.item.integrations', icon: <Plug size={16} /> }
         ]
     },
     {
         id: 'governance',
-        title: "sidebar.group.governance",
+        title: "Governance & Security",
         items: [
             { id: 'role-master', label: 'sidebar.item.access_control', icon: <Shield size={16} /> }
         ]
     },
     {
         id: 'admin',
-        title: "sidebar.group.admin",
+        title: "Admin & Config",
         items: [
             { id: 'user-management', label: 'sidebar.item.user_management', icon: <Users size={16} /> },
             { id: 'subscription', label: 'sidebar.item.subscription', icon: <CreditCard size={16} /> },
@@ -112,7 +114,7 @@ const getInitialGroups = (user) => [
     },
     {
         id: 'help',
-        title: "sidebar.group.help",
+        title: "Help",
         items: [
             { id: 'support', label: 'sidebar.item.support', icon: <HelpCircle size={16} /> }
         ]

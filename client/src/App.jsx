@@ -34,9 +34,10 @@ import { Customer360 } from './components/Customer360';
 import { TicketSettings } from './components/TicketSettings';
 import { SurveyReportSelector } from './components/SurveyReportSelector';
 import { AISurveyor } from './components/AISurveyor';
-import { VoiceAgentPublic } from './components/VoiceAgentPublic';
 import { AIVideoAgentPage } from './components/AIVideoAgentPage';
+import { VoiceAgentPublic } from './components/VoiceAgentPublic';
 import axios from 'axios';
+import CxPersonaTemplates from './components/CxPersonaTemplates';
 import { useTranslation } from 'react-i18next';
 import './App.css';
 
@@ -194,6 +195,7 @@ function App() {
     else if (id === 'tickets') setView('tickets');
     else if (id === 'workflows') setView('workflows');
     else if (id === 'personas') setView('personas');
+    else if (id === 'persona-templates') setView('persona-templates');
     else if (id === 'contact-master') setView('contact-master');
     else if (id === 'templates') setView('templates');
     else if (id === 'theme-settings') setView('theme-settings');
@@ -452,6 +454,22 @@ function App() {
           {view === 'customer360' && <Customer360 />}
           {view === 'personas' && <CxPersonaBuilder />}
           {view === 'journeys' && <JourneyBuilder />}
+          {view === 'persona-templates' && (
+            <CxPersonaTemplates
+              onSelectTemplate={(tmpl) => {
+                const payload = {
+                  name: tmpl.payload.name || tmpl.title,
+                  title: tmpl.payload.title || "Generated Persona",
+                  layout_config: tmpl.payload.layout_config
+                };
+                axios.post('/api/cx-personas', payload)
+                  .then(() => {
+                    setView('personas');
+                  })
+                  .catch(err => alert("Failed to create: " + err.message));
+              }}
+            />
+          )}
           {view === 'templates' && (
             <div style={{ height: 'calc(100vh - 100px)' }}>
               <TemplateGallery

@@ -104,24 +104,41 @@ export function Dashboard({ onNavigate, onEdit, onEditSubmission }) {
                     .sort((a, b) => b.responseCount - a.responseCount)
                     .slice(0, 5);
 
-                const uniqueSurveysCount = Object.keys(surveyGroups).length;
+                const uniqueGroups = {};
+                forms.forEach(f => {
+                    const key = f.title.trim();
+                    if (!uniqueGroups[key]) uniqueGroups[key] = { published: [], drafts: [] };
+                    if (f.is_published || f.isPublished) uniqueGroups[key].published.push(f);
+                    else uniqueGroups[key].drafts.push(f);
+                });
+
+                let activeCount = 0;
+                let draftCount = 0;
+                const displayForms = [];
+
+                Object.values(uniqueGroups).forEach(group => {
+                    if (group.published.length > 0) {
+                        activeCount++;
+                        // Show latest published version as the primary entry
+                        displayForms.push(group.published.sort((a, b) => b.version - a.version)[0]);
+                    } else {
+                        draftCount++;
+                        // Show latest draft
+                        displayForms.push(group.drafts.sort((a, b) => b.version - a.version)[0]);
+                    }
+                });
+
+                const uniqueSurveysCount = Object.keys(uniqueGroups).length;
 
                 setStats({
                     totalSurveys: uniqueSurveysCount,
-                    activeSurveys: forms.filter(f => f.is_published || f.isPublished).length,
-                    draftSurveys: forms.length - forms.filter(f => f.is_published || f.isPublished).length,
+                    activeSurveys: activeCount,
+                    draftSurveys: draftCount,
                     totalResponses: totalResponsesCount,
                     newResponses: newSubsCount,
                     topSurveys: topSurveys,
                     dailyTrend: calculateDailyTrend(filteredSubmissions, dateRange),
-                    // Filter to only show latest version of each survey
-                    allForms: Object.values(forms.reduce((acc, f) => {
-                        const key = f.title.trim();
-                        if (!acc[key] || f.version > acc[key].version) {
-                            acc[key] = f;
-                        }
-                        return acc;
-                    }, {})).sort((a, b) => new Date(b.created_at || b.createdAt) - new Date(a.created_at || a.createdAt))
+                    allForms: displayForms.sort((a, b) => new Date(b.created_at || b.createdAt) - new Date(a.created_at || a.createdAt))
                 });
 
             } catch (err) {

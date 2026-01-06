@@ -15,11 +15,16 @@ class AiService {
      * @param {string} prompt 
      * @param {object} settings - { provider: 'vertex'|'gemini', apiKey, vertexProject, vertexLocation }
      */
-    async generateContent(prompt, settings) {
+    async generateContent(prompt, settings, fileData = null) {
         const provider = settings?.provider || 'gemini';
 
         try {
-            const modelName = settings.modelName || 'gemini-pro';
+            let modelName = settings.modelName || 'gemini-pro';
+
+            // If fileData is present (audio/image), use a generic multimodal model (1.5 Flash is good)
+            if (fileData) {
+                modelName = 'gemini-1.5-flash';
+            }
 
             if (provider === 'vertex') {
                 if (!settings.vertexProject || !settings.vertexLocation) {
@@ -27,7 +32,18 @@ class AiService {
                 }
                 const vertex_ai = new VertexAI({ project: settings.vertexProject, location: settings.vertexLocation });
                 const model = vertex_ai.getGenerativeModel({ model: modelName });
-                const result = await model.generateContent(prompt);
+
+                const parts = [{ text: prompt }];
+                if (fileData) {
+                    parts.unshift({
+                        inlineData: {
+                            data: fileData.buffer.toString('base64'),
+                            mimeType: fileData.mimetype
+                        }
+                    });
+                }
+
+                const result = await model.generateContent({ contents: [{ role: 'user', parts }] });
                 const response = await result.response;
                 return response.candidates[0].content.parts[0].text;
             } else {
@@ -38,7 +54,18 @@ class AiService {
                 }
                 const genAI = new GoogleGenerativeAI(apiKey);
                 const model = genAI.getGenerativeModel({ model: modelName });
-                const result = await model.generateContent(prompt);
+
+                const parts = [{ text: prompt }];
+                if (fileData) {
+                    parts.unshift({
+                        inlineData: {
+                            data: fileData.buffer.toString('base64'),
+                            mimeType: fileData.mimetype
+                        }
+                    });
+                }
+
+                const result = await model.generateContent(parts);
                 const response = await result.response;
                 return response.text();
             }

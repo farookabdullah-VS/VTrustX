@@ -57,6 +57,7 @@ app.use('/api/crm', require('./src/api/routes/crm')); // CRM Ticketing
 app.use('/api/cx-personas', require('./src/api/routes/cx_personas')); // CX Personas
 app.use('/api/customer360', require('./src/api/routes/customer360')); // Customer 360 Golden Record
 app.use('/api/journeys', require('./src/api/routes/journeys')); // Journey Orchestration
+app.use('/api/cx-persona-templates', require('./src/api/routes/cx_persona_templates')); // Persona Templates
 app.use('/api/notifications', require('./src/api/routes/notifications'));
 app.use('/api/quotas', require('./src/api/routes/quotas'));
 app.use('/api/ai', require('./src/api/routes/ai')); // Quota Management

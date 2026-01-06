@@ -72,6 +72,11 @@ router.get('/slug/:slug', async (req, res) => {
 
         if (!row) return res.status(404).json({ error: 'Form not found' });
 
+        // Enforce Published Check for Public Access
+        if (!row.is_published && row.is_published !== true) {
+            return res.status(404).json({ error: 'Form not found or not published' });
+        }
+
         // IP Protection Check
         if (row.allowed_ips) {
             const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
