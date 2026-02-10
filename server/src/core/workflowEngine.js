@@ -41,8 +41,71 @@ async function executeActions(workflow, submission) {
             await sendEmail(action, submission);
         } else if (action.type === 'sync_integration') {
             await syncIntegration(action, submission);
+        } else if (action.type === 'create_ticket') {
+            await createTicket(action, submission);
         }
     }
+}
+
+async function createTicket(action, submission) {
+    console.log(`[WorkflowEngine] Creating Ticket based on Submission...`);
+    try {
+        // 1. Resolve Contact (Try email from submission data)
+        let contactId = null;
+        // Common keys for email in surveys
+        const email = submission.data.email || submission.data.Email || submission.data.contact_email;
+        const name = submission.data.name || submission.data.Name || 'Anonymous Surveyor';
+        const tenantId = submission.metadata?.tenant_id || 'default'; // Need tenant context
+
+        if (email) {
+            // Find or Create
+            const res = await query("SELECT id FROM crm_contacts WHERE email = $1", [email]);
+            if (res.rows.length > 0) {
+                contactId = res.rows[0].id;
+            } else {
+                // Insert simplistic contact
+                const newC = await query(
+                    "INSERT INTO crm_contacts (name, email, created_at, tenant_id) VALUES ($1, $2, NOW(), $3) RETURNING id",
+                    [name, email, tenantId]
+                );
+                contactId = newC.rows[0].id;
+            }
+        }
+
+        // 2. Ticket Details
+        const code = 'TCK-' + Math.floor(100000 + Math.random() * 900000);
+        const subject = action.subject || `Survey Follow-up: ${submission.formId}`;
+        const description = `Auto-generated from Survey Submission.\n\nScore: ${JSON.stringify(submission.data)}`;
+
+        // SLA defaults
+        const now = new Date();
+        const created = await query(`
+            INSERT INTO tickets (
+                ticket_code, subject, description, priority, status, 
+                channel, contact_id, created_at, updated_at, tenant_id,
+                first_response_due_at, resolution_due_at
+            ) VALUES (
+                $1, $2, $3, $4, 'new', 
+                'survey', $5, NOW(), NOW(), $6,
+                $7, $8
+            ) RETURNING id, ticket_code
+        `, [
+            code,
+            subject,
+            description,
+            'medium',
+            contactId,
+            tenantId,
+            new Date(now.getTime() + 24 * 60 * 60 * 1000), // 24h response
+            new Date(now.getTime() + 48 * 60 * 60 * 1000)  // 48h resolution
+        ]);
+
+        console.log(`[WorkflowEngine] ✅ Ticket Created: ${created.rows[0].ticket_code}`);
+
+    } catch (e) {
+        console.error("[WorkflowEngine] Ticket Creation Failed:", e);
+    }
+
 }
 
 async function syncIntegration(action, submission) {

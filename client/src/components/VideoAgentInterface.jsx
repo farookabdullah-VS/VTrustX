@@ -136,12 +136,90 @@ const VideoAgentInterface = ({ onClose, surveyId }) => {
             });
     }, [surveyId]);
 
+    // Video Recording Logic
+    const mediaRecorderRef = useRef(null);
+    const chunksRef = useRef([]);
+
+    useEffect(() => {
+        // Setup Media Recorder when stream is available
+        const interval = setInterval(() => {
+            if (videoRef.current && videoRef.current.srcObject) {
+                const stream = videoRef.current.srcObject;
+                if (!mediaRecorderRef.current || mediaRecorderRef.current.stream.id !== stream.id) {
+                    setupRecorder(stream);
+                }
+            }
+        }, 1000);
+        return () => clearInterval(interval);
+    }, []);
+
+    const setupRecorder = (stream) => {
+        try {
+            const recorder = new MediaRecorder(stream);
+            mediaRecorderRef.current = recorder;
+            recorder.ondataavailable = (e) => {
+                if (e.data.size > 0) chunksRef.current.push(e.data);
+            };
+            recorder.start(1000); // 1s chunks
+        } catch (e) {
+            console.error("Recorder Setup Failed", e);
+        }
+    };
+
+    const stopAndUpload = async () => {
+        if (!mediaRecorderRef.current) return;
+
+        mediaRecorderRef.current.stop();
+        const blob = new Blob(chunksRef.current, { type: 'video/webm' });
+
+        // Upload
+        const formData = new FormData();
+        formData.append('video', blob);
+        formData.append('surveyId', surveyId);
+        if (sessionId) formData.append('sessionId', sessionId);
+
+        try {
+            await axios.post('/api/ai/upload-video', formData);
+            // reset
+            chunksRef.current = [];
+            if (videoRef.current && videoRef.current.srcObject) {
+                setupRecorder(videoRef.current.srcObject); // Restart for next segment? Or Keep going?
+                // Actually, continuous recording might be heavy. Let's record the whole session or segment by segment.
+                // For now, let's assume we want to save the 'User Message' segment.
+            }
+        } catch (e) {
+            console.error("Upload Failed", e);
+        }
+    };
+
+    // Modify handleUserMessage to stop/upload
     const handleUserMessage = async (text) => {
         if (!sessionId) return;
 
         recognition.current.stop();
         setAgentState('thinking');
         setStatus("Thinking...");
+
+        // Stop recording current segment and upload
+        if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+            mediaRecorderRef.current.stop();
+            // Wait slightly for final chunk
+            setTimeout(async () => {
+                const blob = new Blob(chunksRef.current, { type: 'video/webm' });
+                chunksRef.current = []; // Reset for next turn
+
+                // Start recording again for next turn immediately? 
+                // Maybe wait until user starts speaking again?
+                // For simplicty, restart in 'speakResponse' or 'startListening'.
+
+                // Upload in background
+                const formData = new FormData();
+                formData.append('video', blob);
+                formData.append('surveyId', surveyId);
+                formData.append('sessionId', sessionId);
+                axios.post('/api/ai/upload-video', formData).catch(e => console.error("Video Upload Error", e));
+            }, 500);
+        }
 
         try {
             // Call our new backend endpoint
@@ -174,6 +252,12 @@ const VideoAgentInterface = ({ onClose, surveyId }) => {
             setAgentState('idle');
             setStatus("Listening...");
             setShowCaption(false);
+
+            // Resume Recording
+            if (videoRef.current && videoRef.current.srcObject) {
+                setupRecorder(videoRef.current.srcObject);
+            }
+
             startListening(); // Turn-taking: start listening again
         };
 

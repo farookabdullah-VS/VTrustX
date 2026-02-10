@@ -32,4 +32,28 @@ router.put('/:id', async (req, res) => {
     }
 });
 
+// CREATE new integration
+router.post('/', async (req, res) => {
+    try {
+        const { provider, api_key, webhook_url, is_active, config } = req.body;
+
+        // Check availability
+        const check = await query('SELECT id FROM integrations WHERE provider = $1', [provider]);
+        if (check.rows.length > 0) {
+            return res.status(409).json({ error: 'Integration already exists' });
+        }
+
+        const result = await query(
+            `INSERT INTO integrations (provider, api_key, webhook_url, is_active, config, created_at, updated_at)
+             VALUES ($1, $2, $3, $4, $5, NOW(), NOW())
+             RETURNING id`,
+            [provider, api_key, webhook_url, is_active || false, config || {}]
+        );
+        res.status(201).json({ id: result.rows[0].id, message: 'Created successfully' });
+    } catch (error) {
+        console.error("Create Integration Error:", error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
 module.exports = router;

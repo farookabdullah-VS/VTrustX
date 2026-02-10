@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RayixCX User Manual</title>
+    <style>
+        :root {
+            --primary: #064e3b;
+            --secondary: #10b981;
+            --accent: #5B4DFF;
+            --bg: #f8fafc;
+            --text: #0f172a;
+            --sidebar-width: 280px;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        aside {
+            width: var(--sidebar-width);
+            background: white;
+            border-right: 1px solid #e2e8f0;
+            padding: 20px;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        aside h1 {
+            color: var(--primary);
+            margin-top: 0;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        nav ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        nav li {
+            margin-bottom: 5px;
+        }
+
+        nav a {
+            display: block;
+            text-decoration: none;
+            color: #64748b;
+            padding: 10px 15px;
+            border-radius: 8px;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        nav a:hover,
+        nav a.active {
+            background: #f1f5f9;
+            color: var(--primary);
+        }
+
+        /* Main Content */
+        main {
+            margin-left: var(--sidebar-width);
+            padding: 40px 60px;
+            max-width: 900px;
+            flex: 1;
+        }
+
+        h1,
+        h2,
+        h3 {
+            color: var(--text);
+        }
+
+        h2 {
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 10px;
+            margin-top: 50px;
+            color: var(--primary);
+        }
+
+        p,
+        li {
+            line-height: 1.6;
+            color: #334155;
+        }
+
+        .card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+
+        code {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+
+        pre {
+            background: #1e293b;
+            color: #f8fafc;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .bg-new {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .feature-box {
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .feature-box h4 {
+            margin-top: 0;
+            color: var(--accent);
+        }
+
+        footer {
+            margin-top: 60px;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 20px;
+            color: #94a3b8;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+
+<body>
+
+    <aside>
+        <h1>💎 RayixCX</h1>
+        <nav>
+            <ul>
+                <li><a href="#intro">Introduction</a></li>
+                <li><a href="#getting-started">Getting Started</a></li>
+                <li><a href="#surveys">Survey Management</a></li>
+                <li><a href="#themes">🎨 Themes & Design</a></li>
+                <li><a href="#quotas">⚖️ Quotas & Limits</a></li>
+                <li><a href="#ai">🤖 AI Features</a></li>
+                <li><a href="#sdk">💻 Developers (SDK)</a></li>
+                <li><a href="#troubleshooting">Troubleshooting</a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <main>
+        <div id="intro">
+            <h1>User Manual</h1>
+            <p class="lead">Welcome to <strong>RayixCX</strong>, the intelligent platform for creating, managing, and
+                analyzing customer experiences.</p>
+        </div>
+
+        <div id="getting-started">
+            <h2>🚀 Getting Started</h2>
+            <div class="card">
+                <h3>Accessing the Platform</h3>
+                <ul>
+                    <li><strong>Web URL:</strong> <a href="https://rayixcx.web.app"
+                            target="_blank">https://rayixcx.web.app</a></li>
+                    <li><strong>Login:</strong> Use your Administrator credentials.</li>
+                </ul>
+                <p>Once logged in, you will be taken to the main Dashboard where you can see recent activity and key
+                    metrics.</p>
+            </div>
+        </div>
+
+        <div id="surveys">
+            <h2>📊 Survey Management</h2>
+            <p>RayixCX makes it easy to create beautiful surveys in minutes.</p>
+
+            <div class="grid">
+                <div class="feature-box">
+                    <h4>Create New</h4>
+                    <p>Click <strong>+ New Survey</strong> to start. Choose from a Blank Canvas, Templates (NPS, CSAT),
+                        or use the <strong>AI Generator</strong> to build one from a prompt.</p>
+                </div>
+                <div class="feature-box">
+                    <h4>Import</h4>
+                    <p>Already have questions? Upload an Excel or CSV file to instantly generate your survey structure.
+                    </p>
+                </div>
+                <div class="feature-box">
+                    <h4>Edit & Logic</h4>
+                    <p>Use the Drag-and-Drop editor to add questions. Configure skip logic to show/hide questions based
+                        on answers.</p>
+                </div>
+            </div>
+        </div>
+
+        <div id="themes">
+            <h2>🎨 Theme & Customization <span class="badge bg-new">New</span></h2>
+            <p>Ensure your surveys match your brand identity perfectly.</p>
+
+            <div class="card">
+                <h3>The Theme Engine</h3>
+                <p>Located in the Survey Editor (Palette Icon), you can control:</p>
+                <ul>
+                    <li><strong>Theme Library:</strong> One-click presets like <em>RayiX Modern</em>, <em>VTrust
+                            Legacy</em>, and the new <strong>Vision Bank (Dark Future)</strong>.</li>
+                    <li><strong>Typography:</strong> Set distinct fonts for English (LTR) and Arabic (RTL) interfaces.
+                    </li>
+                    <li><strong>Navigation:</strong> Choose button styles (Square, Pill) and icons (Arrow, Hand,
+                        Chevron).</li>
+                    <li><strong>Backgrounds:</strong> Add dynamic patterns like Polka dots or Gradients.</li>
+                </ul>
+            </div>
+        </div>
+
+        <div id="quotas">
+            <h2>⚖️ Quotas & Response Limits <span class="badge bg-new">New</span></h2>
+            <p>Control the flow of incoming data to meet your study requirements.</p>
+
+            <div class="card">
+                <h3>Setting Limits</h3>
+                <p>Go to <strong>Settings > Response Quotas</strong>.</p>
+                <ol>
+                    <li><strong>Global Limit:</strong> Set a maximum number of responses for the entire survey.</li>
+                    <li><strong>Segmented Quotas:</strong> Click <em>+ Add Quota</em> to define rules.
+                        <br><em>Example:</em> Limit "Male" respondents to 50.
+                    </li>
+                </ol>
+                <p><strong>Behavior:</strong> When a quota is reached, any new attempt to submit that matches the
+                    criteria will be rejected with a user-friendly "Survey Closed" message.</p>
+            </div>
+        </div>
+
+        <div id="ai">
+            <h2>🤖 AI Features</h2>
+            <ul>
+                <li><strong>Voice Agent:</strong> Enable a conversational AI that interviews users via voice instead of
+                    text forms.</li>
+                <li><strong>Sentiment Analysis:</strong> Automatically tag open-ended responses with sentiment
+                    (Positive/Negative) and topics.</li>
+            </ul>
+        </div>
+
+        <div id="sdk">
+            <h2>💻 Developer Guide (SDK)</h2>
+            <p>Embed RayixCX surveys on your own website using our lightweight Javascript SDK.</p>
+
+            <div class="card">
+                <h3>Installation</h3>
+                <p>Add this script tag to your site:</p>
+                <pre>&lt;script src="https://rayixcx.web.app/rayix-sdk.js"&gt;&lt;/script&gt;</pre>
+
+                <h3>Initialization</h3>
+                <pre>
+RayixCX.init({
+    slug: 'YOUR_SURVEY_SLUG',
+    mode: 'modal', // Options: 'modal', 'inline', 'button'
+    buttonText: 'Give Feedback',
+    themeColor: '#5B4DFF'
+});</pre>
+            </div>
+        </div>
+
+        <div id="troubleshooting">
+            <h2>❓ Troubleshooting</h2>
+            <div class="card">
+                <ul>
+                    <li><strong>Survey not loading?</strong> Check if it is "Published" in the settings.</li>
+                    <li><strong>"Submission Rejected"?</strong> The survey has likely reached its Quota limit.</li>
+                    <li><strong>Changes not visible?</strong> Clear your browser cache or force refresh (Ctrl+F5).</li>
+                </ul>
+            </div>
+        </div>
+
+        <footer>
+            &copy; 2026 RayixCX Platform. All rights reserved.
+        </footer>
+    </main>
+
+    <script>
+        // Simple active link highlighting
+        const links = document.querySelectorAll('nav a');
+        links.forEach(link => {
+            link.addEventListener('click', () => {
+                links.forEach(l => l.classList.remove('active'));
+                link.classList.add('active');
+            });
+        });
+    </script>
+</body>
+
+</html>

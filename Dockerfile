@@ -1,20 +1,32 @@
 # Stage 1: Build the React Client
-FROM node:18-alpine AS client-build
+FROM node:20-alpine AS client-build
 WORKDIR /app/client
 
 # Copy client package files
 COPY client/package*.json ./
-# Install dependencies
+# Install dependencies (Force Clean)
+RUN rm -f package-lock.json
 RUN npm install
 
 # Copy client source code
 COPY client/ ./
 # Build the React application
+ENV NODE_OPTIONS="--max-old-space-size=4096"
 RUN npm run build
 
 # Stage 2: Setup the Server
-FROM node:18-alpine
+FROM node:20-alpine
 WORKDIR /app/server
+
+# Install system dependencies for canvas/sharp
+RUN apk add --no-cache \
+    build-base \
+    g++ \
+    cairo-dev \
+    jpeg-dev \
+    pango-dev \
+    giflib-dev \
+    librsvg-dev
 
 # Copy server package files
 COPY server/package*.json ./

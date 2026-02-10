@@ -1,18 +1,24 @@
 const MockProvider = require('../providers/MockAIProvider');
 const OpenAIProvider = require('../providers/OpenAIProvider');
 const GeminiProvider = require('../providers/GeminiProvider');
+const GroqProvider = require('../providers/GroqProvider');
+const ConfigService = require('../services/ConfigService');
 
-function getProvider(config) {
-    const providerName = config?.provider || 'mock';
-    const apiKey = config?.apiKey;
+async function getProvider(config) {
+    const providerName = config?.provider || await ConfigService.get('ai_provider') || 'mock';
 
     console.log(`Selecting AI Provider for Generation: ${providerName}`);
 
     switch (providerName.toLowerCase()) {
         case 'openai':
-            return new OpenAIProvider(apiKey);
+            const oaKey = config?.apiKey || await ConfigService.get('openai_api_key');
+            return new OpenAIProvider(oaKey);
         case 'gemini':
-            return new GeminiProvider(apiKey);
+            const gemKey = config?.apiKey || await ConfigService.get('gemini_api_key');
+            return new GeminiProvider(gemKey);
+        case 'groq':
+            const groqKey = config?.apiKey || await ConfigService.get('groq_api_key');
+            return new GroqProvider(groqKey);
         case 'mock':
         default:
             return MockProvider;
@@ -20,13 +26,10 @@ function getProvider(config) {
 }
 
 async function generateSurvey(prompt, aiConfig) {
-    const provider = getProvider(aiConfig);
-    console.log(`Generating survey with ${provider.constructor.name}...`);
+    const provider = await getProvider(aiConfig);
+    console.log(`Generating survey with ${provider.constructor.name || 'MockProvider'}...`);
 
     try {
-        // Enforce JSON structure in the prompt if the provider doesn't support JSON mode natively
-        // (OpenAI supports json_object, but we'll include it in the system prompt too)
-
         const result = await provider.generate(prompt);
         console.log("Generation complete.");
         return result;

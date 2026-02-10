@@ -22,26 +22,26 @@ export function AIVideoAgentPage() {
             {!isSessionActive ? (
                 <div style={{ padding: '40px', maxWidth: '800px', margin: '0 auto', textAlign: 'center' }}>
                     <div style={{
-                        width: '80px', height: '80px', background: '#e0f2fe', borderRadius: '50%',
+                        width: '80px', height: '80px', background: 'var(--sidebar-bg)', borderRadius: '50%',
                         display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px',
-                        color: '#0284c7'
+                        color: 'var(--primary-color)'
                     }}>
                         <Video size={40} />
                     </div>
-                    <h1 style={{ color: '#0f172a', marginBottom: '10px' }}>AI Video Agent Survey</h1>
-                    <p style={{ color: '#64748b', marginBottom: '40px' }}>
+                    <h1 style={{ color: 'var(--text-color)', marginBottom: '10px' }}>AI Video Agent Survey</h1>
+                    <p style={{ color: 'var(--text-muted)', marginBottom: '40px' }}>
                         Connect with our AI Video Agent for a face-to-face interview experience.
                         The agent will conduct the survey verbally and visually.
                     </p>
 
-                    <div style={{ background: 'white', padding: '30px', borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.05)', textAlign: 'left' }}>
-                        <label style={{ display: 'block', marginBottom: '10px', fontWeight: '600', color: '#334155' }}>Select Survey Campaign</label>
+                    <div style={{ background: 'var(--input-bg)', padding: '30px', borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.05)', textAlign: 'left', border: '1px solid var(--input-border)' }}>
+                        <label style={{ display: 'block', marginBottom: '10px', fontWeight: '600', color: 'var(--label-color)' }}>Select Survey Campaign</label>
                         <select
                             value={selectedFormId}
                             onChange={e => setSelectedFormId(e.target.value)}
                             style={{
-                                width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1',
-                                marginBottom: '20px', fontSize: '16px'
+                                width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--input-border)',
+                                marginBottom: '20px', fontSize: '16px', background: 'var(--input-bg)', color: 'var(--input-text)'
                             }}
                         >
                             <option value="">-- Choose Survey --</option>
@@ -54,14 +54,15 @@ export function AIVideoAgentPage() {
                             onClick={startSession}
                             disabled={!selectedFormId}
                             style={{
-                                width: '100%', padding: '16px', background: selectedFormId ? '#0284c7' : '#94a3b8',
-                                color: 'white', border: 'none', borderRadius: '8px',
+                                width: '100%', padding: '16px', background: selectedFormId ? 'var(--primary-color)' : 'var(--text-muted)',
+                                color: 'var(--button-text)', border: 'none', borderRadius: '8px',
                                 fontWeight: '700', fontSize: '18px', cursor: selectedFormId ? 'pointer' : 'not-allowed',
                                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
-                                transition: 'background 0.2s'
+                                transition: 'background 0.2s',
+                                opacity: selectedFormId ? 1 : 0.7
                             }}
                         >
-                            <Play size={24} fill="white" /> Start Video Interview
+                            <Play size={24} fill="currentColor" /> Start Video Interview
                         </button>
                     </div>
                 </div>

@@ -22,10 +22,6 @@ router.get('/crm-stats', authenticate, async (req, res) => {
             FROM tickets 
             WHERE tenant_id = $1 AND status IN ('resolved', 'closed')
         `, [tenantId]);
-        // Note: The logic above calculates TIME REMAINING? No.
-        // We want Time TAKEN. We need 'closed_at' - 'created_at'.
-        // My 'tickets' table has 'closed_at'? 
-        // Let's assume yes (User verified columns? Or I added it in Step 1906 logic: if closed -> safeUpdates.closed_at).
 
         const perfRes = await query(`
             SELECT AVG(EXTRACT(EPOCH FROM (closed_at - created_at))/3600) as avg_hours
@@ -58,7 +54,7 @@ router.get('/crm-trends', authenticate, async (req, res) => {
         `, [tenantId]);
 
         const trends = result.rows.map(r => ({
-            date: r.date, // Format?
+            date: r.date,
             count: parseInt(r.count)
         })).reverse(); // Oldest first for chart
 
@@ -69,19 +65,14 @@ router.get('/crm-trends', authenticate, async (req, res) => {
 });
 
 // Power BI OData-like Feed or Simple JSON
-// Returns Flattened Data: [ { Survey: "Survey A", Question: "Q1", Answer: "Yes", Date: "..." } ]
 router.get('/powerbi', async (req, res) => {
     try {
-        // Authenticate via query param 'secret' which must match the Power BI integration api_key
         const { secret } = req.query;
         if (!secret) return res.status(401).json({ error: "Missing secret key" });
 
-        // Verify Secret against Integrations table
         const integRes = await query("SELECT * FROM integrations WHERE provider = 'Power BI' AND api_key = $1 AND is_active = true", [secret]);
         if (integRes.rows.length === 0) return res.status(403).json({ error: "Invalid or inactive access key" });
 
-        // Fetch Data
-        // We perform a join to get Form Title + Submission Data
         const sql = `
             SELECT 
                 f.title as survey_title,
@@ -92,21 +83,14 @@ router.get('/powerbi', async (req, res) => {
             JOIN forms f ON s.form_id = f.id
             ORDER BY s.created_at DESC
             LIMIT 5000 
-        `; // Limit for performance
+        `;
 
         const result = await query(sql);
-
-        // Flatten the JSON structure for Power BI
-        // Power BI prefers tabular data.
-        // We will transform each submission into multiple rows (Unpivot) or one wide row?
-        // Wide row is hard because columns vary. 
-        // Best approach for generic BI: EAV (Entity-Attribute-Value) style or flat JSON if Power BI handles JSON properly.
-        // Let's return generic JSON and let Power BI 'Expand' columns.
 
         const flatData = result.rows.map(row => ({
             Survey: row.survey_title,
             Timestamp: row.created_at,
-            ...row.response_data, // Spread answers
+            ...row.response_data,
             Location: row.metadata?.location ? `${row.metadata.location.lat},${row.metadata.location.long}` : null
         }));
 
@@ -166,20 +150,14 @@ function getAllQuestions(json) {
 }
 
 // SPSS Variable name requirements: 
-// Starts with letter or @. Max 64 chars. No spaces. 
-// Allowed: letters, digits, ., _, $, @, !, #
 function sanitizeSpssName(name, usedNames) {
     if (!name) return 'V' + Math.floor(Math.random() * 100000);
-    // Remove invalid chars
     let clean = name.replace(/[^a-zA-Z0-9@!._#$]/g, '_');
-    // Ensure starts with letter or @
     if (!/^[a-zA-Z@]/.test(clean)) clean = 'V' + clean;
-    // Cannot end with a dot
     if (clean.endsWith('.')) clean = clean.slice(0, -1) + '_';
 
     let finalName = clean.substring(0, 64);
     let counter = 1;
-    // Enforce uniqueness (SPSS is case-insensitive for var names)
     while (usedNames.has(finalName.toUpperCase())) {
         const suffix = `_${counter}`;
         finalName = clean.substring(0, 64 - suffix.length) + suffix;
@@ -195,22 +173,18 @@ router.get('/export/spss/:formId', authenticate, async (req, res) => {
         const { formId } = req.params;
         const tenantId = req.user.tenant_id;
 
-        // 1. Fetch Form
         const formRes = await query("SELECT * FROM forms WHERE id = $1 AND tenant_id = $2", [formId, tenantId]);
         if (formRes.rows.length === 0) return res.status(404).json({ error: "Form not found" });
         const form = formRes.rows[0];
 
-        // 2. Fetch Submissions
         const subRes = await query("SELECT * FROM submissions WHERE form_id = $1 ORDER BY created_at", [formId]);
         const submissions = subRes.rows;
 
-        // 3. Prepare Variables
         const questions = getAllQuestions(form.definition);
         const variables = [];
         const usedNames = new Set();
-        const nameMap = {}; // SurveyJS Name -> mapping details
+        const nameMap = {};
 
-        // System variables
         const idVar = sanitizeSpssName('ID', usedNames);
         const createdVar = sanitizeSpssName('CREATED', usedNames);
 
@@ -229,7 +203,6 @@ router.get('/export/spss/:formId', authenticate, async (req, res) => {
             width: 19
         });
 
-        // Question variables
         questions.forEach(q => {
             const spssName = sanitizeSpssName(q.name, usedNames);
             nameMap[q.name] = { spssName, qRef: q };
@@ -240,7 +213,6 @@ router.get('/export/spss/:formId', authenticate, async (req, res) => {
                 measure: VariableMeasure.Nominal
             };
 
-            // Determine Type and Value Labels for categorical fields
             const isCategorical = ['radiogroup', 'dropdown', 'boolean', 'matrix_row'].includes(q.type);
             const isRating = q.type === 'rating';
 
@@ -250,14 +222,11 @@ router.get('/export/spss/:formId', authenticate, async (req, res) => {
                 varObj.decimal = 0;
                 if (isRating) varObj.measure = VariableMeasure.Ordinal;
 
-                // Map Choices/Columns to Value Labels
                 if (q.choices && Array.isArray(q.choices)) {
                     varObj.valueLabels = q.choices.map((c, idx) => {
                         const val = c.value !== undefined ? c.value : (c.itemValue !== undefined ? c.itemValue : c);
                         const text = c.text !== undefined ? c.text : (c.itemText !== undefined ? c.itemText : val);
-
                         return {
-                            // If choice value is already numeric, use it. Otherwise use index.
                             value: (val !== undefined && !isNaN(val)) ? Number(val) : (idx + 1),
                             label: cleanLabel(text)
                         };
@@ -274,28 +243,21 @@ router.get('/export/spss/:formId', authenticate, async (req, res) => {
                 varObj.decimal = 2;
                 varObj.measure = VariableMeasure.Continuous;
             } else {
-                // Default to String for other types
                 varObj.type = VariableType.String;
                 varObj.width = 255;
             }
-
             variables.push(varObj);
         });
 
-        // 4. Prepare Records
         const records = submissions.map(s => {
             const data = s.data || {};
             const rec = {};
             rec[idVar] = s.id;
-
-            // The library expects HH:mm:SS (capital SS for seconds/centiseconds mapping)
             rec[createdVar] = moment(s.createdAt || s.created_at).format('DD-MM-YYYY HH:mm:SS');
 
             questions.forEach(q => {
                 const { spssName } = nameMap[q.name];
                 const v = variables.find(x => x.name === spssName);
-
-                // Get the raw value from submission data
                 let val = (q.type === 'matrix_row') ? (data[q.originalName] ? data[q.originalName][q.rowValue] : null) : data[q.name];
 
                 if (v.type === VariableType.Numeric) {
@@ -304,17 +266,14 @@ router.get('/export/spss/:formId', authenticate, async (req, res) => {
                     } else if (q.type === 'boolean') {
                         rec[spssName] = (val === true || val === 'true') ? 1 : 0;
                     } else {
-                        // Numeric variable, but val might be a string (e.g., categorical text "Male")
                         let num = Number(val);
                         if (isNaN(num)) {
-                            // Try to find matching choice and get its assigned numerical value
                             if (q.choices && Array.isArray(q.choices)) {
                                 const choiceIdx = q.choices.findIndex(c => {
                                     const cVal = c.value !== undefined ? c.value : (c.itemValue !== undefined ? c.itemValue : c);
                                     const cText = c.text !== undefined ? c.text : (c.itemText !== undefined ? c.itemText : cVal);
                                     return cVal === val || cText === val;
                                 });
-
                                 if (choiceIdx !== -1) {
                                     const match = v.valueLabels[choiceIdx];
                                     num = match ? match.value : (choiceIdx + 1);
@@ -326,27 +285,176 @@ router.get('/export/spss/:formId', authenticate, async (req, res) => {
                 } else if (v.type === VariableType.DateTime) {
                     rec[spssName] = val ? moment(val).format('DD-MM-YYYY HH:mm:SS') : null;
                 } else {
-                    // String/Array value
                     if (Array.isArray(val)) val = val.join(', ');
                     rec[spssName] = val !== undefined ? val.toString().slice(0, 255) : "";
                 }
             });
-
             return rec;
         });
 
-        // 5. Generate Buffer
-        console.log(`[SPSS] Generating buffer for ${submissions.length} cases and ${variables.length} variables...`);
         const buffer = toBuffer(records, variables);
-
-        // 6. Send Response
         res.setHeader('Content-Type', 'application/octet-stream');
         res.setHeader('Content-Disposition', `attachment; filename=export_${form.slug || 'survey'}.sav`);
         res.end(Buffer.from(buffer));
 
     } catch (e) {
-        console.error("SPSS Final Fix Export Error:", e.name, e.message);
+        console.error("SPSS Export Error:", e.name, e.message);
         res.status(500).json({ error: "SPSS Generation Failed: " + e.message });
+    }
+});
+
+const PostgresRepository = require('../../infrastructure/database/PostgresRepository');
+const reportRepo = new PostgresRepository('reports');
+const crypto = require('crypto');
+
+// Get all reports for tenant
+router.get('/', authenticate, async (req, res) => {
+    try {
+        const rows = await reportRepo.findAllBy('tenant_id', req.user.tenant_id);
+        const mapped = rows.map(r => ({
+            ...r,
+            surveyId: r.form_id
+        }));
+        res.json(mapped);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Get public report by token or slug
+router.get('/public/:token', async (req, res) => {
+    try {
+        const result = await query("SELECT * FROM reports WHERE (public_token = $1 OR slug = $1) AND is_published = true", [req.params.token]);
+        if (result.rows.length === 0) return res.status(404).json({ error: "Report not found or not published" });
+
+        const report = result.rows[0];
+        // Also fetch partial form info if needed
+        const formRes = await query("SELECT id, title, definition FROM forms WHERE id = $1", [report.form_id]);
+
+        res.json({
+            report: {
+                ...report,
+                surveyId: report.form_id
+            },
+            form: formRes.rows[0]
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Publish/Unpublish report
+router.post('/:id/publish', authenticate, async (req, res) => {
+    try {
+        const existing = await reportRepo.findById(req.params.id);
+        if (!existing || existing.tenant_id !== req.user.tenant_id) return res.status(404).json({ error: 'Report not found' });
+
+        let token = existing.public_token;
+        if (!token) {
+            token = crypto.randomBytes(16).toString('hex');
+        }
+
+        const isPublished = req.body.is_published !== undefined ? req.body.is_published : true;
+        const slug = req.body.slug ? req.body.slug.trim() : (existing.slug || null);
+
+        try {
+            const updated = await reportRepo.update(req.params.id, {
+                public_token: token,
+                is_published: isPublished,
+                slug: slug,
+                updated_at: new Date()
+            });
+            res.json({ ...updated, surveyId: updated.form_id });
+        } catch (dbErr) {
+            if (dbErr.message.includes('unique constraint') || dbErr.message.includes('slug')) {
+                return res.status(400).json({ error: "That Link Name is already taken. Please choose another." });
+            }
+            throw dbErr;
+        }
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Create new report
+router.post('/', authenticate, async (req, res) => {
+    try {
+        console.log("Creating Report Payload:", JSON.stringify(req.body, null, 2)); // DEBUG
+        const safeStringify = (val, defaultVal) => {
+            if (val === undefined || val === null) return defaultVal;
+            if (typeof val === 'string') return val; // Already string
+            return JSON.stringify(val);
+        };
+
+        const newReport = {
+            tenant_id: req.user.tenant_id,
+            title: req.body.title || 'Untitled Report',
+            description: req.body.description,
+            form_id: req.body.surveyId ? parseInt(req.body.surveyId) : null,
+            layout: safeStringify(req.body.layout, '[]'),
+            widgets: safeStringify(req.body.widgets, '{}'),
+            theme: safeStringify(req.body.theme, '{}'),
+            fields: safeStringify(req.body.fields, '[]'),
+            config: safeStringify(req.body.config, '{}'),
+            orientation: req.body.orientation || 'landscape',
+            created_at: new Date(),
+            updated_at: new Date()
+        };
+        const saved = await reportRepo.create(newReport);
+        res.status(201).json({ ...saved, surveyId: saved.form_id });
+    } catch (error) {
+        console.log("Create Report Error (Log):", error.message); // STDOUT
+        console.error("Create Report Error:", error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Update report
+router.put('/:id', authenticate, async (req, res) => {
+    try {
+        console.log(`Updating Report ${req.params.id} Payload:`, JSON.stringify(req.body, null, 2)); // DEBUG
+        const existing = await reportRepo.findById(req.params.id);
+        if (!existing || existing.tenant_id !== req.user.tenant_id) return res.status(404).json({ error: 'Report not found' });
+
+        const safeStringify = (val) => {
+            if (val === undefined) return undefined; // Skip update
+            if (val === null) return null;
+            if (typeof val === 'string') return val;
+            return JSON.stringify(val);
+        };
+
+        const updateData = {
+            title: req.body.title,
+            description: req.body.description,
+            layout: safeStringify(req.body.layout),
+            widgets: safeStringify(req.body.widgets),
+            theme: safeStringify(req.body.theme),
+            fields: safeStringify(req.body.fields),
+            config: safeStringify(req.body.config),
+            orientation: req.body.orientation,
+            is_published: req.body.is_published,
+            form_id: req.body.surveyId ? parseInt(req.body.surveyId) : undefined,
+            updated_at: new Date()
+        };
+        const updated = await reportRepo.update(req.params.id, updateData);
+        res.json({ ...updated, surveyId: updated.form_id });
+    } catch (error) {
+        console.log("Update Report Error (Log):", error.message); // STDOUT
+        console.error("Update Report Error:", error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Delete report
+router.delete('/:id', authenticate, async (req, res) => {
+    try {
+        const existing = await reportRepo.findById(req.params.id);
+        if (!existing || existing.tenant_id !== req.user.tenant_id) return res.status(404).json({ error: 'Report not found' });
+
+        await reportRepo.delete(req.params.id);
+        res.json({ message: 'Report deleted' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
     }
 });
 

@@ -1,0 +1,5 @@
+2026/01/21 16:45:42 This is the Cloud SQL Proxy v1. It is no longer receiving active feature development. For the latest features and improvements, migrate to the v2 version of the Cloud SQL Proxy. For details, see: https://github.com/GoogleCloudPlatform/cloud-sql-proxy/blob/main/migration-guide.md
+2026/01/21 17:06:41 Listening on 127.0.0.1:5000 for gen-lang-client-0151326334:us-central1:vtrustx
+2026/01/21 17:06:41 Ready for new connections
+2026/01/21 17:06:42 Generated RSA key in 686.8369ms
+2026/01/21 17:06:42 Received TERM signal. Waiting up to 0s before terminating.

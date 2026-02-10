@@ -1,0 +1,104 @@
+{
+  "form": {
+    "id": 1,
+    "title": "VTrustX Customer Satisfaction Survey",
+    "tenant_id": 1,
+    "definition": {
+      "pages": [
+        {
+          "name": "page1",
+          "elements": [
+            {
+              "name": "overall_satisfaction",
+              "type": "rating",
+              "title": "How satisfied are you with VTrustX overall?",
+              "isRequired": true,
+              "maxRateDescription": "Very Satisfied",
+              "minRateDescription": "Very Dissatisfied"
+            },
+            {
+              "name": "product_quality",
+              "type": "radiogroup",
+              "title": "How would you rate the quality of our products/services?",
+              "choices": [
+                "Excellent",
+                "Good",
+                "Average",
+                "Poor",
+                "Very Poor"
+              ],
+              "isRequired": true
+            },
+            {
+              "name": "specific_feedback",
+              "type": "text",
+              "title": "What specific aspects of our products/services did you find particularly satisfying or dissatisfying?"
+            },
+            {
+              "name": "question1",
+              "type": "slider"
+            },
+            {
+              "name": "support_experience",
+              "rows": [
+                {
+                  "text": "Responsiveness",
+                  "value": "responsiveness"
+                },
+                {
+                  "text": "Knowledge",
+                  "value": "knowledge"
+                },
+                {
+                  "text": "Helpfulness",
+                  "value": "helpfulness"
+                }
+              ],
+              "type": "matrixdropdown",
+              "title": "Please rate your experience with our customer support on the following aspects:",
+              "columns": [
+                {},
+                {},
+                {},
+                {}
+              ]
+            },
+            {
+              "name": "suggestions",
+              "type": "comment",
+              "title": "Do you have any suggestions for how we can improve our products/services or customer experience?"
+            },
+            {
+              "name": "likely_to_recommend",
+              "type": "checkbox",
+              "title": "Which features of VTrustX are most valuable to you?",
+              "choices": [
+                "Feature A",
+                "Feature B",
+                "Feature C",
+                "Feature D",
+                "Other"
+              ]
+            }
+          ]
+        }
+      ],
+      "title": "VTrustX Customer Satisfaction Survey",
+      "description": "We value your feedback and appreciate you taking the time to complete this survey.",
+      "completedHtml": "<h4>Thank you for your feedback!</h4><p>We appreciate you taking the time to complete our survey.</p>"
+    }
+  },
+  "user": {
+    "id": 2,
+    "username": "admin",
+    "tenant_id": 1
+  },
+  "tenant": {
+    "id": 1,
+    "name": "Default Organization",
+    "plan": "enterprise",
+    "subscription_status": "active",
+    "created_at": "2026-01-13T11:17:23.132Z",
+    "theme": {}
+  }
+}

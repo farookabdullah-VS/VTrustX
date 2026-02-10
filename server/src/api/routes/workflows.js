@@ -61,7 +61,7 @@ router.post('/', authenticate, async (req, res) => {
             tenant_id: req.user.tenant_id,
             form_id: req.body.formId || null,
             name: req.body.name,
-            description: req.body.description,
+            description: req.body.description || null,
             trigger_event: req.body.trigger_event || 'submission_completed',
             conditions: JSON.stringify(req.body.conditions || []),
             actions: JSON.stringify(req.body.actions || []),

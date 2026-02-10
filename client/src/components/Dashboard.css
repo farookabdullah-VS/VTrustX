@@ -1,7 +1,62 @@
 .dashboard {
+    width: 100%;
+    min-height: 100vh;
     padding: 20px;
     max-width: 1200px;
     margin: 0 auto;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    background: var(--background-color, #0f172a);
+    color: var(--text-color, #fff);
+}
+
+width: 100%;
+min-height: 100vh;
+padding: 20px;
+max-width: 1200px;
+margin: 0 auto;
+box-sizing: border-box;
+display: flex;
+flex-direction: column;
+gap: 24px;
+background: var(--background-color, #0f172a);
+color: var(--text-color, #fff);
+}
+
+/* Mobile adjustments */
+@media (max-width: 600px) {
+    .dashboard {
+        padding: 12px;
+        max-width: 100%;
+    }
+
+    .card-container {
+        flex-direction: column;
+    }
+
+    .card {
+        flex: 1 1 auto;
+    }
+}
+
+width: 100%;
+min-height: 100vh;
+padding: 0;
+max-width: none;
+margin: 0;
+box-sizing: border-box;
+display: flex;
+flex-direction: column;
+gap: 24px;
+background: var(--background-color, #0f172a);
+color: var(--text-color, #fff);
+}
+
+padding: 20px;
+max-width: 1200px;
+margin: 0 auto;
 }
 
 .creation-actions {

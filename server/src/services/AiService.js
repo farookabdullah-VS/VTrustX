@@ -1,5 +1,7 @@
 const { VertexAI } = require('@google-cloud/vertexai');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
+const axios = require('axios');
+const FormData = require('form-data');
 
 /**
  * Service to handle AI generation requests using either Gemini API or Vertex AI.
@@ -71,6 +73,64 @@ class AiService {
             }
         } catch (error) {
             console.error("AI Generation Error:", error);
+            throw error;
+        }
+    }
+    /**
+     * Transcribe audio using the specified provider.
+     * @param {Buffer} fileBuffer 
+     * @param {string} mimeType 
+     * @param {object} settings 
+     */
+    async transcribe(fileBuffer, mimeType, settings) {
+        const provider = settings?.stt_provider || 'google';
+
+        try {
+            if (provider === 'google') {
+                // Use Gemini 1.5 Flash for transcription
+                // It is multimodal and good at STT instructions
+                const modelName = 'gemini-1.5-flash';
+                const apiKey = settings.apiKey || process.env.GEMINI_API_KEY;
+
+                if (!apiKey) throw new Error("Gemini API Key missing.");
+
+                const genAI = new GoogleGenerativeAI(apiKey);
+                const model = genAI.getGenerativeModel({ model: modelName });
+
+                const parts = [
+                    { text: "Transcribe the speech in this audio exactly. Output only the transcription text." },
+                    {
+                        inlineData: {
+                            data: fileBuffer.toString('base64'),
+                            mimeType: mimeType
+                        }
+                    }
+                ];
+
+                const result = await model.generateContent(parts);
+                const response = await result.response;
+                return response.text();
+            } else if (provider === 'groq') {
+                const apiKey = settings.groqApiKey || process.env.GROQ_API_KEY;
+                if (!apiKey) throw new Error("Groq API Key missing.");
+
+                const form = new FormData();
+                form.append('model', 'whisper-large-v3');
+                form.append('file', fileBuffer, { filename: 'audio.webm', contentType: mimeType }); // Filename is required by Groq
+
+                const response = await axios.post('https://api.groq.com/openai/v1/audio/transcriptions', form, {
+                    headers: {
+                        'Authorization': `Bearer ${apiKey}`,
+                        ...form.getHeaders()
+                    }
+                });
+
+                return response.data.text;
+            } else {
+                throw new Error(`Unsupported STT Provider: ${provider}`);
+            }
+        } catch (error) {
+            console.error("Transcribe Error:", error);
             throw error;
         }
     }

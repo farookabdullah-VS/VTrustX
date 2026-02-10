@@ -1,0 +1,19 @@
+{
+    "hosting": {
+        "public": "public_placeholder",
+        "ignore": [
+            "firebase.json",
+            "**/.*",
+            "**/node_modules/**"
+        ],
+        "rewrites": [
+            {
+                "source": "**",
+                "run": {
+                    "serviceId": "rayix-service",
+                    "region": "me-central1"
+                }
+            }
+        ]
+    }
+}

@@ -1,35 +1,81 @@
 /* GEMINI AI / NANO BANANO DESIGN SYSTEM */
 :root {
   font-family: 'Outfit', 'Inter', system-ui, -apple-system, sans-serif;
+  font-size: 14px;
+  /* Reduced by 2px from default 16px */
   line-height: 1.5;
   font-weight: 400;
 
   color-scheme: light;
 
-  /* User VTrustX Pale Green Theme */
-  --deep-bg: #D9F8E5;
+  /* RayiX Theme */
+  --deep-bg: #f8fafc;
   --surface-bg: #ffffff;
-  --glass-bg: rgba(255, 255, 255, 0.85);
-  --glass-border: rgba(4, 120, 87, 0.2);
+  --card-bg: #ffffff;
+  --glass-bg: rgba(255, 255, 255, 0.9);
+  --glass-border: rgba(226, 232, 240, 0.8);
+  --glass-blur: 12px;
+  --glass-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
 
-  /* Logo Colors & Button Style */
-  --primary-color: #064e3b;
-  /* Metallic Green */
-  --primary-rgb: 6, 78, 59;
-  --primary-gradient: linear-gradient(135deg, #064e3b 0%, #047857 100%);
-  --primary-glow: 0 0 20px rgba(6, 78, 59, 0.4);
+  /* RayiX Theme Base Defaults (Teal/Blue Modern) */
+  --primary-color: #2C9BAD;
+  --primary-hover: #237B8A;
+  --secondary-color: #C4A040;
+  /* RayiX Gold */
+  --gold-light: rgba(196, 160, 64, 0.15);
+  --accent-color: #2C9BAD;
 
-  --secondary-color: #10b981;
-  --accent-color: #064e3b;
+  --text-color: #0f172a;
+  --text-muted: #64748b;
+  --label-color: #334155;
 
-  --text-color: #022c22;
-  --text-muted: #065f46;
+  --primary-gradient: linear-gradient(135deg, #2C9BAD 0%, #237B8A 100%);
+  --primary-glow: 0 0 15px rgba(44, 155, 173, 0.3);
+  --status-error: #ef4444;
+  --status-success: #10b981;
+
+  /* Button Specifics */
+  --button-bg: var(--primary-color);
+  --button-text: #ffffff;
+  --button-border-radius: 8px;
+  --button-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1);
+  --button-border-color: transparent;
+
+  /* Sidebar Specifics (Defaults to White/Clean) */
+  --sidebar-bg: #ffffff;
+  --sidebar-text: #C4A040;
+  /* RayiX Gold */
+  --sidebar-active-bg: #064e3b;
+  --sidebar-active-text: #ffffff;
+  --sidebar-hover-bg: var(--gold-light);
+  --sidebar-border: #e2e8f0;
+
+  /* Form Elements */
+  --input-bg: #ffffff;
+  --input-border: rgba(4, 120, 87, 0.2);
+  --input-text: var(--text-color);
+  --input-focus-ring: 0 0 0 3px rgba(6, 78, 59, 0.15);
+
+  /* Background Pattern */
+  --bg-pattern: radial-gradient(rgba(4, 120, 87, 0.05) 1px, transparent 1px);
+  --bg-pattern-size: 30px 30px;
 
   --sidebar-width: 260px;
   --sidebar-collapsed-width: 80px;
   --border-radius: 16px;
 
   --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Scrollbar */
+  --scrollbar-size: 8px;
+  --scrollbar-track: transparent;
+  --scrollbar-thumb: rgba(4, 120, 87, 0.3);
+  --scrollbar-thumb-hover: rgba(4, 120, 87, 0.5);
+
+  /* SurveyJS Specifics */
+  --sjs-font-small: 13px;
+  --sjs-line-height-small: 20px;
+  --sjs-adorner-color: #ecfdf5;
 }
 
 body {
@@ -40,9 +86,9 @@ body {
   width: 100vw;
   overflow-x: hidden;
   background-color: var(--deep-bg);
-  background-image:
-    radial-gradient(rgba(4, 120, 87, 0.05) 1px, transparent 1px);
-  background-size: 30px 30px;
+  background-image: var(--bg-pattern);
+  background-size: var(--bg-pattern-size);
+  transition: background-color 0.3s ease, background-image 0.3s ease;
   color: var(--text-color);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -52,9 +98,9 @@ body {
 input,
 select,
 textarea {
-  background: white;
-  border: 1px solid rgba(4, 120, 87, 0.2);
-  color: var(--text-color);
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  color: var(--input-text);
   border-radius: 8px;
   padding: 10px 12px;
   font-family: inherit;
@@ -66,7 +112,7 @@ select:focus,
 textarea:focus {
   outline: none;
   border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(6, 78, 59, 0.15);
+  box-shadow: var(--input-focus-ring);
 }
 
 /* Metallic Green Buttons */
@@ -75,18 +121,18 @@ button {
   border: none;
   outline: none;
   background-image: var(--primary-gradient);
-  background-color: var(--primary-color);
-  color: #D9F8E5;
+  background-color: var(--button-bg);
+  color: var(--button-text);
   /* Pale Green Text on Dark Button */
   padding: 0.75em 1.5em;
-  border-radius: 10px;
+  border-radius: var(--button-border-radius);
   font-weight: 700;
   letter-spacing: 0.5px;
   transition: var(--transition-fast);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -1px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--button-shadow);
   text-transform: uppercase;
   font-size: 0.9em;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--button-border-color);
 }
 
 button:hover {
@@ -98,30 +144,30 @@ button:hover {
 /* Glassmorphism Card Utility */
 .glass-panel {
   background: var(--glass-bg);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
   border: 1px solid var(--glass-border);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
+  box-shadow: var(--glass-shadow);
   border-radius: var(--border-radius);
 }
 
 /* Scrollbar Styling */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: var(--scrollbar-size);
+  height: var(--scrollbar-size);
 }
 
 ::-webkit-scrollbar-track {
-  background: transparent;
+  background: var(--scrollbar-track);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(4, 120, 87, 0.3);
+  background: var(--scrollbar-thumb);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(4, 120, 87, 0.5);
+  background: var(--scrollbar-thumb-hover);
 }
 
 .svc-creator__banner {
@@ -129,7 +175,7 @@ button:hover {
 }
 
 body {
-  --sjs-primary-backcolor: #064e3b;
+  --sjs-primary-backcolor: var(--primary-color);
   --sjs-primary-forecolor: #ffffff;
 }
 
@@ -137,13 +183,13 @@ body {
 .sv-list__item,
 .sv-list__item-body span,
 .sv-list__item-body {
-  font-size: 13px !important;
-  line-height: 20px !important;
+  font-size: var(--sjs-font-small) !important;
+  line-height: var(--sjs-line-height-small) !important;
 }
 
 /* Increase size of text in property grid and other popups */
 .sv-popup__content {
-  font-size: 13px !important;
+  font-size: var(--sjs-font-small) !important;
 }
 
 /* Fix SurveyJS Adorner/Action Bar Text Colors */
@@ -151,18 +197,105 @@ body {
 .svc-question__adorner .svc-action-button,
 .svc-question__content-actions .sv-action-bar-item,
 .svc-question__content-actions .svc-action-button {
-  color: #ecfdf5 !important;
-  fill: #ecfdf5 !important;
+  color: var(--sjs-adorner-color) !important;
+  fill: var(--sjs-adorner-color) !important;
   /* For the SVGs */
 }
 
 /* Ensure icons are also pale green */
 .svc-question__adorner .sv-svg-icon,
 .svc-question__content-actions .sv-svg-icon {
-  fill: #ecfdf5 !important;
+  fill: var(--sjs-adorner-color) !important;
 }
 
 /* Specific fix for text labels */
 .svc-question__adorner .sv-action-bar-item__title {
-  color: #ecfdf5 !important;
+  color: var(--sjs-adorner-color) !important;
+}
+
+/* Animation Utilities */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+.fade-in-up {
+  animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  opacity: 0;
+  /* Start hidden */
+}
+
+/* Staggered Delays for Grid Items (up to 10 items) */
+.stagger-1 {
+  animation-delay: 50ms;
+}
+
+.stagger-2 {
+  animation-delay: 100ms;
+}
+
+.stagger-3 {
+  animation-delay: 150ms;
+}
+
+.stagger-4 {
+  animation-delay: 200ms;
+}
+
+.stagger-5 {
+  animation-delay: 250ms;
+}
+
+.stagger-6 {
+  animation-delay: 300ms;
+}
+
+.stagger-7 {
+  animation-delay: 350ms;
+}
+
+.stagger-8 {
+  animation-delay: 400ms;
+}
+
+.stagger-9 {
+  animation-delay: 450ms;
+}
+
+.stagger-10 {
+  animation-delay: 500ms;
+}
+
+/* Premium Gradients */
+.gradient-text {
+  background: var(--primary-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.premium-card-hover:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 40px -5px rgba(0, 0, 0, 0.1), 0 10px 20px -5px rgba(0, 0, 0, 0.04);
 }

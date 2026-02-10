@@ -1,0 +1,57 @@
+[
+  {
+    "column_name": "org_id",
+    "data_type": "uuid",
+    "is_nullable": "NO"
+  },
+  {
+    "column_name": "org_code",
+    "data_type": "text",
+    "is_nullable": "NO"
+  },
+  {
+    "column_name": "org_name",
+    "data_type": "text",
+    "is_nullable": "NO"
+  },
+  {
+    "column_name": "org_type_lookup_id",
+    "data_type": "uuid",
+    "is_nullable": "YES"
+  },
+  {
+    "column_name": "status_lookup_id",
+    "data_type": "uuid",
+    "is_nullable": "YES"
+  },
+  {
+    "column_name": "default_timezone_id",
+    "data_type": "uuid",
+    "is_nullable": "YES"
+  },
+  {
+    "column_name": "default_currency_id",
+    "data_type": "uuid",
+    "is_nullable": "YES"
+  },
+  {
+    "column_name": "created_at",
+    "data_type": "timestamp with time zone",
+    "is_nullable": "NO"
+  },
+  {
+    "column_name": "updated_at",
+    "data_type": "timestamp with time zone",
+    "is_nullable": "NO"
+  },
+  {
+    "column_name": "created_by",
+    "data_type": "uuid",
+    "is_nullable": "YES"
+  },
+  {
+    "column_name": "updated_by",
+    "data_type": "uuid",
+    "is_nullable": "YES"
+  }
+]

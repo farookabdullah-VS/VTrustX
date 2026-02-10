@@ -12,7 +12,7 @@ export function WebCallModal({ survey, onClose }) {
 
     useEffect(() => {
         // Initialize Session
-        axios.post('http://localhost:3001/web/initiate', {
+        axios.post('/api/ai-service/web/initiate', {
             surveyId: survey.id,
             surveyDefinition: survey.definition
         })
@@ -83,7 +83,7 @@ export function WebCallModal({ survey, onClose }) {
         const activeSid = sid || sessionRef.current; // Fallback
 
         setStatus("Agent thinking...");
-        axios.post('http://localhost:3001/web/chat', {
+        axios.post('/api/ai-service/web/chat', {
             sessionId: activeSid,
             userText: text
         })

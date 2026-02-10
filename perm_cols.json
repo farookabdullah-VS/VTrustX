@@ -1,0 +1,22 @@
+[
+  {
+    "column_name": "permission_id",
+    "data_type": "uuid"
+  },
+  {
+    "column_name": "perm_code",
+    "data_type": "text"
+  },
+  {
+    "column_name": "perm_name",
+    "data_type": "text"
+  },
+  {
+    "column_name": "module",
+    "data_type": "text"
+  },
+  {
+    "column_name": "description",
+    "data_type": "text"
+  }
+]

@@ -53,108 +53,108 @@ export function AIIntegrations() {
 
             {/* Header Card - Unique Design */}
             <div style={{
-                background: 'linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%)',
+                background: 'var(--sidebar-bg)',
                 borderRadius: '24px',
                 padding: '40px',
                 marginBottom: '40px',
-                border: '1px solid #ddd6fe',
-                boxShadow: '0 10px 30px -10px rgba(139, 92, 246, 0.15)',
+                border: '1px solid var(--sidebar-border)',
+                boxShadow: '0 10px 30px -10px rgba(0,0,0,0.1)',
                 position: 'relative',
                 overflow: 'hidden'
             }}>
-                <div style={{ position: 'absolute', top: '-20px', right: '-20px', fontSize: '150px', opacity: 0.05, transform: 'rotate(15deg)', pointerEvents: 'none' }}>✨</div>
+                <div style={{ position: 'absolute', top: '-20px', right: '-20px', fontSize: '150px', opacity: 0.05, transform: 'rotate(15deg)', pointerEvents: 'none', color: 'var(--text-color)' }}>✨</div>
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '20px', position: 'relative', zIndex: 1 }}>
                     <div style={{
                         width: '80px', height: '80px',
-                        background: 'white',
+                        background: 'var(--input-bg)',
                         borderRadius: '20px',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         fontSize: '2.5em',
-                        boxShadow: '0 10px 20px -5px rgba(109, 40, 217, 0.15)'
+                        boxShadow: '0 10px 20px -5px rgba(0,0,0,0.1)'
                     }}>
                         🤖
                     </div>
                     <div>
-                        <h1 style={{ margin: '0 0 10px 0', fontSize: '2.2em', color: '#4c1d95', letterSpacing: '-0.02em' }}>AI Integrations</h1>
-                        <p style={{ margin: 0, fontSize: '1.1em', color: '#6d28d9', opacity: 0.9 }}>
+                        <h1 style={{ margin: '0 0 10px 0', fontSize: '2.2em', color: 'var(--primary-color)', letterSpacing: '-0.02em' }}>AI Integrations</h1>
+                        <p style={{ margin: 0, fontSize: '1.1em', color: 'var(--text-muted)', opacity: 0.9 }}>
                             Configure your AI service providers to power smart summaries and insights.
                         </p>
                     </div>
                 </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: '40px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'minmax(300px, 1fr) 1.2fr', gap: '40px' }}>
 
                 {/* Add Provider Column */}
                 <div>
                     <div style={{
-                        background: 'white',
+                        background: 'var(--input-bg)',
                         borderRadius: '20px',
                         padding: '30px',
                         boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)',
-                        border: '1px solid #e2e8f0',
+                        border: '1px solid var(--input-border)',
                         position: 'sticky',
                         top: '20px'
                     }}>
-                        <h3 style={{ margin: '0 0 20px 0', fontSize: '1.2em', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                            <span style={{ background: '#f1f5f9', width: '32px', height: '32px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.9em' }}>➕</span>
+                        <h3 style={{ margin: '0 0 20px 0', fontSize: '1.2em', display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--text-color)' }}>
+                            <span style={{ background: 'var(--sidebar-hover-bg)', width: '32px', height: '32px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.9em' }}>➕</span>
                             Add New Provider
                         </h3>
 
                         <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                             <div>
-                                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', fontSize: '0.95em', color: '#475569' }}>Friendly Name</label>
+                                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', fontSize: '0.95em', color: 'var(--label-color)' }}>Friendly Name</label>
                                 <input
                                     required
                                     value={form.name}
                                     onChange={e => setForm({ ...form, name: e.target.value })}
                                     placeholder="e.g. Corporate OpenAI"
-                                    style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid #cbd5e1', fontSize: '1em', outline: 'none', transition: 'border-color 0.2s', background: '#f8fafc' }}
-                                    onFocus={(e) => e.target.style.borderColor = '#8b5cf6'}
-                                    onBlur={(e) => e.target.style.borderColor = '#cbd5e1'}
+                                    style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid var(--input-border)', fontSize: '1em', outline: 'none', transition: 'border-color 0.2s', background: 'var(--input-bg)', color: 'var(--input-text)' }}
+                                    onFocus={(e) => e.target.style.borderColor = 'var(--primary-color)'}
+                                    onBlur={(e) => e.target.style.borderColor = 'var(--input-border)'}
                                 />
                             </div>
                             <div>
-                                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', fontSize: '0.95em', color: '#475569' }}>Provider Platform</label>
+                                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', fontSize: '0.95em', color: 'var(--label-color)' }}>Provider Platform</label>
                                 <div style={{ position: 'relative' }}>
                                     <select
                                         value={form.provider}
                                         onChange={e => setForm({ ...form, provider: e.target.value })}
-                                        style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid #cbd5e1', fontSize: '1em', appearance: 'none', background: '#f8fafc', cursor: 'pointer' }}
+                                        style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid var(--input-border)', fontSize: '1em', appearance: 'none', background: 'var(--input-bg)', color: 'var(--input-text)', cursor: 'pointer' }}
                                     >
                                         <option value="openai">OpenAI (GPT-4)</option>
                                         <option value="gemini">Google Gemini</option>
                                         <option value="anthropic">Anthropic Claude</option>
                                         <option value="mock">Mock Provider (Test)</option>
                                     </select>
-                                    <div style={{ position: 'absolute', right: '16px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: '#64748b' }}>▼</div>
+                                    <div style={{ position: 'absolute', right: '16px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', color: 'var(--text-muted)' }}>▼</div>
                                 </div>
                             </div>
                             <div>
-                                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', fontSize: '0.95em', color: '#475569' }}>API Key</label>
+                                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', fontSize: '0.95em', color: 'var(--label-color)' }}>API Key</label>
                                 <input
                                     required
                                     type="password"
                                     value={form.apiKey}
                                     onChange={e => setForm({ ...form, apiKey: e.target.value })}
                                     placeholder="sk-..."
-                                    style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid #cbd5e1', fontSize: '1em', fontFamily: 'monospace', letterSpacing: '1px' }}
+                                    style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1px solid var(--input-border)', fontSize: '1em', fontFamily: 'monospace', letterSpacing: '1px', background: 'var(--input-bg)', color: 'var(--input-text)' }}
                                 />
                             </div>
                             <button
                                 type="submit"
                                 style={{
                                     padding: '14px',
-                                    background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)',
-                                    color: 'white',
+                                    background: 'var(--primary-gradient)',
+                                    color: 'var(--button-text)',
                                     border: 'none',
                                     borderRadius: '12px',
                                     cursor: 'pointer',
                                     marginTop: '10px',
                                     fontWeight: '600',
                                     fontSize: '1em',
-                                    boxShadow: '0 4px 6px -1px rgba(15, 23, 42, 0.1)',
+                                    boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)',
                                     transition: 'transform 0.1s'
                                 }}
                             >
@@ -166,12 +166,12 @@ export function AIIntegrations() {
 
                 {/* List Column */}
                 <div>
-                    <h3 style={{ margin: '0 0 20px 0', fontSize: '1.2em', color: '#334155' }}>Configs ({providers.length})</h3>
-                    {loading && <div style={{ padding: '20px', textAlign: 'center', color: '#64748b' }}>Loading providers...</div>}
+                    <h3 style={{ margin: '0 0 20px 0', fontSize: '1.2em', color: 'var(--text-color)' }}>Configs ({providers.length})</h3>
+                    {loading && <div style={{ padding: '20px', textAlign: 'center', color: 'var(--text-muted)' }}>Loading providers...</div>}
                     {!loading && providers.length === 0 && (
-                        <div style={{ padding: '40px', textAlign: 'center', background: '#f8fafc', borderRadius: '20px', border: '2px dashed #cbd5e1' }}>
+                        <div style={{ padding: '40px', textAlign: 'center', background: 'var(--input-bg)', borderRadius: '20px', border: '2px dashed var(--input-border)' }}>
                             <div style={{ fontSize: '2em', marginBottom: '10px' }}>🔌</div>
-                            <div style={{ color: '#64748b' }}>No providers configured yet.</div>
+                            <div style={{ color: 'var(--text-muted)' }}>No providers configured yet.</div>
                         </div>
                     )}
 
@@ -179,20 +179,20 @@ export function AIIntegrations() {
                         {providers.map(p => (
                             <div key={p.id} style={{
                                 padding: '20px',
-                                background: 'white',
-                                border: p.isActive ? '2px solid #8b5cf6' : '1px solid #e2e8f0',
+                                background: 'var(--input-bg)',
+                                border: p.isActive ? '2px solid var(--primary-color)' : '1px solid var(--input-border)',
                                 borderRadius: '16px',
                                 display: 'flex',
                                 justifyContent: 'space-between',
                                 alignItems: 'center',
                                 transition: 'all 0.2s',
-                                boxShadow: p.isActive ? '0 10px 25px -5px rgba(139, 92, 246, 0.15)' : 'none'
+                                boxShadow: p.isActive ? '0 10px 25px -5px rgba(0,0,0,0.1)' : 'none'
                             }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                                     <div style={{
                                         width: '48px', height: '48px',
                                         borderRadius: '12px',
-                                        background: p.provider === 'openai' ? '#10a37f' : p.provider === 'gemini' ? '#4285f4' : '#64748b',
+                                        background: p.provider === 'openai' ? '#10a37f' : p.provider === 'gemini' ? '#4285f4' : 'var(--text-muted)',
                                         color: 'white',
                                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                                         fontSize: '1.2em'
@@ -200,11 +200,11 @@ export function AIIntegrations() {
                                         {p.provider === 'openai' ? '🤖' : p.provider === 'gemini' ? '💎' : '🔌'}
                                     </div>
                                     <div>
-                                        <div style={{ fontWeight: '600', fontSize: '1.1em', color: '#1e293b' }}>{p.name}</div>
-                                        <div style={{ fontSize: '0.9em', color: '#64748b', display: 'flex', gap: '10px', alignItems: 'center' }}>
+                                        <div style={{ fontWeight: '600', fontSize: '1.1em', color: 'var(--text-color)' }}>{p.name}</div>
+                                        <div style={{ fontSize: '0.9em', color: 'var(--text-muted)', display: 'flex', gap: '10px', alignItems: 'center' }}>
                                             <span style={{ textTransform: 'capitalize' }}>{p.provider}</span>
-                                            <span style={{ width: '4px', height: '4px', background: '#cbd5e1', borderRadius: '50%' }}></span>
-                                            <span style={{ fontFamily: 'monospace', background: '#f1f5f9', padding: '2px 6px', borderRadius: '4px' }}>
+                                            <span style={{ width: '4px', height: '4px', background: 'var(--input-border)', borderRadius: '50%' }}></span>
+                                            <span style={{ fontFamily: 'monospace', background: 'rgba(0,0,0,0.05)', padding: '2px 6px', borderRadius: '4px' }}>
                                                 {p.apiKey ? p.apiKey.substring(0, 4) + '...****' : '******'}
                                             </span>
                                         </div>
@@ -217,13 +217,13 @@ export function AIIntegrations() {
                                         onClick={() => handleActivate(p.id)}
                                         style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', gap: '10px' }}
                                     >
-                                        <span style={{ fontSize: '0.85em', fontWeight: '600', color: p.isActive ? '#7c3aed' : '#94a3b8' }}>
+                                        <span style={{ fontSize: '0.85em', fontWeight: '600', color: p.isActive ? 'var(--primary-color)' : 'var(--text-muted)' }}>
                                             {p.isActive ? 'Active' : 'Inactive'}
                                         </span>
                                         <div
                                             style={{
                                                 width: '44px', height: '24px',
-                                                background: p.isActive ? '#8b5cf6' : '#cbd5e1',
+                                                background: p.isActive ? 'var(--primary-color)' : 'var(--input-border)',
                                                 borderRadius: '24px',
                                                 position: 'relative',
                                                 transition: 'background 0.3s'

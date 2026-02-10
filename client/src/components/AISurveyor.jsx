@@ -123,7 +123,7 @@ export function AISurveyor() {
             // Start
             setTimeout(() => {
                 setAgentStatus('connected');
-                speak(`Hello! I am an AI assistant calling from VTrustX. We are conducting a survey about ${formDef.title}. Do you have a moment?`);
+                speak(`Hello! I am an AI assistant calling from RayiX. We are conducting a survey about ${formDef.title}. Do you have a moment?`);
             }, 1500);
 
         } catch (e) {
@@ -188,24 +188,14 @@ export function AISurveyor() {
                 Respond in JSON: { "speak": "...", "action": "..." }
             `;
 
-            // Call AI
-            const res = await axios.post('/api/ai/generate', { prompt, settings: aiConfigRef.current });
-            // The AI endpoint returns { definition: ... } usually, assuming it generates JSON for forms.
-            // But our endpoint logic (checked in step 2664) calls Gemini. 
-            // If it returns Markdown JSON, we need to parse.
+            // Call AI Agent Endpoint
+            const res = await axios.post('/api/ai/agent-interact', {
+                prompt,
+                systemContext: "You are an expert phone surveyor using Gemini AI."
+            });
 
-            // Wait, previous usage of /api/ai/generate was for Form Generation (returns schema).
-            // But /api/ai/analyze-survey returns analysis.
-            // Maybe I should add a generic /api/ai/chat endpoint?
-            // Or just mock the logic for speed/reliability if the user didn't ask for "LLM Conversation" explicitly?
-            // User said "use agentic AI".
-            // So I should use the AI.
-
-            // I'll parse the result from /generate assuming it can handle generic prompts.
-            // Based on previous interaction, /generate expects "prompt" and returns "definition". 
-            // It parses the Gemini output. If Gemini outputs the requested JSON, "definition" will be that JSON.
-
-            const aiResponse = res.data.definition; // Hope it parses
+            // The endpoint returns the parsed JSON directly
+            const aiResponse = res.data;
 
             if (aiResponse && aiResponse.speak) {
                 speak(aiResponse.speak);
@@ -235,21 +225,21 @@ export function AISurveyor() {
 
     return (
         <div style={{ padding: '30px', maxWidth: '1000px', margin: '0 auto', fontFamily: "'Outfit', sans-serif" }}>
-            <h1 style={{ color: '#064e3b', marginBottom: '10px' }}>AI Surveyor Agent</h1>
-            <p style={{ color: '#64748b', marginBottom: '30px' }}>Deploy an autonomous AI agent to conduct surveys via voice.</p>
+            <h1 style={{ color: 'var(--primary-color)', marginBottom: '10px' }}>Rayi - Conversational AI Agent</h1>
+            <p style={{ color: 'var(--text-muted)', marginBottom: '30px' }}>Deploy autonomous voice agents powered by Gemini AI.</p>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'minmax(300px, 1fr) 1fr', gap: '30px' }}>
 
                 {/* CONFIGURATION PANEL */}
-                <div style={{ background: 'white', padding: '24px', borderRadius: '16px', boxShadow: '0 4px 6px rgba(0,0,0,0.05)', height: 'fit-content' }}>
-                    <h3 style={{ marginTop: 0 }}>Campaign Setup</h3>
+                <div style={{ background: 'var(--input-bg)', padding: '24px', borderRadius: '16px', boxShadow: '0 4px 6px rgba(0,0,0,0.05)', height: 'fit-content', border: '1px solid var(--input-border)' }}>
+                    <h3 style={{ marginTop: 0, color: 'var(--text-color)' }}>Campaign Setup</h3>
 
                     <div style={{ marginBottom: '20px' }}>
-                        <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>Select Survey</label>
+                        <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: 'var(--label-color)' }}>Select Survey</label>
                         <select
                             value={selectedFormId}
                             onChange={e => setSelectedFormId(e.target.value)}
-                            style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #e2e8f0' }}
+                            style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--input-border)', background: 'var(--input-bg)', color: 'var(--input-text)' }}
                         >
                             <option value="">-- Choose a Survey --</option>
                             {forms.map(f => (
@@ -259,11 +249,11 @@ export function AISurveyor() {
                     </div>
 
                     <div style={{ marginBottom: '20px' }}>
-                        <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>Target Contact (Simulation)</label>
+                        <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: 'var(--label-color)' }}>Target Contact (Simulation)</label>
                         <div style={{ display: 'flex', gap: '10px' }}>
                             <select
                                 onChange={e => setPhoneNumber(e.target.value)}
-                                style={{ flex: 1, padding: '10px', borderRadius: '8px', border: '1px solid #e2e8f0' }}
+                                style={{ flex: 1, padding: '10px', borderRadius: '8px', border: '1px solid var(--input-border)', background: 'var(--input-bg)', color: 'var(--input-text)' }}
                             >
                                 <option value="">Custom Number...</option>
                                 {contacts.map(c => <option key={c.id} value={c.phone}>{c.name} ({c.phone})</option>)}
@@ -274,14 +264,14 @@ export function AISurveyor() {
                                 placeholder="+1 555-0123"
                                 value={phoneNumber}
                                 onChange={e => setPhoneNumber(e.target.value)}
-                                style={{ flex: 1, padding: '10px', borderRadius: '8px', border: '1px solid #e2e8f0' }}
+                                style={{ flex: 1, padding: '10px', borderRadius: '8px', border: '1px solid var(--input-border)', background: 'var(--input-bg)', color: 'var(--input-text)' }}
                             />
                         </div>
                     </div>
 
                     <div style={{ marginBottom: '20px' }}>
-                        <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>Agent Voice</label>
-                        <select style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                        <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: 'var(--label-color)' }}>Agent Voice</label>
+                        <select style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--input-border)', background: 'var(--input-bg)', color: 'var(--input-text)' }}>
                             <option>Sarah (Professional)</option>
                             <option>John (Casual)</option>
                             <option>Emma (Empathetic)</option>
@@ -293,7 +283,7 @@ export function AISurveyor() {
                             onClick={startCall}
                             disabled={!selectedFormId}
                             style={{
-                                width: '100%', padding: '14px', background: '#064e3b', color: 'white',
+                                width: '100%', padding: '14px', background: 'var(--primary-color)', color: 'var(--button-text)',
                                 border: 'none', borderRadius: '8px', fontWeight: '600', fontSize: '1.1em',
                                 cursor: selectedFormId ? 'pointer' : 'not-allowed', opacity: selectedFormId ? 1 : 0.7,
                                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px'
@@ -315,16 +305,16 @@ export function AISurveyor() {
                     )}
 
                     {isCallActive && (
-                        <div style={{ marginTop: '20px', padding: '15px', background: '#f0fdf4', borderRadius: '8px', border: '1px solid #86efac', display: 'flex', alignItems: 'center', gap: '15px' }}>
+                        <div style={{ marginTop: '20px', padding: '15px', background: 'var(--sidebar-hover-bg)', borderRadius: '8px', border: '1px solid var(--primary-color)', display: 'flex', alignItems: 'center', gap: '15px' }}>
                             <div style={{ position: 'relative' }}>
-                                <div style={{ width: '12px', height: '12px', background: '#22c55e', borderRadius: '50%' }}></div>
+                                <div style={{ width: '12px', height: '12px', background: 'var(--primary-color)', borderRadius: '50%' }}></div>
                                 <div style={{
                                     position: 'absolute', top: '-4px', left: '-4px', right: '-4px', bottom: '-4px',
-                                    border: '2px solid #22c55e', borderRadius: '50%', opacity: 0.5,
+                                    border: '2px solid var(--primary-color)', borderRadius: '50%', opacity: 0.5,
                                     animation: 'ping 1s cubic-bezier(0, 0, 0.2, 1) infinite'
                                 }}></div>
                             </div>
-                            <span style={{ fontWeight: '600', color: '#166534' }}>
+                            <span style={{ fontWeight: '600', color: 'var(--primary-color)' }}>
                                 {agentStatus === 'speaking' ? 'Agent Speaking...' :
                                     agentStatus === 'listening' ? 'Listening...' :
                                         agentStatus === 'processing' ? 'AI Thinking...' : 'Connected'}
@@ -340,14 +330,14 @@ export function AISurveyor() {
                 </div>
 
                 {/* VISUALIZATION / TRANSCRIPT */}
-                <div style={{ background: 'white', border: '1px solid #e2e8f0', borderRadius: '16px', overflow: 'hidden', display: 'flex', flexDirection: 'column', height: '600px' }}>
-                    <div style={{ padding: '16px', background: '#f8fafc', borderBottom: '1px solid #e2e8f0', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div style={{ background: 'var(--input-bg)', border: '1px solid var(--input-border)', borderRadius: '16px', overflow: 'hidden', display: 'flex', flexDirection: 'column', height: '600px' }}>
+                    <div style={{ padding: '16px', background: 'var(--sidebar-bg)', borderBottom: '1px solid var(--input-border)', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--text-color)' }}>
                         <AlertCircle size={16} /> Live Transcript
                     </div>
 
                     <div style={{ flex: 1, padding: '20px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '15px' }}>
                         {transcript.length === 0 && !isCallActive && (
-                            <div style={{ textAlign: 'center', color: '#94a3b8', marginTop: '100px' }}>
+                            <div style={{ textAlign: 'center', color: 'var(--text-muted)', marginTop: '100px' }}>
                                 <Bot size={48} style={{ marginBottom: '10px', opacity: 0.5 }} />
                                 <p>Ready to start.</p>
                             </div>
@@ -362,33 +352,33 @@ export function AISurveyor() {
                             }}>
                                 <div style={{
                                     width: '32px', height: '32px', borderRadius: '50%',
-                                    background: t.sender === 'agent' ? '#064e3b' : '#3b82f6', color: 'white',
+                                    background: t.sender === 'agent' ? 'var(--primary-color)' : 'var(--secondary-color)', color: 'var(--button-text)',
                                     display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
                                 }}>
                                     {t.sender === 'agent' ? <Bot size={18} /> : <User size={18} />}
                                 </div>
                                 <div style={{
-                                    background: t.sender === 'agent' ? '#f1f5f9' : '#e0f2fe',
+                                    background: t.sender === 'agent' ? 'var(--sidebar-hover-bg)' : 'var(--input-border)',
                                     padding: '12px 16px', borderRadius: '12px',
-                                    color: '#1e293b', lineHeight: '1.5'
+                                    color: 'var(--text-color)', lineHeight: '1.5'
                                 }}>
                                     {t.text}
                                 </div>
                             </div>
                         ))}
                         {agentStatus === 'processing' && (
-                            <div style={{ alignSelf: 'flex-start', marginLeft: '42px', color: '#94a3b8', fontStyle: 'italic' }}>
+                            <div style={{ alignSelf: 'flex-start', marginLeft: '42px', color: 'var(--text-muted)', fontStyle: 'italic' }}>
                                 Generating response...
                             </div>
                         )}
                     </div>
 
                     {/* Manual Input Fallback */}
-                    <div style={{ padding: '16px', borderTop: '1px solid #e2e8f0', display: 'flex', gap: '10px' }}>
+                    <div style={{ padding: '16px', borderTop: '1px solid var(--input-border)', display: 'flex', gap: '10px' }}>
                         <input
                             type="text"
                             placeholder="Type to simulate user voice..."
-                            style={{ flex: 1, padding: '10px', borderRadius: '8px', border: '1px solid #e2e8f0' }}
+                            style={{ flex: 1, padding: '10px', borderRadius: '8px', border: '1px solid var(--input-border)', background: 'var(--input-bg)', color: 'var(--input-text)' }}
                             onKeyDown={(e) => {
                                 if (e.key === 'Enter' && e.target.value) {
                                     addTranscript('user', e.target.value);
@@ -397,8 +387,8 @@ export function AISurveyor() {
                                 }
                             }}
                         />
-                        <button style={{ padding: '10px', borderRadius: '8px', border: 'none', background: '#f1f5f9', cursor: 'pointer' }}>
-                            <Mic size={20} color="#64748b" />
+                        <button style={{ padding: '10px', borderRadius: '8px', border: 'none', background: 'var(--sidebar-hover-bg)', cursor: 'pointer' }}>
+                            <Mic size={20} color="var(--text-muted)" />
                         </button>
                     </div>
                 </div>

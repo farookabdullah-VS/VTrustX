@@ -3,24 +3,28 @@ const PostgresRepository = require('../../infrastructure/database/PostgresReposi
 const userRepo = new PostgresRepository('users');
 const tenantRepo = new PostgresRepository('tenants');
 
-// Mock Authentication (extracts ID from token)
-// In production: Use jsonwebtoken.verify()
+const jwt = require('jsonwebtoken');
+
+// Real JWT Authentication
 const authenticate = async (req, res, next) => {
     try {
         const authHeader = req.headers.authorization;
         if (!authHeader) return res.status(401).json({ error: 'No token provided' });
 
         const token = authHeader.split(' ')[1];
-        if (!token || !token.startsWith('mock-jwt-token-')) {
-            return res.status(401).json({ error: 'Invalid token format' });
+        if (!token) return res.status(401).json({ error: 'Invalid token format' });
+
+        const secret = process.env.JWT_SECRET || 'vtrustx_secret_key_2024';
+
+        // Verify Token
+        let decoded;
+        try {
+            decoded = jwt.verify(token, secret);
+        } catch (err) {
+            return res.status(401).json({ error: 'Invalid or expired token' });
         }
 
-        const userId = token.replace('mock-jwt-token-', '');
-
-        // Validate ID is an integer
-        if (!userId || isNaN(parseInt(userId))) {
-            return res.status(401).json({ error: 'Invalid User ID in token' });
-        }
+        const userId = decoded.id;
 
         const user = await userRepo.findById(userId);
 

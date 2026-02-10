@@ -83,19 +83,19 @@ export function UserManagement() {
         <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '30px', fontFamily: "'Outfit', sans-serif", direction: isRtl ? 'rtl' : 'ltr' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
                 <div>
-                    <h1 style={{ margin: 0 }}>{t('users.title')}</h1>
-                    <p style={{ color: '#64748b' }}>{t('users.subtitle')}</p>
+                    <h1 style={{ margin: 0, color: 'var(--text-color)' }}>{t('users.title')}</h1>
+                    <p style={{ color: 'var(--text-muted)' }}>{t('users.subtitle')}</p>
                     {subscription && (
                         <div style={{ marginTop: '10px', fontSize: '0.9em' }}>
-                            <span style={{ fontWeight: 'bold', color: '#333' }}>{t('users.plan')}: {subscription.plan.toUpperCase()}</span>
-                            <span style={{ margin: '0 10px', color: '#ccc' }}>|</span>
-                            <span>{t('users.users_limit')}: {subscription.users.current} / {subscription.users.limit}</span>
+                            <span style={{ fontWeight: 'bold', color: 'var(--text-color)' }}>{t('users.plan')}: {subscription.plan.toUpperCase()}</span>
+                            <span style={{ margin: '0 10px', color: 'var(--text-muted)' }}>|</span>
+                            <span style={{ color: 'var(--text-color)' }}>{t('users.users_limit')}: {subscription.users.current} / {subscription.users.limit}</span>
                         </div>
                     )}
                 </div>
                 <button
                     onClick={() => setIsModalOpen(true)}
-                    style={{ background: '#064e3b', color: '#D9F8E5', padding: '12px 24px', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}
+                    style={{ background: 'var(--button-bg)', color: 'var(--button-text)', padding: '12px 24px', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}
                 >
                     {t('users.add_btn')}
                 </button>
@@ -105,47 +105,48 @@ export function UserManagement() {
             {error && <div style={{ color: 'red' }}>{error}</div>}
 
             {!loading && !error && (
-                <table style={{ width: '100%', borderCollapse: 'collapse', background: 'white', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 4px 6px rgba(0,0,0,0.05)' }}>
-                    <thead style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', background: 'var(--input-bg)', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 4px 6px rgba(0,0,0,0.05)' }}>
+                    <thead style={{ background: 'var(--sidebar-bg)', borderBottom: '1px solid var(--input-border)' }}>
                         <tr>
-                            <th style={{ padding: '15px', textAlign: isRtl ? 'right' : 'left' }}>{t('users.table.username')}</th>
-                            <th style={{ padding: '15px', textAlign: isRtl ? 'right' : 'left' }}>Name (En)</th>
-                            <th style={{ padding: '15px', textAlign: isRtl ? 'right' : 'left' }}>Name (Ar)</th>
-                            <th style={{ padding: '15px', textAlign: isRtl ? 'right' : 'left' }}>Email</th>
-                            <th style={{ padding: '15px', textAlign: isRtl ? 'right' : 'left' }}>Phone</th>
-                            <th style={{ padding: '15px', textAlign: isRtl ? 'right' : 'left' }}>{t('users.assigned_role')}</th>
-                            <th style={{ padding: '15px', textAlign: isRtl ? 'right' : 'left' }}>{t('users.table.role')} ({t('users.system_role')})</th>
-                            <th style={{ padding: '15px', textAlign: isRtl ? 'right' : 'left' }}>{t('users.table.created')}</th>
-                            <th style={{ padding: '15px', textAlign: isRtl ? 'left' : 'right' }}>{t('users.table.actions')}</th>
+                            <th style={{ padding: '15px', textAlign: isRtl ? 'right' : 'left', color: 'var(--text-muted)' }}>{t('users.table.username')}</th>
+                            <th style={{ padding: '15px', textAlign: isRtl ? 'right' : 'left', color: 'var(--text-muted)' }}>Name (En)</th>
+                            <th style={{ padding: '15px', textAlign: isRtl ? 'right' : 'left', color: 'var(--text-muted)' }}>Name (Ar)</th>
+                            <th style={{ padding: '15px', textAlign: isRtl ? 'right' : 'left', color: 'var(--text-muted)' }}>Email</th>
+                            <th style={{ padding: '15px', textAlign: isRtl ? 'right' : 'left', color: 'var(--text-muted)' }}>Phone</th>
+                            <th style={{ padding: '15px', textAlign: isRtl ? 'right' : 'left', color: 'var(--text-muted)' }}>{t('users.assigned_role')}</th>
+                            <th style={{ padding: '15px', textAlign: isRtl ? 'right' : 'left', color: 'var(--text-muted)' }}>{t('users.table.role')} ({t('users.system_role')})</th>
+                            <th style={{ padding: '15px', textAlign: isRtl ? 'right' : 'left', color: 'var(--text-muted)' }}>{t('users.table.created')}</th>
+                            <th style={{ padding: '15px', textAlign: isRtl ? 'left' : 'right', color: 'var(--text-muted)' }}>{t('users.table.actions')}</th>
                         </tr>
                     </thead>
                     <tbody>
                         {users.map(u => (
-                            <tr key={u.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                                <td style={{ padding: '15px', fontWeight: '500' }}>{u.username}</td>
-                                <td style={{ padding: '15px', color: '#64748b', fontSize: '0.9em' }}>{u.name || '-'}</td>
-                                <td style={{ padding: '15px', color: '#64748b', fontSize: '0.9em' }}>{u.name_ar || '-'}</td>
-                                <td style={{ padding: '15px', color: '#64748b', fontSize: '0.9em' }}>{u.email || '-'}</td>
-                                <td style={{ padding: '15px', color: '#64748b', fontSize: '0.9em' }}>{u.phone || '-'}</td>
+                            <tr key={u.id} style={{ borderBottom: '1px solid var(--input-border)' }}>
+                                <td style={{ padding: '15px', fontWeight: '500', color: 'var(--text-color)' }}>{u.username}</td>
+                                <td style={{ padding: '15px', color: 'var(--text-muted)', fontSize: '0.9em' }}>{u.name || '-'}</td>
+                                <td style={{ padding: '15px', color: 'var(--text-muted)', fontSize: '0.9em' }}>{u.name_ar || '-'}</td>
+                                <td style={{ padding: '15px', color: 'var(--text-muted)', fontSize: '0.9em' }}>{u.email || '-'}</td>
+                                <td style={{ padding: '15px', color: 'var(--text-muted)', fontSize: '0.9em' }}>{u.phone || '-'}</td>
                                 <td style={{ padding: '15px' }}>
                                     {u.role_name ? (
-                                        <span style={{ padding: '4px 8px', borderRadius: '6px', fontSize: '0.9em', background: '#dcfce7', color: '#166534', fontWeight: 'bold' }}>
+                                        <span style={{ padding: '4px 8px', borderRadius: '6px', fontSize: '0.9em', background: 'var(--sidebar-hover-bg)', color: 'var(--primary-color)', fontWeight: 'bold' }}>
                                             {u.role_name}
                                         </span>
                                     ) : (
-                                        <span style={{ color: '#94a3b8', fontStyle: 'italic' }}>None</span>
+                                        <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>None</span>
                                     )}
                                 </td>
                                 <td style={{ padding: '15px' }}>
                                     <span style={{
                                         padding: '4px 8px', borderRadius: '6px', fontSize: '0.9em',
-                                        background: u.role === 'admin' ? '#dbeafe' : '#f1f5f9',
-                                        color: u.role === 'admin' ? '#1e40af' : '#475569'
+                                        background: u.role === 'admin' ? 'var(--sidebar-bg)' : 'var(--input-bg)',
+                                        color: u.role === 'admin' ? 'var(--primary-color)' : 'var(--text-muted)',
+                                        border: '1px solid var(--input-border)'
                                     }}>
                                         {u.role.toUpperCase()}
                                     </span>
                                 </td>
-                                <td style={{ padding: '15px', color: '#64748b' }}>{new Date(u.created_at).toLocaleDateString()}</td>
+                                <td style={{ padding: '15px', color: 'var(--text-muted)' }}>{new Date(u.created_at).toLocaleDateString()}</td>
                                 <td style={{ padding: '15px', textAlign: isRtl ? 'left' : 'right' }}>
                                     <button onClick={() => handleDelete(u.id)} style={{ padding: '8px', color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer' }} title="Delete">🗑️</button>
                                 </td>
@@ -160,43 +161,43 @@ export function UserManagement() {
                     position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
                     background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000
                 }}>
-                    <div style={{ background: '#D9F8E5', padding: '30px', borderRadius: '16px', width: '400px', maxHeight: '90vh', overflowY: 'auto' }}>
-                        <h2 style={{ marginTop: 0 }}>{t('users.create_modal_title')}</h2>
+                    <div style={{ background: 'var(--deep-bg)', padding: '30px', borderRadius: '16px', width: '400px', maxHeight: '90vh', overflowY: 'auto', border: '1px solid var(--sidebar-border)' }}>
+                        <h2 style={{ marginTop: 0, color: 'var(--text-color)' }}>{t('users.create_modal_title')}</h2>
 
                         <div style={{ marginBottom: '15px' }}>
-                            <label style={{ display: 'block', marginBottom: '5px' }}>{t('login.username')}</label>
-                            <input style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ddd' }} value={username} onChange={e => setUsername(e.target.value)} />
+                            <label style={{ display: 'block', marginBottom: '5px', color: 'var(--label-color)' }}>{t('login.username')}</label>
+                            <input style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--input-border)', background: 'var(--input-bg)', color: 'var(--input-text)' }} value={username} onChange={e => setUsername(e.target.value)} />
                         </div>
 
                         <div style={{ marginBottom: '15px' }}>
-                            <label style={{ display: 'block', marginBottom: '5px' }}>Name (English)</label>
-                            <input style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ddd' }} value={name} onChange={e => setName(e.target.value)} />
+                            <label style={{ display: 'block', marginBottom: '5px', color: 'var(--label-color)' }}>Name (English)</label>
+                            <input style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--input-border)', background: 'var(--input-bg)', color: 'var(--input-text)' }} value={name} onChange={e => setName(e.target.value)} />
                         </div>
 
                         <div style={{ marginBottom: '15px' }}>
-                            <label style={{ display: 'block', marginBottom: '5px' }}>Name (Arabic)</label>
-                            <input style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ddd', direction: 'rtl' }} value={nameAr} onChange={e => setNameAr(e.target.value)} />
+                            <label style={{ display: 'block', marginBottom: '5px', color: 'var(--label-color)' }}>Name (Arabic)</label>
+                            <input style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--input-border)', background: 'var(--input-bg)', color: 'var(--input-text)', direction: 'rtl' }} value={nameAr} onChange={e => setNameAr(e.target.value)} />
                         </div>
 
                         <div style={{ marginBottom: '15px' }}>
-                            <label style={{ display: 'block', marginBottom: '5px' }}>Email</label>
-                            <input type="email" style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ddd' }} value={email} onChange={e => setEmail(e.target.value)} />
+                            <label style={{ display: 'block', marginBottom: '5px', color: 'var(--label-color)' }}>Email</label>
+                            <input type="email" style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--input-border)', background: 'var(--input-bg)', color: 'var(--input-text)' }} value={email} onChange={e => setEmail(e.target.value)} />
                         </div>
 
                         <div style={{ marginBottom: '15px' }}>
-                            <label style={{ display: 'block', marginBottom: '5px' }}>Phone</label>
-                            <input type="tel" style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ddd' }} value={phone} onChange={e => setPhone(e.target.value)} placeholder="+1234567890" />
+                            <label style={{ display: 'block', marginBottom: '5px', color: 'var(--label-color)' }}>Phone</label>
+                            <input type="tel" style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--input-border)', background: 'var(--input-bg)', color: 'var(--input-text)' }} value={phone} onChange={e => setPhone(e.target.value)} placeholder="+1234567890" />
                         </div>
 
                         <div style={{ marginBottom: '15px' }}>
-                            <label style={{ display: 'block', marginBottom: '5px' }}>{t('login.password')}</label>
-                            <input type="password" style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ddd' }} value={password} onChange={e => setPassword(e.target.value)} />
+                            <label style={{ display: 'block', marginBottom: '5px', color: 'var(--label-color)' }}>{t('login.password')}</label>
+                            <input type="password" style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--input-border)', background: 'var(--input-bg)', color: 'var(--input-text)' }} value={password} onChange={e => setPassword(e.target.value)} />
                         </div>
 
                         <div style={{ marginBottom: '15px' }}>
-                            <label style={{ display: 'block', marginBottom: '5px' }}>{t('users.permission_role')}</label>
+                            <label style={{ display: 'block', marginBottom: '5px', color: 'var(--label-color)' }}>{t('users.permission_role')}</label>
                             <select
-                                style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ddd' }}
+                                style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--input-border)', background: 'var(--input-bg)', color: 'var(--input-text)' }}
                                 value={roleId}
                                 onChange={e => setRoleId(e.target.value)}
                             >
@@ -205,20 +206,20 @@ export function UserManagement() {
                                     <option key={r.id} value={r.id}>{r.name}</option>
                                 ))}
                             </select>
-                            <p style={{ fontSize: '0.8em', color: '#64748b', marginTop: '5px' }}>{t('users.permission_hint')}</p>
+                            <p style={{ fontSize: '0.8em', color: 'var(--text-muted)', marginTop: '5px' }}>{t('users.permission_hint')}</p>
                         </div>
 
                         <div style={{ marginBottom: '20px' }}>
-                            <label style={{ display: 'block', marginBottom: '5px' }}>{t('users.global_role')}</label>
-                            <select style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ddd' }} value={role} onChange={e => setRole(e.target.value)}>
+                            <label style={{ display: 'block', marginBottom: '5px', color: 'var(--label-color)' }}>{t('users.global_role')}</label>
+                            <select style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--input-border)', background: 'var(--input-bg)', color: 'var(--input-text)' }} value={role} onChange={e => setRole(e.target.value)}>
                                 <option value="user">{t('users.role_user')}</option>
                                 <option value="admin">{t('users.role_admin')}</option>
                             </select>
                         </div>
 
                         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-                            <button onClick={() => setIsModalOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#064e3b', fontWeight: 'bold' }}>{t('users.cancel')}</button>
-                            <button onClick={handleCreate} style={{ background: '#064e3b', color: '#D9F8E5', padding: '10px 20px', borderRadius: '8px', border: 'none', cursor: 'pointer' }}>{t('users.create_btn')}</button>
+                            <button onClick={() => setIsModalOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--primary-color)', fontWeight: 'bold' }}>{t('users.cancel')}</button>
+                            <button onClick={handleCreate} style={{ background: 'var(--button-bg)', color: 'var(--button-text)', padding: '10px 20px', borderRadius: '8px', border: 'none', cursor: 'pointer' }}>{t('users.create_btn')}</button>
                         </div>
                     </div>
                 </div>

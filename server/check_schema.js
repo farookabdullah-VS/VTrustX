@@ -1,26 +1,20 @@
-const { Pool } = require('pg');
-require('dotenv').config();
-
-const pool = new Pool({
-    user: process.env.DB_USER || 'postgres',
-    password: process.env.DB_PASSWORD || 'postgres',
-    host: process.env.DB_HOST || 'localhost',
-    port: process.env.DB_PORT || 5432,
-    database: process.env.DB_NAME || 'vtrustx_db',
-});
+const { query } = require('./src/infrastructure/database/db');
 
 async function checkSchema() {
     try {
-        const res = await pool.query(`
-            SELECT column_name, data_type 
-            FROM information_schema.columns 
-            WHERE table_name = 'ai_providers';
-        `);
-        console.log("Columns in ai_providers:", res.rows);
+        console.log("--- Tables ---");
+        const tables = await query("SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'");
+        console.log(tables.rows.map(r => r.table_name));
+
+        for (const table of tables.rows) {
+            console.log(`\n--- Columns in ${table.table_name} ---`);
+            const columns = await query(`SELECT column_name, data_type FROM information_schema.columns WHERE table_name = '${table.table_name}'`);
+            console.log(columns.rows);
+        }
+        process.exit(0);
     } catch (err) {
         console.error(err);
-    } finally {
-        pool.end();
+        process.exit(1);
     }
 }
 

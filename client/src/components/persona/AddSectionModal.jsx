@@ -1,27 +1,40 @@
 import React, { useState } from 'react';
-import { FileText, PieChart, Image, X } from 'lucide-react';
+import { FileText, PieChart, Image, X, Star, CheckCircle, layout, Grid } from 'lucide-react';
 
 export function AddSectionModal({ onClose, onAdd }) {
-    const [activeTab, setActiveTab] = useState('text');
+    const [activeTab, setActiveTab] = useState('must-haves');
 
     const sections = {
-        text: [
+        'must-haves': [
+            { type: 'text', title: 'Bio', desc: 'Narrative background story.', defaultContent: '' },
             { type: 'text', title: 'Goals', desc: 'What the persona wants to achieve.', defaultContent: '• ' },
             { type: 'text', title: 'Frustrations', desc: 'Pain points and irritations.', defaultContent: '• ' },
-            { type: 'text', title: 'Motivations', desc: 'Drivers for adoption/usage.', defaultContent: '• ' },
             { type: 'text', title: 'Needs', desc: 'Concrete requirements.', defaultContent: '• ' },
-            { type: 'text', title: 'Bio', desc: 'Narrative background story.', defaultContent: '' },
+        ],
+        'nice-to-haves': [
+            { type: 'text', title: 'Content Strategy', desc: 'Key topics and tone.', defaultContent: '### Topics\n• \n\n### Tone\n• \n\n### Channels\n• ' },
+            { type: 'text', title: 'Why this Persona?', desc: 'Strategic importance.', defaultContent: '' },
+            { type: 'text', title: 'Search Queries', desc: 'What they search for.', defaultContent: '1. \n2. \n3. ' },
+            { type: 'skills', title: 'Skills', desc: 'Proficiency sliders.', defaultData: [{ label: 'Tech Savvy', value: 50 }, { label: 'Loyalty', value: 70 }] },
+        ],
+        'optional': [
+            { type: 'media', title: 'Storyboard', desc: 'Visual narrative of user journey.', defaultContent: '' }, // Placeholder for media
             { type: 'text', title: 'Generic Text', desc: 'Custom text block.', defaultContent: '' },
         ],
-        graphs: [
-            { type: 'skills', title: 'Skills', desc: 'Proficiency sliders.', defaultData: [{ label: 'Skill 1', value: 50 }, { label: 'Skill 2', value: 50 }] },
+        'elements': [
+            { type: 'skills', title: 'Personality Type', desc: 'Personality traits (Big 5/MBTI).', defaultData: [{ label: 'Extroversion', value: 60 }, { label: 'Openness', value: 75 }, { label: 'Agreeableness', value: 50 }] },
             { type: 'chart', title: 'Charts', desc: 'Visual data distribution.', defaultData: [] },
-        ],
-        media: [
             { type: 'technology', title: 'Technology', desc: 'Devices used.' },
             { type: 'media', title: 'Images', desc: 'Moodboard or screenshots.' },
         ]
     };
+
+    const tabs = [
+        { id: 'must-haves', label: 'Must-Haves' },
+        { id: 'nice-to-haves', label: 'Nice-to-Haves' },
+        { id: 'optional', label: 'Optional' },
+        { id: 'elements', label: 'Elements' },
+    ];
 
     return (
         <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
@@ -34,21 +47,21 @@ export function AddSectionModal({ onClose, onAdd }) {
                 <div style={{ flex: 1, display: 'flex' }}>
                     {/* Left Sidebar Tabs */}
                     <div style={{ width: '200px', background: '#f8fafc', borderRight: '1px solid #e2e8f0', padding: '20px 0' }}>
-                        <div
-                            onClick={() => setActiveTab('text')}
-                            style={{ padding: '12px 20px', cursor: 'pointer', background: activeTab === 'text' ? 'white' : 'transparent', borderLeft: activeTab === 'text' ? '4px solid #0e7490' : '4px solid transparent', fontWeight: activeTab === 'text' ? 'bold' : 'normal', color: activeTab === 'text' ? '#0e7490' : '#64748b' }}>
-                            Text / Quotes
-                        </div>
-                        <div
-                            onClick={() => setActiveTab('graphs')}
-                            style={{ padding: '12px 20px', cursor: 'pointer', background: activeTab === 'graphs' ? 'white' : 'transparent', borderLeft: activeTab === 'graphs' ? '4px solid #0e7490' : '4px solid transparent', fontWeight: activeTab === 'graphs' ? 'bold' : 'normal', color: activeTab === 'graphs' ? '#0e7490' : '#64748b' }}>
-                            Graphs / Charts
-                        </div>
-                        <div
-                            onClick={() => setActiveTab('media')}
-                            style={{ padding: '12px 20px', cursor: 'pointer', background: activeTab === 'media' ? 'white' : 'transparent', borderLeft: activeTab === 'media' ? '4px solid #0e7490' : '4px solid transparent', fontWeight: activeTab === 'media' ? 'bold' : 'normal', color: activeTab === 'media' ? '#0e7490' : '#64748b' }}>
-                            Media / Files
-                        </div>
+                        {tabs.map(tab => (
+                            <div
+                                key={tab.id}
+                                onClick={() => setActiveTab(tab.id)}
+                                style={{
+                                    padding: '12px 20px',
+                                    cursor: 'pointer',
+                                    background: activeTab === tab.id ? 'white' : 'transparent',
+                                    borderLeft: activeTab === tab.id ? '4px solid #0e7490' : '4px solid transparent',
+                                    fontWeight: activeTab === tab.id ? 'bold' : 'normal',
+                                    color: activeTab === tab.id ? '#0e7490' : '#64748b'
+                                }}>
+                                {tab.label}
+                            </div>
+                        ))}
                     </div>
 
                     {/* Right Content Grid */}
@@ -63,9 +76,9 @@ export function AddSectionModal({ onClose, onAdd }) {
                                     onMouseOut={e => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'none'; }}
                                 >
                                     <div style={{ marginBottom: '10px', color: '#0e7490' }}>
-                                        {activeTab === 'text' && <FileText />}
-                                        {activeTab === 'graphs' && <PieChart />}
-                                        {activeTab === 'media' && <Image />}
+                                        {item.type === 'text' && <FileText />}
+                                        {(item.type === 'chart' || item.type === 'skills') && <PieChart />}
+                                        {(item.type === 'media' || item.type === 'technology') && <Image />}
                                     </div>
                                     <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>{item.title}</div>
                                     <div style={{ fontSize: '0.85em', color: '#64748b' }}>{item.desc}</div>

@@ -140,7 +140,7 @@ export function SurveyDistribution({ formId, onBack, onNavigate }) {
             <div style={{ background: 'white', borderBottom: '1px solid #e2e8f0', height: '60px', display: 'flex', alignItems: 'center', padding: '0 30px', justifyContent: 'space-between' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <button onClick={onBack} style={{ border: 'none', background: 'none', cursor: 'pointer', fontSize: '1.2em', color: '#64748b' }}>←</button>
-                    <div style={{ fontWeight: 'bold', fontSize: '1.1em', color: '#0f172a' }}>{formMetadata?.title || 'Distribution'}</div>
+                    <div style={{ fontWeight: 'bold', fontSize: '1.1em', color: '#0f172a' }}>{formMetadata?.title || 'SmartReach'}</div>
                     <div style={{ background: '#e0f2fe', color: '#0369a1', padding: '2px 8px', borderRadius: '4px', fontSize: '0.8em', marginLeft: '10px' }}>ID: {formId}</div>
                 </div>
                 <div style={{ display: 'flex', height: '100%', gap: '20px' }}>
@@ -155,7 +155,7 @@ export function SurveyDistribution({ formId, onBack, onNavigate }) {
             <div style={{ display: 'flex', flex: 1 }}>
                 {/* SIDEBAR */}
                 <div style={{ width: '250px', background: 'white', borderRight: '1px solid #e2e8f0', padding: '20px 0' }}>
-                    <div style={{ padding: '0 20px 20px', fontSize: '1.2em', fontWeight: 'bold', color: '#334155' }}>Collect</div>
+                    <div style={{ padding: '0 20px 20px', fontSize: '1.2em', fontWeight: 'bold', color: '#334155' }}>SmartReach</div>
                     <div style={sidebarItemStyle(activeSidebar === 'link')} onClick={() => setActiveSidebar('link')}>
                         <span>🔗</span> Web Link
                     </div>
@@ -165,10 +165,72 @@ export function SurveyDistribution({ formId, onBack, onNavigate }) {
                     <div style={sidebarItemStyle(activeSidebar === 'email')} onClick={() => setActiveSidebar('email')}>
                         <span>📧</span> Email Campaign
                     </div>
+                    <div style={sidebarItemStyle(activeSidebar === 'social')} onClick={() => setActiveSidebar('social')}>
+                        <span>📱</span> Social Media
+                    </div>
                 </div>
 
                 {/* MAIN AREA */}
                 <div style={{ flex: 1, padding: '40px' }}>
+                    {activeSidebar === 'social' && formMetadata && (
+                        <div>
+                            <h2 style={{ color: '#1e293b', marginBottom: '20px' }}>Share on Social Media</h2>
+                            <div style={{ background: 'white', padding: '30px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+                                <p style={{ color: '#64748b', marginBottom: '30px' }}>Post your survey directly to your social networks or copy the link.</p>
+
+                                <div style={{ marginBottom: '30px' }}>
+                                    <div style={{ fontSize: '0.9em', fontWeight: 'bold', color: '#475569', marginBottom: '10px' }}>Public Link</div>
+                                    <div style={{ display: 'flex', gap: '10px' }}>
+                                        <input
+                                            readOnly
+                                            value={`${window.location.origin}/s/${formMetadata.slug || formMetadata.id}`}
+                                            style={{ flex: 1, padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', background: '#f8fafc', color: '#334155' }}
+                                        />
+                                        <button
+                                            onClick={() => {
+                                                navigator.clipboard.writeText(`${window.location.origin}/s/${formMetadata.slug || formMetadata.id}`);
+                                                alert("Link copied!");
+                                            }}
+                                            style={{ background: '#3b82f6', color: 'white', border: 'none', padding: '0 20px', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}
+                                        >
+                                            Copy
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '20px' }}>
+                                    <a
+                                        href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(`${window.location.origin}/s/${formMetadata.slug || formMetadata.id}`)}`}
+                                        target="_blank" rel="noopener noreferrer"
+                                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', padding: '15px', background: '#0077b5', color: 'white', textDecoration: 'none', borderRadius: '8px', fontWeight: 'bold' }}
+                                    >
+                                        Linked In
+                                    </a>
+                                    <a
+                                        href={`https://twitter.com/intent/tweet?url=${encodeURIComponent(`${window.location.origin}/s/${formMetadata.slug || formMetadata.id}`)}&text=${encodeURIComponent(formMetadata.title || 'Check out this survey')}`}
+                                        target="_blank" rel="noopener noreferrer"
+                                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', padding: '15px', background: '#000000', color: 'white', textDecoration: 'none', borderRadius: '8px', fontWeight: 'bold' }}
+                                    >
+                                        X (Twitter)
+                                    </a>
+                                    <a
+                                        href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(`${window.location.origin}/s/${formMetadata.slug || formMetadata.id}`)}`}
+                                        target="_blank" rel="noopener noreferrer"
+                                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', padding: '15px', background: '#1877f2', color: 'white', textDecoration: 'none', borderRadius: '8px', fontWeight: 'bold' }}
+                                    >
+                                        Facebook
+                                    </a>
+                                    <a
+                                        href={`https://api.whatsapp.com/send?text=${encodeURIComponent(`${formMetadata.title} - ${window.location.origin}/s/${formMetadata.slug || formMetadata.id}`)}`}
+                                        target="_blank" rel="noopener noreferrer"
+                                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', padding: '15px', background: '#25D366', color: 'white', textDecoration: 'none', borderRadius: '8px', fontWeight: 'bold' }}
+                                    >
+                                        WhatsApp
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                     {activeSidebar === 'audience' && (
                         <div>
                             <h2 style={{ color: '#1e293b', marginBottom: '20px' }}>Survey Audience</h2>

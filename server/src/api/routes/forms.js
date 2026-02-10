@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const PostgresRepository = require('../../infrastructure/database/PostgresRepository');
 const authenticate = require('../middleware/auth');
+const { query } = require('../../infrastructure/database/db');
 
 // Initialize Repository
 const formRepo = new PostgresRepository('forms');
@@ -29,12 +30,13 @@ const toEntity = (row) => {
         allowCamera: row.allow_camera,
         allowLocation: row.allow_location,
         aiEnabled: row.ai_enabled, // Added AI Enabled
-        aiEnabled: row.ai_enabled, // Added AI Enabled
         ai: row.ai || {}, // Added AI Config
         enableVoiceAgent: row.enable_voice_agent,
         allowedIps: row.allowed_ips, // Added IP Whitelist
         createdAt: row.created_at,
-        updatedAt: row.updated_at
+        updatedAt: row.updated_at,
+        createdBy: row.created_by,
+        folderId: row.folder_id
     };
 };
 
@@ -49,26 +51,74 @@ const checkIpAccess = (allowedIps, reqIp) => {
     return ips.includes(cleanIp);
 };
 
+const debugLog = require('./debug_logger');
+
 // Get all forms
 router.get('/', authenticate, authenticate.checkPermission('forms', 'view'), async (req, res) => {
     try {
-        const rows = await formRepo.findAllBy('tenant_id', req.user.tenant_id);
-        const forms = rows.map(toEntity);
+        debugLog(`GET /api/forms - Start. User: ${req.user.username} Tenant: ${req.user.tenant_id}`);
+        const rows = await formRepo.findAllBy('tenant_id', req.user.tenant_id, 'updated_at DESC');
+        debugLog(`GET /api/forms - Found ${rows.length} rows`);
+        const forms = rows.map(r => {
+            try {
+                return toEntity(r);
+            } catch (e) {
+                debugLog(`Entity conversion failed for row ${r.id}: ${e.message}`);
+                throw e;
+            }
+        });
+        debugLog("GET /api/forms - Sending JSON");
         res.json(forms);
     } catch (error) {
+        debugLog(`GET /api/forms - ERROR: ${error.message} - Stack: ${error.stack}`);
+        console.error("GET /api/forms Error:", error);
         res.status(500).json({ error: error.message });
+    }
+});
+
+// GET RAW SUBMISSIONS for a specific form (for Analytics Studio)
+router.get('/:id/submissions/raw-data', authenticate, async (req, res) => {
+    try {
+        const formId = req.params.id;
+
+        // Ensure form belongs to tenant
+        const form = await formRepo.findById(formId);
+        if (!form || form.tenant_id !== req.user.tenant_id) {
+            return res.status(404).json({ error: "Form not found" });
+        }
+
+        // Fetch submissions
+        const result = await query(
+            "SELECT data, created_at, metadata FROM submissions WHERE form_id = $1 ORDER BY created_at DESC",
+            [formId]
+        );
+
+        // Flatten data for easy consumption
+        const flatData = result.rows.map(row => ({
+            ...row.data,
+            submission_date: row.created_at,
+            ...row.metadata
+        }));
+
+        res.json(flatData);
+
+    } catch (err) {
+        res.status(500).json({ error: err.message });
     }
 });
 
 // Get form by Slug
 router.get('/slug/:slug', async (req, res) => {
     try {
-        let row = await formRepo.findBy('slug', req.params.slug);
+        const slug = req.params.slug;
+        const result = await query(`
+            SELECT f.*, t.theme as tenant_theme 
+            FROM forms f
+            JOIN tenants t ON f.tenant_id = t.id
+            WHERE f.slug = $1 OR (f.id::text = $1 AND f.slug IS NULL)
+        `, [slug]);
 
-        // Fallback: If not found and param is numeric, try finding by ID
-        if (!row && /^\d+$/.test(req.params.slug)) {
-            row = await formRepo.findById(req.params.slug);
-        }
+        let row = result.rows[0];
 
         if (!row) return res.status(404).json({ error: 'Form not found' });
 
@@ -85,7 +135,9 @@ router.get('/slug/:slug', async (req, res) => {
             }
         }
 
-        res.json(toEntity(row));
+        const entity = toEntity(row);
+        entity.tenantTheme = row.tenant_theme;
+        res.json(entity);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -118,14 +170,14 @@ router.post('/', authenticate, authenticate.checkPermission('forms', 'create'), 
             definition: req.body.definition || {},
             is_published: req.body.isPublished || false,
             ai: req.body.ai || {}, // Default AI Config
-            ai: req.body.ai || {}, // Default AI Config
-            ai: req.body.ai || {}, // Default AI Config
             enable_voice_agent: req.body.enableVoiceAgent || false,
             allowed_ips: req.body.allowedIps || null,
             status: 'draft', // Default status
             version: 1,
             created_at: new Date(),
-            updated_at: new Date()
+            updated_at: new Date(),
+            created_by: req.user.id,
+            folder_id: req.body.folderId || null
         };
 
         const savedRow = await formRepo.create(newForm);
@@ -160,11 +212,10 @@ router.put('/:id', authenticate, authenticate.checkPermission('forms', 'update')
             allow_camera: req.body.allowCamera !== undefined ? req.body.allowCamera : existing.allow_camera,
             allow_location: req.body.allowLocation !== undefined ? req.body.allowLocation : existing.allow_location,
             ai_enabled: req.body.aiEnabled !== undefined ? req.body.aiEnabled : existing.ai_enabled, // Added Mapping
-            ai_enabled: req.body.aiEnabled !== undefined ? req.body.aiEnabled : existing.ai_enabled, // Added Mapping
             ai: req.body.ai !== undefined ? req.body.ai : existing.ai, // Added AI Config Update
             enable_voice_agent: req.body.enableVoiceAgent !== undefined ? req.body.enableVoiceAgent : existing.enable_voice_agent,
             allowed_ips: req.body.allowedIps !== undefined ? req.body.allowedIps : existing.allowed_ips,
-            password: req.body.password !== undefined ? req.body.password : existing.password,
+            folder_id: req.body.folderId !== undefined ? req.body.folderId : existing.folder_id,
 
             updated_at: new Date()
         };

@@ -1,18 +1,17 @@
-
 const { Pool } = require('pg');
-require('dotenv').config();
+require('dotenv').config({ path: require('path').join(__dirname, '..', '.env') });
 
-const localPool = new Pool({
+const pool = new Pool({
     user: process.env.DB_USER || 'postgres',
     password: process.env.DB_PASSWORD || 'postgres',
-    host: 'localhost',
-    port: 5432, // Local DB
+    host: process.env.DB_HOST || 'localhost',
+    port: process.env.DB_PORT || 5433,
     database: process.env.DB_NAME || 'vtrustx_db',
 });
 
 async function listTables() {
     try {
-        const res = await localPool.query(`
+        const res = await pool.query(`
             SELECT table_name 
             FROM information_schema.tables 
             WHERE table_schema = 'public'

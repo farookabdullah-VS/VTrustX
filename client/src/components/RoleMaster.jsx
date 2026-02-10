@@ -93,33 +93,33 @@ export function RoleMaster() {
         <div style={{ padding: '40px', fontFamily: "'Outfit', sans-serif" }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
                 <div>
-                    <h1 style={{ margin: 0 }}>Role Master</h1>
-                    <p style={{ color: '#64748b' }}>Define user roles and module permissions.</p>
+                    <h1 style={{ margin: 0, color: 'var(--text-color)' }}>Role Master</h1>
+                    <p style={{ color: 'var(--text-muted)' }}>Define user roles and module permissions.</p>
                 </div>
                 <button
                     onClick={() => handleOpenModal()}
-                    style={{ background: '#2563eb', color: 'white', padding: '12px 24px', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}
+                    style={{ background: 'var(--primary-color)', color: 'white', padding: '12px 24px', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}
                 >
                     + Create New Role
                 </button>
             </div>
 
-            <div style={{ background: 'white', borderRadius: '12px', border: '1px solid #e2e8f0', overflow: 'hidden' }}>
+            <div style={{ background: 'var(--card-bg)', borderRadius: '12px', border: '1px solid var(--input-border)', overflow: 'hidden' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                    <thead style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
+                    <thead style={{ background: 'var(--sidebar-bg)', borderBottom: '1px solid var(--input-border)' }}>
                         <tr>
-                            <th style={{ padding: '15px', textAlign: 'left' }}>Role Name</th>
-                            <th style={{ padding: '15px', textAlign: 'left' }}>Description</th>
-                            <th style={{ padding: '15px', textAlign: 'left' }}>Created</th>
-                            <th style={{ padding: '15px', textAlign: 'right' }}>Actions</th>
+                            <th style={{ padding: '15px', textAlign: 'left', color: 'var(--text-muted)' }}>Role Name</th>
+                            <th style={{ padding: '15px', textAlign: 'left', color: 'var(--text-muted)' }}>Description</th>
+                            <th style={{ padding: '15px', textAlign: 'left', color: 'var(--text-muted)' }}>Created</th>
+                            <th style={{ padding: '15px', textAlign: 'right', color: 'var(--text-muted)' }}>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {roles.map(r => (
-                            <tr key={r.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                                <td style={{ padding: '15px', fontWeight: '600' }}>{r.name}</td>
-                                <td style={{ padding: '15px', color: '#475569' }}>{r.description}</td>
-                                <td style={{ padding: '15px', color: '#94a3b8' }}>{new Date(r.created_at).toLocaleDateString()}</td>
+                            <tr key={r.id} style={{ borderBottom: '1px solid var(--input-border)' }}>
+                                <td style={{ padding: '15px', fontWeight: '600', color: 'var(--text-color)' }}>{r.name}</td>
+                                <td style={{ padding: '15px', color: 'var(--text-muted)' }}>{r.description}</td>
+                                <td style={{ padding: '15px', color: 'var(--text-muted)' }}>{new Date(r.created_at).toLocaleDateString()}</td>
                                 <td style={{ padding: '15px', textAlign: 'right' }}>
                                     <button onClick={() => handleOpenModal(r)} style={{ marginRight: '10px', background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.2em' }} title="Edit">✏️</button>
                                     <button onClick={() => handleDelete(r.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.2em' }} title="Delete">🗑️</button>
@@ -132,39 +132,39 @@ export function RoleMaster() {
 
             {isModalOpen && (
                 <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1001 }}>
-                    <div style={{ background: 'white', width: '500px', padding: '30px', borderRadius: '16px', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)' }}>
-                        <h2 style={{ marginTop: 0 }}>{editingRole ? 'Edit Role' : 'Create Role'}</h2>
+                    <div style={{ background: 'var(--card-bg)', width: '500px', padding: '30px', borderRadius: '16px', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)', border: '1px solid var(--input-border)' }}>
+                        <h2 style={{ marginTop: 0, color: 'var(--text-color)' }}>{editingRole ? 'Edit Role' : 'Create Role'}</h2>
 
                         <div style={{ marginBottom: '15px' }}>
-                            <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Role Name</label>
+                            <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold', color: 'var(--text-color)' }}>Role Name</label>
                             <input
-                                style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ddd' }}
+                                style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--input-border)', background: 'var(--input-bg)', color: 'var(--input-text)' }}
                                 value={roleName} onChange={e => setRoleName(e.target.value)}
                                 placeholder="e.g. Survey Manager"
                             />
                         </div>
 
                         <div style={{ marginBottom: '20px' }}>
-                            <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>Description</label>
+                            <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold', color: 'var(--text-color)' }}>Description</label>
                             <textarea
-                                style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ddd', minHeight: '60px' }}
+                                style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--input-border)', background: 'var(--input-bg)', color: 'var(--input-text)', minHeight: '60px' }}
                                 value={description} onChange={e => setDescription(e.target.value)}
                             />
                         </div>
 
-                        <div style={{ background: '#f8fafc', padding: '20px', borderRadius: '12px', marginBottom: '25px' }}>
-                            <h3 style={{ margin: '0 0 15px 0', fontSize: '1em' }}>Module Permissions</h3>
+                        <div style={{ background: 'var(--sidebar-bg)', padding: '20px', borderRadius: '12px', marginBottom: '25px', border: '1px solid var(--input-border)' }}>
+                            <h3 style={{ margin: '0 0 15px 0', fontSize: '1em', color: 'var(--text-color)' }}>Module Permissions</h3>
 
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr 1fr', alignItems: 'center', gap: '10px' }}>
-                                <div style={{ fontWeight: 'bold' }}>Module</div>
-                                <div style={{ textAlign: 'center' }}>View</div>
-                                <div style={{ textAlign: 'center' }}>Create</div>
-                                <div style={{ textAlign: 'center' }}>Update</div>
-                                <div style={{ textAlign: 'center' }}>Delete</div>
+                                <div style={{ fontWeight: 'bold', color: 'var(--text-muted)' }}>Module</div>
+                                <div style={{ textAlign: 'center', color: 'var(--text-muted)' }}>View</div>
+                                <div style={{ textAlign: 'center', color: 'var(--text-muted)' }}>Create</div>
+                                <div style={{ textAlign: 'center', color: 'var(--text-muted)' }}>Update</div>
+                                <div style={{ textAlign: 'center', color: 'var(--text-muted)' }}>Delete</div>
 
                                 {Object.entries(permissions).map(([module, perms]) => (
                                     <React.Fragment key={module}>
-                                        <div style={{ fontWeight: '500', textTransform: 'capitalize' }}>{module.replace('_', ' ')}</div>
+                                        <div style={{ fontWeight: '500', textTransform: 'capitalize', color: 'var(--text-color)' }}>{module.replace('_', ' ')}</div>
                                         <div style={{ textAlign: 'center' }}><input type="checkbox" checked={perms.view} onChange={() => togglePermission(module, 'view')} /></div>
                                         <div style={{ textAlign: 'center' }}><input type="checkbox" checked={perms.create} onChange={() => togglePermission(module, 'create')} /></div>
                                         <div style={{ textAlign: 'center' }}><input type="checkbox" checked={perms.update} onChange={() => togglePermission(module, 'update')} /></div>
@@ -175,10 +175,10 @@ export function RoleMaster() {
                         </div>
 
                         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-                            <button onClick={() => setIsModalOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '10px' }}>Cancel</button>
+                            <button onClick={() => setIsModalOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '10px', color: 'var(--text-muted)' }}>Cancel</button>
                             <button
                                 onClick={handleSave}
-                                style={{ background: '#2563eb', color: 'white', padding: '10px 25px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontWeight: 'bold' }}
+                                style={{ background: 'var(--primary-color)', color: 'white', padding: '10px 25px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontWeight: 'bold' }}
                             >
                                 Save Changes
                             </button>

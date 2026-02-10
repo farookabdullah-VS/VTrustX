@@ -1,0 +1,42 @@
+[
+  {
+    "table_schema": "public",
+    "table_name": "crm_accounts"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "users"
+  },
+  {
+    "table_schema": "smm",
+    "table_name": "md_workflow_transition_role"
+  },
+  {
+    "table_schema": "smm",
+    "table_name": "role"
+  },
+  {
+    "table_schema": "smm",
+    "table_name": "role_permission"
+  },
+  {
+    "table_schema": "smm",
+    "table_name": "social_account"
+  },
+  {
+    "table_schema": "smm",
+    "table_name": "social_account_auth"
+  },
+  {
+    "table_schema": "smm",
+    "table_name": "user"
+  },
+  {
+    "table_schema": "smm",
+    "table_name": "user_profile"
+  },
+  {
+    "table_schema": "smm",
+    "table_name": "user_role"
+  }
+]

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { useTranslation } from 'react-i18next';
 import { Shield, Mic, Bot } from 'lucide-react';
+import { QuotaSettings } from './QuotaSettings';
 
 export function SettingsView({ form, onBack, onUpdate }) {
     const { t, i18n } = useTranslation();
@@ -25,7 +26,6 @@ export function SettingsView({ form, onBack, onUpdate }) {
         blockResubmission: false,
         allowMultiple: form.allowMultiple || false,
         isAnonymous: form.isAnonymous || false,
-        enableVoiceAgent: form.enableVoiceAgent || false,
         enableVoiceAgent: form.enableVoiceAgent || false,
         slug: form.slug || '',
         allowedIps: form.allowedIps || ''
@@ -77,9 +77,9 @@ export function SettingsView({ form, onBack, onUpdate }) {
 
     // Toggle Component
     const Toggle = ({ label, subLabel, name, checked, onChange, info }) => (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', background: 'white', border: '1px solid #e2e8f0', borderRadius: '10px', marginBottom: '15px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', background: 'var(--input-bg)', border: '1px solid var(--input-border)', borderRadius: '10px', marginBottom: '15px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{ fontSize: '0.95em', color: '#334155', fontWeight: '500' }}>{label} {info && <span style={{ color: '#94a3b8', fontSize: '0.9em', cursor: 'help' }}>ⓘ</span>}</span>
+                <span style={{ fontSize: '0.95em', color: 'var(--text-color)', fontWeight: '500' }}>{label} {info && <span style={{ color: 'var(--text-muted)', fontSize: '0.9em', cursor: 'help' }}>ⓘ</span>}</span>
             </div>
             <label className="switch">
                 <input
@@ -96,7 +96,7 @@ export function SettingsView({ form, onBack, onUpdate }) {
     const sectionHeaderStyle = {
         fontSize: '0.85em',
         fontWeight: '700',
-        color: '#1e293b',
+        color: 'var(--text-color)',
         textTransform: 'uppercase',
         marginBottom: '15px',
         marginTop: '25px',
@@ -109,7 +109,7 @@ export function SettingsView({ form, onBack, onUpdate }) {
         maxWidth: '800px',
         margin: '0 auto',
         fontFamily: "'Outfit', sans-serif",
-        color: '#1e293b',
+        color: 'var(--text-color)',
         direction: isRtl ? 'rtl' : 'ltr'
     };
 
@@ -117,7 +117,7 @@ export function SettingsView({ form, onBack, onUpdate }) {
         <div style={containerStyle}>
             {/* Header */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
-                <button onClick={onBack} style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', fontSize: '1em' }}>
+                <button onClick={onBack} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', fontSize: '1em' }}>
                     {isRtl ? '➡' : '⬅'} {t('settings.back')}
                 </button>
                 <button
@@ -125,8 +125,8 @@ export function SettingsView({ form, onBack, onUpdate }) {
                     disabled={saving}
                     style={{
                         padding: '10px 24px',
-                        background: '#064e3b',
-                        color: 'white',
+                        background: 'var(--primary-color)',
+                        color: 'var(--button-text)',
                         border: 'none',
                         borderRadius: '8px',
                         fontWeight: '600',
@@ -139,7 +139,9 @@ export function SettingsView({ form, onBack, onUpdate }) {
             </div>
 
             {/* QUOTAS - MOVED TO SEPARATE TAB */}
-            {/* <QuotaSettings formId={form.id} /> */}
+            {/* QUOTAS */}
+            <div style={sectionHeaderStyle}>RESPONSE QUOTAS</div>
+            <QuotaSettings form={form} />
 
             {/* BASIC SETTINGS */}
             <div style={sectionHeaderStyle}>{t('settings.basic.title') || 'BASIC SETTINGS'}</div>
@@ -165,27 +167,27 @@ export function SettingsView({ form, onBack, onUpdate }) {
                 onChange={handleChange}
             />
 
-            <div style={{ padding: '16px 20px', background: 'white', border: '1px solid #e2e8f0', borderRadius: '10px', marginBottom: '15px' }}>
-                <div style={{ marginBottom: '10px', fontWeight: '500', color: '#334155' }}>{t('settings.basic.deadlines') || "Survey Deadlines"}</div>
+            <div style={{ padding: '16px 20px', background: 'var(--input-bg)', border: '1px solid var(--input-border)', borderRadius: '10px', marginBottom: '15px' }}>
+                <div style={{ marginBottom: '10px', fontWeight: '500', color: 'var(--text-color)' }}>{t('settings.basic.deadlines') || "Survey Deadlines"}</div>
                 <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
                     <div style={{ flex: 1, minWidth: '200px' }}>
-                        <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.9em', color: '#64748b' }}>{t('settings.basic.start_date') || "Start Date"}</label>
+                        <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.9em', color: 'var(--text-muted)' }}>{t('settings.basic.start_date') || "Start Date"}</label>
                         <input
                             type="datetime-local"
                             name="startDate"
                             value={formData.startDate}
                             onChange={handleChange}
-                            style={{ width: '100%', padding: '8px', border: '1px solid #cbd5e1', borderRadius: '6px', fontFamily: 'inherit' }}
+                            style={{ width: '100%', padding: '8px', border: '1px solid var(--input-border)', borderRadius: '6px', fontFamily: 'inherit', background: 'var(--input-bg)', color: 'var(--input-text)' }}
                         />
                     </div>
                     <div style={{ flex: 1, minWidth: '200px' }}>
-                        <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.9em', color: '#64748b' }}>{t('settings.basic.end_date') || "End Date"}</label>
+                        <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.9em', color: 'var(--text-muted)' }}>{t('settings.basic.end_date') || "End Date"}</label>
                         <input
                             type="datetime-local"
                             name="endDate"
                             value={formData.endDate}
                             onChange={handleChange}
-                            style={{ width: '100%', padding: '8px', border: '1px solid #cbd5e1', borderRadius: '6px', fontFamily: 'inherit' }}
+                            style={{ width: '100%', padding: '8px', border: '1px solid var(--input-border)', borderRadius: '6px', fontFamily: 'inherit', background: 'var(--input-bg)', color: 'var(--input-text)' }}
                         />
                     </div>
                 </div>
@@ -202,11 +204,11 @@ export function SettingsView({ form, onBack, onUpdate }) {
             />
 
             {formData.enableVoiceAgent && (
-                <div style={{ padding: '16px 20px', background: 'white', border: '1px solid #e2e8f0', borderRadius: '10px', marginBottom: '15px' }}>
+                <div style={{ padding: '16px 20px', background: 'var(--input-bg)', border: '1px solid var(--input-border)', borderRadius: '10px', marginBottom: '15px' }}>
                     <div style={{ marginBottom: '15px' }}>
                         <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '8px' }}>
-                            <label style={{ display: 'block', fontSize: '0.9em', color: '#64748b' }}>Voice Agent Token</label>
-                            <div style={{ fontSize: '0.8em', color: '#94a3b8', background: '#f1f5f9', padding: '2px 6px', borderRadius: '4px' }}>Required</div>
+                            <label style={{ display: 'block', fontSize: '0.9em', color: 'var(--text-muted)' }}>Voice Agent Token</label>
+                            <div style={{ fontSize: '0.8em', color: 'var(--text-muted)', background: 'var(--sidebar-bg)', padding: '2px 6px', borderRadius: '4px' }}>Required</div>
                         </div>
                         <div style={{ display: 'flex', gap: '10px' }}>
                             <input
@@ -215,27 +217,27 @@ export function SettingsView({ form, onBack, onUpdate }) {
                                 value={formData.slug}
                                 onChange={handleChange}
                                 placeholder="e.g. USER_REF_123"
-                                style={{ flex: 1, padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', fontFamily: 'monospace' }}
+                                style={{ flex: 1, padding: '10px', borderRadius: '6px', border: '1px solid var(--input-border)', fontFamily: 'monospace', background: 'var(--input-bg)', color: 'var(--input-text)' }}
                             />
                             <button
                                 onClick={() => {
                                     const random = Math.random().toString(36).substring(2, 9).toUpperCase();
                                     setFormData(prev => ({ ...prev, slug: random }));
                                 }}
-                                style={{ padding: '10px 15px', background: '#f1f5f9', border: '1px solid #cbd5e1', borderRadius: '6px', color: '#334155', cursor: 'pointer', fontSize: '0.9em' }}
+                                style={{ padding: '10px 15px', background: 'var(--sidebar-bg)', border: '1px solid var(--input-border)', borderRadius: '6px', color: 'var(--text-color)', cursor: 'pointer', fontSize: '0.9em' }}
                             >
                                 Generate Unique
                             </button>
                         </div>
-                        <div style={{ fontSize: '0.8em', color: '#cbd5e1', marginTop: '5px' }}>
+                        <div style={{ fontSize: '0.8em', color: 'var(--text-muted)', marginTop: '5px' }}>
                             Use a unique identifier per customer/session if needed.
                         </div>
                     </div>
 
-                    <div style={{ padding: '15px', background: '#f0f9ff', borderRadius: '8px', border: '1px solid #bae6fd' }}>
-                        <div style={{ fontSize: '0.85em', color: '#0369a1', marginBottom: '5px', fontWeight: '600' }}>AGENT LINK:</div>
-                        <div style={{ fontFamily: 'monospace', color: '#0284c7', wordBreak: 'break-all', fontSize: '0.9em' }}>
-                            https://chat.crux360.ai/?token={formData.slug || form.id}
+                    <div style={{ padding: '15px', background: 'var(--sidebar-bg)', borderRadius: '8px', border: '1px solid var(--input-border)' }}>
+                        <div style={{ fontSize: '0.85em', color: 'var(--primary-color)', marginBottom: '5px', fontWeight: '600' }}>AGENT LINK:</div>
+                        <div style={{ fontFamily: 'monospace', color: 'var(--text-color)', wordBreak: 'break-all', fontSize: '0.9em' }}>
+                            {window.location.origin}/s/voice/{formData.slug || form.id}
                         </div>
                     </div>
                 </div>
@@ -251,11 +253,11 @@ export function SettingsView({ form, onBack, onUpdate }) {
                 info={true}
             />
             {formData.aiEnabled && (
-                <div style={{ padding: '16px 20px', background: 'white', border: '1px solid #e2e8f0', borderRadius: '10px', marginBottom: '15px' }}>
-                    <div style={{ padding: '20px', borderBottom: '1px solid #e2e8f0' }}>
+                <div style={{ padding: '16px 20px', background: 'var(--input-bg)', border: '1px solid var(--input-border)', borderRadius: '10px', marginBottom: '15px' }}>
+                    <div style={{ padding: '20px', borderBottom: '1px solid var(--input-border)' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px' }}>
-                            <Shield size={20} color="#f59e0b" />
-                            <h3 style={{ margin: 0, color: '#1e293b' }}>Privacy & Permissions</h3>
+                            <Shield size={20} color="var(--primary-color)" />
+                            <h3 style={{ margin: 0, color: 'var(--text-color)' }}>Privacy & Permissions</h3>
                         </div>
 
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -266,7 +268,7 @@ export function SettingsView({ form, onBack, onUpdate }) {
                                     checked={formData.allowLocation}
                                     onChange={handleChange}
                                 />
-                                <span style={{ color: '#334155' }}>Collect Geo-Location</span>
+                                <span style={{ color: 'var(--text-color)' }}>Collect Geo-Location</span>
                             </label>
 
 
@@ -278,7 +280,7 @@ export function SettingsView({ form, onBack, onUpdate }) {
                                     checked={formData.isAnonymous}
                                     onChange={handleChange}
                                 />
-                                <span style={{ color: '#334155' }}>Anonymous Responses</span>
+                                <span style={{ color: 'var(--text-color)' }}>Anonymous Responses</span>
                             </label>
 
                             <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}>
@@ -288,25 +290,25 @@ export function SettingsView({ form, onBack, onUpdate }) {
                                     checked={formData.allowMultiple}
                                     onChange={handleChange}
                                 />
-                                <span style={{ color: '#334155' }}>Allow Multiple Responses per User</span>
+                                <span style={{ color: 'var(--text-color)' }}>Allow Multiple Responses per User</span>
                             </label>
                         </div>
                     </div>
 
 
 
-                    <div style={{ padding: '20px', borderBottom: '1px solid #e2e8f0' }}>
+                    <div style={{ padding: '20px', borderBottom: '1px solid var(--input-border)' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px' }}>
-                            <Bot size={20} color="#6366f1" />
-                            <h3 style={{ margin: 0, color: '#1e293b' }}>AI Models</h3>
+                            <Bot size={20} color="var(--primary-color)" />
+                            <h3 style={{ margin: 0, color: 'var(--text-color)' }}>AI Models</h3>
                         </div>
 
                         <div>
-                            <label style={{ display: 'block', marginBottom: '5px', color: '#64748b' }}>AI Provider</label>
+                            <label style={{ display: 'block', marginBottom: '5px', color: 'var(--text-muted)' }}>AI Provider</label>
                             <select
                                 value={formData.ai?.provider || 'gemini'}
                                 onChange={(e) => handleSettingChange('ai', 'provider', e.target.value)}
-                                style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', marginBottom: '15px' }}
+                                style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid var(--input-border)', marginBottom: '15px', background: 'var(--input-bg)', color: 'var(--input-text)' }}
                             >
                                 <option value="gemini">Google Gemini (API Key)</option>
                                 <option value="vertex">Google Vertex AI (GCP)</option>
@@ -316,14 +318,14 @@ export function SettingsView({ form, onBack, onUpdate }) {
                         </div>
 
                         <div>
-                            <label style={{ display: 'block', marginBottom: '5px', color: '#64748b' }}>Model Name</label>
+                            <label style={{ display: 'block', marginBottom: '5px', color: 'var(--text-muted)' }}>Model Name</label>
                             <input
                                 list="model-suggestions"
                                 type="text"
                                 value={formData.ai?.modelName || 'gemini-3.0'}
                                 onChange={(e) => handleSettingChange('ai', 'modelName', e.target.value)}
                                 placeholder="e.g. gemini-3.0, gemini-1.5-pro"
-                                style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', marginBottom: '15px' }}
+                                style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid var(--input-border)', marginBottom: '15px', background: 'var(--input-bg)', color: 'var(--input-text)' }}
                             />
                             <datalist id="model-suggestions">
                                 <option value="gemini-3.0" />
@@ -337,23 +339,23 @@ export function SettingsView({ form, onBack, onUpdate }) {
                     {formData.ai?.provider === 'vertex' && (
                         <div style={{ padding: '20px' }}>
                             <div>
-                                <label style={{ display: 'block', marginBottom: '5px', color: '#64748b' }}>GCP Project ID</label>
+                                <label style={{ display: 'block', marginBottom: '5px', color: 'var(--text-muted)' }}>GCP Project ID</label>
                                 <input
                                     type="text"
                                     value={formData.ai?.vertexProject || ''}
                                     onChange={(e) => handleSettingChange('ai', 'vertexProject', e.target.value)}
                                     placeholder="e.g. my-gcp-project-id"
-                                    style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', marginBottom: '15px' }}
+                                    style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid var(--input-border)', marginBottom: '15px', background: 'var(--input-bg)', color: 'var(--input-text)' }}
                                 />
                             </div>
                             <div>
-                                <label style={{ display: 'block', marginBottom: '5px', color: '#64748b' }}>Location / Region</label>
+                                <label style={{ display: 'block', marginBottom: '5px', color: 'var(--text-muted)' }}>Location / Region</label>
                                 <input
                                     type="text"
                                     value={formData.ai?.vertexLocation || 'us-central1'}
                                     onChange={(e) => handleSettingChange('ai', 'vertexLocation', e.target.value)}
                                     placeholder="e.g. us-central1"
-                                    style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', marginBottom: '15px' }}
+                                    style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid var(--input-border)', marginBottom: '15px', background: 'var(--input-bg)', color: 'var(--input-text)' }}
                                 />
                             </div>
                         </div>
@@ -361,13 +363,13 @@ export function SettingsView({ form, onBack, onUpdate }) {
 
                     {(formData.ai?.provider !== 'vertex') && (
                         <div style={{ padding: '20px' }}>
-                            <label style={{ display: 'block', marginBottom: '5px', color: '#64748b' }}>API Key</label>
+                            <label style={{ display: 'block', marginBottom: '5px', color: 'var(--text-muted)' }}>API Key</label>
                             <input
                                 type="password"
                                 value={formData.ai?.apiKey || ''}
                                 onChange={(e) => handleSettingChange('ai', 'apiKey', e.target.value)}
                                 placeholder="sk-..."
-                                style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', marginBottom: '15px' }}
+                                style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid var(--input-border)', marginBottom: '15px', background: 'var(--input-bg)', color: 'var(--input-text)' }}
                             />
                         </div>
                     )}
@@ -388,32 +390,32 @@ export function SettingsView({ form, onBack, onUpdate }) {
             {/* SECURITY */}
             <div style={sectionHeaderStyle}>SECURITY</div>
 
-            <div style={{ padding: '16px 20px', background: 'white', border: '1px solid #e2e8f0', borderRadius: '10px', marginBottom: '15px' }}>
+            <div style={{ padding: '16px 20px', background: 'var(--input-bg)', border: '1px solid var(--input-border)', borderRadius: '10px', marginBottom: '15px' }}>
                 <div style={{ marginBottom: '15px' }}>
-                    <div style={{ fontWeight: '500', color: '#334155', marginBottom: '6px' }}>Password Protection</div>
-                    <div style={{ fontSize: '0.85em', color: '#64748b', marginBottom: '8px' }}>Require a password to access the survey.</div>
+                    <div style={{ fontWeight: '500', color: 'var(--text-color)', marginBottom: '6px' }}>Password Protection</div>
+                    <div style={{ fontSize: '0.85em', color: 'var(--text-muted)', marginBottom: '8px' }}>Require a password to access the survey.</div>
                     <input
                         type="password"
                         name="password"
                         value={formData.password}
                         onChange={handleChange}
                         placeholder="Enter password (optional)"
-                        style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1' }}
+                        style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid var(--input-border)', background: 'var(--input-bg)', color: 'var(--input-text)' }}
                     />
                 </div>
 
-                <div style={{ borderTop: '1px solid #f1f5f9', margin: '15px 0' }}></div>
+                <div style={{ borderTop: '1px solid var(--input-border)', margin: '15px 0' }}></div>
 
                 <div>
-                    <div style={{ fontWeight: '500', color: '#334155', marginBottom: '6px' }}>IP Whitelist</div>
-                    <div style={{ fontSize: '0.85em', color: '#64748b', marginBottom: '8px' }}>Limit access to specific IP addresses (comma separated). Leave empty to allow all.</div>
+                    <div style={{ fontWeight: '500', color: 'var(--text-color)', marginBottom: '6px' }}>IP Whitelist</div>
+                    <div style={{ fontSize: '0.85em', color: 'var(--text-muted)', marginBottom: '8px' }}>Limit access to specific IP addresses (comma separated). Leave empty to allow all.</div>
                     <textarea
                         name="allowedIps"
                         value={formData.allowedIps}
                         onChange={handleChange}
                         placeholder="e.g. 192.168.1.1, 203.0.113.5"
                         rows={3}
-                        style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', fontFamily: 'monospace' }}
+                        style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid var(--input-border)', fontFamily: 'monospace', background: 'var(--input-bg)', color: 'var(--input-text)' }}
                     />
                 </div>
             </div>
@@ -435,7 +437,7 @@ export function SettingsView({ form, onBack, onUpdate }) {
             />
             {
                 formData.showNavigation && (
-                    <div style={{ marginLeft: '10px', marginBottom: '15px', display: 'flex', gap: '20px', color: '#64748b', fontSize: '0.9em' }}>
+                    <div style={{ marginLeft: '10px', marginBottom: '15px', display: 'flex', gap: '20px', color: 'var(--text-muted)', fontSize: '0.9em' }}>
                         <label style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                             <input type="radio" name="navMode" value="section" checked={true} readOnly /> List Section ⓘ
                         </label>

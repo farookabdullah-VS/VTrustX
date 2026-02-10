@@ -192,12 +192,12 @@ export function SurveyAudience({ form, onBack }) {
                     </button>
                     <button
                         onClick={handleOpenImport}
-                        style={{ padding: '10px 20px', background: '#0f172a', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>
+                        style={{ padding: '10px 20px', background: 'var(--primary-color-dark, #0f172a)', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>
                         📥 Import from Global Contacts
                     </button>
                     <button
                         onClick={() => setWebCallActive(true)}
-                        style={{ padding: '10px 20px', background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>
+                        style={{ padding: '10px 20px', background: 'var(--primary-gradient, linear-gradient(135deg, var(--primary-color, #2563eb) 0%, var(--primary-hover, #1d4ed8) 100%))', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>
                         🌐 Test Web Call
                     </button>
                 </div>
@@ -285,7 +285,7 @@ export function SurveyAudience({ form, onBack }) {
 
                         <div style={{ padding: '20px', borderTop: '1px solid #e2e8f0', display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
                             <button onClick={() => setImportModalOpen(false)} style={{ padding: '10px 20px', background: 'white', border: '1px solid #cbd5e1', borderRadius: '8px', cursor: 'pointer' }}>Cancel</button>
-                            <button onClick={confirmGlobalImport} style={{ padding: '10px 20px', background: '#0f172a', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>
+                            <button onClick={confirmGlobalImport} style={{ padding: '10px 20px', background: 'var(--primary-color-dark, #0f172a)', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>
                                 Import Selected ({selectedContacts.size})
                             </button>
                         </div>
@@ -317,7 +317,7 @@ export function SurveyAudience({ form, onBack }) {
                                     />
                                     <label htmlFor="survey-audience-file">
                                         <div style={{ fontSize: '3em', marginBottom: '15px' }}>📂</div>
-                                        <button style={{ pointerEvents: 'none', background: '#3b82f6', color: 'white', border: 'none', padding: '10px 20px', borderRadius: '6px', fontWeight: '600' }}>Select File</button>
+                                        <button style={{ pointerEvents: 'none', background: 'var(--primary-color, #3b82f6)', color: 'white', border: 'none', padding: '10px 20px', borderRadius: '6px', fontWeight: '600' }}>Select File</button>
                                         <p style={{ marginTop: '15px', color: '#64748b' }}>Supports .csv, .xlsx, .xls</p>
                                     </label>
                                 </div>
@@ -355,7 +355,7 @@ export function SurveyAudience({ form, onBack }) {
                             <button
                                 onClick={saveFileImport}
                                 disabled={!importStats || fileProcessing}
-                                style={{ padding: '10px 20px', background: '#0f172a', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', opacity: (!importStats || fileProcessing) ? 0.7 : 1 }}>
+                                style={{ padding: '10px 20px', background: 'var(--primary-color-dark, #0f172a)', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', opacity: (!importStats || fileProcessing) ? 0.7 : 1 }}>
                                 {fileProcessing ? 'Processing...' : `Import ${importStats ? importStats.total : ''} Contacts`}
                             </button>
                         </div>

@@ -54,8 +54,12 @@ router.post('/profile', authenticate, async (req, res) => {
         // 3. Create if New
         if (!customerId) {
             const createSql = `
-                INSERT INTO customers (tenant_id, full_name, date_of_birth, nationality, primary_language, gender, occupation, city)
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+                INSERT INTO customers (
+                    tenant_id, full_name, date_of_birth, nationality, primary_language, 
+                    gender, occupation, city, is_citizen, city_tier, 
+                    monthly_income_local, family_status, employment_sector
+                )
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
                 RETURNING id
             `;
             const createRes = await query(createSql, [
@@ -63,7 +67,12 @@ router.post('/profile', authenticate, async (req, res) => {
                 primary_language || 'en',
                 req.body.gender || null,
                 req.body.occupation || null,
-                req.body.city || null
+                req.body.city || null,
+                req.body.is_citizen === 'true' || req.body.is_citizen === true,
+                req.body.city_tier || 'Tier1',
+                req.body.monthly_income_local || 0,
+                req.body.family_status || null,
+                req.body.employment_sector || null
             ]);
             customerId = createRes.rows[0].id;
         } else {
@@ -78,6 +87,13 @@ router.post('/profile', authenticate, async (req, res) => {
             if (req.body.gender) { updateFields.push(`gender = $${paramCount++}`); updateParams.push(req.body.gender); }
             if (req.body.occupation) { updateFields.push(`occupation = $${paramCount++}`); updateParams.push(req.body.occupation); }
             if (req.body.city) { updateFields.push(`city = $${paramCount++}`); updateParams.push(req.body.city); }
+
+            // GCC Spec Fields
+            if (req.body.is_citizen !== undefined) { updateFields.push(`is_citizen = $${paramCount++}`); updateParams.push(req.body.is_citizen === 'true' || req.body.is_citizen === true); }
+            if (req.body.city_tier) { updateFields.push(`city_tier = $${paramCount++}`); updateParams.push(req.body.city_tier); }
+            if (req.body.monthly_income_local !== undefined) { updateFields.push(`monthly_income_local = $${paramCount++}`); updateParams.push(req.body.monthly_income_local); }
+            if (req.body.family_status) { updateFields.push(`family_status = $${paramCount++}`); updateParams.push(req.body.family_status); }
+            if (req.body.employment_sector) { updateFields.push(`employment_sector = $${paramCount++}`); updateParams.push(req.body.employment_sector); }
 
             if (updateFields.length > 0) {
                 updateParams.push(customerId);

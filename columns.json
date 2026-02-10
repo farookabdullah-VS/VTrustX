@@ -1,0 +1,261 @@
+[
+  {
+    "table_schema": "public",
+    "table_name": "users",
+    "column_name": "id",
+    "data_type": "integer",
+    "is_nullable": "NO"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "users",
+    "column_name": "username",
+    "data_type": "character varying",
+    "is_nullable": "NO"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "users",
+    "column_name": "password",
+    "data_type": "character varying",
+    "is_nullable": "NO"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "users",
+    "column_name": "role",
+    "data_type": "character varying",
+    "is_nullable": "YES"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "users",
+    "column_name": "created_at",
+    "data_type": "timestamp without time zone",
+    "is_nullable": "YES"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "users",
+    "column_name": "email",
+    "data_type": "character varying",
+    "is_nullable": "YES"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "users",
+    "column_name": "team_id",
+    "data_type": "integer",
+    "is_nullable": "YES"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "users",
+    "column_name": "status",
+    "data_type": "character varying",
+    "is_nullable": "YES"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "users",
+    "column_name": "tenant_id",
+    "data_type": "integer",
+    "is_nullable": "YES"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "users",
+    "column_name": "name",
+    "data_type": "character varying",
+    "is_nullable": "YES"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "users",
+    "column_name": "phone",
+    "data_type": "character varying",
+    "is_nullable": "YES"
+  },
+  {
+    "table_schema": "public",
+    "table_name": "users",
+    "column_name": "photo_url",
+    "data_type": "text",
+    "is_nullable": "YES"
+  },
+  {
+    "table_schema": "smm",
+    "table_name": "role",
+    "column_name": "role_id",
+    "data_type": "uuid",
+    "is_nullable": "NO"
+  },
+  {
+    "table_schema": "smm",
+    "table_name": "role",
+    "column_name": "org_id",
+    "data_type": "uuid",
+    "is_nullable": "NO"
+  },
+  {
+    "table_schema": "smm",
+    "table_name": "role",
+    "column_name": "role_code",
+    "data_type": "text",
+    "is_nullable": "NO"
+  },
+  {
+    "table_schema": "smm",
+    "table_name": "role",
+    "column_name": "role_name",
+    "data_type": "text",
+    "is_nullable": "NO"
+  },
+  {
+    "table_schema": "smm",
+    "table_name": "role",
+    "column_name": "role_type_lookup_id",
+    "data_type": "uuid",
+    "is_nullable": "YES"
+  },
+  {
+    "table_schema": "smm",
+    "table_name": "role",
+    "column_name": "status_lookup_id",
+    "data_type": "uuid",
+    "is_nullable": "YES"
+  },
+  {
+    "table_schema": "smm",
+    "table_name": "role",
+    "column_name": "created_at",
+    "data_type": "timestamp with time zone",
+    "is_nullable": "NO"
+  },
+  {
+    "table_schema": "smm",
+    "table_name": "role",
+    "column_name": "updated_at",
+    "data_type": "timestamp with time zone",
+    "is_nullable": "NO"
+  },
+  {
+    "table_schema": "smm",
+    "table_name": "role",
+    "column_name": "created_by",
+    "data_type": "uuid",
+    "is_nullable": "YES"
+  },
+  {
+    "table_schema": "smm",
+    "table_name": "role",
+    "column_name": "updated_by",
+    "data_type": "uuid",
+    "is_nullable": "YES"
+  },
+  {
+    "table_schema": "smm",
+    "table_name": "user",
+    "column_name": "user_id",
+    "data_type": "uuid",
+    "is_nullable": "NO"
+  },
+  {
+    "table_schema": "smm",
+    "table_name": "user",
+    "column_name": "org_id",
+    "data_type": "uuid",
+    "is_nullable": "NO"
+  },
+  {
+    "table_schema": "smm",
+    "table_name": "user",
+    "column_name": "email",
+    "data_type": "text",
+    "is_nullable": "NO"
+  },
+  {
+    "table_schema": "smm",
+    "table_name": "user",
+    "column_name": "full_name",
+    "data_type": "text",
+    "is_nullable": "NO"
+  },
+  {
+    "table_schema": "smm",
+    "table_name": "user",
+    "column_name": "phone",
+    "data_type": "text",
+    "is_nullable": "YES"
+  },
+  {
+    "table_schema": "smm",
+    "table_name": "user",
+    "column_name": "user_status_lookup_id",
+    "data_type": "uuid",
+    "is_nullable": "YES"
+  },
+  {
+    "table_schema": "smm",
+    "table_name": "user",
+    "column_name": "last_login_at",
+    "data_type": "timestamp with time zone",
+    "is_nullable": "YES"
+  },
+  {
+    "table_schema": "smm",
+    "table_name": "user",
+    "column_name": "created_at",
+    "data_type": "timestamp with time zone",
+    "is_nullable": "NO"
+  },
+  {
+    "table_schema": "smm",
+    "table_name": "user",
+    "column_name": "updated_at",
+    "data_type": "timestamp with time zone",
+    "is_nullable": "NO"
+  },
+  {
+    "table_schema": "smm",
+    "table_name": "user",
+    "column_name": "created_by",
+    "data_type": "uuid",
+    "is_nullable": "YES"
+  },
+  {
+    "table_schema": "smm",
+    "table_name": "user",
+    "column_name": "updated_by",
+    "data_type": "uuid",
+    "is_nullable": "YES"
+  },
+  {
+    "table_schema": "smm",
+    "table_name": "user_role",
+    "column_name": "ur_id",
+    "data_type": "uuid",
+    "is_nullable": "NO"
+  },
+  {
+    "table_schema": "smm",
+    "table_name": "user_role",
+    "column_name": "user_id",
+    "data_type": "uuid",
+    "is_nullable": "NO"
+  },
+  {
+    "table_schema": "smm",
+    "table_name": "user_role",
+    "column_name": "role_id",
+    "data_type": "uuid",
+    "is_nullable": "NO"
+  },
+  {
+    "table_schema": "smm",
+    "table_name": "user_role",
+    "column_name": "brand_id",
+    "data_type": "uuid",
+    "is_nullable": "YES"
+  }
+]

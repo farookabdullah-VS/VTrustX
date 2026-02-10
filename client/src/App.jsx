@@ -7,6 +7,7 @@ import { Dashboard } from './components/Dashboard';
 import { CxDashboard } from './components/CxDashboard';
 import { AIIntegrations } from './components/AIIntegrations';
 import { IntegrationsView } from './components/IntegrationsView';
+import { PublicReportViewer } from './components/PublicReportViewer';
 import { UserManagement } from './components/UserManagement';
 import { UserProfile } from './components/UserProfile';
 import { RoleMaster } from './components/RoleMaster';
@@ -29,7 +30,7 @@ import { Notifications } from './components/Notifications';
 import { RulesEngine } from './components/RulesEngine';
 import { CxPersonaBuilder } from './components/CxPersonaBuilder';
 import { JourneyBuilder } from './components/JourneyBuilder';
-import { User, Globe, LogOut } from 'lucide-react';
+import { User, Globe, LogOut, Menu, MessageSquare } from 'lucide-react';
 import { Customer360 } from './components/Customer360';
 import { TicketSettings } from './components/TicketSettings';
 import { SurveyReportSelector } from './components/SurveyReportSelector';
@@ -38,6 +39,20 @@ import { AIVideoAgentPage } from './components/AIVideoAgentPage';
 import { VoiceAgentPublic } from './components/VoiceAgentPublic';
 import axios from 'axios';
 import CxPersonaTemplates from './components/CxPersonaTemplates';
+import { AnalyticsStudio } from './components/analytics/AnalyticsStudio';
+import { SurveyAnalystChat } from './components/analytics/SurveyAnalystChat';
+import { AnalyticsBuilder } from './components/analytics/AnalyticsBuilder';
+import { SurveyAnalyticsDashboard } from './components/analytics/SurveyAnalyticsDashboard';
+import DynamicDashboard from './components/DynamicDashboard';
+import { TextIQDashboard } from './components/TextIQDashboard';
+import { XMDirectory } from './components/XMDirectory';
+import { ActionPlanning } from './components/ActionPlanning';
+import { SocialMediaMarketing } from './components/SocialMediaMarketing';
+import { ReputationManager } from './components/ReputationManager';
+import { CJMBuilder } from './components/CJM/CJMBuilder';
+import { CJMDashboard } from './components/CJM/CJMDashboard';
+import { CJMAnalyticsDashboard } from './components/CJM/CJMAnalyticsDashboard';
+import { InteractiveManual } from './components/InteractiveManual';
 import { useTranslation } from 'react-i18next';
 import './App.css';
 
@@ -50,7 +65,10 @@ function App() {
   const [user, setUser] = useState(() => {
     try {
       const saved = localStorage.getItem('vtrustx_user');
-      return saved ? JSON.parse(saved) : null;
+      if (!saved) return null;
+      const parsed = JSON.parse(saved);
+      // Validate that the user object has a token
+      return (parsed && parsed.token) ? parsed : null;
     } catch { return null; }
   });
 
@@ -74,49 +92,220 @@ function App() {
     document.body.dir = isRtl ? 'rtl' : 'ltr';
   }, [isRtl]);
 
-  // Load and Apply Tenant Theme
   React.useEffect(() => {
-    if (user && user.token) {
-      axios.get('/api/settings/theme')
-        .then(res => {
-          const theme = res.data;
-          if (theme && Object.keys(theme).length > 0) {
-            const root = document.documentElement;
-            if (theme.primaryColor) root.style.setProperty('--primary-color', theme.primaryColor);
-            if (theme.secondaryColor) root.style.setProperty('--secondary-color', theme.secondaryColor);
-            if (theme.backgroundColor) root.style.setProperty('--background-color', theme.backgroundColor);
-            if (theme.textColor) root.style.setProperty('--text-color', theme.textColor);
-            if (theme.borderRadius) root.style.setProperty('--border-radius', theme.borderRadius);
-            if (theme.fontFamily) root.style.setProperty('--font-family', theme.fontFamily);
+    // Fetch theme - Allow public access if configured, or tenant access if logged in
+    axios.get('/api/settings/theme')
+      .then(res => {
+        const theme = res.data;
+        if (theme && Object.keys(theme).length > 0) {
+          const root = document.documentElement;
+          if (theme.primaryColor) {
+            root.style.setProperty('--primary-color', theme.primaryColor);
+            // Dynamic Sidebar & Header Variables based on primary color
+            // Sidebar: Light tint of primary
+            root.style.setProperty('--sidebar-bg', `color-mix(in srgb, ${theme.primaryColor} 4%, white)`);
+            root.style.setProperty('--sidebar-text', theme.primaryColor);
+            root.style.setProperty('--sidebar-active-bg', theme.primaryColor);
+            root.style.setProperty('--sidebar-active-text', '#ffffff');
+            root.style.setProperty('--sidebar-border', `color-mix(in srgb, ${theme.primaryColor} 15%, transparent)`);
+
+            // Header: Very light tint
+            root.style.setProperty('--header-bg', `color-mix(in srgb, ${theme.primaryColor} 2%, white)`);
+            root.style.setProperty('--header-border', `color-mix(in srgb, ${theme.primaryColor} 15%, transparent)`);
           }
-        })
-        .catch(console.error);
-    }
+          if (theme.secondaryColor) root.style.setProperty('--secondary-color', theme.secondaryColor);
+          if (theme.backgroundColor) root.style.setProperty('--background-color', theme.backgroundColor);
+          if (theme.textColor) {
+            root.style.setProperty('--text-color', theme.textColor);
+          }
+          if (theme.borderRadius) root.style.setProperty('--border-radius', theme.borderRadius);
+          if (theme.fontFamily) root.style.setProperty('--font-family', theme.fontFamily);
+        }
+      })
+      .catch(err => {
+        console.warn("Theme load failed (using defaults):", err.message);
+      });
   }, [user]);
 
   // Views: dashboard, builder, viewer, system-settings, integrations, public-survey
   const [view, setView] = useState(() => {
-    if (window.location.pathname.startsWith('/s/voice/')) return 'public-voice'; // Priority Check
-    if (window.location.pathname.startsWith('/s/')) return 'public-survey';
+    const path = window.location.pathname;
+    // Public routes handling
+    if (path.startsWith('/s/voice/')) return 'public-voice';
+    if (path.startsWith('/s/report/')) return 'public-report';
+    if (path.startsWith('/report/')) return 'public-report';
+    if (path.startsWith('/s/')) return 'public-survey';
+
+    // Internal routes: '/viewName/id'
+    const parts = path.split('/').filter(p => p);
+    // Ignore static assets or API calls if routed here by mistake
+    if (parts.length > 0 && !['api', 'static', 'uploads', 's', 'report'].includes(parts[0])) {
+      return parts[0];
+    }
     return 'dashboard';
   });
-  const [currentFormId, setCurrentFormId] = useState(null);
+
+  const [currentFormId, setCurrentFormId] = useState(() => {
+    const path = window.location.pathname;
+    const parts = path.split('/').filter(p => p);
+    // Logic: /builder/123 -> parts[0]=builder, parts[1]=123
+    if (parts.length > 1 && !['s', 'report', 'api'].includes(parts[0])) {
+      // Check if second part looks like an ID (numeric or UUID)
+      // For now just return it
+      return parts[1];
+    }
+    return null;
+  });
+
   const [currentTicketId, setCurrentTicketId] = useState(null);
   const [currentSubmissionId, setCurrentSubmissionId] = useState(null);
   const [initialData, setInitialData] = useState(null);
   const [isAIModalOpen, setIsAIModalOpen] = useState(false);
   const [isTemplateGalleryOpen, setIsTemplateGalleryOpen] = useState(false);
   const [isCreateSurveyModalOpen, setIsCreateSurveyModalOpen] = useState(false);
+  const [currentCjmMapId, setCurrentCjmMapId] = useState(null);
+
+  // --- BROWSER HISTORY SYNC START ---
+  const isPopping = React.useRef(false);
+
+  // 1. Listen for Back/Forward Button
+  React.useEffect(() => {
+    const onPopState = (e) => {
+      isPopping.current = true;
+      if (e.state) {
+        if (e.state.view) setView(e.state.view);
+        setCurrentFormId(e.state.currentFormId || null);
+        setCurrentSubmissionId(e.state.currentSubmissionId || null);
+        if (e.state.currentTicketId) setCurrentTicketId(e.state.currentTicketId);
+      } else {
+        // Fallback or external navigation back to root
+        // Re-parse URL or verify if we should go to dashboard
+        const parts = window.location.pathname.split('/').filter(p => p);
+        if (parts.length > 0 && !['s', 'api'].includes(parts[0])) {
+          setView(parts[0]);
+          setCurrentFormId(parts[1] || null);
+        } else {
+          setView('dashboard');
+        }
+      }
+    };
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
+  }, []);
+
+  // 2. Push State on View Change
+  React.useEffect(() => {
+    if (isPopping.current) {
+      isPopping.current = false;
+      return;
+    }
+
+    // Skip public views that manage their own URL handling
+    if (['public-voice', 'public-survey', 'public-report'].includes(view)) return;
+
+    let url = view === 'dashboard' ? '/' : `/${view}`;
+    if (currentFormId && (view === 'builder' || view === 'viewer')) {
+      url += `/${currentFormId}`;
+    }
+
+    // Replace if same view/url (e.g. init), push if different
+    if (window.location.pathname !== url) {
+      const state = { view, currentFormId, currentSubmissionId, currentTicketId };
+      window.history.pushState(state, '', url);
+    } else {
+      // Ensure state object is populated for back button functionality
+      const state = { view, currentFormId, currentSubmissionId, currentTicketId };
+      window.history.replaceState(state, '', url);
+    }
+
+  }, [view, currentFormId, currentSubmissionId, currentTicketId]);
+  // --- BROWSER HISTORY SYNC END ---
 
   // Sidebar State
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isSidebarHidden, setIsSidebarHidden] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+
+  // Auto-hide/Collapse Sidebar Logic to maximize space
+  React.useEffect(() => {
+    // Full screen builders (Hide Sidebar completely)
+    if (view === 'personas' || view === 'builder' || view === 'analytics-studio') {
+      setIsSidebarHidden(true);
+    }
+    // Data intensive views (Collapse Sidebar to icons)
+    else if ((view === 'viewer' && currentFormId) || view === 'results' || view === 'analytics-dashboard') {
+      setIsSidebarHidden(false);
+      setIsSidebarCollapsed(true);
+    }
+    // Default Views (Show Sidebar Expanded)
+    else {
+      setIsSidebarHidden(false);
+      setIsSidebarCollapsed(false);
+    }
+  }, [view, currentFormId]);
+
+  // Idle Timer Logic
+  const [idleTimeout, setIdleTimeout] = useState(0);
+  const lastActivity = React.useRef(Date.now());
+
+  // Fetch Settings for Idle Timeout
+  React.useEffect(() => {
+    if (user) {
+      axios.get('/api/settings')
+        .then(res => {
+          if (res.data.idle_timeout) {
+            setIdleTimeout(parseInt(res.data.idle_timeout, 10));
+          }
+        })
+        .catch(err => console.error("Failed to fetch settings for idle timer", err));
+    }
+  }, [user]);
+
+  // Track Activity
+  React.useEffect(() => {
+    const updateActivity = () => {
+      lastActivity.current = Date.now();
+    };
+
+    // Throttle slightly by not debouncing but valid enough
+    window.addEventListener('mousemove', updateActivity);
+    window.addEventListener('keydown', updateActivity);
+    window.addEventListener('click', updateActivity);
+    window.addEventListener('scroll', updateActivity);
+
+    return () => {
+      window.removeEventListener('mousemove', updateActivity);
+      window.removeEventListener('keydown', updateActivity);
+      window.removeEventListener('click', updateActivity);
+      window.removeEventListener('scroll', updateActivity);
+    };
+  }, []);
+
+  // Check Idle Status
+  React.useEffect(() => {
+    if (!user || idleTimeout <= 0) return;
+
+    const checkInterval = setInterval(() => {
+      const now = Date.now();
+      // minutes * 60 * 1000
+      const limit = idleTimeout * 60 * 1000;
+
+      if (now - lastActivity.current > limit) {
+        console.log("User idle for too long. Logging out.");
+        setUser(null);
+        alert("Session expired due to inactivity.");
+      }
+    }, 10000); // Check every 10 seconds
+
+    return () => clearInterval(checkInterval);
+  }, [user, idleTimeout]);
 
   // Public Survey State - Init from URL
   const [publicSlug, setPublicSlug] = useState(() => {
     const path = window.location.pathname;
-    // Check voice first
     if (path.startsWith('/s/voice/')) return path.split('/s/voice/')[1];
+    if (path.startsWith('/s/report/')) return path.split('/s/report/')[1];
+    if (path.startsWith('/report/')) return path.split('/report/')[1];
     if (path.startsWith('/s/')) return path.split('/s/')[1];
     return null;
   });
@@ -183,6 +372,7 @@ function App() {
     }
     else if (id === 'ai-settings') handleNavigate('ai-settings');
     else if (id === 'survey-reports') setView('survey-reports');
+    else if (id === 'survey-results') setView('survey-reports');
     else if (id === 'ai-surveyor') setView('ai-surveyor');
     else if (id === 'ai-video-agent') setView('ai-video-agent');
     else if (id === 'cx-ratings') setView('cx-ratings');
@@ -204,6 +394,19 @@ function App() {
     else if (id === 'ticket-settings') setView('ticket-settings');
     else if (id === 'identity') setView('identity'); // Placeholder if view exists
     else if (id === 'support') setView('support'); // Or navigate to support page
+    // Analytics
+    else if (id === 'analytics-studio') setView('analytics-studio');
+    else if (id === 'analytics-builder') setView('analytics-builder');
+    else if (id === 'analytics-dashboard') setView('analytics-dashboard');
+    else if (id === 'survey-activity-dashboard') setView('survey-activity-dashboard');
+    // Other Modules
+    else if (id === 'textiq') setView('textiq');
+    else if (id === 'xm-directory') setView('xm-directory');
+    else if (id === 'actions') setView('actions');
+    else if (id === 'social-media') setView('social-media');
+    else if (id === 'reputation') setView('reputation');
+    else if (id === 'cjm') { setView('cjm'); setCurrentCjmMapId(null); }
+    else if (id === 'cjm-analytics') setView('cjm-analytics');
   };
 
   const handleEditForm = (id, tab = 'questionnaire') => {
@@ -230,50 +433,70 @@ function App() {
     )
   }
 
+  if (view === 'public-report' && publicSlug) {
+    return <PublicReportViewer token={publicSlug} />
+  }
+
   if (view === 'public-voice' && publicSlug) {
     return <VoiceAgentPublic slug={publicSlug} />
   }
 
   return (
     <div className="App">
-      <Sidebar
-        user={user}
-        view={view === 'viewer' ? 'form-viewer' : view === 'builder' ? 'create-normal' : view}
-        onViewChange={handleSidebarNav}
-        onLogout={() => setUser(null)}
-        isCollapsed={isSidebarCollapsed}
-        toggleSidebar={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-      />
+      {!isSidebarHidden && (
+        <Sidebar
+          user={user}
+          view={view === 'viewer' ? 'form-viewer' : view === 'builder' ? 'create-normal' : view}
+          onViewChange={handleSidebarNav}
+          onLogout={() => setUser(null)}
+          isCollapsed={isSidebarCollapsed}
+          toggleSidebar={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+          onHide={() => setIsSidebarHidden(true)}
+        />
+      )}
 
       <div
         className="main-content"
         style={{
-          marginLeft: isRtl ? 0 : (isSidebarCollapsed ? '104px' : 'calc(var(--sidebar-width, 260px) + 24px)'), // Sidebar + 12px gap + 12px gap
-          marginRight: isRtl ? (isSidebarCollapsed ? '104px' : 'calc(var(--sidebar-width, 260px) + 24px)') : 0,
+          marginLeft: isRtl ? 0 : (isSidebarHidden ? '24px' : (isSidebarCollapsed ? '104px' : 'calc(var(--sidebar-width, 260px) + 24px)')), // Sidebar + 12px gap + 12px gap
+          marginRight: isRtl ? (isSidebarHidden ? '24px' : (isSidebarCollapsed ? '104px' : 'calc(var(--sidebar-width, 260px) + 24px)')) : 0,
           transition: isSidebarCollapsed ? 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)' : 'none', // Disable transition during drag resize to avoid lag
-          width: `calc(100% - ${isSidebarCollapsed ? '104px' : 'calc(var(--sidebar-width, 260px) + 24px)'} - 12px)`, // Right gap 12px
+          width: `calc(100% - ${isSidebarHidden ? '48px' : (isSidebarCollapsed ? '104px' : 'calc(var(--sidebar-width, 260px) + 24px)')} - 12px)`, // Right gap 12px
           minHeight: '100vh',
           boxSizing: 'border-box',
-          paddingTop: '12px'
+          paddingTop: view === 'personas' ? '0' : '12px'
         }}
       >
         <header
           className="glass-panel"
           style={{
             padding: '0 24px',
-            marginBottom: '24px',
+            marginBottom: view === 'personas' ? '0' : '24px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
             height: '70px',
             boxSizing: 'border-box',
             borderRadius: '16px',
-            background: '#ecfdf5', // Pale Green to match sidebar
-            border: '1px solid rgba(6, 78, 59, 0.3)' // Full Outline
+            background: 'var(--header-bg, #ecfdf5)', // Use dynamic var or fallback
+            border: '1px solid var(--header-border, rgba(6, 78, 59, 0.3))' // Full Outline
           }}
         >
           <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
-            <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: '700', color: '#064e3b' }}>
+            {isSidebarHidden && (
+              <button
+                onClick={() => setIsSidebarHidden(false)}
+                style={{
+                  background: 'white', border: '1px solid #cbd5e1', borderRadius: '8px', padding: '8px',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
+                  color: 'var(--sidebar-text, #064e3b)'
+                }}
+                title="Show Sidebar"
+              >
+                <Menu size={20} />
+              </button>
+            )}
+            <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: '700', color: 'var(--sidebar-text, #064e3b)' }}>
               {view === 'dashboard' ? 'Overview' :
                 view === 'builder' ? 'Form Builder' :
                   view === 'viewer' ? (currentSubmissionId ? 'Edit Submission' : 'Surveys') :
@@ -435,12 +658,14 @@ function App() {
               onEditSubmission={handleEditSubmission}
               onEditForm={handleEditForm}
               onCreate={(type) => handleNavigate(type)}
+              user={user}
             />
           )}
           {view === 'ai-settings' && <AIIntegrations />}
           {view === 'system-settings' && <SystemSettings />}
           {view === 'ticket-settings' && <TicketSettings />}
           {view === 'theme-settings' && <ThemeSettings />}
+          {view === 'interactive-manual' && <InteractiveManual />}
           {view === 'ai-surveyor' && <AISurveyor />}
           {view === 'ai-video-agent' && <AIVideoAgentPage />}
           {view === 'profile' && <UserProfile user={user} onUpdateUser={(updatedUser) => setUser(prev => ({ ...prev, user: updatedUser }))} />}
@@ -452,7 +677,7 @@ function App() {
           {view === 'global-admin' && <GlobalAdminDashboard />}
           {view === 'contact-master' && <ContactMaster />}
           {view === 'customer360' && <Customer360 />}
-          {view === 'personas' && <CxPersonaBuilder />}
+          {view === 'personas' && <CxPersonaBuilder onToggleSidebar={setIsSidebarCollapsed} onNavigate={setView} />}
           {view === 'journeys' && <JourneyBuilder />}
           {view === 'persona-templates' && (
             <CxPersonaTemplates
@@ -509,6 +734,25 @@ function App() {
               onBack={() => { setView('tickets'); setCurrentTicketId(null); }}
             />
           )}
+
+          {/* Analytics Views */}
+          {view === 'analytics-studio' && <AnalyticsStudio />}
+          {view === 'analytics-builder' && <AnalyticsBuilder onNavigate={setView} />}
+          {view === 'analytics-dashboard' && <DynamicDashboard />}
+          {view === 'survey-activity-dashboard' && <SurveyAnalyticsDashboard />}
+
+          {/* Other Module Views */}
+          {view === 'textiq' && <TextIQDashboard />}
+          {view === 'xm-directory' && <XMDirectory />}
+          {view === 'actions' && <ActionPlanning />}
+          {view === 'social-media' && <SocialMediaMarketing />}
+          {view === 'reputation' && <ReputationManager />}
+          {view === 'cjm' && (
+            currentCjmMapId
+              ? <CJMBuilder mapId={currentCjmMapId} onBack={() => setCurrentCjmMapId(null)} />
+              : <CJMDashboard onSelectMap={(id) => setCurrentCjmMapId(id)} />
+          )}
+          {view === 'cjm-analytics' && <CJMAnalyticsDashboard />}
         </main>
       </div>
       <AIFormGeneratorModal
@@ -567,6 +811,7 @@ function App() {
           setView('builder');
         }}
       />
+
     </div>
   );
 }

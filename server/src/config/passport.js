@@ -6,49 +6,54 @@ require('dotenv').config();
 const userRepo = new PostgresRepository('users');
 const tenantRepo = new PostgresRepository('tenants');
 
-passport.use(new GoogleStrategy({
-    clientID: process.env.GOOGLE_CLIENT_ID,
-    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL: "/api/auth/google/callback"
-},
-    async function (accessToken, refreshToken, profile, cb) {
-        try {
-            if (!profile.emails || profile.emails.length === 0) {
-                return cb(new Error("No email found in Google profile"));
-            }
-            const email = profile.emails[0].value;
-            const user = await userRepo.findBy('email', email);
+if (process.env.GOOGLE_CLIENT_ID) {
+    passport.use(new GoogleStrategy({
+        clientID: process.env.GOOGLE_CLIENT_ID,
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+        callbackURL: "/api/auth/google/callback",
+        proxy: true
+    },
+        async function (accessToken, refreshToken, profile, cb) {
+            try {
+                if (!profile.emails || profile.emails.length === 0) {
+                    return cb(new Error("No email found in Google profile"));
+                }
+                const email = profile.emails[0].value;
+                const user = await userRepo.findBy('email', email);
 
-            if (user) {
-                return cb(null, user);
-            } else {
-                // Create New User
-                // 1. Create Tenant
-                const tenantName = `${profile.displayName}'s Organization`;
-                const newTenant = await tenantRepo.create({
-                    name: tenantName,
-                    plan: 'free',
-                    subscription_status: 'active',
-                    created_at: new Date()
-                });
+                if (user) {
+                    return cb(null, user);
+                } else {
+                    // Create New User
+                    // 1. Create Tenant
+                    const tenantName = `${profile.displayName}'s Organization`;
+                    const newTenant = await tenantRepo.create({
+                        name: tenantName,
+                        plan: 'free',
+                        subscription_status: 'active',
+                        created_at: new Date()
+                    });
 
-                // 2. Create User
-                const newUser = {
-                    username: email.split('@')[0], // derived username
-                    email: email,
-                    password: 'oauth-generated-' + Math.random().toString(36), // Dummy password
-                    role: 'admin',
-                    tenant_id: newTenant.id,
-                    created_at: new Date()
-                };
-                const createdUser = await userRepo.create(newUser);
-                return cb(null, createdUser);
+                    // 2. Create User
+                    const newUser = {
+                        username: email.split('@')[0], // derived username
+                        email: email,
+                        password: 'oauth-generated-' + Math.random().toString(36), // Dummy password
+                        role: 'admin',
+                        tenant_id: newTenant.id,
+                        created_at: new Date()
+                    };
+                    const createdUser = await userRepo.create(newUser);
+                    return cb(null, createdUser);
+                }
+            } catch (err) {
+                return cb(err);
             }
-        } catch (err) {
-            return cb(err);
         }
-    }
-));
+    ));
+} else {
+    console.warn("Skipping Google OAuth strategy - GOOGLE_CLIENT_ID not set");
+}
 
 const MicrosoftStrategy = require('passport-microsoft').Strategy;
 

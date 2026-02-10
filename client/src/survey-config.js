@@ -37,6 +37,8 @@ const NPS_COLORS = [
 
 // 3. Robust Coloring Logic & Design Surface Locking
 export const setupSurveyColors = (survey) => {
+    if (!survey || !survey.onAfterRenderQuestion || typeof survey.onAfterRenderQuestion.add !== 'function') return;
+
     survey.onAfterRenderQuestion.add((sender, options) => {
         // Check our custom property
         const gradientType = options.question.renderGradient;

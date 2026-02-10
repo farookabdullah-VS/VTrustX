@@ -1,8 +1,17 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { SurveyCreatorComponent, SurveyCreator } from "survey-creator-react";
+import { Serializer, Action } from "survey-core";
+import { ReactElementFactory } from "survey-react-ui";
+import { surveyLocalization } from "survey-core";
 import "survey-core/survey-core.min.css";
 import "survey-creator-core/survey-creator-core.min.css";
+import "survey-core/i18n";
+import "survey-creator-core/i18n";
+import './FormBuilder.css';
+
+import "survey-core/themes/index";
+import "survey-creator-core/themes/index";
 import axios from 'axios';
 import { User, Globe, LogOut, ChevronDown, Bell } from 'lucide-react';
 import { SettingsView } from './SettingsView';
@@ -11,13 +20,20 @@ import { CollectView } from './CollectView';
 import { AnalyticsView } from './AnalyticsView';
 import { SurveyAudience } from './SurveyAudience';
 
+import { LoopLogicView } from './LoopLogicView';
+
 import { registerCustomTypes, setupSurveyColors, VTrustTheme } from '../survey-config';
 import { initCustomControls } from './CustomSurveyControls';
-import { QuotaSettings } from './settings/QuotaSettings';
+import { initLoopLogic } from './SurveyLoopLogic';
+import { QuotaSettings } from './QuotaSettings';
 import { VoiceAgentSettings } from './settings/VoiceAgentSettings';
 
 const creatorOptions = {
     showLogicTab: true,
+    showTranslationTab: true,
+    showThemeTab: true,
+    showEmbedProcessingTab: true,
+    showJSONEditorTab: true,
     isAutoSave: false
 };
 
@@ -33,11 +49,22 @@ export function FormBuilder({ user, formId, initialData, onBack, onNavigate, onF
     const [showAIModal, setShowAIModal] = useState(false);
     const [aiPrompt, setAiPrompt] = useState('');
     const [aiLoading, setAiLoading] = useState(false);
+
     // Use ref to track ID between saves without re-binding
-    const currentFormId = React.useRef(formId);
+    const currentFormId = useRef(formId);
 
     // System Settings
     const [workflowEnabled, setWorkflowEnabled] = useState(false);
+
+    const [submissions, setSubmissions] = useState([]);
+
+    useEffect(() => {
+        if (activeNav === 'analytics' && formId) {
+            axios.get(`/api/submissions?formId=${formId}`)
+                .then(res => setSubmissions(res.data))
+                .catch(err => console.error("Failed to load submissions:", err));
+        }
+    }, [activeNav, formId]);
 
     useEffect(() => {
         axios.get('/api/settings')
@@ -53,277 +80,243 @@ export function FormBuilder({ user, formId, initialData, onBack, onNavigate, onF
         currentFormId.current = formId;
     }, [formId]);
 
+    // 1. Initialize Creator Instance (Once)
     useEffect(() => {
-        registerCustomTypes(); // Ensure csat/ces types exist
-        initCustomControls(); // Register Audio Recorder etc.
+        registerCustomTypes();
+        initCustomControls();
+
+        // Step 2: Register all available languages
+        surveyLocalization.supportedLocales = Object.keys(surveyLocalization.locales || {});
+
         const c = new SurveyCreator(creatorOptions);
+        c.readOnly = false; // Step 3
+        // Force options
+        c.showLogicTab = true;
+        c.showTranslationTab = true;
+        c.showThemeTab = true;
+        c.showEmbedProcessingTab = true;
+        c.showJSONEditorTab = true;
 
-        // Apply coloring logic to the inner survey instance
-        c.onSurveyInstanceCreated.add((sender, options) => {
-            setupSurveyColors(options.survey);
-        });
+        // --- REGISTER LOOP LOGIC TAB ---
+        // --- REGISTER LOOP LOGIC TAB ---
+        // try {
+        //     if (ReactElementFactory && ReactElementFactory.Instance) {
+        //         // Check if already registered to avoid duplicates on re-render
+        //         // SurveyJS doesn't have a check method easily, but re-registering keeps the latest handler
+        //         ReactElementFactory.Instance.registerElement("svc-tab-loops", (props) => {
+        //             return <LoopLogicView creator={props.data} />;
+        //         });
+        //     }
 
-        // Hide specific properties for CSAT, CES, and NPS to prevent modification (Lock Down)
-        c.onShowingProperty.add((sender, options) => {
-            const q = options.obj;
-            // check if it's our flagged custom control
-            if (q && q.getType() === "rating" && (q.renderGradient === 'csat' || q.renderGradient === 'ces' || q.renderGradient === 'nps')) {
-                const hiddenProps = [
-                    "rateMax", "rateMin", "rateStep", "rateValues",
-                    "minRateDescription", "maxRateDescription",
-                    "rateColorMode", "ratingTheme", "displayMode"
-                ];
-                if (hiddenProps.includes(options.property.name)) {
-                    options.canShow = false;
-                }
-            }
-        });
+        //     if (c.tabs) {
+        //         const logicTab = c.tabs.find(t => t.id === 'logic');
+        //         const insertIndex = logicTab ? c.tabs.indexOf(logicTab) + 1 : 3;
 
-        // Remove +/- buttons, Type Selector, and other rating-specific adorners
-        c.onDefineElementMenuItems.add((sender, options) => {
-            const q = options.obj;
-            // Check if it's our flagged custom control
-            if (q && q.getType() === "rating" && (q.renderGradient === 'csat' || q.renderGradient === 'ces' || q.renderGradient === 'nps')) {
-                // Whitelist: Only allow essential actions. Remove everything else (Type Selector, +/-, etc.)
-                const allowedActionIds = ['delete', 'copy', 'duplicate', 'settings', 'questionSettings'];
+        //         // Check if already exists
+        //         if (!c.tabs.find(t => t.id === "loops")) {
+        //             const loopTab = new Action({
+        //                 id: "loops",
+        //                 name: "loops",
+        //                 title: "Loop Logic",
+        //                 component: "svc-tab-loops",
+        //                 data: c,
+        //                 action: () => {
+        //                     c.makeNewViewActive("loops");
+        //                 }
+        //             });
+        //             c.tabs.splice(insertIndex, 0, loopTab);
+        //         }
+        //     }
+        // } catch (e) {
+        //     console.error("Failed to register Loop Logic tab:", e);
+        // }
 
-                options.items = options.items.filter(item => {
-                    return allowedActionIds.includes(item.id);
+        // Event Handlers with safety checks
+        try {
+            if (c.onSurveyInstanceCreated && typeof c.onSurveyInstanceCreated.add === 'function') {
+                c.onSurveyInstanceCreated.add((sender, options) => {
+                    setupSurveyColors(options.survey);
                 });
             }
-        });
 
-        // Register Custom Controls (NPS, CSAT, CES)
-        c.toolbox.addItem({
-            name: "nps",
-            title: "NPS",
-            isCopied: true,
-            iconName: "icon-rating",
-            category: "Voice of Customer",
-            json: { type: "rating", name: "nps", title: "Net Promoter Score", rateMax: 10, renderGradient: "nps" }
-        });
-        c.toolbox.addItem({
-            name: "csat",
-            title: "CSAT",
-            isCopied: true,
-            iconName: "icon-rating",
-            category: "Voice of Customer",
-            json: { type: "rating", name: "csat", title: "Customer Satisfaction", rateMax: 5, renderGradient: "csat" }
-        });
-        c.toolbox.addItem({
-            name: "ces",
-            title: "CES",
-            isCopied: true,
-            iconName: "icon-rating",
-            category: "Voice of Customer",
-            json: { type: "rating", name: "ces", title: "Customer Effort Score", rateMax: 5, renderGradient: "ces" }
-        });
-
-        // Basic Controls (Requested by User)
-        const basicControls = [
-            {
-                name: "heading",
-                title: "Heading",
-                iconName: "icon-default",
-                category: "Basic Controls",
-                json: { type: "html", html: "<h3>Heading</h3>" }
-            },
-            {
-                name: "fullname",
-                title: "Full Name",
-                iconName: "icon-text",
-                category: "Basic Controls",
-                json: {
-                    type: "panel",
-                    title: "Name",
-                    elements: [
-                        {
-                            type: "text",
-                            name: "first_name",
-                            title: "First Name",
-                            titleLocation: "bottom",
-                            isRequired: true,
-                            startWithNewLine: false,
-                            width: "50%"
-                        },
-                        {
-                            type: "text",
-                            name: "last_name",
-                            title: "Last Name",
-                            titleLocation: "bottom",
-                            startWithNewLine: false,
-                            isRequired: true,
-                            width: "50%"
-                        }
-                    ]
-                }
-            },
-            {
-                name: "email",
-                title: "Email",
-                iconName: "icon-text",
-                category: "Basic Controls",
-                json: { type: "text", name: "email", title: "Email", inputType: "email", isRequired: true, validators: [{ type: "email" }] }
-            },
-            {
-                name: "address",
-                title: "Address",
-                iconName: "icon-comment",
-                category: "Basic Controls",
-                json: { type: "comment", name: "address", title: "Address" }
-            },
-            {
-                name: "phone",
-                title: "Phone",
-                iconName: "icon-text",
-                category: "Basic Controls",
-                json: { type: "text", name: "phone", title: "Phone", inputType: "tel", validators: [{ type: "regex", regex: "\\\\d+", text: "Please enter a valid phone number" }] }
-            },
-            {
-                name: "datepicker",
-                title: "Date Picker",
-                iconName: "icon-datepicker",
-                category: "Basic Controls",
-                json: { type: "text", name: "date", title: "Date", inputType: "date" }
-            },
-            {
-                name: "appointment",
-                title: "Appointment",
-                iconName: "icon-datepicker",
-                category: "Basic Controls",
-                json: { type: "text", name: "appointment", title: "Appointment", inputType: "datetime-local" }
-            },
-            {
-                name: "signature",
-                title: "Signature",
-                iconName: "icon-signature",
-                category: "Basic Controls",
-                json: {
-                    type: "signaturepad",
-                    name: "signature",
-                    title: "Signature",
-                    signatureWidth: 500,
-                    signatureHeight: 200,
-                    width: "60%"
-                }
-            },
-            {
-                name: "fillintheblank",
-                title: "Fill in the Blank",
-                iconName: "icon-text",
-                category: "Basic Controls",
-                json: { type: "text", name: "question", title: "Question" }
-            },
-            {
-                name: "voicerecord",
-                title: "Voice Record",
-                iconName: "icon-radiogroup",
-                category: "Basic Controls",
-                json: { type: "audiorecorder", name: "voice_response", title: "Record your answer" }
-            },
-            {
-                name: "authenticator",
-                title: "Authenticator",
-                iconName: "icon-settings",
-                category: "Security & Logic",
-                json: { type: "authenticator", name: "auth_gate", title: "Enter Password to Continue", isRequired: true }
+            if (c.onShowingProperty && typeof c.onShowingProperty.add === 'function') {
+                c.onShowingProperty.add((sender, options) => {
+                    const q = options.obj;
+                    if (q && q.getType() === "rating" && (q.renderGradient === 'csat' || q.renderGradient === 'ces' || q.renderGradient === 'nps')) {
+                        const hiddenProps = ["rateMax", "rateMin", "rateStep", "rateValues", "minRateDescription", "maxRateDescription", "rateColorMode", "ratingTheme", "displayMode"];
+                        if (hiddenProps.includes(options.property.name)) options.canShow = false;
+                    }
+                });
             }
+
+            if (c.onDefineElementMenuItems && typeof c.onDefineElementMenuItems.add === 'function') {
+                c.onDefineElementMenuItems.add((sender, options) => {
+                    const q = options.obj;
+                    if (q && q.getType() === "rating" && (q.renderGradient === 'csat' || q.renderGradient === 'ces' || q.renderGradient === 'nps')) {
+                        const allowedActionIds = ['delete', 'copy', 'duplicate', 'settings', 'questionSettings'];
+                        options.items = options.items.filter(item => allowedActionIds.includes(item.id));
+                    }
+                });
+            }
+
+            // Initialize Loop Logic safely
+            // if (typeof initLoopLogic === 'function') {
+            //     initLoopLogic(c);
+            // }
+        } catch (error) {
+            console.warn("SurveyCreator initialization warning:", error);
+        }
+
+        // Add Toolbox Items
+        const basicControls = [
+            { name: "nps", title: "NPS", iconName: "icon-radiogroup", category: "Custom", json: { type: "rating", name: "nps_score", title: "How likely are you to recommend us?", minRateDescription: "Not Likely", maxRateDescription: "Extremely Likely", rateMin: 0, rateMax: 10, renderGradient: "nps" } },
+            { name: "csat", title: "CSAT", iconName: "icon-rating", category: "Custom", json: { type: "rating", name: "csat_score", title: "Customer Satisfaction Score", rateMin: 1, rateMax: 5, minRateDescription: "Very Dissatisfied", maxRateDescription: "Very Satisfied", renderGradient: "csat" } },
+            { name: "ces", title: "CES", iconName: "icon-rating", category: "Custom", json: { type: "rating", name: "ces_score", title: "Customer Effort Score", rateMin: 1, rateMax: 5, minRateDescription: "Very Difficult", maxRateDescription: "Very Easy", renderGradient: "ces" } },
+            { name: "fullname", title: "Full Name", iconName: "icon-text", category: "Basic Controls", json: { type: "multipletext", name: "fullname", title: "Full Name", items: [{ name: "first_name", title: "First Name", isRequired: true, width: "50%" }, { name: "last_name", title: "Last Name", isRequired: true, width: "50%" }] } },
+            { name: "email", title: "Email", iconName: "icon-text", category: "Basic Controls", json: { type: "text", name: "email", title: "Email", inputType: "email", isRequired: true, validators: [{ type: "email" }] } },
+            { name: "address", title: "Address", iconName: "icon-comment", category: "Basic Controls", json: { type: "comment", name: "address", title: "Address" } },
+            { name: "phone", title: "Phone", iconName: "icon-text", category: "Basic Controls", json: { type: "text", name: "phone", title: "Phone", inputType: "tel", validators: [{ type: "regex", regex: "\\\\d+", text: "Please enter a valid phone number" }] } },
+            { name: "datepicker", title: "Date Picker", iconName: "icon-datepicker", category: "Basic Controls", json: { type: "text", name: "date", title: "Date", inputType: "date" } },
+            { name: "appointment", title: "Appointment", iconName: "icon-datepicker", category: "Basic Controls", json: { type: "text", name: "appointment", title: "Appointment", inputType: "datetime-local" } },
+            { name: "signature", title: "Signature", iconName: "icon-signature", category: "Basic Controls", json: { type: "signaturepad", name: "signature", title: "Signature", signatureWidth: 500, signatureHeight: 200, width: "60%" } },
+            { name: "fillintheblank", title: "Fill in the Blank", iconName: "icon-text", category: "Basic Controls", json: { type: "text", name: "question", title: "Question" } },
+            { name: "voicerecord", title: "Voice Record", iconName: "icon-radiogroup", category: "Basic Controls", json: { type: "audiorecorder", name: "voice_response", title: "Record your answer" } },
+            { name: "authenticator", title: "Authenticator", iconName: "icon-settings", category: "Security & Logic", json: { type: "authenticator", name: "auth_gate", title: "Enter Password to Continue", isRequired: true } }
         ];
 
-        basicControls.forEach(item => c.toolbox.addItem(item));
+        // Force Toolbox to be visible
+        c.showToolbox = true;
+        c.readOnly = false; // Default to editable
 
-        // Implement Save Logic
+        if (c.toolbox) {
+            // Explicitly ensuring standard tools are available
+            const standardTools = [
+                { name: "paneldynamic", title: "Dynamic Panel (Loop)", iconName: "icon-paneldynamic", category: "Containers", json: { type: "paneldynamic", name: "panel1", title: "New Dynamic Panel" } },
+                { name: "panel", title: "Panel (Group)", iconName: "icon-panel", category: "Containers", json: { type: "panel", name: "panel1", title: "New Panel" } },
+                { name: "text", title: "Single Input", iconName: "icon-text", category: "Questions", json: { type: "text" } },
+                { name: "checkbox", title: "Checkbox", iconName: "icon-checkbox", category: "Questions", json: { type: "checkbox", name: "q1", choices: ["Item 1", "Item 2"] } },
+                { name: "radiogroup", title: "Radio Group", iconName: "icon-radiogroup", category: "Questions", json: { type: "radiogroup", name: "q1", choices: ["Item 1", "Item 2"] } },
+                { name: "dropdown", title: "Dropdown", iconName: "icon-dropdown", category: "Questions", json: { type: "dropdown", name: "q1", choices: ["Item 1", "Item 2"] } },
+                { name: "matrix", title: "Single Choice Matrix", iconName: "icon-matrix", category: "Matrix", json: { type: "matrix" } },
+                { name: "matrixdynamic", title: "Dynamic Matrix", iconName: "icon-matrixdynamic", category: "Matrix", json: { type: "matrixdynamic" } },
+                { name: "file", title: "File Upload", iconName: "icon-file", category: "Questions", json: { type: "file" } },
+                { name: "html", title: "HTML / Text", iconName: "icon-html", category: "Questions", json: { type: "html", html: "Enter your text here" } }
+            ];
+
+            // Add standard tools first
+            standardTools.forEach(tool => {
+                const exists = c.toolbox.items.some(i => i.name === tool.name);
+                if (!exists) {
+                    c.toolbox.addItem(tool);
+                }
+            });
+
+            // Add custom Basic Controls
+            basicControls.forEach(item => c.toolbox.addItem(item));
+        }
+
+        // Save Function
         c.saveSurveyFunc = (saveNo, callback) => {
+            // Save Theme along with Definition
+            const surveyDef = c.JSON;
+            // Embed theme in the definition object or alongside it. 
+            // Since we use definition column in DB, let's mix it in or wrap it.
+            // But c.JSON might be strict. Let's add 'theme' property to the object we send.
+            // However, existing backend likely maps 'definition' -> DB column.
+            // So we modify 'definition' to include theme.
             const payload = {
-                definition: c.JSON,
+                definition: { ...surveyDef, theme: c.theme },
                 title: c.survey.title || "Untitled Form",
                 version: 1
             };
-
-            // Use Ref to get latest ID even if effect didn't re-run
             const targetId = currentFormId.current;
 
             if (targetId) {
-                // Update Existing
-                axios.put(`/api/forms/${targetId}`, payload)
-                    .then(() => callback(saveNo, true))
-                    .catch(err => {
-                        console.error("Save Error:", err);
-                        alert("Save Error: " + (err.response?.data?.error || err.message));
-                        callback(saveNo, false);
-                    });
+                axios.put(`/api/forms/${targetId}`, payload).then(res => {
+                    callback(saveNo, true);
+                }).catch(err => {
+                    console.error("Save Error:", err);
+                    alert("Save Error: " + (err.response?.data?.error || err.message));
+                    callback(saveNo, false);
+                });
             } else {
-                // Create New
-                axios.post(`/api/forms`, payload)
-                    .then(res => {
-                        if (res.data && res.data.id) {
-                            currentFormId.current = res.data.id; // Update ref for next save
-                            setFormMetadata(res.data);
-                        }
-                        callback(saveNo, true);
-                    })
-                    .catch(err => {
-                        console.error("Create Error:", err);
-                        callback(saveNo, false);
-                    });
+                axios.post(`/api/forms`, payload).then(res => {
+                    if (res.data && res.data.id) {
+                        currentFormId.current = res.data.id;
+                        setFormMetadata(res.data);
+                    }
+                    callback(saveNo, true);
+                }).catch(err => {
+                    console.error("Create Error:", err);
+                    callback(saveNo, false);
+                });
             }
         };
 
         setCreator(c);
 
+        return () => {
+        };
+    }, []);
+    // Run ONCE
+
+    // 2. Load Data when Creator or IDs change
+    useEffect(() => {
+        if (!creator) return;
+
+        // Prevent reloading if we are already on this form to avoid wiping unsaved changes?
+        // Ideally checking if the loaded form ID matches helps. 
+        // But here we rely on the fact that formId change implies a navigation.
+
         if (formId) {
             axios.get(`/api/forms/${formId}`)
                 .then(res => {
-                    c.JSON = res.data.definition;
+                    creator.JSON = res.data.definition;
                     setFormMetadata(res.data);
-
-                    // Read-only mode if published?
-                    if (res.data.isPublished) {
-                        c.readOnly = true;
-                    }
+                    if (res.data.isPublished) creator.readOnly = true;
+                    else creator.readOnly = false;
                 })
                 .catch(err => {
                     console.error("Error loading form:", err);
-                    // Fallback for failed load or just bad ID
-                    c.JSON = { ...VTrustTheme };
+                    creator.JSON = { ...VTrustTheme };
+                    creator.readOnly = false;
                 });
-
         } else if (initialData) {
-            // Check if initialData has a theme, if not apply defaults
             const def = (initialData.themeVariables || initialData.themeName) ? initialData : { ...initialData, ...VTrustTheme };
-            c.JSON = def;
+            creator.JSON = def;
+            creator.readOnly = false;
         } else {
-            // New Blank Survey
-            c.JSON = {
+            // Only reset if we are indeed intending to show a New Survey
+            // We might check if creator.JSON is empty to avoid overwriting existing work if effect re-runs?
+            // But relying on dependency array is safer.
+            creator.JSON = {
                 title: "New Survey",
-                pages: [
-                    {
-                        name: "page1",
-                        elements: []
-                    }
-                ],
-                ...VTrustTheme // Apply Default Red Theme
+                pages: [{ name: "page1", elements: [] }],
+                ...VTrustTheme
             };
+            creator.readOnly = false;
         }
 
-        // Apply Red Theme (Brand Updated)
-        c.theme = {
+        // Apply Theme and map to sjs variables that we also set in App.js
+        // This ensures the Creator UI itself uses the user's color scheme
+        creator.theme = {
             "themeName": "default",
             "colorPalette": "light",
             "isPanelless": false,
             "cssVariables": {
-                "--sjs-primary-backcolor": "#b91c1c",
-                "--sjs-primary-backcolor-light": "rgba(185, 28, 28, 0.1)",
-                "--sjs-primary-backcolor-dark": "#991b1b",
-                "--sjs-primary-forecolor": "#ffffff",
+                // Using var() here works if SurveyJS supports dynamic CSS Vars in their config,
+                // otherwise we rely on index.css .svc-creator overrides.
+                // However, mapping them explicitly is safer for the compiled CSS.
+                "--sjs-primary-backcolor": "var(--primary-color, #064e3b)",
+                "--sjs-primary-backcolor-light": "rgba(6, 78, 59, 0.1)", // Approximate
+                "--sjs-primary-backcolor-dark": "var(--primary-hover, #047857)",
+                "--sjs-primary-forecolor": "var(--button-text, #ffffff)",
                 "--sjs-primary-forecolor-light": "#ffffff",
                 "--sjs-special-red": "#b91c1c"
             }
         };
 
-
-
-    }, [formId, initialData]);
+    }, [creator, formId, initialData]);
 
     useEffect(() => {
         if (creator) {
@@ -345,9 +338,10 @@ export function FormBuilder({ user, formId, initialData, onBack, onNavigate, onF
     };
 
     const handleApprove = () => {
-        if (!formId) return;
+        const id = currentFormId.current;
+        if (!id) return;
         if (confirm("Approve and Publish this survey?")) {
-            axios.post(`/api/forms/${formId}/approve`, { username: user?.user?.username })
+            axios.post(`/api/forms/${id}/approve`, { username: user?.user?.username })
                 .then(res => {
                     alert("Survey Approved and Published!");
                     setFormMetadata(res.data);
@@ -358,9 +352,10 @@ export function FormBuilder({ user, formId, initialData, onBack, onNavigate, onF
     };
 
     const handleReject = () => {
-        if (!formId) return;
+        const id = currentFormId.current;
+        if (!id) return;
         if (confirm("Reject this survey? It will return to draft status.")) {
-            axios.post(`/api/forms/${formId}/reject`, { username: user?.user?.username })
+            axios.post(`/api/forms/${id}/reject`, { username: user?.user?.username })
                 .then(res => {
                     alert("Survey Rejected.");
                     setFormMetadata(res.data);
@@ -369,23 +364,47 @@ export function FormBuilder({ user, formId, initialData, onBack, onNavigate, onF
         }
     };
 
-    const handlePublish = () => {
-        if (!formId) return;
-        // Legacy/Fallback
-        if (confirm("Are you sure you want to publish this version? It will become immutable.")) {
-            axios.post(`/api/forms/${formId}/publish`)
-                .then(res => {
-                    alert("Published successfully!");
+    const handlePublish = async () => {
+        let id = currentFormId.current;
+
+        if (confirm("Save and Publish this survey? It will become live and immutable.")) {
+            try {
+                // 1. Capture current definition
+                const surveyDef = creator.JSON;
+                let payload = {
+                    definition: { ...surveyDef, theme: creator.theme },
+                    title: creator.survey.title || "Untitled Form",
+                };
+
+                if (!id) {
+                    // Create New Form
+                    payload.version = 1;
+                    const res = await axios.post(`/api/forms`, payload);
+                    id = res.data.id;
+                    currentFormId.current = id;
                     setFormMetadata(res.data);
-                    if (creator) creator.readOnly = true;
-                })
-                .catch(err => alert(err.message));
+                } else {
+                    // Update Existing Form
+                    await axios.put(`/api/forms/${id}`, payload);
+                }
+
+                // 2. Trigger Publish
+                const res = await axios.post(`/api/forms/${id}/publish`);
+
+                alert("Published successfully!");
+                setFormMetadata(res.data);
+                if (creator) creator.readOnly = true;
+            } catch (err) {
+                console.error("Publish Error:", err);
+                alert("Publish Failed: " + (err.response?.data?.error || err.message));
+            }
         }
     };
 
     const handleCreateDraft = () => {
-        if (!formId) return;
-        axios.post(`/api/forms/${formId}/draft`)
+        const id = currentFormId.current;
+        if (!id) return;
+        axios.post(`/api/forms/${id}/draft`)
             .then(res => {
                 alert("New draft version created!");
                 if (onFormChange && res.data.id) {
@@ -418,14 +437,15 @@ export function FormBuilder({ user, formId, initialData, onBack, onNavigate, onF
     };
 
     const handleSaveSettings = () => {
-        if (!formId) return;
+        const id = currentFormId.current;
+        if (!id) return;
         const payload = {
             ...formMetadata,
             // Ensure these fields are explicitly sent from metadata state
             // formMetadata should be updated by inputs before calling this
         };
 
-        axios.put(`/api/forms/${formId}`, payload)
+        axios.put(`/api/forms/${id}`, payload)
             .then(res => {
                 alert("Settings Saved!");
                 setFormMetadata(res.data);
@@ -449,8 +469,8 @@ export function FormBuilder({ user, formId, initialData, onBack, onNavigate, onF
         return (
             <div style={{ padding: '40px', maxWidth: '800px', margin: '0 auto', width: '100%', boxSizing: 'border-box' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
-                    <h2 style={{ color: '#1e293b', margin: 0 }}>Basic Settings</h2>
-                    <button onClick={handleSaveSettings} style={{ padding: '10px 20px', background: '#064e3b', color: '#D9F8E5', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '600' }}>
+                    <h2 style={{ color: 'var(--text-color, #1e293b)', margin: 0 }}>Basic Settings</h2>
+                    <button onClick={handleSaveSettings} style={{ padding: '10px 20px', background: 'var(--primary-color, #064e3b)', color: 'var(--button-text, #ffffff)', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '600' }}>
                         Save Changes
                     </button>
                 </div>
@@ -532,34 +552,21 @@ export function FormBuilder({ user, formId, initialData, onBack, onNavigate, onF
 
     if (!creator) return <div style={{ padding: '40px', textAlign: 'center', color: '#64748b' }}>Initializing Editor...</div>;
 
-    const navLinkStyle = (active) => ({
-        padding: '0 15px',
-        color: active ? '#064e3b' : '#64748b',
-        fontWeight: active ? '600' : '500',
-        cursor: 'pointer',
-        textDecoration: 'none',
-        borderBottom: active ? '2px solid #064e3b' : 'none',
-        height: '100%',
-        display: 'flex',
-        alignItems: 'center',
-        background: 'transparent',
-        fontSize: '14px', // Unified Font Size
-        transition: 'color 0.2s, border-bottom 0.2s'
-    });
+
 
     return (
         <div style={{ height: "100vh", display: 'flex', flexDirection: 'column', direction: isRtl ? 'rtl' : 'ltr', fontFamily: "'Outfit', sans-serif" }}>
             {/* TOP NAVIGATION */}
-            <div style={{ background: 'white', borderBottom: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
+            <div style={{ background: 'var(--card-bg, white)', borderBottom: '1px solid var(--border-color, #e2e8f0)', display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
 
                 {/* ROW 1: Title & Actions */}
-                <div style={{ height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 30px', borderBottom: '1px solid #f1f5f9' }}>
+                <div style={{ height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 30px', borderBottom: '1px solid var(--border-color, #f1f5f9)' }}>
 
                     {/* LEFT: Back & Title */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                        {onBack && <button onClick={onBack} style={{ border: 'none', background: 'none', cursor: 'pointer', fontSize: '18px', color: '#64748b', padding: '5px' }}>←</button>}
+                        {onBack && <button onClick={onBack} style={{ border: 'none', background: 'none', cursor: 'pointer', fontSize: '18px', color: 'var(--text-muted, #64748b)', padding: '5px' }}>←</button>}
                         <div>
-                            <div style={{ fontWeight: '700', fontSize: '16px', color: '#0f172a' }}>{formMetadata?.title || 'Survey Editor'}</div>
+                            <div style={{ fontWeight: '700', fontSize: '16px', color: 'var(--text-color, #0f172a)' }}>{formMetadata?.title || 'Survey Editor'}</div>
                             <div style={{ fontSize: '12px', color: '#64748b', display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px' }}>
                                 <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: formMetadata?.isPublished ? '#22c55e' : '#f59e0b', boxShadow: formMetadata?.isPublished ? '0 0 5px #22c55e' : 'none' }}></span>
                                 <span style={{ fontWeight: '500' }}>{formMetadata?.isPublished ? t('builder.status.published') : t('builder.status.draft')}</span>
@@ -575,8 +582,8 @@ export function FormBuilder({ user, formId, initialData, onBack, onNavigate, onF
                             onClick={() => setShowAIModal(true)}
                             style={{
                                 padding: '8px 16px',
-                                background: '#064e3b',
-                                color: '#ecfdf5', // Pale Green Text
+                                background: 'var(--primary-color, #064e3b)',
+                                color: 'var(--button-text, #ffffff)', // Pale Green Text
                                 border: 'none',
                                 borderRadius: '8px',
                                 cursor: 'pointer',
@@ -589,10 +596,22 @@ export function FormBuilder({ user, formId, initialData, onBack, onNavigate, onF
                             }}>
                             ✨ {t('builder.btn.ai_assistant')}
                         </button>
+                        <button
+                            onClick={() => creator.setDisplayMode('design')}
+                            style={{ padding: '8px 12px', background: creator.activeTab === 'designer' ? '#e2e8f0' : 'white', border: '1px solid #cbd5e1', borderRadius: '8px', cursor: 'pointer', fontSize: '14px' }}
+                            title="Edit Design">
+                            ✏️
+                        </button>
+                        <button
+                            onClick={() => creator.setDisplayMode('test')}
+                            style={{ padding: '8px 12px', background: creator.activeTab === 'test' ? '#e2e8f0' : 'white', border: '1px solid #cbd5e1', borderRadius: '8px', cursor: 'pointer', fontSize: '14px' }}
+                            title="Preview Survey">
+                            👁️
+                        </button>
                         {!formMetadata?.isPublished && (
                             <button
                                 onClick={() => creator.saveSurvey()}
-                                style={{ padding: '8px 16px', background: 'white', color: '#064e3b', border: '1px solid #064e3b', borderRadius: '8px', cursor: 'pointer', fontWeight: '500', fontSize: '14px' }}>
+                                style={{ padding: '8px 16px', background: 'var(--card-bg, white)', color: 'var(--primary-color, #064e3b)', border: '1px solid var(--primary-color, #064e3b)', borderRadius: '8px', cursor: 'pointer', fontWeight: '500', fontSize: '14px' }}>
                                 💾 {t('builder.btn.save')}
                             </button>
                         )}
@@ -639,7 +658,7 @@ export function FormBuilder({ user, formId, initialData, onBack, onNavigate, onF
 
                             // IF Workflow is Disabled (Direct Publish)
                             return (
-                                <button onClick={handlePublish} style={{ padding: '8px 16px', background: '#064e3b', color: '#D9F8E5', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '500', fontSize: '14px' }}>
+                                <button onClick={handlePublish} style={{ padding: '8px 16px', background: 'var(--primary-color, #064e3b)', color: 'var(--button-text, #ffffff)', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '500', fontSize: '14px' }}>
                                     {t('builder.btn.publish')}
                                 </button>
                             );
@@ -650,15 +669,15 @@ export function FormBuilder({ user, formId, initialData, onBack, onNavigate, onF
 
                 {/* ROW 2: Navigation Tabs */}
                 <div style={{ height: '48px', display: 'flex', alignItems: 'center', padding: '0 30px', gap: '10px' }}>
-                    <div style={navLinkStyle(activeNav === 'questionnaire')} onClick={() => setActiveNav('questionnaire')}>Edit Design</div>
-                    <div style={navLinkStyle(activeNav === 'audience')} onClick={() => setActiveNav('audience')}>Survey Audience</div>
-                    <div style={navLinkStyle(activeNav === 'settings')} onClick={() => setActiveNav('settings')}>Settings</div>
-                    <div style={navLinkStyle(activeNav === 'voice-agent')} onClick={() => setActiveNav('voice-agent')}>Voice Agent</div>
-                    <div style={navLinkStyle(activeNav === 'quotas')} onClick={() => setActiveNav('quotas')}>Quotas</div>
-                    <div style={navLinkStyle(activeNav === 'automation')} onClick={() => setActiveNav('automation')}>Automation</div>
-                    <div style={navLinkStyle(activeNav === 'collect')} onClick={() => setActiveNav('collect')}>Collect</div>
-                    <div style={navLinkStyle(activeNav === 'analytics')} onClick={() => setActiveNav('analytics')}>Results</div>
-                    <div style={navLinkStyle(activeNav === 'history')} onClick={() => setActiveNav('history')}>History</div>
+                    <div className={`fb-nav-item ${activeNav === 'questionnaire' ? 'active' : ''}`} onClick={() => setActiveNav('questionnaire')}>{t('surveys.action.edit_design')}</div>
+                    <div className={`fb-nav-item ${activeNav === 'audience' ? 'active' : ''}`} onClick={() => setActiveNav('audience')}>{t('surveys.action.audience')}</div>
+                    <div className={`fb-nav-item ${activeNav === 'settings' ? 'active' : ''}`} onClick={() => setActiveNav('settings')}>{t('surveys.action.settings')}</div>
+                    <div className={`fb-nav-item ${activeNav === 'voice-agent' ? 'active' : ''}`} onClick={() => setActiveNav('voice-agent')}>{t('builder.nav.voice_agent') || 'Voice Agent'}</div>
+                    <div className={`fb-nav-item ${activeNav === 'quotas' ? 'active' : ''}`} onClick={() => setActiveNav('quotas')}>{t('surveys.action.quotas')}</div>
+                    <div className={`fb-nav-item ${activeNav === 'automation' ? 'active' : ''}`} onClick={() => setActiveNav('automation')}>{t('surveys.action.automation')}</div>
+                    <div className={`fb-nav-item ${activeNav === 'collect' ? 'active' : ''}`} onClick={() => setActiveNav('collect')}>{t('surveys.action.collect')}</div>
+                    <div className={`fb-nav-item ${activeNav === 'analytics' ? 'active' : ''}`} onClick={() => setActiveNav('analytics')}>{t('surveys.action.results')}</div>
+                    <div className={`fb-nav-item ${activeNav === 'history' ? 'active' : ''}`} onClick={() => setActiveNav('history')}>{t('surveys.action.history')}</div>
                 </div>
             </div>
 
@@ -708,8 +727,8 @@ export function FormBuilder({ user, formId, initialData, onBack, onNavigate, onF
                 </div>
             )}
 
-            <div style={{ flex: 1, overflowY: 'auto', background: (activeNav !== 'questionnaire') ? '#f8fafc' : 'white' }}>
-                {activeNav === 'settings' && <SettingsView form={formMetadata || { id: formId, title: "Survey Settings" }} onBack={() => setActiveNav('questionnaire')} />}
+            <div style={{ flex: 1, overflowY: 'auto', background: (activeNav !== 'questionnaire') ? 'var(--bg-subtle, #f8fafc)' : 'var(--card-bg, white)' }}>
+                {activeNav === 'settings' && <SettingsView form={{ ...(formMetadata || {}), id: formId, definition: creator?.JSON }} onBack={() => setActiveNav('questionnaire')} />}
                 {activeNav === 'voice-agent' && <VoiceAgentSettings formId={formMetadata?.id || formId} form={formMetadata} />}
                 {activeNav === 'quotas' && (
                     <div style={{ padding: '30px', maxWidth: '800px', margin: '0 auto' }}>
@@ -719,12 +738,12 @@ export function FormBuilder({ user, formId, initialData, onBack, onNavigate, onF
                             </button>
                             <h2 style={{ margin: '0 0 0 20px', fontSize: '1.5em', color: '#1e293b' }}>Quota Management</h2>
                         </div>
-                        <QuotaSettings formId={formMetadata?.id || formId} />
+                        <QuotaSettings form={{ ...(formMetadata || {}), id: formId, definition: creator?.JSON }} />
                     </div>
                 )}
                 {activeNav === 'collect' && <CollectView form={formMetadata || { id: formId, title: "Survey" }} onBack={() => setActiveNav('questionnaire')} />}
                 {activeNav === 'audience' && <SurveyAudience form={formMetadata || { id: formId, title: "Survey" }} onBack={() => setActiveNav('questionnaire')} />}
-                {activeNav === 'analytics' && <AnalyticsView form={formMetadata || { id: formId, title: "Survey" }} onBack={() => setActiveNav('questionnaire')} />}
+                {activeNav === 'analytics' && <AnalyticsView form={formMetadata || { id: formId, title: "Survey" }} submissions={submissions} onBack={() => setActiveNav('questionnaire')} />}
                 {activeNav === 'automation' && <div style={{ padding: '40px', textAlign: 'center', color: '#64748b' }}><h2>Automation Workflow</h2><p>Configure triggers and actions here.</p></div>}
                 {activeNav === 'history' && <div style={{ padding: '40px', textAlign: 'center', color: '#64748b' }}><h2>Version History</h2><p>View prior versions (3).</p></div>}
 

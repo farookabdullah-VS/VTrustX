@@ -1,0 +1,58 @@
+[
+  {
+    "table_schema": "smm",
+    "table_name": "role_permission",
+    "column_name": "rp_id",
+    "foreign_table_schema": "smm",
+    "foreign_table_name": "role_permission",
+    "foreign_column_name": "rp_id"
+  },
+  {
+    "table_schema": "smm",
+    "table_name": "role_permission",
+    "column_name": "role_id",
+    "foreign_table_schema": "smm",
+    "foreign_table_name": "role_permission",
+    "foreign_column_name": "permission_id"
+  },
+  {
+    "table_schema": "smm",
+    "table_name": "role_permission",
+    "column_name": "role_id",
+    "foreign_table_schema": "smm",
+    "foreign_table_name": "role_permission",
+    "foreign_column_name": "role_id"
+  },
+  {
+    "table_schema": "smm",
+    "table_name": "role_permission",
+    "column_name": "permission_id",
+    "foreign_table_schema": "smm",
+    "foreign_table_name": "role_permission",
+    "foreign_column_name": "permission_id"
+  },
+  {
+    "table_schema": "smm",
+    "table_name": "role_permission",
+    "column_name": "permission_id",
+    "foreign_table_schema": "smm",
+    "foreign_table_name": "role_permission",
+    "foreign_column_name": "role_id"
+  },
+  {
+    "table_schema": "smm",
+    "table_name": "role_permission",
+    "column_name": "role_id",
+    "foreign_table_schema": "public",
+    "foreign_table_name": "roles",
+    "foreign_column_name": "role_id"
+  },
+  {
+    "table_schema": "smm",
+    "table_name": "role_permission",
+    "column_name": "permission_id",
+    "foreign_table_schema": "smm",
+    "foreign_table_name": "permission",
+    "foreign_column_name": "permission_id"
+  }
+]

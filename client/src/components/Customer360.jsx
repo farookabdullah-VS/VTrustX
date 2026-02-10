@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { PersonaProfileCard } from './PersonaEngine/PersonaProfileCard';
 
 export function Customer360() {
     const [customers, setCustomers] = useState([]);
@@ -9,6 +10,7 @@ export function Customer360() {
     const [search, setSearch] = useState('');
     const [activeTab, setActiveTab] = useState('overview');
     const [searchMode, setSearchMode] = useState('fuzzy');
+    const [isRecalculating, setIsRecalculating] = useState(false);
 
     // Master Data
     const [countries, setCountries] = useState([]);
@@ -110,6 +112,20 @@ export function Customer360() {
                 loadProfile(res.data.customer_id);
             })
             .catch(err => alert('Error creating profile: ' + err.message));
+    };
+
+    const handleRecalculatePersona = () => {
+        setIsRecalculating(true);
+        axios.post(`/api/persona/profiles/${selectedCustomerId}/assign-personas`)
+            .then(res => {
+                alert(`Persona updated to: ${res.data.assigned_persona.name}`);
+                loadProfile(selectedCustomerId);
+                setIsRecalculating(false);
+            })
+            .catch(err => {
+                alert('Error calculating persona: ' + err.message);
+                setIsRecalculating(false);
+            });
     };
 
     const handleCreateEvent = (data) => {
@@ -278,6 +294,49 @@ export function Customer360() {
                                         <label style={{ display: 'block', fontWeight: '600', marginBottom: '5px' }}>Mobile (Identity)</label>
                                         <input name="mobile" defaultValue={editingCustomer?.contact?.mobile} type="tel" style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} />
                                     </div>
+
+                                    {/* GCC SPECIFIC FIELDS */}
+                                    <div style={{ padding: '15px', background: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0', marginTop: '10px' }}>
+                                        <h4 style={{ margin: '0 0 15px 0', fontSize: '1em', color: '#1e293b' }}>GCC Persona Attributes</h4>
+                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                                            <div>
+                                                <label style={{ display: 'block', fontSize: '0.85em', fontWeight: '600', marginBottom: '5px' }}>Is Citizen?</label>
+                                                <select name="is_citizen" defaultValue={editingCustomer?.profile?.is_citizen ? "true" : "false"} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1' }}>
+                                                    <option value="true">Yes (National)</option>
+                                                    <option value="false">No (Expat)</option>
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <label style={{ display: 'block', fontSize: '0.85em', fontWeight: '600', marginBottom: '5px' }}>City Tier</label>
+                                                <select name="city_tier" defaultValue={editingCustomer?.profile?.city_tier || "Tier1"} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1' }}>
+                                                    <option value="Tier1">Tier 1 (Capital/Main)</option>
+                                                    <option value="Tier2">Tier 2 (Secondary)</option>
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <label style={{ display: 'block', fontSize: '0.85em', fontWeight: '600', marginBottom: '5px' }}>Monthly Income (Local)</label>
+                                                <input name="monthly_income_local" type="number" defaultValue={editingCustomer?.profile?.monthly_income_local} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
+                                            </div>
+                                            <div>
+                                                <label style={{ display: 'block', fontSize: '0.85em', fontWeight: '600', marginBottom: '5px' }}>Family Status</label>
+                                                <select name="family_status" defaultValue={editingCustomer?.profile?.family_status || "Single"} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1' }}>
+                                                    <option value="Single">Single</option>
+                                                    <option value="Married">Married</option>
+                                                    <option value="Head of Household">Head of Household</option>
+                                                </select>
+                                            </div>
+                                            <div style={{ gridColumn: 'span 2' }}>
+                                                <label style={{ display: 'block', fontSize: '0.85em', fontWeight: '600', marginBottom: '5px' }}>Employment Sector</label>
+                                                <select name="employment_sector" defaultValue={editingCustomer?.profile?.employment_sector || "Private Corporate"} style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1' }}>
+                                                    <option value="Government">Government / Public</option>
+                                                    <option value="Private Corporate">Private Corporate</option>
+                                                    <option value="SME/Entrepreneur">SME / Entrepreneur</option>
+                                                    <option value="Labor">Labor / Manual Service</option>
+                                                    <option value="Retired">Retired</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                                 <div style={{ display: 'flex', gap: '15px', marginTop: '30px' }}>
                                     <button type="button" onClick={() => { setIsCreateModalOpen(false); setEditingCustomer(null); }} style={{ flex: 1, padding: '15px', background: 'white', color: '#0f172a', border: '1px solid #cbd5e1', borderRadius: '12px', cursor: 'pointer', fontWeight: '600' }}>Cancel</button>
@@ -389,7 +448,7 @@ export function Customer360() {
 
                 {/* TABS */}
                 <div style={{ display: 'flex', gap: '10px', marginBottom: '30px' }}>
-                    {['Overview', 'Timeline', 'Products', 'Identity & Privacy', 'Relationships'].map(tab => (
+                    {['Overview', 'Timeline', 'Products', 'Identity & Privacy', 'Relationships', 'Persona'].map(tab => (
                         <button
                             key={tab}
                             onClick={() => setActiveTab(tab.toLowerCase().split(' ')[0])}
@@ -624,49 +683,8 @@ export function Customer360() {
                         </div>
                     )}
 
-                    {activeTab === 'relationships' && (
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '30px' }}>
-                            <div style={{ background: 'white', padding: '30px', borderRadius: '24px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
-                                <h3 style={{ marginTop: 0 }}>Family & Corporate Links</h3>
-                                {relationships.length === 0 && <div style={{ color: '#94a3b8', fontStyle: 'italic' }}>No relationships mapped.</div>}
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                                    {relationships.map(r => (
-                                        <div key={r.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '15px', border: '1px solid #e2e8f0', borderRadius: '12px' }}>
-                                            <div onClick={() => loadProfile(r.customer_id_to)} style={{ cursor: 'pointer' }}>
-                                                <div style={{ fontWeight: '600' }}>{r.full_name}</div>
-                                                <div style={{ fontSize: '0.9em', color: '#64748b' }}>{r.relationship_type.toUpperCase()} • {r.nationality}</div>
-                                            </div>
-                                            <button onClick={() => handleDelRel(r.id)} style={{ color: 'red', border: 'none', background: 'none', cursor: 'pointer' }}>×</button>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                            <div style={{ background: 'white', padding: '30px', borderRadius: '24px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
-                                <h3 style={{ marginTop: 0 }}>Link New Profile</h3>
-                                <input
-                                    type="text"
-                                    placeholder="Search Name to Link..."
-                                    value={relSearch}
-                                    onChange={(e) => handleRelSearch(e.target.value)}
-                                    style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1', marginBottom: '15px' }}
-                                />
-                                <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
-                                    {relResults.map(res => (
-                                        <div key={res.customer_id} style={{ padding: '10px', borderBottom: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                            <div>
-                                                <div style={{ fontWeight: 'bold' }}>{res.full_name}</div>
-                                                <div style={{ fontSize: '0.8em', color: '#94a3b8' }}>{res.customer_id.substring(0, 8)}...</div>
-                                            </div>
-                                            <div style={{ display: 'flex', gap: '5px' }}>
-                                                <button onClick={() => handleAddRel(res.customer_id, 'spouse')} style={{ fontSize: '0.8em', padding: '4px 8px', cursor: 'pointer' }}>Spouse</button>
-                                                <button onClick={() => handleAddRel(res.customer_id, 'child')} style={{ fontSize: '0.8em', padding: '4px 8px', cursor: 'pointer' }}>Child</button>
-                                                <button onClick={() => handleAddRel(res.customer_id, 'employer')} style={{ fontSize: '0.8em', padding: '4px 8px', cursor: 'pointer' }}>Employer</button>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
+                    {activeTab === 'persona' && (
+                        <PersonaProfileCard profileId={selectedCustomerId} customerData={customerData} />
                     )}
 
                 </div>

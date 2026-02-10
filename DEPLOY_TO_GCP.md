@@ -77,7 +77,7 @@ We have configured the application to build both the Client and Server into a si
         --set-env-vars DB_HOST="127.0.0.1" \
         --set-env-vars DB_USER="postgres" \
         --set-env-vars DB_PASSWORD="VTrustX@2030" \
-        --set-env-vars DB_NAME="vtrustx-db" \
+        --set-env-vars DB_NAME="vtrustx_db" \
         --set-env-vars NODE_ENV="development"
     ```
     *Important*: Cloud Run automatically proxies the Cloud SQL connection to `127.0.0.1` when you use the `--add-cloudsql-instances` flag.

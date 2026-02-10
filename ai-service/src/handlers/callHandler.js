@@ -3,40 +3,52 @@ const axios = require('axios');
 const OpenAIProvider = require('../providers/OpenAIProvider');
 const GeminiProvider = require('../providers/GeminiProvider');
 const AndroidGateway = require('../gateways/AndroidGateway');
+const ConfigService = require('../services/ConfigService');
 
 // In-memory store for active calls.
 const activeCalls = new Map();
 
-const getTwilioClient = () => {
+const getTwilioClient = async () => {
     // If using Android Gateway, return null early
-    if (process.env.USE_ANDROID_GATEWAY === 'true') return null;
+    if (await ConfigService.getBool('use_android_gateway')) return null;
 
     // If mocking, return null
-    if (process.env.USE_MOCK_CALLS === 'true') return null;
+    if (await ConfigService.getBool('use_mock_calls')) return null;
 
+    const accountSid = await ConfigService.get('twilio_account_sid');
+    const authToken = await ConfigService.get('twilio_auth_token');
 
-    const accountSid = process.env.TWILIO_ACCOUNT_SID;
-    const authToken = process.env.TWILIO_AUTH_TOKEN;
     if (!accountSid || !authToken) {
-        throw new Error("Twilio credentials missing");
+        // Only throw if we are supposedly in "real" mode
+        return null;
+        // Or throw Error to inform user?
+        // throw new Error("Twilio credentials missing");
     }
     return twilio(accountSid, authToken);
 };
 
-const getAIProvider = () => {
-    if (process.env.AI_PROVIDER === 'groq') {
+const getAIProvider = async () => {
+    const provider = await ConfigService.get('ai_provider') || 'mock'; // Default to mock/browser?
+
+    if (provider === 'groq') {
         const GroqProvider = require('../providers/GroqProvider');
-        return new GroqProvider(process.env.GROQ_API_KEY);
+        return new GroqProvider(await ConfigService.get('groq_api_key'));
     }
-    if (process.env.AI_PROVIDER === 'gemini') {
-        return new GeminiProvider(process.env.GEMINI_API_KEY);
+    if (provider === 'gemini') {
+        return new GeminiProvider(await ConfigService.get('gemini_api_key'));
     }
-    return new OpenAIProvider(process.env.OPENAI_API_KEY);
+    if (provider === 'openai') {
+        return new OpenAIProvider(await ConfigService.get('openai_api_key'));
+    }
+    // Fallback/Mock
+    return {
+        chat: async () => "AI Config Missing or Mock Mode Enabled. Please configure AI settings."
+    };
 };
 
 const saveSubmission = async (surveyId, answers) => {
     try {
-        const coreUrl = process.env.CORE_SERVICE_URL || 'http://localhost:3000';
+        const coreUrl = await ConfigService.get('core_service_url') || 'http://localhost:3000';
         console.log(`Saving submission for survey ${surveyId}...`, answers);
         const savedSubmission = await axios.post(`${coreUrl}/api/submissions`, {
             formId: surveyId,
@@ -44,11 +56,7 @@ const saveSubmission = async (surveyId, answers) => {
             data: answers,
             metadata: { source: 'voice_agent' }
         });
-        console.log("Submission saved. Triggering analysis...");
-
-        // Trigger Analysis explicitly if needed (though the server does it automatically on CREATE)
-        // The server code at `src/api/routes/submissions.js` line 109 already triggers it.
-        // So we don't need to do anything extra here, just logging.
+        console.log("Submission saved.");
     } catch (error) {
         console.error("Failed to save submission:", error.message);
     }
@@ -66,7 +74,7 @@ exports.initiateCall = async (req, res) => {
         }
 
         // --- ANDROID GATEWAY MODE ---
-        if (process.env.USE_ANDROID_GATEWAY === 'true') {
+        if (await ConfigService.getBool('use_android_gateway')) {
             console.log(`[AndroidCall] Initiating hardware call to ${contact.name} (${contact.phone})`);
 
             const isConnected = await AndroidGateway.checkDevice();
@@ -77,18 +85,7 @@ exports.initiateCall = async (req, res) => {
             // Dial via Hardware
             await AndroidGateway.dial(contact.phone);
 
-            // Create a "Web Session" for the AI Brain to run the logic
-            // The audio must be routed manually (Bluetooth loopback)
             const callSid = 'android_' + Date.now();
-
-            // We tell frontend to open the "WebCallModal" but in "Listen Only" mode ideally, 
-            // OR we run the brain server-side if we have audio access.
-            // For this design: We will treat it as a "Mock" simulation logic-wise, 
-            // BUT the user must use the System Mic/Speaker to talk to the phone.
-
-            // Actually, we can just trigger the same logic as "Web Call" but start it automatically.
-            // Problem: The browser handles Speech-to-Text. 
-            // Solution: We return a success, and the frontend should open the AI interface.
 
             res.json({
                 success: true,
@@ -96,37 +93,33 @@ exports.initiateCall = async (req, res) => {
                 message: "Android Dialing... Please ensure Phone Audio is routed to PC.",
                 isAndroid: true
             });
-
-            // We do NOT start a server-side loop here because we need the Browser's specific STT engine (Web Speech API) 
-            // which is free. The server-side STT (Deepgram/Google Cloud) costs money.
-            // So we rely on the Frontend Component to handle the "Brain".
             return;
         }
 
         // --- MOCK MODE ---
-        if (process.env.USE_MOCK_CALLS === 'true') {
+        if (await ConfigService.getBool('use_mock_calls')) {
             console.log(`[MockCall] Starting simulation for ${contact.name}`);
 
-            // Generate a Mock ID
             const mockSid = 'mock_' + Date.now();
-
-            // Respond immediately
             res.json({ success: true, callSid: mockSid, message: "Mock Call Simulation Started" });
 
-            // Start async simulation loop
             simulateConversation(mockSid, contact, surveyId, surveyDefinition, systemContext);
             return;
         }
         // ----------------
 
-        const client = getTwilioClient();
-        const serverUrl = process.env.PUBLIC_URL || 'http://localhost:3001'; // User must set this to a tunnel (ngrok)
+        const client = await getTwilioClient();
+        if (!client) {
+            return res.status(500).json({ error: "Twilio Client Config Missing (SID/Token)" });
+        }
+
+        const publicUrl = await ConfigService.get('public_url') || 'http://localhost:3001';
 
         const call = await client.calls.create({
-            url: `${serverUrl}/voice/webhook`,
+            url: `${publicUrl}/voice/webhook`,
             to: contact.phone,
-            from: process.env.TWILIO_PHONE_NUMBER,
-            statusCallback: `${serverUrl}/voice/status`,
+            from: await ConfigService.get('twilio_phone_number'),
+            statusCallback: `${publicUrl}/voice/status`,
             statusCallbackEvent: ['completed', 'failed']
         });
 
@@ -175,7 +168,8 @@ async function simulateConversation(callSid, contact, surveyId, surveyDefinition
         let agentMsg = "";
 
         try {
-            agentMsg = await getAIProvider().chat([
+            const provider = await getAIProvider();
+            agentMsg = await provider.chat([
                 ...state.history,
                 { role: "system", content: systemPrompt }
             ]);
@@ -264,7 +258,8 @@ exports.handleVoiceHook = async (req, res) => {
             `;
 
             // Add a temporary system prompt for this turn
-            const completion = await getAIProvider().chat([
+            const provider = await getAIProvider();
+            const completion = await provider.chat([
                 ...callState.history,
                 { role: "system", content: systemPrompt }
             ]);
@@ -285,9 +280,10 @@ exports.handleVoiceHook = async (req, res) => {
         twiml.say(nextMessage);
 
         if (shouldListen) {
+            const publicUrl = await ConfigService.get('public_url') || 'http://localhost:3001';
             twiml.gather({
                 input: 'speech',
-                action: `${process.env.PUBLIC_URL || 'http://localhost:3001'}/voice/webhook`,
+                action: `${publicUrl}/voice/webhook`,
                 timeout: 5
             });
         } else {
@@ -311,6 +307,7 @@ exports.handleStatusUpdate = async (req, res) => {
     }
     res.sendStatus(200);
 };
+
 exports.initiateWebSession = async (req, res) => {
     try {
         const { surveyId, surveyDefinition } = req.body;
@@ -366,7 +363,8 @@ exports.handleWebChat = async (req, res) => {
             const systemPrompt = `Ask question: "${q.title || q.name}". Phrase naturally. Keep it short.`;
 
             try {
-                responseText = await getAIProvider().chat([
+                const provider = await getAIProvider();
+                responseText = await provider.chat([
                     ...state.history,
                     { role: "system", content: systemPrompt }
                 ]);

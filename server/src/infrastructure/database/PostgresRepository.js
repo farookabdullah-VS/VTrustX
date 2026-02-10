@@ -20,8 +20,10 @@ class PostgresRepository {
         return res.rows[0];
     }
 
-    async findAllBy(column, value) {
-        const res = await query(`SELECT * FROM ${this.tableName} WHERE ${column} = $1`, [value]);
+    async findAllBy(column, value, orderBy = null) {
+        let sql = `SELECT * FROM ${this.tableName} WHERE ${column} = $1`;
+        if (orderBy) sql += ` ORDER BY ${orderBy}`;
+        const res = await query(sql, [value]);
         return res.rows;
     }
 

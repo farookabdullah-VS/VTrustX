@@ -6,7 +6,7 @@ import {
     LayoutDashboard, UserCircle, Contact, Fingerprint, Map, UserCog,
     BarChart3, Bot, ClipboardList, Library, Ticket, Settings, Plug,
     Shield, Users, CreditCard, Palette, Wrench, Globe, HelpCircle,
-    GripVertical, Star, PieChart, PhoneCall, Video
+    GripVertical, Star, PieChart, PhoneCall, Video, Share2, Target, Database, Megaphone, Smartphone, BookOpen
 } from 'lucide-react';
 
 const getInitialGroups = (user) => [
@@ -14,59 +14,81 @@ const getInitialGroups = (user) => [
         id: 'home',
         title: null,
         items: [
-            { id: 'dashboard', label: 'sidebar.item.dashboard', icon: <LayoutDashboard size={16} /> }
+            { id: 'dashboard', label: 'sidebar.item.dashboard', icon: <LayoutDashboard size={16} /> },
+            { id: 'xm-center', label: 'XM Center', icon: <Globe size={16} /> },
+            { id: 'textiq', label: 'CogniVue', icon: <Bot size={16} /> }
         ]
     },
     {
         id: 'surveys',
-        title: "Surveys & Feedback",
+        title: "sidebar.group.surveys",
         items: [
             { id: 'form-viewer', label: 'sidebar.item.surveys', icon: <ClipboardList size={16} /> },
+            { id: 'survey-results', label: 'Survey Results', icon: <PieChart size={16} /> },
+            { id: 'distributions', label: 'SmartReach', icon: <Megaphone size={16} /> },
+            { id: 'mobile-app', label: 'Frontline App', icon: <Smartphone size={16} /> },
             { id: 'templates', label: 'sidebar.item.templates', icon: <Library size={16} /> }
         ]
     },
     {
         id: 'ai-agents',
-        title: "AI Agents",
+        title: "sidebar.group.ai_agents",
         items: [
-            { id: 'ai-surveyor', label: 'sidebar.item.voice_agent', icon: <PhoneCall size={16} /> },
-            { id: 'ai-video-agent', label: 'sidebar.item.video_agent', icon: <Video size={16} /> }
+            { id: 'ai-surveyor', label: 'Rayi Voice Agent', icon: <PhoneCall size={16} /> },
+            { id: 'ai-video-agent', label: 'Rayi Video Agent', icon: <Video size={16} /> }
         ]
     },
     {
         id: 'engagement',
-        title: "Engagement",
+        title: "sidebar.group.engagement",
         items: [
             { id: 'tickets', label: 'sidebar.item.tickets', icon: <Ticket size={16} /> },
+            { id: 'xm-directory', label: 'XM Directory', icon: <Contact size={16} /> },
+            { id: 'actions', label: 'Action Planning', icon: <Target size={16} /> },
             { id: 'ticket-settings', label: 'sidebar.item.ticket_config', icon: <Settings size={16} /> }
         ]
     },
     {
-        id: 'journey',
-        title: "Customer Journey",
+        id: 'marketing',
+        title: "sidebar.group.marketing",
         items: [
-            { id: 'journeys', label: 'sidebar.item.journey_builder', icon: <Map size={16} /> }
+            { id: 'social-media', label: 'sidebar.item.smm', icon: <Share2 size={16} /> },
+            { id: 'reputation', label: 'Reputation', icon: <Star size={16} /> }
+        ]
+    },
+    {
+        id: 'journey',
+        title: "sidebar.group.journey",
+        items: [
+            { id: 'cjm', label: 'sidebar.item.cjm', icon: <Map size={16} /> },
+            { id: 'cjm-analytics', label: 'Journey Analytics', icon: <BarChart3 size={16} /> },
+            { id: 'journeys', label: 'sidebar.item.journeys', icon: <Share2 size={16} /> }
         ]
     },
     {
         id: 'personas',
-        title: "Personas & Segments",
+        title: "sidebar.group.personas",
         items: [
             { id: 'personas', label: 'sidebar.item.personas', icon: <UserCog size={16} /> },
-            { id: 'persona-templates', label: 'Templates', icon: <Library size={16} /> }
+            { id: 'persona-templates', label: 'sidebar.item.persona_templates', icon: <Library size={16} /> },
+            { id: 'persona-engine', label: 'sidebar.item.persona_engine', icon: <Wrench size={16} /> }
         ]
     },
     {
         id: 'analytics',
-        title: "Analytics & Insights",
+        title: "sidebar.group.analytics",
         items: [
             { id: 'cx-ratings', label: 'sidebar.item.cx_dashboards', icon: <BarChart3 size={16} /> },
-            { id: 'survey-reports', label: 'sidebar.item.survey_reports', icon: <PieChart size={16} /> }
+            { id: 'survey-reports', label: 'sidebar.item.survey_reports', icon: <PieChart size={16} /> },
+            { id: 'analytics-builder', label: 'Analytics Builder', icon: <BarChart3 size={16} /> },
+            { id: 'analytics-studio', label: 'Analytics Studio', icon: <Database size={16} /> },
+            { id: 'analytics-dashboard', label: 'Dynamic Dashboard', icon: <BarChart3 size={16} /> },
+            { id: 'survey-activity-dashboard', label: 'Survey Activity', icon: <BarChart3 size={16} /> }
         ]
     },
     {
         id: 'c360',
-        title: "Customer 360",
+        title: "sidebar.group.c360",
         items: [
             { id: 'customer360', label: 'sidebar.item.unified_profile', icon: <UserCircle size={16} /> },
             { id: 'contact-master', label: 'sidebar.item.contacts', icon: <Contact size={16} /> }
@@ -74,39 +96,40 @@ const getInitialGroups = (user) => [
     },
     {
         id: 'identity',
-        title: "Identity & Consent",
+        title: "sidebar.group.identity",
         items: [
             { id: 'identity', label: 'sidebar.item.identity', icon: <Fingerprint size={16} /> }
         ]
     },
     {
         id: 'ai-decisioning',
-        title: "AI & Decisioning",
+        title: "sidebar.group.ai",
         items: [
-            { id: 'workflows', label: 'Rules Engine', icon: <Bot size={16} /> },
+            { id: 'workflows', label: 'sidebar.item.rules', icon: <Bot size={16} /> },
             { id: 'ai-settings', label: 'sidebar.item.ai_models', icon: <Settings size={16} /> }
         ]
     },
     {
         id: 'integrations',
-        title: "Integrations & APIs",
+        title: "sidebar.group.integrations",
         items: [
             { id: 'integrations', label: 'sidebar.item.integrations', icon: <Plug size={16} /> }
         ]
     },
     {
         id: 'governance',
-        title: "Governance & Security",
+        title: "sidebar.group.governance",
         items: [
             { id: 'role-master', label: 'sidebar.item.access_control', icon: <Shield size={16} /> }
         ]
     },
     {
         id: 'admin',
-        title: "Admin & Config",
+        title: "sidebar.group.admin",
         items: [
             { id: 'user-management', label: 'sidebar.item.user_management', icon: <Users size={16} /> },
             { id: 'subscription', label: 'sidebar.item.subscription', icon: <CreditCard size={16} /> },
+            { id: 'subscription-config', label: 'sidebar.item.subscription_config', icon: <CreditCard size={16} /> }, // For admins but currently open to verify
             { id: 'theme-settings', label: 'sidebar.item.theme', icon: <Palette size={16} /> },
             { id: 'system-settings', label: 'sidebar.item.settings', icon: <Wrench size={16} /> },
             ...(user?.user?.role === 'global_admin' || user?.user?.username === 'admin' ? [{ id: 'global-admin', label: 'sidebar.item.global_admin', icon: <Globe size={16} /> }] : [])
@@ -114,14 +137,15 @@ const getInitialGroups = (user) => [
     },
     {
         id: 'help',
-        title: "Help",
+        title: "sidebar.group.help",
         items: [
+            { id: 'interactive-manual', label: 'sidebar.item.user_manual', icon: <BookOpen size={16} /> },
             { id: 'support', label: 'sidebar.item.support', icon: <HelpCircle size={16} /> }
         ]
     }
 ];
 
-export function Sidebar({ user, view, onViewChange, onLogout, isCollapsed, toggleSidebar }) {
+export function Sidebar({ user, view, onViewChange, onLogout, isCollapsed, toggleSidebar, onHide }) {
     const { t, i18n } = useTranslation();
 
     // 1. Favorites State (Persisted)
@@ -251,13 +275,18 @@ export function Sidebar({ user, view, onViewChange, onLogout, isCollapsed, toggl
 
             <div className="sidebar-header">
                 {!isCollapsed ? (
-                    <img src="/vtrustx_logo.jpg" alt="VTrustX" style={{ height: '100px', maxWidth: '100%', objectFit: 'contain' }} />
+                    <img src="/rayix_v2.jpg" alt="RAYI X" className="sidebar-logo" onError={(e) => { e.target.style.display = 'none'; }} />
                 ) : (
-                    <h3 style={{ margin: 0, fontSize: '1.2em' }}>VX</h3>
+                    <h3 className="sidebar-logo-text" title="RAYI X">RX</h3>
                 )}
-                <button className="toggle-btn" onClick={toggleSidebar}>
-                    {isCollapsed ? '☰' : '⬅'}
-                </button>
+                <div className="sidebar-controls">
+                    <button className="toggle-btn" onClick={onHide} title="Hide Sidebar">
+                        ✕
+                    </button>
+                    <button className="toggle-btn" onClick={toggleSidebar} title={isCollapsed ? "Expand" : "Collapse"}>
+                        {isCollapsed ? '☰' : '⬅'}
+                    </button>
+                </div>
             </div>
 
             <nav className="sidebar-nav">
@@ -266,9 +295,9 @@ export function Sidebar({ user, view, onViewChange, onLogout, isCollapsed, toggl
                     <div className="sidebar-group">
                         <div className="group-header" style={{
                             padding: '8px 16px', margin: '0 12px 8px', display: 'flex', alignItems: 'center', gap: '10px',
-                            color: '#b45309', borderBottom: '1px solid rgba(245, 158, 11, 0.2)', fontWeight: '700', fontSize: '13px'
+                            color: 'var(--sidebar-text)', borderBottom: '1px solid var(--sidebar-border)', fontWeight: '700', fontSize: '13px'
                         }}>
-                            <Star size={14} fill="#b45309" color="#b45309" /> <span>FAVORITES</span>
+                            <Star size={14} fill="var(--sidebar-text)" color="var(--sidebar-text)" /> <span>FAVORITES</span>
                         </div>
                         <ul>
                             {baseGroups.flatMap(g => g.items).filter(i => favorites.includes(i.id)).map(item => (
@@ -276,7 +305,7 @@ export function Sidebar({ user, view, onViewChange, onLogout, isCollapsed, toggl
                                     <span className="icon">{item.icon}</span>
                                     <span className="label" style={{ flex: 1 }}>{t(item.label)}</span>
                                     <div onClick={(e) => toggleFavorite(e, item.id)} style={{ cursor: 'pointer', opacity: 1 }}>
-                                        <Star size={14} fill="#f59e0b" color="#f59e0b" />
+                                        <Star size={14} fill="var(--primary-color)" color="var(--primary-color)" />
                                     </div>
                                 </li>
                             ))}
@@ -299,9 +328,9 @@ export function Sidebar({ user, view, onViewChange, onLogout, isCollapsed, toggl
                                 style={{
                                     padding: '8px 16px', margin: '0', display: 'flex', alignItems: 'center',
                                     justifyContent: 'flex-start', gap: '10px', cursor: 'pointer', userSelect: 'none',
-                                    border: '1px solid rgba(6, 78, 59, 0.3)',
-                                    backgroundColor: (expandedGroups[group.id]) ? '#064e3b' : 'transparent',
-                                    color: (expandedGroups[group.id]) ? '#D9F8E5' : '#064e3b',
+                                    border: '1px solid var(--sidebar-border)',
+                                    backgroundColor: (expandedGroups[group.id]) ? 'var(--sidebar-active-bg)' : 'transparent',
+                                    color: (expandedGroups[group.id]) ? 'var(--sidebar-active-text)' : 'var(--sidebar-text)',
                                     transition: 'all 0.2s ease'
                                 }}
                             >

@@ -71,8 +71,8 @@ export function CollectView({ form, onBack }) {
         padding: '12px 24px',
         cursor: 'pointer',
         fontWeight: '600',
-        color: activeTab === activeTab ? (activeTab === id ? '#b91c1c' : '#64748b') : '#64748b',
-        borderBottom: activeTab === id ? '2px solid #b91c1c' : '2px solid transparent',
+        color: activeTab === activeTab ? (activeTab === id ? 'var(--primary-color, #b91c1c)' : 'var(--text-muted, #64748b)') : 'var(--text-muted, #64748b)',
+        borderBottom: activeTab === id ? '2px solid var(--primary-color, #b91c1c)' : '2px solid transparent',
         transition: 'all 0.2s',
         display: 'flex',
         alignItems: 'center',
@@ -129,7 +129,7 @@ export function CollectView({ form, onBack }) {
                             />
                             <button
                                 onClick={() => handleCopy(shareUrl)}
-                                style={{ background: copied ? '#22c55e' : '#b91c1c', color: 'white', border: 'none', padding: '0 24px', borderRadius: '8px', fontWeight: '600', transition: 'background 0.2s' }}
+                                style={{ background: copied ? 'var(--success-color, #22c55e)' : 'var(--primary-color, #b91c1c)', color: 'white', border: 'none', padding: '0 24px', borderRadius: '8px', fontWeight: '600', transition: 'background 0.2s' }}
                             >
                                 {copied ? t('collect.link.copied') : t('collect.link.copy')}
                             </button>
@@ -176,7 +176,7 @@ export function CollectView({ form, onBack }) {
                                         link.click();
                                         document.body.removeChild(link);
                                     }}
-                                    style={{ padding: '11px 24px', background: '#b91c1c', color: 'white', border: 'none', borderRadius: '8px', fontWeight: '600', cursor: 'pointer' }}
+                                    style={{ padding: '11px 24px', background: 'var(--primary-color, #b91c1c)', color: 'white', border: 'none', borderRadius: '8px', fontWeight: '600', cursor: 'pointer' }}
                                 >
                                     📥 Generate & Export CSV
                                 </button>
@@ -393,7 +393,7 @@ export function CollectView({ form, onBack }) {
                                     alert("Failed to send emails: " + (err.response?.data?.error || err.message));
                                 });
                             }}
-                            style={{ width: '100%', padding: '12px', background: '#b91c1c', color: 'white', border: 'none', borderRadius: '8px', fontWeight: '600', cursor: 'pointer' }}
+                            style={{ width: '100%', padding: '12px', background: 'var(--primary-color, #b91c1c)', color: 'white', border: 'none', borderRadius: '8px', fontWeight: '600', cursor: 'pointer' }}
                         >
                             {t('collect.email.send')}
                         </button>
@@ -414,7 +414,7 @@ export function CollectView({ form, onBack }) {
                             />
                             <button
                                 onClick={() => handleCopy(embedCode)}
-                                style={{ position: 'absolute', bottom: '10px', right: '10px', background: copied ? '#22c55e' : '#b91c1c', color: 'white', border: 'none', padding: '6px 12px', borderRadius: '6px', fontSize: '0.9em', cursor: 'pointer' }}
+                                style={{ position: 'absolute', bottom: '10px', right: '10px', background: copied ? 'var(--success-color, #22c55e)' : 'var(--primary-color, #b91c1c)', color: 'white', border: 'none', padding: '6px 12px', borderRadius: '6px', fontSize: '0.9em', cursor: 'pointer' }}
                             >
                                 {copied ? t('collect.link.copied') : t('collect.link.copy')}
                             </button>

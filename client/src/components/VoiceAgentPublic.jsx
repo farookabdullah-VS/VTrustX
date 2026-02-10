@@ -8,16 +8,11 @@ export function VoiceAgentPublic({ slug }) {
     const [form, setForm] = useState(null);
     const [questions, setQuestions] = useState([]);
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(-1); // -1 = Not started
-    const [aiConfig, setAiConfig] = useState({});
+    const [answers, setAnswers] = useState({});
 
-    // Refs
-    const recognitionRef = useRef(null);
-    const synthRef = useRef(window.speechSynthesis);
-    const currentUtteranceRef = useRef(null);
-    const mountedRef = useRef(true);
-
-    // Styling constants
+    // styling constants...
     const styles = {
+        // ... (keep existing styles)
         container: {
             maxWidth: '600px',
             margin: '0 auto',
@@ -78,138 +73,153 @@ export function VoiceAgentPublic({ slug }) {
         }
     };
 
-    useEffect(() => {
-        mountedRef.current = true;
-        loadForm();
-        setupSpeech();
+    const [voiceSettings, setVoiceSettings] = useState({ stt_provider: 'browser' });
+    const mediaRecorderRef = useRef(null);
+    const recognitionRef = useRef(null);
 
-        return () => {
-            mountedRef.current = false;
-            cancelSpeech();
-        };
+    useEffect(() => {
+        // Load Form
+        if (slug) {
+            axios.get(`/api/forms/public/${slug}`)
+                .then(res => {
+                    setForm(res.data);
+                    // Handle different schema structures if needed
+                    const elements = res.data.schema?.pages?.[0]?.elements || res.data.schema?.elements || [];
+                    setQuestions(elements);
+                    setStatus('ready');
+                })
+                .catch(err => {
+                    console.error("Link invalid", err);
+                    setStatus('error');
+                });
+        }
+
+        // Load Voice Settings
+        axios.get('/api/settings').then(res => {
+            // Check for 'voice_agent_provider' setting
+            const provider = res.data.voice_agent_provider || 'browser';
+            setVoiceSettings({ stt_provider: provider });
+        }).catch(() => { });
+
     }, [slug]);
 
-    const loadForm = async () => {
-        try {
-            // Find by Slug first, if fails try ID (backend logic handles this but let's be safe)
-            const res = await axios.get(`/api/forms/slug/${slug}`);
-            const formData = res.data;
+    const speak = (text) => {
+        if (!text) return;
 
-            setForm(formData);
-            setAiConfig(formData.ai || {});
-
-            // Parse Questions
-            const def = formData.definition || {};
-            const qList = [];
-            (def.pages || []).forEach(p => {
-                (p.elements || []).forEach(e => {
-                    qList.push({
-                        title: e.title || e.name,
-                        name: e.name,
-                        type: e.type
-                    });
-                });
-            });
-            setQuestions(qList);
-
-            if (!formData.enableVoiceAgent) {
-                setStatus('disabled');
-                addMessage('agent', "This survey does not have the Voice Agent enabled.");
-            } else {
-                setStatus('ready');
+        // Simple synthesis
+        const synth = window.speechSynthesis;
+        const u = new SpeechSynthesisUtterance(text);
+        u.onend = () => {
+            if (status !== 'ended') {
+                setStatus('waiting');
+                // Auto-listen after speaking
+                setTimeout(() => startListening(), 500);
             }
-
-        } catch (err) {
-            console.error("Load Error", err);
-            setStatus('error');
-            addMessage('agent', "Sorry, I couldn't load the survey. Please check the link and try again.");
-        }
-    };
-
-    const setupSpeech = () => {
-        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            const recognition = new SpeechRecognition();
-            recognition.continuous = false;
-            recognition.interimResults = false;
-            recognition.lang = 'en-US';
-
-            recognition.onresult = (event) => {
-                const text = event.results[0][0].transcript;
-                addMessage('user', text);
-                processResponse(text);
-            };
-
-            recognition.onerror = (event) => {
-                console.warn("Speech Error:", event.error);
-                if (event.error === 'no-speech') {
-                    // Silent fail, user can click mic again
-                    setStatus('waiting');
-                } else {
-                    setStatus('error');
-                }
-            };
-
-            recognition.onend = () => {
-                if (status === 'listening' && mountedRef.current) {
-                    // recognition stopped unexpectedly?
-                }
-            }
-
-            recognitionRef.current = recognition;
-        }
+        };
+        setStatus('speaking');
+        synth.speak(u);
     };
 
     const startSession = () => {
         setCurrentQuestionIndex(0);
-        const greeting = `Hello! I am the AI assistant for ${form?.title || 'this survey'}. I'll ask you a few questions. Ready?`;
-        speak(greeting);
+        setTranscript([]);
+        setAnswers({});
+        // Find first question title or generic welcome
+        const welcome = "Hello! I am your AI interviewer. I'm ready to start the survey.";
+        speak(welcome);
     };
 
-    const cancelSpeech = () => {
-        if (synthRef.current) synthRef.current.cancel();
-        if (recognitionRef.current) try { recognitionRef.current.stop(); } catch (e) { }
-    };
-
-    const speak = (text) => {
-        if (!mountedRef.current) return;
-        addMessage('agent', text);
-
-        if (synthRef.current) {
-            synthRef.current.cancel();
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.onstart = () => setStatus('speaking');
-            utterance.onend = () => {
-                if (status !== 'ended') {
-                    startListening();
-                }
-            };
-            synthRef.current.speak(utterance);
-        } else {
-            // Fallback if no TTS
-            startListening();
-        }
+    const endSession = () => {
+        setStatus('ended');
+        speak("Thank you for your time. The survey is complete.");
     };
 
     const startListening = () => {
-        if (!mountedRef.current) return;
-        if (recognitionRef.current) {
-            try {
-                setStatus('listening');
-                recognitionRef.current.start();
-            } catch (e) {
-                console.warn("Start Listen Error", e);
-                setStatus('waiting');
+        if (status === 'listening' || status === 'processing' || status === 'speaking') return;
+
+        const provider = voiceSettings.stt_provider;
+
+        if (provider === 'browser') {
+            const SpeechOrWebkit = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechOrWebkit) {
+                // Fallback to server if browser not supported? Or alert.
+                alert("Browser speech recognition not supported.");
+                return;
             }
+            const rec = new SpeechOrWebkit();
+            rec.lang = 'en-US';
+            rec.continuous = false;
+            rec.interimResults = false;
+            rec.onstart = () => setStatus('listening');
+            rec.onresult = (e) => {
+                const text = e.results[0][0].transcript;
+                setTranscript(prev => [...prev, { sender: 'user', text }]);
+                processResponse(text);
+            };
+            rec.onerror = (e) => {
+                console.error("Speech Error", e);
+                // If no speech detected, maybe prompt? 
+                if (e.error === 'no-speech') {
+                    // speak("I didn't hear anything.");
+                }
+                setStatus('waiting');
+            };
+            rec.start();
+            recognitionRef.current = rec;
         } else {
-            setStatus('waiting');
+            // Server Mode (Google / Groq)
+            handleServerListening();
         }
     };
 
-    const addMessage = (sender, text) => {
-        setTranscript(prev => [...prev, { sender, text, time: new Date() }]);
+    const handleServerListening = async () => {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            const mediaRecorder = new MediaRecorder(stream);
+            mediaRecorderRef.current = mediaRecorder;
+            const chunks = [];
+
+            mediaRecorder.ondataavailable = e => chunks.push(e.data);
+            mediaRecorder.onstop = async () => {
+                const blob = new Blob(chunks, { type: 'audio/webm' });
+                setStatus('processing');
+
+                const formData = new FormData();
+                formData.append('audio', blob);
+                formData.append('stt_provider', voiceSettings.stt_provider);
+
+                try {
+                    const res = await axios.post('/api/ai/transcribe', formData);
+                    const text = res.data.text;
+                    setTranscript(prev => [...prev, { sender: 'user', text }]);
+                    processResponse(text);
+                } catch (err) {
+                    console.error("Transcribe Error", err);
+                    speak("Sorry, I had trouble hearing you.");
+                    setStatus('waiting');
+                }
+            };
+
+            mediaRecorder.start();
+            setStatus('listening');
+
+            // Auto-stop after 5 seconds of silence? 
+            // Simple timeout for MVP
+            setTimeout(() => {
+                if (mediaRecorder.state === 'recording') {
+                    mediaRecorder.stop();
+                    stream.getTracks().forEach(t => t.stop());
+                }
+            }, 6000);
+
+        } catch (err) {
+            console.error("Mic Error", err);
+            alert("Could not access microphone.");
+            setStatus('error');
+        }
     };
 
+    // (Inside processResponse)
     const processResponse = async (userText) => {
         setStatus('processing');
 
@@ -219,10 +229,6 @@ export function VoiceAgentPublic({ slug }) {
                 endSession();
                 return;
             }
-
-            // AI Decision Loop
-            // Ask AI to generate next step based on user input + current question
-            // We pass the Model Name via aiConfig settings
 
             const currentQ = questions[currentQuestionIndex];
             const nextQ = questions[currentQuestionIndex + 1];
@@ -236,17 +242,30 @@ export function VoiceAgentPublic({ slug }) {
                 
                 Instructions:
                 1. Did the user answer the question?
-                2. If yes, acknowledge briefly and ask the Next Question exact text. Set action="next".
-                3. If no, politely clarify or probe. Set action="stay".
+                2. If yes:
+                   - Extract their answer as clear text (e.g. "Yes", "Very Good", "I like X").
+                   - Predict sentiment (Positive/Negative/Neutral).
+                   - Set action="next".
+                   - Phrase the next speak to acknowledge the answer briefly then ask the Next Question.
+                3. If no (or asking for clarification):
+                   - Set action="stay".
+                   - Politely clarify/probe.
+                   - set predicted_answer=null.
                 4. If user says 'stop' or 'bye', set action="end".
-                5. If this was the last question (no Next Question), thank them. Set action="end".
+                5. If this was the last question (no Next Question), set action="end".
 
-                Return ONLY raw JSON: { "speak": "...", "action": "next" | "stay" | "end" }
+                Return ONLY raw JSON: 
+                { 
+                  "speak": "...", 
+                  "action": "next" | "stay" | "end",
+                  "extracted_answer": "string or null",
+                  "sentiment": "Positive" | "Negative" | "Neutral" | "N/A"
+                }
             `;
 
             const res = await axios.post('/api/ai/generate', {
                 prompt: systemPrompt,
-                settings: aiConfig
+                settings: form?.ai_config || {}
             });
 
             // Parse response - Handle potental Markdown wrapping
@@ -261,22 +280,43 @@ export function VoiceAgentPublic({ slug }) {
                 decision = { speak: "Thank you. Moving to the next question.", action: "next" };
             }
 
-            if (decision.action === 'next') {
-                setCurrentQuestionIndex(prev => prev + 1);
-            } else if (decision.action === 'end') {
-                setCurrentQuestionIndex(questions.length); // Mark done
-                await saveSubmission(userText); // Save final bit?
-                speak(decision.speak || "Thank you for your time!");
-                setStatus('ended');
-                return;
+            if (decision.action === 'next' || decision.action === 'end') {
+                // Save Answer
+                if (decision.extracted_answer) {
+                    setAnswers(prev => ({
+                        ...prev,
+                        [currentQ.name]: {
+                            value: decision.extracted_answer,
+                            sentiment: decision.sentiment,
+                            transcript: userText
+                        }
+                    }));
+                }
+
+                if (decision.action === 'next') {
+                    setCurrentQuestionIndex(prev => prev + 1);
+                } else {
+                    setCurrentQuestionIndex(questions.length); // Mark done
+
+                    // Wait for state update before saving? No, use local var or functional update logic.
+                    // Ideally we should wait, but for now lets pass the LATEST answer manually to save
+                    const finalAnswers = {
+                        ...answers,
+                        [currentQ.name]: {
+                            value: decision.extracted_answer,
+                            sentiment: decision.sentiment,
+                            transcript: userText
+                        }
+                    };
+
+                    await saveSubmission(finalAnswers, userText);
+                    speak(decision.speak || "Thank you for your time!");
+                    setStatus('ended');
+                    return;
+                }
             }
 
             speak(decision.speak);
-
-            // Background save (simple)
-            if (decision.action === 'next') {
-                // In a real app we'd accumulate answers properly matched to IDs
-            }
 
         } catch (err) {
             console.error("AI Process Error", err);
@@ -285,13 +325,13 @@ export function VoiceAgentPublic({ slug }) {
         }
     };
 
-    const saveSubmission = async (lastText) => {
-        // Simple transcript dump
+    const saveSubmission = async (finalAnswers, lastText) => {
         try {
             await axios.post('/api/submissions', {
                 formId: form.id,
                 formVersion: form.version,
                 data: {
+                    answers: finalAnswers || answers,
                     ai_transcript: [...transcript, { sender: 'user', text: lastText }],
                     mode: 'voice_agent_public'
                 }

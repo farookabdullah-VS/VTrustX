@@ -10,8 +10,14 @@ const useQuestionValue = (question) => {
     useEffect(() => {
         if (!question) return;
         const handler = () => setValue(question.value);
-        question.onValueChanged.add(handler);
-        return () => question.onValueChanged.remove(handler);
+        if (question && question.onValueChanged && typeof question.onValueChanged.add === 'function') {
+            question.onValueChanged.add(handler);
+        }
+        return () => {
+            if (question && question.onValueChanged && typeof question.onValueChanged.remove === 'function') {
+                question.onValueChanged.remove(handler);
+            }
+        };
     }, [question]);
     return value;
 };

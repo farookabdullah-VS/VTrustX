@@ -10,18 +10,43 @@ export function IntegrationDetailView({ integration, onBack, onUpdate }) {
     });
 
     const handleSave = () => {
-        axios.put(`/api/integrations/${integration.id}`, {
+        const payload = {
+            provider: integration.provider, // Required for creation
             api_key: formState.api_key,
             webhook_url: formState.webhook_url,
             is_active: formState.is_active,
-            config: formState.details // Send as 'config' to matches DB column
-        }).then(() => {
+            config: formState.details
+        };
+
+        const request = integration.id
+            ? axios.put(`/api/integrations/${integration.id}`, payload)
+            : axios.post('/api/integrations', payload);
+
+        request.then(() => {
             alert("Integration Saved!");
             onUpdate(); // Refresh parent list
-        }).catch(err => alert("Save failed: " + err.message));
+        }).catch(err => {
+            console.error(err);
+            alert("Save failed: " + (err.response?.data?.error || err.message));
+        });
     };
 
-    // ... (getIconColor)
+    const getIconColor = (provider) => {
+        const colors = {
+            'Facebook': '#1877F2',
+            'Instagram': '#E4405F',
+            'WhatsApp': '#25D366',
+            'Twitter': '#1DA1F2',
+            'LinkedIn': '#0A66C2',
+            'Salesforce': '#00A1E0',
+            'HubSpot': '#FF7A59',
+            'Slack': '#4A154B',
+            'Power BI': '#F2C811',
+            'Genesys Cloud': '#FF4F1F',
+            'Zendesk': '#03363D'
+        };
+        return colors[provider] || '#64748b';
+    };
 
     return (
         <div style={{ maxWidth: '800px', margin: '0 auto', padding: '40px', fontFamily: "'Outfit', sans-serif" }}>
@@ -109,19 +134,45 @@ export function IntegrationDetailView({ integration, onBack, onUpdate }) {
                     {/* Standard Fields */}
                     {integration.provider !== 'Genesys Cloud' && (
                         <div style={{ marginBottom: '30px' }}>
-                            <label style={{ display: 'block', marginBottom: '10px', fontWeight: '600', color: '#334155' }}>Authentication Config (API Key / Token)</label>
+                            <label style={{ display: 'block', marginBottom: '10px', fontWeight: '600', color: '#334155' }}>
+                                {integration.provider.includes('Unifonic') ? 'AppSid (Required)' : 'Authentication Config (API Key / Token)'}
+                            </label>
                             <input
                                 type="text"
                                 value={formState.api_key}
                                 onChange={e => setFormState({ ...formState, api_key: e.target.value })}
-                                placeholder={integration.provider === 'Power BI' ? "Enter a unique Secret Key here..." : "e.g. sk_live_..."}
+                                placeholder={integration.provider.includes('Unifonic') ? "e.g. dY2397564nsjfgwtSDE" : (integration.provider === 'Power BI' ? "Enter a unique Secret Key here..." : "e.g. sk_live_...")}
                                 style={{ width: '100%', padding: '14px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '1em' }}
                             />
-                            <p style={{ marginTop: '8px', fontSize: '0.9em', color: '#94a3b8' }}>This key is encrypted securely.</p>
+                            <p style={{ marginTop: '8px', fontSize: '0.9em', color: '#94a3b8' }}>
+                                {integration.provider.includes('Unifonic') ? 'Your unique Unifonic App Identifier. Keep this secret.' : 'This key is encrypted securely.'}
+                            </p>
                         </div>
                     )}
 
-                    {integration.provider !== 'Power BI' && integration.provider !== 'Genesys Cloud' && (
+                    {/* Unifonic Specific Fields */}
+                    {integration.provider.includes('Unifonic') && (
+                        <div style={{ padding: '20px', background: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0', marginBottom: '30px' }}>
+                            <h3 style={{ marginTop: 0, color: '#334155', fontSize: '1.1em' }}>SMS Settings</h3>
+                            <div style={{ marginBottom: '20px' }}>
+                                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#475569' }}>Sender ID (Optional)</label>
+                                <input
+                                    type="text"
+                                    value={formState.details?.sender_id || ''}
+                                    onChange={e => setFormState({ ...formState, details: { ...formState.details, sender_id: e.target.value } })}
+                                    placeholder="YourBrand"
+                                    style={{ width: '100%', padding: '12px', borderRadius: '6px', border: '1px solid #cbd5e1' }}
+                                />
+                                <p style={{ fontSize: '0.85em', color: '#94a3b8', marginTop: '4px' }}>Must be pre-approved by Unifonic. Defaults to VTrustX if empty.</p>
+                            </div>
+
+                            <div style={{ padding: '12px', background: '#fff7ed', borderRadius: '8px', border: '1px solid #fed7aa', fontSize: '0.9em', color: '#c2410c' }}>
+                                <strong>⚠️ Important:</strong> Unifonic requires HTTPS. Valid certificates are handled automatically; you do not need to upload `https.zip`.
+                            </div>
+                        </div>
+                    )}
+
+                    {integration.provider !== 'Power BI' && integration.provider !== 'Genesys Cloud' && !integration.provider.includes('Unifonic') && (
                         <div style={{ marginBottom: '30px' }}>
                             <label style={{ display: 'block', marginBottom: '10px', fontWeight: '600', color: '#334155' }}>Webhook URL (Optional)</label>
                             <input

@@ -1,6 +1,6 @@
 
 const { Pool } = require('pg');
-require('dotenv').config();
+require('dotenv').config({ path: require('path').join(__dirname, '..', '.env') });
 
 // Configuration
 const TABLE_ORDER = [
@@ -29,11 +29,11 @@ const TABLE_ORDER = [
 ];
 
 const localPool = new Pool({
-    user: 'postgres',
-    password: 'postgres',
+    user: process.env.DB_USER || 'postgres',
+    password: process.env.DB_PASSWORD || 'postgres',
     host: 'localhost',
-    port: 5432,
-    database: 'vtrustx_db',
+    port: process.env.DB_PORT || 5433,
+    database: process.env.DB_NAME || 'vtrustx_db',
 });
 
 const cloudPool = new Pool({

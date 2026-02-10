@@ -1,0 +1,283 @@
+﻿
+D:\VTrustX\client\public\rayix-sdk.js
+  36:19  error  'id' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+D:\VTrustX\client\public\vtrustx-sdk.js
+  36:19  error  'id' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+D:\VTrustX\client\src\App.jsx
+  119:22  error  'setPublicSlug' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+D:\VTrustX\client\src\components\AISurveyor.jsx
+   7:13  error    't' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                                       no-unused-vars
+  55:8   warning  React Hook useEffect has a missing dependency: 'processUserResponse'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+D:\VTrustX\client\src\components\CJM\CJMBuilder.jsx
+   1:38  error  'useCallback' is defined but never used. Allowed unused vars must match /^[A-Z_]/u                    no-unused-vars
+   5:38  error  'verticalListSortingStrategy' is defined but never used. Allowed unused vars must match /^[A-Z_]/u    no-unused-vars
+   5:67  error  'horizontalListSortingStrategy' is defined but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+  13:13  error  't' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                     no-unused-vars
+  68:23  error  'res' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                   no-unused-vars
+
+D:\VTrustX\client\src\components\CJM\CellControl.jsx
+  4:53  error  'sectionId' is defined but never used  no-unused-vars
+  4:64  error  'stageId' is defined but never used    no-unused-vars
+
+D:\VTrustX\client\src\components\CJM\SectionRow.jsx
+  13:12  error  'collapsed' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u     no-unused-vars
+  13:23  error  'setCollapsed' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+D:\VTrustX\client\src\components\CJM\SidebarToolbox.jsx
+  5:40  error  'Icon' is defined but never used  no-unused-vars
+
+D:\VTrustX\client\src\components\CollectView.jsx
+   31:8   warning  React Hook React.useEffect has a missing dependency: 'emailBody'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  257:50  error    'err' is defined but never used                                                                                     no-unused-vars
+
+D:\VTrustX\client\src\components\ContactMaster.jsx
+    7:13  error  't' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+   70:24  error  'err' is defined but never used                                                    no-unused-vars
+  100:19  error  'res' is defined but never used                                                    no-unused-vars
+
+D:\VTrustX\client\src\components\CrmDashboard.jsx
+  6:13  error  't' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+D:\VTrustX\client\src\components\CustomSurveyControls.jsx
+  25:7  warning  Fast refresh only works when a file only exports components. Move your component(s) to a separate file  react-refresh/only-export-components
+
+D:\VTrustX\client\src\components\Customer360.jsx
+    9:12  error  'loading' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                   no-unused-vars
+   13:12  error  'isRecalculating' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u           no-unused-vars
+  117:11  error  'handleRecalculatePersona' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+  137:19  error  'res' is defined but never used                                                                           no-unused-vars
+  373:18  error  'err' is defined but never used                                                                           no-unused-vars
+
+D:\VTrustX\client\src\components\CxPersonaTemplates.jsx
+  10:64  error  'onEditTemplate' is defined but never used                                         no-unused-vars
+  11:13  error  't' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+D:\VTrustX\client\src\components\Dashboard.jsx
+    8:49  error  'onEditSubmission' is defined but never used  no-unused-vars
+  157:40  error  'range' is defined but never used             no-unused-vars
+
+D:\VTrustX\client\src\components\ErrorBoundary.jsx
+  9:37  error  'error' is defined but never used  no-unused-vars
+
+D:\VTrustX\client\src\components\ExportModal.jsx
+  466:52  error  'e' is defined but never used  no-unused-vars
+  479:52  error  'e' is defined but never used  no-unused-vars
+
+D:\VTrustX\client\src\components\FormBuilder.jsx
+   29:66  error  'onNavigate' is defined but never used                                                                no-unused-vars
+   35:12  error  'isProfileMenuOpen' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u     no-unused-vars
+   35:31  error  'setIsProfileMenuOpen' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+  213:67  error  'res' is defined but never used                                                                       no-unused-vars
+  423:11  error  'renderSettings' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u        no-unused-vars
+
+D:\VTrustX\client\src\components\FormViewer.jsx
+   88:18  error    'err' is defined but never used                                                                                                                                                     no-unused-vars
+   99:42  error    'err' is defined but never used                                                                                                                                                     no-unused-vars
+  111:42  error    'err' is defined but never used                                                                                                                                                     no-unused-vars
+  419:30  error    'err' is defined but never used                                                                                                                                                     no-unused-vars
+  429:27  error    'payload' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                                                                                             no-unused-vars
+  663:35  error    'label' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                                                                                               no-unused-vars
+  725:8   warning  React Hook React.useEffect has missing dependencies: 'i18n.language', 'isPublic', 'submissionMeta?.metadata', and 'ticketCode'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+D:\VTrustX\client\src\components\GlobalAdminDashboard.jsx
+  9:12  error  'stats' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+D:\VTrustX\client\src\components\JourneyMapView.jsx
+  103:11  error    'height' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                                                                                                                                           no-unused-vars
+  217:7   error    'btnStyle' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                                                                                                                                         no-unused-vars
+  226:45  warning  React Hook useEffect has a missing dependency: 'onChange'. Either include it or remove the dependency array. If 'onChange' changes too often, find the parent component that defines it and wrap that definition in useCallback  react-hooks/exhaustive-deps
+
+D:\VTrustX\client\src\components\LandingPage.jsx
+  12:12  error  'mobileMenuOpen' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u     no-unused-vars
+  12:28  error  'setMobileMenuOpen' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+D:\VTrustX\client\src\components\LoopLogicView.jsx
+  24:8  warning  React Hook useEffect has a missing dependency: 'refreshData'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+D:\VTrustX\client\src\components\MobileExperience.jsx
+   14:27  error  'setNotifications' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+  424:39  error  'onBack' is defined but never used                                                                no-unused-vars
+  464:39  error  'onBack' is defined but never used                                                                no-unused-vars
+
+D:\VTrustX\client\src\components\PersonaEngine\EnhancedAuditLogViewer.jsx
+  29:8   warning  React Hook useEffect has a missing dependency: 'applyFilters'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  77:11  error    'handleExport' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                     no-unused-vars
+
+D:\VTrustX\client\src\components\PersonaEngine\PersonaEngineDashboard.jsx
+  23:45  error  'Icon' is defined but never used  no-unused-vars
+
+D:\VTrustX\client\src\components\PersonaEngine\PersonaProfileCard.jsx
+  20:8  warning  React Hook useEffect has a missing dependency: 'loadPersonaData'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+D:\VTrustX\client\src\components\PersonaEngine\PersonaSelector.jsx
+  24:8  warning  React Hook useEffect has a missing dependency: 'fetchAudienceStats'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+D:\VTrustX\client\src\components\PublicReportViewer.jsx
+  19:44  error  'title' is defined but never used                                                      no-unused-vars
+  19:64  error  'fields' is defined but never used                                                     no-unused-vars
+  70:11  error  'color' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+D:\VTrustX\client\src\components\QuotaSettings.jsx
+   57:8   warning  React Hook useEffect has a missing dependency: 'loadQuotas'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  104:24  error    'err' is defined but never used                                                                                no-unused-vars
+  286:13  error    'skipped' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                        no-unused-vars
+
+D:\VTrustX\client\src\components\ReputationManager.jsx
+  9:12  error  'loading' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+D:\VTrustX\client\src\components\ResultsGrid.jsx
+  53:8  warning  React Hook useEffect has a missing dependency: 'columnOrder.length'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+D:\VTrustX\client\src\components\ResultsViewer.jsx
+   28:80  error    'onNavigate' is defined but never used                                                                       no-unused-vars
+   92:8   warning  React Hook useEffect has a missing dependency: 'isPublic'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  151:63  error    Do not access Object.prototype method 'hasOwnProperty' from target object                                    no-prototype-builtins
+
+D:\VTrustX\client\src\components\RoleMaster.jsx
+  18:13  error  't' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u        no-unused-vars
+  18:16  error  'i18n' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u     no-unused-vars
+  20:12  error  'loading' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+  73:18  error  'err' is defined but never used                                                          no-unused-vars
+
+D:\VTrustX\client\src\components\SettingsView.jsx
+  66:19  error  'res' is defined but never used       no-unused-vars
+  79:30  error  'subLabel' is defined but never used  no-unused-vars
+
+D:\VTrustX\client\src\components\Sidebar.jsx
+  145:53  error  'onLogout' is defined but never used                                                  no-unused-vars
+  146:16  error  'i18n' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+D:\VTrustX\client\src\components\SocialMediaMarketing.jsx
+  34:27  error  'setSelectedBrand' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+D:\VTrustX\client\src\components\SubscriptionManagement.jsx
+  31:19  error  'res' is defined but never used  no-unused-vars
+
+D:\VTrustX\client\src\components\SurveyAudience.jsx
+    6:40  error    'onBack' is defined but never used                                                                               no-unused-vars
+   26:8   warning  React Hook useEffect has a missing dependency: 'loadAudience'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+   50:20  error    'err' is defined but never used                                                                                  no-unused-vars
+  133:21  error    'successCount' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                     no-unused-vars
+  166:20  error    'err' is defined but never used                                                                                  no-unused-vars
+
+D:\VTrustX\client\src\components\SurveyDistribution.jsx
+  110:21  error  'successCount' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+D:\VTrustX\client\src\components\SystemSettings.jsx
+  136:43  error  'Icon' is defined but never used  no-unused-vars
+
+D:\VTrustX\client\src\components\ThemeSettings.jsx
+  84:12  error  'loading' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+D:\VTrustX\client\src\components\TicketDetailView.jsx
+    6:13  error    't' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                                  no-unused-vars
+    7:11  error    'isRtl' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                              no-unused-vars
+   11:24  error    'setSidebarTab' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                      no-unused-vars
+   16:12  error    'auditLogs' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                          no-unused-vars
+   17:11  error    'messagesEndRef' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                     no-unused-vars
+   27:8   warning  React Hook useEffect has a missing dependency: 'loadTicket'. Either include it or remove the dependency array      react-hooks/exhaustive-deps
+   33:8   warning  React Hook useEffect has a missing dependency: 'fetchAuditLogs'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  113:11  error    'getStatusColor' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                     no-unused-vars
+
+D:\VTrustX\client\src\components\UserManagement.jsx
+  30:8   warning  React Hook useEffect has a missing dependency: 'loadUsers'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  78:24  error    'err' is defined but never used                                                                               no-unused-vars
+
+D:\VTrustX\client\src\components\VideoAgentInterface.jsx
+   15:12  error    'currentQuestionType' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                                                                      no-unused-vars
+   15:33  error    'setCurrentQuestionType' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                                                                   no-unused-vars
+  101:8   warning  React Hook useEffect has missing dependencies: 'agentState', 'handleUserMessage', 'startListening', and 'synthesis'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  107:59  error    Empty block statement                                                                                                                                                    no-empty
+  137:8   warning  React Hook useEffect has a missing dependency: 'speakResponse'. Either include it or remove the dependency array                                                         react-hooks/exhaustive-deps
+  169:11  error    'stopAndUpload' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                                                                            no-unused-vars
+
+D:\VTrustX\client\src\components\VoiceSurveyRunner.jsx
+  25:8   warning  React Hook useEffect has missing dependencies: 'loadForm' and 'synth'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+  95:63  error    Empty block statement                                                                                                      no-empty
+
+D:\VTrustX\client\src\components\WebCallModal.jsx
+  55:8  warning  React Hook useEffect has missing dependencies: 'sendChat', 'sessionId', 'survey.definition', 'survey.id', and 'synthesis'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+
+D:\VTrustX\client\src\components\WorkflowView.jsx
+   7:12  error  'loading' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+  26:20  error  'err' is defined but never used                                                          no-unused-vars
+
+D:\VTrustX\client\src\components\XMDirectory.jsx
+  14:8  warning  React Hook useEffect has a missing dependency: 'loadContacts'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+D:\VTrustX\client\src\components\XMLanding.jsx
+  6:13  error  't' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+D:\VTrustX\client\src\components\analytics\AnalyticsBuilder.jsx
+  20:24  error  'setDashboards' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+  21:21  error  'setFolders' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u     no-unused-vars
+
+D:\VTrustX\client\src\components\analytics\AnalyticsStudio.jsx
+   175:63   error    'e' is defined but never used                                                                                                                                                       no-unused-vars
+   551:58   error    'isMeasure' is defined but never used                                                                                                                                               no-unused-vars
+   611:8    warning  React Hook useMemo has missing dependencies: 'config.secondaryYAggregation', 'config.secondaryYKey', and 'config.yAggregation'. Either include them or remove the dependency array  react-hooks/exhaustive-deps
+   634:11   error    'xKey' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                                                                                                no-unused-vars
+   635:11   error    'yKey' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                                                                                                no-unused-vars
+   993:18   error    'err' is defined but never used                                                                                                                                                     no-unused-vars
+  1101:76   error    'visualsCollapsed' is defined but never used                                                                                                                                        no-unused-vars
+  1101:94   error    'onToggleVisuals' is defined but never used                                                                                                                                         no-unused-vars
+  1101:111  error    'dataCollapsed' is defined but never used                                                                                                                                           no-unused-vars
+  1101:126  error    'onToggleData' is defined but never used                                                                                                                                            no-unused-vars
+  1207:11   error    'isDragging' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                                                                                          no-unused-vars
+  1249:11   error    'seriesKeys' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                                                                                          no-unused-vars
+  1258:8    warning  React Hook useMemo has a missing dependency: 'widget'. Either include it or remove the dependency array                                                                             react-hooks/exhaustive-deps
+  1874:12   error    'theme' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                                                                                               no-unused-vars
+  1874:19   error    'setTheme' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                                                                                            no-unused-vars
+  1875:12   error    'showAiAssistant' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                                                                                     no-unused-vars
+  1876:12   error    'editingWidgetId' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                                                                                     no-unused-vars
+  1876:29   error    'setEditingWidgetId' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                                                                                  no-unused-vars
+  1878:12   error    'closedLoopStats' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                                                                                     no-unused-vars
+  1882:12   error    'isPublishing' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                                                                                        no-unused-vars
+  1883:12   error    'shareUrl' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                                                                                            no-unused-vars
+  1902:8    warning  React Hook useEffect has a missing dependency: 'report.fields'. Either include it or remove the dependency array                                                                    react-hooks/exhaustive-deps
+  1949:8    warning  React Hook useEffect has a missing dependency: 'report'. Either include it or remove the dependency array                                                                           react-hooks/exhaustive-deps
+  2042:11   error    'handleCreateTicket' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                                                                                  no-unused-vars
+  2258:67   error    'e' is defined but never used                                                                                                                                                       no-unused-vars
+
+D:\VTrustX\client\src\components\analytics\QuestionChart.jsx
+  141:57  warning  The ref value 'chartRef.current' will likely have changed by the time this effect cleanup function runs. If this ref points to a node rendered by React, copy 'chartRef.current' to a variable inside the effect, and use that variable in the cleanup function  react-hooks/exhaustive-deps
+  143:8   warning  React Hook useEffect has a missing dependency: 'average'. Either include it or remove the dependency array                                                                                                                                                       react-hooks/exhaustive-deps
+
+D:\VTrustX\client\src\components\analytics\SurveyAnalyticsDashboard.jsx
+   1:27  error  'useMemo' is defined but never used. Allowed unused vars must match /^[A-Z_]/u                  no-unused-vars
+  20:12  error  'selectedAnswer' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+D:\VTrustX\client\src\components\persona\AddSectionModal.jsx
+  2:59  error  'layout' is defined but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+D:\VTrustX\client\src\components\persona\ModernPersonaEditor.jsx
+   20:12  error    'loading' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                         no-unused-vars
+   31:8   warning  React Hook useEffect has a missing dependency: 'loadPersona'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  121:31  error    'Icon' is defined but never used                                                                                no-unused-vars
+
+D:\VTrustX\client\src\components\persona\PersonaCanvas.jsx
+    1:17  error  'useState' is defined but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+  260:38  error  'e' is defined but never used                                                    no-unused-vars
+
+D:\VTrustX\client\src\components\smm\content\PostList.jsx
+  16:12  error  'viewMode' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u       no-unused-vars
+  16:22  error  'setViewMode' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u    no-unused-vars
+  34:11  error  'platformIcons' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+D:\VTrustX\client\src\components\smm\context\SmmContext.jsx
+   1:54  error    'useEffect' is defined but never used. Allowed unused vars must match /^[A-Z_]/u                                                no-unused-vars
+  38:14  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+D:\VTrustX\client\src\data\surveyTemplates.js
+  2:7  error  'generateTemplates' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u  no-unused-vars
+
+D:\VTrustX\client\src\services\authService.js
+   5:5  error  Unnecessary try/catch wrapper  no-useless-catch
+  25:5  error  Unnecessary try/catch wrapper  no-useless-catch
+
+Γ£û 158 problems (129 errors, 29 warnings)
+

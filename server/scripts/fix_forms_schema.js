@@ -17,7 +17,10 @@ async function fixFormsSchema() {
         "ALTER TABLE forms ADD COLUMN IF NOT EXISTS allow_audio BOOLEAN DEFAULT FALSE;",
         "ALTER TABLE forms ADD COLUMN IF NOT EXISTS allow_camera BOOLEAN DEFAULT FALSE;",
         "ALTER TABLE forms ADD COLUMN IF NOT EXISTS allow_location BOOLEAN DEFAULT FALSE;",
-        "ALTER TABLE forms ADD COLUMN IF NOT EXISTS ai_enabled BOOLEAN DEFAULT FALSE;"
+        "ALTER TABLE forms ADD COLUMN IF NOT EXISTS ai_enabled BOOLEAN DEFAULT FALSE;",
+        "ALTER TABLE forms ADD COLUMN IF NOT EXISTS ai JSONB;",
+        "ALTER TABLE forms ADD COLUMN IF NOT EXISTS enable_voice_agent BOOLEAN DEFAULT FALSE;",
+        "ALTER TABLE forms ADD COLUMN IF NOT EXISTS allowed_ips TEXT;"
     ];
 
     for (const sql of statements) {

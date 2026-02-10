@@ -1,12 +1,39 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import axios from 'axios';
 import * as XLSX from 'xlsx';
+import { AnalyticsView } from './AnalyticsView';
+import { ResultsGrid } from './ResultsGrid';
 
-export function ResultsViewer({ formId, onBack, onEditSubmission, initialView, onNavigate }) {
+const ShareModal = ({ isOpen, onClose, shareUrl }) => {
+    if (!isOpen) return null;
+    return (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
+            <div style={{ background: 'white', padding: '24px', borderRadius: '12px', width: '400px', boxShadow: '0 4px 6px rgba(0,0,0,0.1)' }}>
+                <h3 style={{ margin: '0 0 10px 0' }}>Share Dashboard</h3>
+                <p style={{ color: '#64748b', fontSize: '0.9em' }}>Use this link to share a read-only view of the dashboard.</p>
+
+                <div style={{ display: 'flex', gap: '10px', marginTop: '15px' }}>
+                    <input type="text" readOnly value={shareUrl} style={{ flex: 1, padding: '8px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '0.9em' }} />
+                    <button onClick={() => { navigator.clipboard.writeText(shareUrl); alert('Copied!'); }} style={{ padding: '8px 12px', background: '#3b82f6', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer' }}>Copy</button>
+                </div>
+
+                <div style={{ marginTop: '20px', textAlign: 'right' }}>
+                    <button onClick={onClose} style={{ padding: '8px 16px', background: 'none', border: '1px solid #e2e8f0', borderRadius: '6px', cursor: 'pointer' }}>Close</button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export function ResultsViewer({ formId, onBack, onEditSubmission, initialView, onNavigate, publicToken, isPublic }) {
     const [rawSubmissions, setRawSubmissions] = useState([]);
     const [formMetadata, setFormMetadata] = useState(null);
     const [loading, setLoading] = useState(true);
     const [activeSidebar, setActiveSidebar] = useState(initialView || 'dashboard');
+
+    // Share state
+    const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+    const [shareUrl, setShareUrl] = useState('');
 
     // AI Analysis State
     const [aiAnalysis, setAiAnalysis] = useState(null);
@@ -24,12 +51,37 @@ export function ResultsViewer({ formId, onBack, onEditSubmission, initialView, o
         const fetchData = async () => {
             setLoading(true);
             try {
-                const [formRes, subRes] = await Promise.all([
-                    axios.get(`/api/forms/${formId}`),
-                    axios.get(`/api/submissions?formId=${formId}`)
-                ]);
-                setFormMetadata(formRes.data);
-                setRawSubmissions(subRes.data);
+                if (publicToken) {
+                    const res = await axios.get(`/api/shared/${publicToken}/view`);
+                    const form = res.data.form;
+                    setFormMetadata(form);
+                    setRawSubmissions(res.data.submissions);
+
+                    // Apply Theme for Public View
+                    if (isPublic && form && form.tenant_theme) {
+                        const theme = form.tenant_theme;
+                        const root = document.documentElement;
+                        const setVar = (key, val) => {
+                            if (val) root.style.setProperty(key, val);
+                        };
+                        if (theme.primaryColor) setVar('--primary-color', theme.primaryColor);
+                        if (theme.backgroundColor) setVar('--deep-bg', theme.backgroundColor);
+                        if (theme.textColor) setVar('--text-color', theme.textColor);
+                        if (theme.buttonBg) setVar('--button-bg', theme.buttonBg);
+                        if (theme.buttonText) setVar('--button-text', theme.buttonText);
+                        if (theme.bgPattern) setVar('--bg-pattern', theme.bgPattern);
+                        if (theme.bgPatternSize) setVar('--bg-pattern-size', theme.bgPatternSize);
+                        if (theme.fontFamily) setVar('--font-family', theme.fontFamily);
+                        if (theme.borderRadius) setVar('--border-radius', theme.borderRadius);
+                    }
+                } else {
+                    const [formRes, subRes] = await Promise.all([
+                        axios.get(`/api/forms/${formId}`),
+                        axios.get(`/api/submissions?formId=${formId}`)
+                    ]);
+                    setFormMetadata(formRes.data);
+                    setRawSubmissions(subRes.data);
+                }
                 setLoading(false);
             } catch (err) {
                 console.error("Data load error:", err);
@@ -37,12 +89,32 @@ export function ResultsViewer({ formId, onBack, onEditSubmission, initialView, o
             }
         };
         fetchData();
-    }, [formId]);
+    }, [formId, publicToken]);
+
+    const handleShare = async () => {
+        if (shareUrl) {
+            setIsShareModalOpen(true);
+            return;
+        }
+        try {
+            const res = await axios.post('/api/shared/create', { formId });
+            const url = `${window.location.origin}/d/${res.data.token}`;
+            setShareUrl(url);
+            setIsShareModalOpen(true);
+        } catch (err) {
+            alert('Failed to generate share link: ' + err.message);
+        }
+    };
 
     // --- DERIVED DATA & FILTERING ---
     const submissions = useMemo(() => {
+        if (!rawSubmissions) return [];
         return rawSubmissions.filter(sub => {
-            const date = new Date(sub.createdAt || sub.created_at);
+            // Check createdAt or created_at (API returns both sometimes)
+            const dateStr = sub.created_at || sub.createdAt;
+            if (!dateStr) return true; // Keep if no date available
+
+            const date = new Date(dateStr);
 
             // Date Filter
             if (filters.startDate && date < new Date(filters.startDate)) return false;
@@ -55,35 +127,61 @@ export function ResultsViewer({ formId, onBack, onEditSubmission, initialView, o
             // Search Filter
             if (filters.search) {
                 const searchLower = filters.search.toLowerCase();
-                const strData = JSON.stringify(sub.data).toLowerCase();
+                const strData = sub.data ? JSON.stringify(sub.data).toLowerCase() : '';
                 const strId = String(sub.id);
                 if (!strData.includes(searchLower) && !strId.includes(searchLower)) return false;
             }
 
-            // Sentiment Filter (Heuristic Check)
-            if (filters.sentiment !== 'all') {
-                // Determine heuristic sentiment for this sub (reusing logic or simple check)
-                // For performance, we might want to classify once. But let's do simple check:
-                // If filter is Positive, check for high ratings.
-                // This is tricky if we haven't pre-calculated. 
-                // Let's rely on the pre-calculation in the dashboard logic for accuracy,
-                // or move sentiment logic to the "sub" object earlier.
-            }
             return true;
         }).map(sub => {
             // Enrich with Heuristic Sentiment for filtering/display
             let score = 0;
             let scorable = false;
-            if (sub.data) {
-                Object.entries(sub.data).forEach(([key, val]) => {
-                    const numVal = Number(val);
+            const subData = sub.data || {};
+
+            // If backend already computed it, use it (Public API does this)
+            if (sub.computed_sentiment) {
+                return { ...sub, computedSentiment: sub.computed_sentiment };
+            }
+
+            if (subData) {
+                Object.entries(subData).forEach(([key, val]) => {
+                    // Handle Object Wrappers (SurveyJS sometimes stores {value: 1, text: "1"} or similar)
+                    let extractVal = val;
+                    if (val && typeof val === 'object' && val.hasOwnProperty('value')) {
+                        extractVal = val.value;
+                    }
+                    const numVal = Number(extractVal);
+
                     if (!isNaN(numVal)) {
-                        if (key.toLowerCase().includes('nps')) { scorable = true; if (numVal >= 9) score++; else if (numVal <= 6) score--; }
-                        else if (numVal <= 5) { scorable = true; if (numVal >= 4) score++; else if (numVal <= 2) score--; }
+                        const lowerKey = key.toLowerCase();
+                        // NPS Logic (0-10)
+                        if (lowerKey.includes('nps')) {
+                            scorable = true;
+                            if (numVal >= 9) score++;
+                            else if (numVal <= 6) score--;
+                        }
+                        // Generic Rating Logic (Likert 1-5 or similar)
+                        // If it's a small number, assume low rating
+                        else if (numVal <= 10 && numVal >= 0) {
+                            // Only count as negative if <= 2 (on 5 scale) or <= 6 (on 10 scale if generic? - risky)
+                            // Let's stick to strict low numbers for generic
+                            if (numVal <= 2) { scorable = true; score--; }
+                            else if (numVal >= 4 && numVal <= 5) { scorable = true; score++; }
+                            // Note: We ignore 6-10 on generic to avoid false positives unless we know max.
+                        }
+                    } else {
+                        // Text Analysis (Basic)
+                        if (typeof extractVal === 'string') {
+                            const lowerVal = extractVal.toLowerCase();
+                            if (['detractor', 'bad', 'poor', 'terrible'].some(w => lowerVal.includes(w))) { scorable = true; score--; }
+                            if (['promoter', 'good', 'excellent', 'great'].some(w => lowerVal.includes(w))) { scorable = true; score++; }
+                        }
                     }
                 });
             }
             const sentiment = scorable ? (score > 0 ? 'Positive' : (score < 0 ? 'Negative' : 'Neutral')) : 'Neutral';
+            // console.log(`Sub ID ${sub.id} Score: ${score} Sentiment: ${sentiment}`);
             return { ...sub, computedSentiment: sentiment };
         }).filter(sub => {
             if (filters.sentiment === 'all') return true;
@@ -94,15 +192,20 @@ export function ResultsViewer({ formId, onBack, onEditSubmission, initialView, o
 
     // --- AI HANDLER ---
     const handleGenerateInsight = async () => {
+        if (isPublic) return alert("AI generation is available to dashboard owners only.");
+
         setIsGeneratingAI(true);
         try {
             const questions = getQuestions();
             const response = await axios.post('/api/ai/analyze-survey', {
+                formId: formMetadata.id,
                 surveyTitle: formMetadata.title,
                 questions: questions,
                 submissions: submissions // Send currently filtered submissions
             });
             setAiAnalysis(response.data);
+            // Reload form metadata to make sure we persist the AI state locally if needed, or just set it.
+            // setFormMetadata(prev => ({...prev, ai: response.data})); 
         } catch (error) {
             console.error("AI Error:", error);
             alert("Failed to generate insights: " + (error.response?.data?.error || error.message));
@@ -117,13 +220,13 @@ export function ResultsViewer({ formId, onBack, onEditSubmission, initialView, o
         const questions = getQuestions();
         const data = submissions.map(sub => {
             const row = { ID: sub.id, Date: new Date(sub.createdAt || sub.created_at).toLocaleString() };
-            questions.forEach(q => row[q.title || q.name] = (typeof sub.data[q.name] === 'object' ? JSON.stringify(sub.data[q.name]) : sub.data[q.name]));
+            questions.forEach(q => row[q.title || q.name] = (sub.data[q.name] && typeof sub.data[q.name] === 'object' ? JSON.stringify(sub.data[q.name]) : sub.data[q.name]));
             return row;
         });
         const ws = XLSX.utils.json_to_sheet(data);
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "Responses");
-        XLSX.writeFile(wb, `Survey_Export_${formId}.xlsx`);
+        XLSX.writeFile(wb, `Survey_Export_${formMetadata.title.substring(0, 10)}.xlsx`);
     };
 
     // --- HELPERS ---
@@ -138,6 +241,7 @@ export function ResultsViewer({ formId, onBack, onEditSubmission, initialView, o
         const counts = {};
         let total = 0;
         submissions.forEach(sub => {
+            if (!sub.data) return;
             const val = sub.data[question.name];
             if (val !== undefined && val !== null && val !== "") {
                 const key = Array.isArray(val) ? val.join(', ') : String(val);
@@ -157,9 +261,13 @@ export function ResultsViewer({ formId, onBack, onEditSubmission, initialView, o
 
         const posCount = submissions.filter(s => s.computedSentiment === 'Positive').length;
         const negCount = submissions.filter(s => s.computedSentiment === 'Negative').length;
-        const neuCount = submissions.filter(s => s.computedSentiment === 'Neutral').length;
         const posPct = Math.round((posCount / total) * 100);
         const negPct = Math.round((negCount / total) * 100);
+
+        // Pre-load AI Analysis if available in metadata and not yet set
+        if (formMetadata.ai && !aiAnalysis) {
+            setAiAnalysis(formMetadata.ai);
+        }
 
         return (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '25px', animation: 'fadeIn 0.5s' }}>
@@ -168,13 +276,13 @@ export function ResultsViewer({ formId, onBack, onEditSubmission, initialView, o
                     <div style={{ padding: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #dcfce7' }}>
                         <div>
                             <h2 style={{ margin: 0, color: '#166534', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                ✨ AI Executive Summary
+                                ✨ Management Executive Report
                             </h2>
                             <p style={{ margin: '5px 0 0 0', color: '#15803d', fontSize: '0.9em' }}>
                                 Powered by Gemini 2.0 Flash
                             </p>
                         </div>
-                        {!aiAnalysis && (
+                        {!aiAnalysis && !isPublic && (
                             <button
                                 onClick={handleGenerateInsight}
                                 disabled={isGeneratingAI}
@@ -193,6 +301,7 @@ export function ResultsViewer({ formId, onBack, onEditSubmission, initialView, o
                                 {isGeneratingAI ? 'Thinking...' : 'Generate Report'}
                             </button>
                         )}
+                        {isPublic && <div style={{ fontSize: '0.8em', color: '#166534' }}>(Read Only)</div>}
                     </div>
 
                     {aiAnalysis && (
@@ -294,68 +403,80 @@ export function ResultsViewer({ formId, onBack, onEditSubmission, initialView, o
         );
     };
 
-    // 2. INDIVIDUAL RESPONSES VIEW
+
+
+    // ... other imports ...
+
+    // ... inside ResultsViewer ...
+
+    // --- DELETE HANDLER ---
+    const handleDeleteSubmission = async (id) => {
+        try {
+            await axios.delete(`/api/submissions/${id}`);
+            setRawSubmissions(prev => prev.filter(s => s.id !== id));
+        } catch (err) {
+            console.error("Delete failed", err);
+            alert("Failed to delete submission: " + (err.response?.data?.error || err.message));
+        }
+    };
+
+    // 2. DATA GRID VIEW
     const renderIndividual = () => {
+        const questions = getQuestions();
         return (
-            <div style={{ background: 'white', padding: '20px', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-                <div style={{ overflowX: 'auto' }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9em' }}>
-                        <thead>
-                            <tr style={{ borderBottom: '2px solid #e2e8f0', textAlign: 'left', color: '#64748b' }}>
-                                <th style={{ padding: '10px' }}>ID</th>
-                                <th style={{ padding: '10px' }}>Date</th>
-                                <th style={{ padding: '10px' }}>Sentiment</th>
-                                <th style={{ padding: '10px' }}>Data Preview</th>
-                                <th style={{ padding: '10px' }}>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {submissions.map(sub => (
-                                <tr key={sub.id} style={{ borderBottom: '1px solid #f1f5f9', cursor: 'pointer' }} onClick={() => onEditSubmission(sub.id, formId)}>
-                                    <td style={{ padding: '10px', color: '#2563eb', fontWeight: '500' }}>{sub.id}</td>
-                                    <td style={{ padding: '10px' }}>{new Date(sub.createdAt || sub.created_at).toLocaleDateString()}</td>
-                                    <td style={{ padding: '10px' }}>
-                                        <span style={{
-                                            padding: '2px 8px', borderRadius: '12px', fontSize: '0.85em',
-                                            background: sub.computedSentiment === 'Positive' ? '#dcfce7' : (sub.computedSentiment === 'Negative' ? '#fee2e2' : '#f1f5f9'),
-                                            color: sub.computedSentiment === 'Positive' ? '#166534' : (sub.computedSentiment === 'Negative' ? '#991b1b' : '#475569')
-                                        }}>
-                                            {sub.computedSentiment}
-                                        </span>
-                                    </td>
-                                    <td style={{ padding: '10px', color: '#64748b', maxWidth: '300px', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
-                                        {JSON.stringify(sub.data)}
-                                    </td>
-                                    <td style={{ padding: '10px' }}>
-                                        <button style={{ border: 'none', background: 'none', cursor: 'pointer' }}>✏️</button>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        )
+            <ResultsGrid
+                submissions={submissions}
+                questions={questions}
+                onEdit={!isPublic ? (subId) => onEditSubmission(subId, formId) : undefined}
+                onDelete={!isPublic ? handleDeleteSubmission : undefined}
+                readOnly={isPublic}
+            />
+        );
+    };
+
+    if (loading) return <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', flexDirection: 'column', gap: '15px' }}>
+        <div className="spinner" style={{ width: '40px', height: '40px', border: '4px solid #f3f3f3', borderTop: '4px solid #3498db', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
+        <div style={{ color: '#64748b' }}>Loading results...</div>
+    </div>;
+
+    const sidebarItems = [
+        { id: 'dashboard', icon: '📊', label: 'Dashboard' },
+        { id: 'individual', icon: '📝', label: 'Responses Grid' },
+        { id: 'analytics', icon: '📈', label: 'Analytics' }
+    ];
+
+    if (isPublic) {
+        // Remove analytics from public view if desired, or keep it. Let's keep it.
     }
 
-    if (loading) return <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh' }}>Loading...</div>;
-
     return (
-        <div style={{ background: '#f8fafc', minHeight: '100vh', display: 'flex', flexDirection: 'column', fontFamily: "'Outfit', sans-serif" }}>
+        <div style={{ background: 'var(--deep-bg, #f8fafc)', minHeight: '100vh', display: 'flex', flexDirection: 'column', fontFamily: "'Outfit', sans-serif" }}>
+            <ShareModal isOpen={isShareModalOpen} onClose={() => setIsShareModalOpen(false)} shareUrl={shareUrl} />
+
             {/* HEADER */}
-            <div style={{ background: 'white', borderBottom: '1px solid #e2e8f0', padding: '15px 30px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ background: 'white', borderBottom: '1px solid #e2e8f0', padding: '15px 30px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                    <button onClick={onBack} style={{ border: 'none', background: 'none', cursor: 'pointer', fontSize: '1.2em', color: '#64748b' }}>←</button>
+                    {!isPublic && <button onClick={onBack} style={{ border: 'none', background: 'none', cursor: 'pointer', fontSize: '1.2em', color: '#64748b' }}>←</button>}
                     <div>
-                        <div style={{ fontSize: '1.2em', fontWeight: 'bold', color: '#0f172a' }}>{formMetadata?.title || 'Survey Results'}</div>
+                        <div style={{ fontSize: '1.2em', fontWeight: 'bold', color: '#0f172a', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            {formMetadata?.title || 'Survey Results'}
+                            {isPublic && <span style={{ fontSize: '0.6em', background: '#e0f2fe', color: '#0284c7', padding: '2px 8px', borderRadius: '10px' }}>Public View</span>}
+                        </div>
                         <div style={{ fontSize: '0.8em', color: '#64748b' }}>{rawSubmissions.length} Total Submissions</div>
                     </div>
                 </div>
-                <div style={{ display: 'flex', gap: '10px' }}>
-                    <button onClick={handleExportExcel} style={{ padding: '8px 16px', border: '1px solid #e2e8f0', background: 'white', borderRadius: '6px', cursor: 'pointer', display: 'flex', gap: '8px', alignItems: 'center' }}>
-                        📥 Export
-                    </button>
-                </div>
+                {!isPublic ? (
+                    <div style={{ display: 'flex', gap: '10px' }}>
+                        <button onClick={handleShare} style={{ padding: '8px 16px', border: '1px solid #e2e8f0', background: 'white', borderRadius: '6px', cursor: 'pointer', display: 'flex', gap: '8px', alignItems: 'center', color: '#475569' }}>
+                            🔗 Share
+                        </button>
+                        <button onClick={handleExportExcel} style={{ padding: '8px 16px', border: '1px solid #e2e8f0', background: 'white', borderRadius: '6px', cursor: 'pointer', display: 'flex', gap: '8px', alignItems: 'center', color: '#475569' }}>
+                            📥 Export CSV
+                        </button>
+                    </div>
+                ) : (
+                    <div style={{ fontSize: '0.9em', color: '#64748b' }}>Read-only Access</div>
+                )}
             </div>
 
             {/* DYNAMIC FILTER BAR */}
@@ -393,11 +514,7 @@ export function ResultsViewer({ formId, onBack, onEditSubmission, initialView, o
             <div style={{ display: 'flex', flex: 1 }}>
                 {/* SIDEBAR */}
                 <div style={{ width: '240px', background: 'white', borderRight: '1px solid #e2e8f0', padding: '20px 0' }}>
-                    {[
-                        { id: 'dashboard', icon: '📊', label: 'Dashboard' },
-                        { id: 'individual', icon: '📝', label: 'Individual Responses' },
-                        { id: 'analytics', icon: '📈', label: 'Analytics (Legacy)' }
-                    ].map(item => (
+                    {sidebarItems.map(item => (
                         <div key={item.id}
                             onClick={() => setActiveSidebar(item.id)}
                             style={{
@@ -417,7 +534,7 @@ export function ResultsViewer({ formId, onBack, onEditSubmission, initialView, o
                 <div style={{ flex: 1, padding: '30px', overflowY: 'auto', maxHeight: 'calc(100vh - 120px)' }}>
                     {activeSidebar === 'dashboard' && renderDashboard()}
                     {activeSidebar === 'individual' && renderIndividual()}
-                    {activeSidebar === 'analytics' && <div style={{ color: '#64748b' }}>Legacy Analytics View (Replaced by Dashboard)</div>}
+                    {activeSidebar === 'analytics' && <AnalyticsView form={formMetadata} submissions={submissions} onBack={!isPublic ? onBack : undefined} />}
                 </div>
             </div>
         </div>

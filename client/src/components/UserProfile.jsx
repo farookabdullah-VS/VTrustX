@@ -36,12 +36,44 @@ export function UserProfile({ user, onUpdateUser }) {
         }
     };
 
+    const [isChangingPw, setIsChangingPw] = useState(false);
+    const [pwData, setPwData] = useState({ current: '', new: '', confirm: '' });
+
+    const handlePasswordUpdate = async () => {
+        if (!pwData.current || !pwData.new || !pwData.confirm) {
+            return alert("All fields are required");
+        }
+        if (pwData.new !== pwData.confirm) {
+            return alert("New passwords do not match");
+        }
+        if (pwData.new.length < 6) {
+            return alert("Password must be at least 6 characters");
+        }
+
+        setIsLoading(true);
+        try {
+            await axios.post('/api/auth/change-password', {
+                username: user?.user?.username,
+                currentPassword: pwData.current,
+                newPassword: pwData.new
+            });
+            alert("Password updated successfully!");
+            setIsChangingPw(false);
+            setPwData({ current: '', new: '', confirm: '' });
+        } catch (err) {
+            alert("Failed to update password: " + (err.response?.data?.error || err.message));
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     return (
         <div style={{ padding: '40px', maxWidth: '800px', margin: '0 auto', fontFamily: '"Outfit", sans-serif' }}>
             <h1 style={{ color: '#0f172a', marginBottom: '10px' }}>My Profile</h1>
             <p style={{ color: '#64748b', marginBottom: '40px' }}>Manage your personal information and security settings.</p>
 
             <div style={{ background: 'white', padding: '30px', borderRadius: '16px', border: '1px solid #e2e8f0', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+                {/* User Info Header */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginBottom: '30px', paddingBottom: '30px', borderBottom: '1px solid #f1f5f9' }}>
                     <div style={{
                         width: '80px', height: '80px', borderRadius: '50%', background: 'var(--primary-color, #0f172a)', color: 'white',
@@ -57,6 +89,7 @@ export function UserProfile({ user, onUpdateUser }) {
                     </div>
                 </div>
 
+                {/* Basic Info Form */}
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
                     <div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
@@ -82,7 +115,7 @@ export function UserProfile({ user, onUpdateUser }) {
                                         style={{ background: 'none', border: 'none', color: 'var(--primary-color, #0f172a)', cursor: 'pointer', fontSize: '0.85em', fontWeight: '600', padding: 0 }}
                                         disabled={isLoading}
                                     >
-                                        {isLoading ? 'Saving...' : 'Save'}
+                                        Save
                                     </button>
                                 </div>
                             )}
@@ -113,20 +146,70 @@ export function UserProfile({ user, onUpdateUser }) {
                     </div>
                 </div>
 
+                {/* Password Change Section */}
                 <div style={{ marginTop: '30px', borderTop: '1px solid #f1f5f9', paddingTop: '20px' }}>
-                    <h3 style={{ fontSize: '1.1em', color: '#1e293b', marginBottom: '15px' }}>Security</h3>
-                    <button style={{
-                        padding: '10px 20px',
-                        border: '1px solid #e2e8f0',
-                        background: 'white',
-                        color: '#64748b',
-                        borderRadius: '8px',
-                        cursor: 'pointer',
-                        fontWeight: '500'
-                    }}>
-                        Change Password
-                    </button>
-                    <span style={{ display: 'block', fontSize: '0.8em', color: '#94a3b8', marginTop: '8px' }}>Password changes are not available in this demo mode.</span>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
+                        <h3 style={{ fontSize: '1.1em', color: '#1e293b', margin: 0 }}>Security</h3>
+                        {!isChangingPw && (
+                            <button
+                                onClick={() => setIsChangingPw(true)}
+                                style={{
+                                    padding: '8px 16px', border: '1px solid #e2e8f0', background: 'white', color: '#64748b', borderRadius: '8px', cursor: 'pointer', fontWeight: '500'
+                                }}
+                            >
+                                Change Password
+                            </button>
+                        )}
+                    </div>
+
+                    {isChangingPw && (
+                        <div style={{ background: '#f8fafc', padding: '20px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                            <div style={{ display: 'grid', gap: '15px' }}>
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '0.85em', fontWeight: '600', color: '#64748b', marginBottom: '6px' }}>Current Password</label>
+                                    <input
+                                        type="password"
+                                        value={pwData.current}
+                                        onChange={e => setPwData({ ...pwData, current: e.target.value })}
+                                        style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1' }}
+                                    />
+                                </div>
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '0.85em', fontWeight: '600', color: '#64748b', marginBottom: '6px' }}>New Password</label>
+                                    <input
+                                        type="password"
+                                        value={pwData.new}
+                                        onChange={e => setPwData({ ...pwData, new: e.target.value })}
+                                        style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1' }}
+                                    />
+                                </div>
+                                <div>
+                                    <label style={{ display: 'block', fontSize: '0.85em', fontWeight: '600', color: '#64748b', marginBottom: '6px' }}>Confirm New Password</label>
+                                    <input
+                                        type="password"
+                                        value={pwData.confirm}
+                                        onChange={e => setPwData({ ...pwData, confirm: e.target.value })}
+                                        style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1' }}
+                                    />
+                                </div>
+                                <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+                                    <button
+                                        onClick={handlePasswordUpdate}
+                                        style={{ padding: '10px 20px', background: '#0f172a', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: '600' }}
+                                        disabled={isLoading}
+                                    >
+                                        Update Password
+                                    </button>
+                                    <button
+                                        onClick={() => { setIsChangingPw(false); setPwData({ current: '', new: '', confirm: '' }); }}
+                                        style={{ padding: '10px 20px', background: 'white', color: '#64748b', border: '1px solid #e2e8f0', borderRadius: '6px', cursor: 'pointer', fontWeight: '600' }}
+                                    >
+                                        Cancel
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

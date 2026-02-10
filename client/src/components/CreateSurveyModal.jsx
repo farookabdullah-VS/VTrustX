@@ -1,16 +1,18 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 export function CreateSurveyModal({ isOpen, onClose, onCreate }) {
+    const { t } = useTranslation();
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
-    const [category, setCategory] = useState('Customer Feedback');
+    const [category, setCategory] = useState('feedback');
 
     if (!isOpen) return null;
 
     const handleSubmit = (e) => {
         e.preventDefault();
         if (!title.trim()) {
-            alert("Title is required");
+            alert(t('surveys.create_modal.title_label') + " is required");
             return;
         }
         onCreate({
@@ -22,6 +24,15 @@ export function CreateSurveyModal({ isOpen, onClose, onCreate }) {
         setTitle('');
         setDescription('');
     };
+
+    const categories = [
+        { id: 'feedback', label: t('surveys.create_modal.categories.feedback') },
+        { id: 'employee', label: t('surveys.create_modal.categories.employee') },
+        { id: 'market', label: t('surveys.create_modal.categories.market') },
+        { id: 'event', label: t('surveys.create_modal.categories.event') },
+        { id: 'quiz', label: t('surveys.create_modal.categories.quiz') },
+        { id: 'other', label: t('surveys.create_modal.categories.other') }
+    ];
 
     return (
         <div style={{
@@ -36,7 +47,7 @@ export function CreateSurveyModal({ isOpen, onClose, onCreate }) {
             animation: 'fadeIn 0.2s ease-out'
         }}>
             <div style={{
-                background: '#D9F8E5',
+                background: 'white',
                 borderRadius: '16px',
                 width: '500px',
                 maxWidth: '90%',
@@ -47,15 +58,15 @@ export function CreateSurveyModal({ isOpen, onClose, onCreate }) {
                 {/* Header */}
                 <div style={{
                     padding: '24px 32px',
-                    borderBottom: '1px solid rgba(6, 78, 59, 0.1)',
-                    background: '#D9F8E5',
+                    borderBottom: '1px solid var(--border-color)',
+                    background: 'white',
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center'
                 }}>
                     <div>
-                        <h2 style={{ margin: 0, fontSize: '1.5em', color: '#064e3b' }}>Create New Survey</h2>
-                        <div style={{ fontSize: '0.9em', color: '#047857', marginTop: '4px' }}>Start from scratch with a blank canvas</div>
+                        <h2 style={{ margin: 0, fontSize: '1.5em', color: 'var(--primary-color)' }}>{t('surveys.create_modal.title')}</h2>
+                        <div style={{ fontSize: '0.9em', color: 'var(--text-color)', opacity: 0.8, marginTop: '4px' }}>{t('surveys.create_modal.subtitle')}</div>
                     </div>
                     <button
                         onClick={onClose}
@@ -75,44 +86,48 @@ export function CreateSurveyModal({ isOpen, onClose, onCreate }) {
                 {/* Body */}
                 <form onSubmit={handleSubmit} style={{ padding: '32px' }}>
                     <div style={{ marginBottom: '24px' }}>
-                        <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#334155' }}>
-                            Survey Title <span style={{ color: '#ef4444' }}>*</span>
+                        <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: 'var(--label-color)' }}>
+                            {t('surveys.create_modal.title_label')} <span style={{ color: '#ef4444' }}>*</span>
                         </label>
                         <input
                             type="text"
                             value={title}
                             onChange={(e) => setTitle(e.target.value)}
-                            placeholder="e.g., Customer Satisfaction Q1"
+                            placeholder={t('surveys.create_modal.title_label')}
                             autoFocus
                             style={{
                                 width: '100%',
                                 padding: '12px 16px',
                                 borderRadius: '8px',
-                                border: '1px solid #cbd5e1',
+                                border: '1px solid var(--border-color)',
+                                backgroundColor: 'var(--input-bg)',
+                                color: 'var(--input-text)',
                                 fontSize: '1em',
                                 outline: 'none',
                                 transition: 'border-color 0.2s',
                                 boxSizing: 'border-box'
                             }}
-                            onFocus={(e) => e.target.style.borderColor = '#064e3b'}
-                            onBlur={(e) => e.target.style.borderColor = '#cbd5e1'}
+                            onFocus={(e) => e.target.style.borderColor = 'var(--primary-color)'}
+                            onBlur={(e) => e.target.style.borderColor = 'var(--border-color)'}
                         />
                     </div>
 
                     <div style={{ marginBottom: '24px' }}>
-                        <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#334155' }}>
-                            Description <span style={{ color: '#94a3b8', fontWeight: 'normal' }}>(Optional)</span>
+                        <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: 'var(--label-color)' }}>
+                            {t('surveys.create_modal.desc_label')} <span style={{ color: '#94a3b8', fontWeight: 'normal' }}>(Optional)</span>
                         </label>
                         <textarea
                             value={description}
                             onChange={(e) => setDescription(e.target.value)}
-                            placeholder="Briefly describe the purpose of this survey..."
+                            placeholder={t('surveys.create_modal.desc_placeholder')}
                             rows={3}
                             style={{
                                 width: '100%',
                                 padding: '12px 16px',
                                 borderRadius: '8px',
-                                border: '1px solid #cbd5e1',
+                                border: '1px solid var(--border-color)',
+                                backgroundColor: 'var(--input-bg)',
+                                color: 'var(--input-text)',
                                 fontSize: '1em',
                                 outline: 'none',
                                 transition: 'border-color 0.2s',
@@ -120,14 +135,14 @@ export function CreateSurveyModal({ isOpen, onClose, onCreate }) {
                                 fontFamily: 'inherit',
                                 boxSizing: 'border-box'
                             }}
-                            onFocus={(e) => e.target.style.borderColor = '#064e3b'}
-                            onBlur={(e) => e.target.style.borderColor = '#cbd5e1'}
+                            onFocus={(e) => e.target.style.borderColor = 'var(--primary-color)'}
+                            onBlur={(e) => e.target.style.borderColor = 'var(--border-color)'}
                         />
                     </div>
 
                     <div style={{ marginBottom: '32px' }}>
-                        <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: '#334155' }}>
-                            Category
+                        <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: 'var(--label-color)' }}>
+                            {t('surveys.create_modal.category_label')}
                         </label>
                         <select
                             value={category}
@@ -136,20 +151,18 @@ export function CreateSurveyModal({ isOpen, onClose, onCreate }) {
                                 width: '100%',
                                 padding: '12px 16px',
                                 borderRadius: '8px',
-                                border: '1px solid #cbd5e1',
+                                border: '1px solid var(--border-color)',
+                                backgroundColor: 'var(--input-bg)',
+                                color: 'var(--input-text)',
                                 fontSize: '1em',
                                 outline: 'none',
                                 cursor: 'pointer',
-                                backgroundColor: 'white',
                                 boxSizing: 'border-box'
                             }}
                         >
-                            <option>Customer Feedback</option>
-                            <option>Employee Engagement</option>
-                            <option>Market Research</option>
-                            <option>Event Registration</option>
-                            <option>Education / Quiz</option>
-                            <option>Other</option>
+                            {categories.map(cat => (
+                                <option key={cat.id} value={cat.id}>{cat.label}</option>
+                            ))}
                         </select>
                     </div>
 
@@ -160,9 +173,9 @@ export function CreateSurveyModal({ isOpen, onClose, onCreate }) {
                             style={{
                                 padding: '12px 24px',
                                 borderRadius: '8px',
-                                border: '1px solid #cbd5e1',
+                                border: '1px solid var(--border-color)',
                                 background: 'white',
-                                color: '#064e3b',
+                                color: 'var(--label-color)',
                                 fontWeight: '600',
                                 cursor: 'pointer',
                                 transition: 'background 0.2s'
@@ -170,25 +183,25 @@ export function CreateSurveyModal({ isOpen, onClose, onCreate }) {
                             onMouseEnter={(e) => e.target.style.background = '#f1f5f9'}
                             onMouseLeave={(e) => e.target.style.background = 'white'}
                         >
-                            Cancel
+                            {t('surveys.create_modal.cancel')}
                         </button>
                         <button
                             type="submit"
                             style={{
                                 padding: '12px 32px',
-                                borderRadius: '8px',
+                                borderRadius: 'var(--button-radius, 8px)',
                                 border: 'none',
-                                background: '#064e3b',
-                                color: '#D9F8E5',
+                                background: 'var(--button-bg, var(--primary-color))',
+                                color: 'var(--button-text, #ffffff)',
                                 fontWeight: '600',
                                 cursor: 'pointer',
-                                boxShadow: '0 4px 6px -1px rgba(6, 78, 59, 0.2)',
+                                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
                                 transition: 'transform 0.1s'
                             }}
                             onMouseDown={(e) => e.target.style.transform = 'scale(0.98)'}
                             onMouseUp={(e) => e.target.style.transform = 'scale(1)'}
                         >
-                            Create Survey
+                            {t('surveys.create_modal.create')}
                         </button>
                     </div>
                 </form>

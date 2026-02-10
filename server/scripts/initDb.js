@@ -1,15 +1,24 @@
 const { Pool } = require('pg');
 const fs = require('fs');
 const path = require('path');
-require('dotenv').config();
+const dotenv = require('dotenv');
+dotenv.config({ path: path.join(__dirname, '..', '.env') });
 
-const pool = new Pool({
+const dbConfig = {
     user: process.env.DB_USER || 'postgres',
     password: process.env.DB_PASSWORD || 'postgres',
-    host: process.env.DB_HOST || 'localhost',
-    port: process.env.DB_PORT || 5432,
     database: process.env.DB_NAME || 'vtrustx_db',
-});
+    port: process.env.DB_PORT || 5432,
+};
+
+if (process.env.INSTANCE_CONNECTION_NAME) {
+    dbConfig.host = `/cloudsql/${process.env.INSTANCE_CONNECTION_NAME}`;
+    delete dbConfig.port;
+} else {
+    dbConfig.host = process.env.DB_HOST || 'localhost';
+}
+
+const pool = new Pool(dbConfig);
 
 async function initDb() {
     try {

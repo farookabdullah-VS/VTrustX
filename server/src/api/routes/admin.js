@@ -5,7 +5,7 @@ const authenticate = require('../middleware/auth');
 
 // Middleware to check if user is a global admin
 const checkGlobalAdmin = (req, res, next) => {
-    if (req.user && (req.user.role === 'global_admin' || req.user.username === 'admin')) {
+    if (req.user && (req.user.role === 'global_admin' || req.user.role === 'admin' || req.user.username === 'admin')) {
         next();
     } else {
         res.status(403).json({ error: 'Access denied. Global Admin role required.' });

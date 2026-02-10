@@ -1,11 +1,12 @@
 const { Pool } = require('pg');
-require('dotenv').config({ path: '../.env' }); // Adjust path to root
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
 
 const pool = new Pool({
     user: process.env.DB_USER || 'postgres',
     password: process.env.DB_PASSWORD || 'postgres',
     host: process.env.DB_HOST || 'localhost',
-    port: process.env.DB_PORT || 5432,
+    port: process.env.DB_PORT || 5433,
     database: process.env.DB_NAME || 'vtrustx_db',
 });
 

@@ -1,0 +1,42 @@
+[
+  {
+    "conname": "role_org_id_fkey",
+    "contype": "f",
+    "pg_get_constraintdef": "FOREIGN KEY (org_id) REFERENCES smm.org(org_id) ON DELETE CASCADE"
+  },
+  {
+    "conname": "role_pkey",
+    "contype": "p",
+    "pg_get_constraintdef": "PRIMARY KEY (role_id)"
+  },
+  {
+    "conname": "uq_role_code",
+    "contype": "u",
+    "pg_get_constraintdef": "UNIQUE (org_id, role_code)"
+  },
+  {
+    "conname": "uq_user_role",
+    "contype": "u",
+    "pg_get_constraintdef": "UNIQUE (user_id, role_id, brand_id)"
+  },
+  {
+    "conname": "user_role_brand_id_fkey",
+    "contype": "f",
+    "pg_get_constraintdef": "FOREIGN KEY (brand_id) REFERENCES smm.brand(brand_id) ON DELETE CASCADE"
+  },
+  {
+    "conname": "user_role_pkey",
+    "contype": "p",
+    "pg_get_constraintdef": "PRIMARY KEY (ur_id)"
+  },
+  {
+    "conname": "user_role_role_id_fkey",
+    "contype": "f",
+    "pg_get_constraintdef": "FOREIGN KEY (role_id) REFERENCES smm.role(role_id) ON DELETE CASCADE"
+  },
+  {
+    "conname": "user_role_user_id_fkey",
+    "contype": "f",
+    "pg_get_constraintdef": "FOREIGN KEY (user_id) REFERENCES smm.\"user\"(user_id) ON DELETE CASCADE"
+  }
+]

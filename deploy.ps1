@@ -1,10 +1,11 @@
-$PROJECT_ID = "vtrustx"
-$REGION = "us-central1"
-$IMAGE = "gcr.io/$PROJECT_ID/vtrustx"
-$SERVICE = "vtrustx-service"
-$DB_INSTANCE = "${PROJECT_ID}:${REGION}:vtrustx"
-$DB_PASS = "VTrustX@2030" 
-$DB_NAME = "vtrustx-db"
+$PROJECT_ID = "rayixcx"
+$REGION = "me-central1"
+$IMAGE = "gcr.io/$PROJECT_ID/rayix"
+$SERVICE = "rayix-service"
+$DB_INSTANCE = "rayixcx:me-central1:rayix"
+Write-Host "Target DB Instance: $DB_INSTANCE"
+$DB_PASS = "Yaalla@123" 
+$DB_NAME = "rayix-db"
 
 # Credentials from your local setup
 $MS_ID = "d40891ff-4272-4b5f-a20b-aeb6e969c3d6"
@@ -20,7 +21,7 @@ Write-Host "Starting Build and Deploy Process (Retry)..."
 # 1. Build
 Write-Host "Building Docker Image..."
 # Use --quiet to avoid interactive prompts
-gcloud builds submit --quiet --tag $IMAGE .
+gcloud builds submit --quiet --timeout=20m --project $PROJECT_ID --tag $IMAGE .
 
 # 2. Deploy
 Write-Host "Deploying Service to Cloud Run..."
@@ -28,6 +29,7 @@ Write-Host "Deploying Service to Cloud Run..."
 $GEMINI_KEY = (Get-Content .env | Select-String "GEMINI_API_KEY" | ForEach-Object { $_.ToString().Split('=')[1] }).Trim()
 
 gcloud run deploy $SERVICE `
+  --project $PROJECT_ID `
   --quiet `
   --image $IMAGE `
   --platform managed `
@@ -45,6 +47,7 @@ gcloud run deploy $SERVICE `
   --set-env-vars MICROSOFT_CLIENT_SECRET="$MS_SECRET" `
   --set-env-vars GEMINI_API_KEY="$GEMINI_KEY" `
   --set-env-vars DB_PORT="5432" `
+  --set-env-vars AI_SERVICE_URL="https://rayix-ai-1072119297262.me-central1.run.app" `
   --set-env-vars NODE_ENV="production"
 
 Write-Host "Deployment Command Sent. Check Cloud Console for URL."

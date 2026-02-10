@@ -96,22 +96,48 @@ router.get('/theme', authenticate, async (req, res) => {
 router.post('/theme', authenticate, async (req, res) => {
     try {
         const tenantId = req.user.tenant_id;
-        const theme = req.body;
+        let theme = req.body;
+
+        console.log(`[Theme Update] Tenant: ${tenantId}, Theme Keys: ${Object.keys(theme).join(',')}`);
+
+        // Ensure theme is a valid object
+        if (typeof theme !== 'object') {
+            theme = {};
+        }
+
+        // Convert to string if the column is TEXT, or keep object if JSONB.
+        // Usually node-postgres handles JSON on JSONB columns automatically.
+        // If the 'theme' column is TEXT/VARCHAR, we must stringify.
+        // Assuming JSONB based on usage, but let's log.
+
         await query("UPDATE tenants SET theme = $1 WHERE id = $2", [theme, tenantId]);
         res.json({ success: true });
     } catch (e) {
+        console.error("Theme Update Error:", e);
         res.status(500).json({ error: e.message });
     }
 });
 
 // GET settings
-router.get('/', async (req, res) => {
+router.get('/', authenticate, async (req, res) => {
     try {
         const result = await query('SELECT * FROM settings');
         const settings = {};
         result.rows.forEach(row => {
             settings[row.key] = row.value;
         });
+
+        // Inject Database Config (from process.env)
+        // We do typically NOT want to expose real credentials, but for an Admin Settings page
+        // as requested by the user, we will show them (masking password).
+        settings.db_host = process.env.DB_HOST || '';
+        settings.db_port = process.env.DB_PORT || '5432';
+        settings.db_user = process.env.DB_USER || '';
+        settings.db_name = process.env.DB_NAME || '';
+        // Do NOT send the actual password for security, unless empty.
+        // We will send a placeholder if it's set.
+        settings.db_password = process.env.DB_PASSWORD ? '********' : '';
+
         res.json(settings);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -119,11 +145,17 @@ router.get('/', async (req, res) => {
 });
 
 // UPDATE settings (Batch)
-router.post('/', async (req, res) => {
+router.post('/', authenticate, async (req, res) => {
     try {
         const settings = req.body;
-        // Upsert each key
+        const dbKeys = ['db_host', 'db_port', 'db_user', 'db_password', 'db_name'];
+        const fs = require('fs');
+        const path = require('path');
+
+        // Upsert standard settings
         for (const [key, value] of Object.entries(settings)) {
+            if (dbKeys.includes(key)) continue; // Skip DB keys from SQL table
+
             await query(`
                 INSERT INTO settings (key, value, updated_at) 
                 VALUES ($1, $2, NOW())
@@ -131,14 +163,52 @@ router.post('/', async (req, res) => {
                 DO UPDATE SET value = $2, updated_at = NOW();
             `, [key, value]);
         }
-        res.json({ message: 'Settings saved' });
+
+        // Handle DB Settings Update (Write to .env if running locally)
+        // Note: checking for cloud run environment via K_SERVICE or similar
+        const isCloudRun = !!process.env.K_SERVICE;
+
+        if (!isCloudRun) {
+            // Logic to update .env file
+            const envPath = path.resolve(__dirname, '../../../../.env');
+            if (fs.existsSync(envPath)) {
+                let envContent = fs.readFileSync(envPath, 'utf8');
+                const updateEnvVar = (key, val) => {
+                    const regex = new RegExp(`^${key}=.*`, 'm');
+                    const newLine = `${key}="${val}"`; // Quote values for safety
+                    if (regex.test(envContent)) {
+                        envContent = envContent.replace(regex, newLine);
+                    } else {
+                        envContent += `\n${newLine}`;
+                    }
+                };
+
+                // Only update if provided and not masked
+                if (settings.db_host) updateEnvVar('DB_HOST', settings.db_host);
+                if (settings.db_port) updateEnvVar('DB_PORT', settings.db_port);
+                if (settings.db_user) updateEnvVar('DB_USER', settings.db_user);
+                if (settings.db_name) updateEnvVar('DB_NAME', settings.db_name);
+                if (settings.db_password && settings.db_password !== '********') {
+                    updateEnvVar('DB_PASSWORD', settings.db_password);
+                }
+
+                fs.writeFileSync(envPath, envContent);
+                console.log("Updated .env file with new DB config");
+            }
+        } else {
+            console.warn("Attempt to update DB config in Cloud Run ignored (immutable env).");
+            // Ideally we would trigger a revision update here via Google Cloud API, 
+            // but that requires high permissions not available to the default service account usually.
+        }
+
+        res.json({ message: 'Settings saved. Database changes (if any) may require a restart.' });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 });
 
 // TEST EMAIL
-router.post('/test-email', async (req, res) => {
+router.post('/test-email', authenticate, async (req, res) => {
     try {
         const { host, port, user, pass, from, to } = req.body;
 
@@ -308,6 +378,33 @@ router.post('/assignment-rules', authenticate, async (req, res) => {
 router.delete('/assignment-rules/:id', authenticate, async (req, res) => {
     try {
         await query("DELETE FROM assignment_rules WHERE id = $1 AND tenant_id = $2", [req.params.id, req.user.tenant_id]);
+        res.json({ success: true });
+    } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// --- SAVED THEMES ROUTES ---
+
+// GET Saved Themes
+router.get('/theme/saved', authenticate, async (req, res) => {
+    try {
+        const result = await query("SELECT * FROM themes WHERE tenant_id = $1 ORDER BY created_at DESC", [req.user.tenant_id]);
+        res.json(result.rows);
+    } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// SAVE New Theme
+router.post('/theme/saved', authenticate, async (req, res) => {
+    try {
+        const { name, config } = req.body;
+        await query("INSERT INTO themes (tenant_id, name, config) VALUES ($1, $2, $3)", [req.user.tenant_id, name, config]);
+        res.json({ success: true });
+    } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// DELETE Theme
+router.delete('/theme/saved/:id', authenticate, async (req, res) => {
+    try {
+        await query("DELETE FROM themes WHERE id = $1 AND tenant_id = $2", [req.params.id, req.user.tenant_id]);
         res.json({ success: true });
     } catch (e) { res.status(500).json({ error: e.message }); }
 });

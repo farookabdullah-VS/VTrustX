@@ -105,26 +105,26 @@ export function GlobalAdminDashboard() {
         }
     };
 
-    if (loading) return <div style={{ padding: '40px' }}>Loading Administration...</div>;
+    if (loading) return <div style={{ padding: '40px', color: 'var(--text-color)' }}>Loading Administration...</div>;
     if (error) return <div style={{ padding: '40px', color: '#ef4444' }}>{error}</div>;
 
     return (
         <div style={{ padding: '40px', fontFamily: "'Outfit', sans-serif", maxWidth: '1200px', margin: '0 auto' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
                 <div>
-                    <h1 style={{ margin: 0, fontSize: '2em', color: '#0f172a' }}>Global Administration</h1>
-                    <p style={{ color: '#64748b', marginTop: '5px' }}>Manage all organizations and pricing models.</p>
+                    <h1 style={{ margin: 0, fontSize: '2em', color: 'var(--text-color)' }}>Global Administration</h1>
+                    <p style={{ color: 'var(--text-muted)', marginTop: '5px' }}>Manage all organizations and pricing models.</p>
                 </div>
             </div>
 
             {/* TAB NAVIGATION */}
-            <div style={{ display: 'flex', gap: '20px', marginBottom: '30px', borderBottom: '1px solid #e2e8f0' }}>
+            <div style={{ display: 'flex', gap: '20px', marginBottom: '30px', borderBottom: '1px solid var(--input-border)' }}>
                 <button
                     onClick={() => setActiveTab('tenants')}
                     style={{
                         padding: '10px 20px', background: 'transparent', border: 'none', cursor: 'pointer',
-                        fontSize: '1em', fontWeight: '600', color: activeTab === 'tenants' ? '#0f172a' : '#64748b',
-                        borderBottom: activeTab === 'tenants' ? '2px solid #0f172a' : 'none', marginBottom: '-1px'
+                        fontSize: '1em', fontWeight: '600', color: activeTab === 'tenants' ? 'var(--text-color)' : 'var(--text-muted)',
+                        borderBottom: activeTab === 'tenants' ? '2px solid var(--primary-color)' : 'none', marginBottom: '-1px'
                     }}
                 >
                     Organizations
@@ -133,8 +133,8 @@ export function GlobalAdminDashboard() {
                     onClick={() => setActiveTab('plans')}
                     style={{
                         padding: '10px 20px', background: 'transparent', border: 'none', cursor: 'pointer',
-                        fontSize: '1em', fontWeight: '600', color: activeTab === 'plans' ? '#0f172a' : '#64748b',
-                        borderBottom: activeTab === 'plans' ? '2px solid #0f172a' : 'none', marginBottom: '-1px'
+                        fontSize: '1em', fontWeight: '600', color: activeTab === 'plans' ? 'var(--text-color)' : 'var(--text-muted)',
+                        borderBottom: activeTab === 'plans' ? '2px solid var(--primary-color)' : 'none', marginBottom: '-1px'
                     }}
                 >
                     Pricing Models & Plans
@@ -155,29 +155,30 @@ export function GlobalAdminDashboard() {
                                 }}
                                 style={{
                                     padding: '10px 15px', paddingLeft: '35px', borderRadius: '8px',
-                                    border: '1px solid #e2e8f0', outline: 'none', width: '250px'
+                                    border: '1px solid var(--input-border)', outline: 'none', width: '250px',
+                                    background: 'var(--input-bg)', color: 'var(--text-color)'
                                 }}
                             />
-                            <span style={{ position: 'absolute', left: '12px', top: '10px', color: '#94a3b8' }}>🔍</span>
+                            <span style={{ position: 'absolute', left: '12px', top: '10px', color: 'var(--text-muted)' }}>🔍</span>
                         </div>
                         <div style={{ flex: 1 }}></div>
                         <button
                             onClick={() => setShowAddModal(true)}
-                            style={{ padding: '10px 20px', background: '#3b82f6', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '600' }}
+                            style={{ padding: '10px 20px', background: 'var(--primary-color)', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '600' }}
                         >
                             + Add Tenant
                         </button>
                     </div>
 
-                    <div style={{ background: 'white', borderRadius: '12px', border: '1px solid #e2e8f0', overflow: 'hidden', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}>
+                    <div style={{ background: 'var(--card-bg)', borderRadius: '12px', border: '1px solid var(--input-border)', overflow: 'hidden', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}>
                         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                            <thead style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
+                            <thead style={{ background: 'var(--sidebar-bg)', borderBottom: '1px solid var(--input-border)' }}>
                                 <tr>
-                                    <th style={{ padding: '16px', textAlign: 'left', fontSize: '0.85em', textTransform: 'uppercase', color: '#64748b' }}>Organization</th>
-                                    <th style={{ padding: '16px', textAlign: 'left', fontSize: '0.85em', textTransform: 'uppercase', color: '#64748b' }}>Plan</th>
-                                    <th style={{ padding: '16px', textAlign: 'left', fontSize: '0.85em', textTransform: 'uppercase', color: '#64748b' }}>Status</th>
-                                    <th style={{ padding: '16px', textAlign: 'left', fontSize: '0.85em', textTransform: 'uppercase', color: '#64748b' }}>Users</th>
-                                    <th style={{ padding: '16px', textAlign: 'left', fontSize: '0.85em', textTransform: 'uppercase', color: '#64748b' }}>Actions</th>
+                                    <th style={{ padding: '16px', textAlign: 'left', fontSize: '0.85em', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Organization</th>
+                                    <th style={{ padding: '16px', textAlign: 'left', fontSize: '0.85em', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Plan</th>
+                                    <th style={{ padding: '16px', textAlign: 'left', fontSize: '0.85em', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Status</th>
+                                    <th style={{ padding: '16px', textAlign: 'left', fontSize: '0.85em', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Users</th>
+                                    <th style={{ padding: '16px', textAlign: 'left', fontSize: '0.85em', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -187,18 +188,19 @@ export function GlobalAdminDashboard() {
                                     const planName = plan ? plan.name : (t.plan || 'Unknown'); // Fallback to old field
 
                                     return (
-                                        <tr key={t.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                                            <td style={{ padding: '16px', fontWeight: '600', color: '#334155' }}>{t.name}</td>
+                                        <tr key={t.id} style={{ borderBottom: '1px solid var(--input-border)' }}>
+                                            <td style={{ padding: '16px', fontWeight: '600', color: 'var(--text-color)' }}>{t.name}</td>
                                             <td style={{ padding: '16px' }}>
                                                 <span style={{
                                                     padding: '4px 10px', borderRadius: '20px', fontSize: '0.85em',
-                                                    background: '#f0f9ff', color: '#0369a1', fontWeight: '700'
+                                                    background: 'var(--sidebar-bg)', color: 'var(--primary-color)', fontWeight: '700',
+                                                    border: '1px solid var(--input-border)'
                                                 }}>
                                                     {planName}
                                                 </span>
                                             </td>
-                                            <td style={{ padding: '16px' }}>{t.status || t.subscription_status}</td>
-                                            <td style={{ padding: '16px', color: '#64748b' }}>{t.user_count} User(s)</td>
+                                            <td style={{ padding: '16px', color: 'var(--text-color)' }}>{t.status || t.subscription_status}</td>
+                                            <td style={{ padding: '16px', color: 'var(--text-muted)' }}>{t.user_count} User(s)</td>
                                             <td style={{ padding: '16px' }}>
                                                 <button
                                                     onClick={() => handleDeleteTenant(t.id)}
@@ -230,35 +232,35 @@ export function GlobalAdminDashboard() {
 
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '30px' }}>
                         {plans.map(plan => (
-                            <div key={plan.id} style={{ background: 'white', borderRadius: '12px', border: '1px solid #e2e8f0', padding: '24px', position: 'relative' }}>
+                            <div key={plan.id} style={{ background: 'var(--card-bg)', borderRadius: '12px', border: '1px solid var(--input-border)', padding: '24px', position: 'relative' }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                                     <div>
-                                        <h3 style={{ marginTop: 0, marginBottom: '5px' }}>{plan.name}</h3>
-                                        <div style={{ color: '#64748b', fontSize: '0.9em' }}>{plan.description}</div>
+                                        <h3 style={{ marginTop: 0, marginBottom: '5px', color: 'var(--text-color)' }}>{plan.name}</h3>
+                                        <div style={{ color: 'var(--text-muted)', fontSize: '0.9em' }}>{plan.description}</div>
                                     </div>
                                     <div style={{ textAlign: 'right' }}>
                                         <div style={{ fontSize: '1.5em', fontWeight: 'bold', color: '#059669' }}>{plan.price_monthly} SAR</div>
-                                        <div style={{ fontSize: '0.8em', color: '#64748b' }}>/ month</div>
+                                        <div style={{ fontSize: '0.8em', color: 'var(--text-muted)' }}>/ month</div>
                                     </div>
                                 </div>
 
-                                <hr style={{ border: 'none', borderTop: '1px solid #f1f5f9', margin: '20px 0' }} />
+                                <hr style={{ border: 'none', borderTop: '1px solid var(--input-border)', margin: '20px 0' }} />
 
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', fontSize: '0.9em', color: '#334155' }}>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', fontSize: '0.9em', color: 'var(--text-color)' }}>
                                     <div><strong>Max Users:</strong> {plan.max_users}</div>
                                     <div><strong>Max Responses:</strong> {plan.max_responses}</div>
                                 </div>
 
                                 <div style={{ marginTop: '20px' }}>
-                                    <strong style={{ fontSize: '0.9em' }}>Features:</strong>
-                                    <ul style={{ paddingLeft: '20px', margin: '5px 0', fontSize: '0.9em', color: '#475569' }}>
+                                    <strong style={{ fontSize: '0.9em', color: 'var(--text-color)' }}>Features:</strong>
+                                    <ul style={{ paddingLeft: '20px', margin: '5px 0', fontSize: '0.9em', color: 'var(--text-muted)' }}>
                                         {plan.features?.map((f, i) => <li key={i}>{f}</li>)}
                                     </ul>
                                 </div>
 
                                 <button
                                     onClick={() => { setEditingPlan(plan); setIsPlanModalOpen(true); }}
-                                    style={{ width: '100%', marginTop: '20px', padding: '10px', background: 'white', border: '1px solid #cbd5e1', borderRadius: '6px', cursor: 'pointer' }}
+                                    style={{ width: '100%', marginTop: '20px', padding: '10px', background: 'var(--input-bg)', border: '1px solid var(--input-border)', borderRadius: '6px', cursor: 'pointer', color: 'var(--text-color)' }}
                                 >
                                     Edit Plan
                                 </button>
@@ -270,24 +272,24 @@ export function GlobalAdminDashboard() {
 
             {/* ADD TENANT MODAL */}
             {showAddModal && (
-                <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1001 }}>
-                    <div style={{ background: 'white', padding: '30px', borderRadius: '12px', width: '400px' }}>
-                        <h2 style={{ marginTop: 0 }}>Add New Organization</h2>
+                <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1001, backdropFilter: 'blur(5px)' }}>
+                    <div style={{ background: 'var(--card-bg)', padding: '30px', borderRadius: '12px', width: '400px', border: '1px solid var(--glass-border)' }}>
+                        <h2 style={{ marginTop: 0, color: 'var(--text-color)' }}>Add New Organization</h2>
                         <div style={{ marginBottom: '20px' }}>
-                            <label style={{ display: 'block', marginBottom: '5px' }}>Name</label>
+                            <label style={{ display: 'block', marginBottom: '5px', color: 'var(--text-color)' }}>Name</label>
                             <input
                                 type="text"
                                 value={newTenant.name}
                                 onChange={(e) => setNewTenant({ ...newTenant, name: e.target.value })}
-                                style={{ width: '100%', padding: '10px', border: '1px solid #cbd5e1', borderRadius: '6px' }}
+                                style={{ width: '100%', padding: '10px', border: '1px solid var(--input-border)', borderRadius: '6px', background: 'var(--input-bg)', color: 'var(--text-color)' }}
                             />
                         </div>
                         <div style={{ marginBottom: '20px' }}>
-                            <label style={{ display: 'block', marginBottom: '5px' }}>Plan</label>
+                            <label style={{ display: 'block', marginBottom: '5px', color: 'var(--text-color)' }}>Plan</label>
                             <select
                                 value={newTenant.planId}
                                 onChange={(e) => setNewTenant({ ...newTenant, planId: e.target.value })}
-                                style={{ width: '100%', padding: '10px', border: '1px solid #cbd5e1', borderRadius: '6px' }}
+                                style={{ width: '100%', padding: '10px', border: '1px solid var(--input-border)', borderRadius: '6px', background: 'var(--input-bg)', color: 'var(--text-color)' }}
                             >
                                 <option value="">Select a Plan...</option>
                                 {availablePlans.map(p => (
@@ -296,8 +298,8 @@ export function GlobalAdminDashboard() {
                             </select>
                         </div>
                         <div style={{ display: 'flex', gap: '10px' }}>
-                            <button onClick={handleAddTenant} style={{ flex: 1, padding: '12px', background: '#3b82f6', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer' }}>Create</button>
-                            <button onClick={() => setShowAddModal(false)} style={{ flex: 1, padding: '12px', background: 'transparent', border: '1px solid #cbd5e1', borderRadius: '8px', cursor: 'pointer' }}>Cancel</button>
+                            <button onClick={handleAddTenant} style={{ flex: 1, padding: '12px', background: 'var(--primary-color)', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer' }}>Create</button>
+                            <button onClick={() => setShowAddModal(false)} style={{ flex: 1, padding: '12px', background: 'transparent', border: '1px solid var(--input-border)', borderRadius: '8px', cursor: 'pointer', color: 'var(--text-color)' }}>Cancel</button>
                         </div>
                     </div>
                 </div>
@@ -338,49 +340,49 @@ function PlanModal({ plan, onSave, onClose }) {
     };
 
     return (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1002 }}>
-            <div style={{ background: 'white', padding: '30px', borderRadius: '12px', width: '500px', maxHeight: '90vh', overflowY: 'auto' }}>
-                <h2 style={{ marginTop: 0 }}>{plan ? 'Edit Plan' : 'Create New Plan'}</h2>
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1002, backdropFilter: 'blur(5px)' }}>
+            <div style={{ background: 'var(--card-bg)', padding: '30px', borderRadius: '12px', width: '500px', maxHeight: '90vh', overflowY: 'auto', border: '1px solid var(--glass-border)', color: 'var(--text-color)' }}>
+                <h2 style={{ marginTop: 0, color: 'var(--text-color)' }}>{plan ? 'Edit Plan' : 'Create New Plan'}</h2>
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '15px' }}>
                     <div>
-                        <label style={{ display: 'block', fontSize: '0.9em', marginBottom: '5px' }}>Plan Name</label>
-                        <input name="name" value={formData.name} onChange={handleChange} style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
+                        <label style={{ display: 'block', fontSize: '0.9em', marginBottom: '5px', color: 'var(--text-muted)' }}>Plan Name</label>
+                        <input name="name" value={formData.name} onChange={handleChange} style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid var(--input-border)', background: 'var(--input-bg)', color: 'var(--text-color)' }} />
                     </div>
                     <div>
-                        <label style={{ display: 'block', fontSize: '0.9em', marginBottom: '5px' }}>Monthly Price ($)</label>
-                        <input type="number" name="price_monthly" value={formData.price_monthly} onChange={handleChange} style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
+                        <label style={{ display: 'block', fontSize: '0.9em', marginBottom: '5px', color: 'var(--text-muted)' }}>Monthly Price ($)</label>
+                        <input type="number" name="price_monthly" value={formData.price_monthly} onChange={handleChange} style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid var(--input-border)', background: 'var(--input-bg)', color: 'var(--text-color)' }} />
                     </div>
                 </div>
 
                 <div style={{ marginBottom: '15px' }}>
-                    <label style={{ display: 'block', fontSize: '0.9em', marginBottom: '5px' }}>Description</label>
-                    <textarea name="description" value={formData.description} onChange={handleChange} style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
+                    <label style={{ display: 'block', fontSize: '0.9em', marginBottom: '5px', color: 'var(--text-muted)' }}>Description</label>
+                    <textarea name="description" value={formData.description} onChange={handleChange} style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid var(--input-border)', background: 'var(--input-bg)', color: 'var(--text-color)' }} />
                 </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '15px' }}>
                     <div>
-                        <label style={{ display: 'block', fontSize: '0.9em', marginBottom: '5px' }}>Max Users</label>
-                        <input type="number" name="max_users" value={formData.max_users} onChange={handleChange} style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
+                        <label style={{ display: 'block', fontSize: '0.9em', marginBottom: '5px', color: 'var(--text-muted)' }}>Max Users</label>
+                        <input type="number" name="max_users" value={formData.max_users} onChange={handleChange} style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid var(--input-border)', background: 'var(--input-bg)', color: 'var(--text-color)' }} />
                     </div>
                     <div>
-                        <label style={{ display: 'block', fontSize: '0.9em', marginBottom: '5px' }}>Max Responses</label>
-                        <input type="number" name="max_responses" value={formData.max_responses} onChange={handleChange} style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1' }} />
+                        <label style={{ display: 'block', fontSize: '0.9em', marginBottom: '5px', color: 'var(--text-muted)' }}>Max Responses</label>
+                        <input type="number" name="max_responses" value={formData.max_responses} onChange={handleChange} style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid var(--input-border)', background: 'var(--input-bg)', color: 'var(--text-color)' }} />
                     </div>
                 </div>
 
                 <div style={{ marginBottom: '20px' }}>
-                    <label style={{ display: 'block', fontSize: '0.9em', marginBottom: '5px' }}>Features</label>
+                    <label style={{ display: 'block', fontSize: '0.9em', marginBottom: '5px', color: 'var(--text-muted)' }}>Features</label>
                     <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
                         <input
                             value={featureInput}
                             onChange={(e) => setFeatureInput(e.target.value)}
                             placeholder="Add feature (e.g. 'Unlimited Surveys')"
-                            style={{ flex: 1, padding: '8px', borderRadius: '6px', border: '1px solid #cbd5e1' }}
+                            style={{ flex: 1, padding: '8px', borderRadius: '6px', border: '1px solid var(--input-border)', background: 'var(--input-bg)', color: 'var(--text-color)' }}
                         />
-                        <button onClick={handleAddFeature} style={{ padding: '8px 15px', background: '#e2e8f0', border: 'none', borderRadius: '6px', cursor: 'pointer' }}>Add</button>
+                        <button onClick={handleAddFeature} style={{ padding: '8px 15px', background: 'var(--sidebar-bg)', border: '1px solid var(--input-border)', color: 'var(--text-color)', borderRadius: '6px', cursor: 'pointer' }}>Add</button>
                     </div>
-                    <ul style={{ paddingLeft: '20px', margin: 0, fontSize: '0.9em', color: '#475569' }}>
+                    <ul style={{ paddingLeft: '20px', margin: 0, fontSize: '0.9em', color: 'var(--text-muted)' }}>
                         {formData.features?.map((f, i) => (
                             <li key={i} style={{ marginBottom: '5px' }}>
                                 {f}
@@ -391,8 +393,8 @@ function PlanModal({ plan, onSave, onClose }) {
                 </div>
 
                 <div style={{ display: 'flex', gap: '10px' }}>
-                    <button onClick={() => onSave(formData)} style={{ flex: 1, padding: '12px', background: '#3b82f6', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer' }}>Save Plan</button>
-                    <button onClick={onClose} style={{ flex: 1, padding: '12px', background: 'transparent', border: '1px solid #cbd5e1', borderRadius: '8px', cursor: 'pointer' }}>Cancel</button>
+                    <button onClick={() => onSave(formData)} style={{ flex: 1, padding: '12px', background: 'var(--primary-color)', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer' }}>Save Plan</button>
+                    <button onClick={onClose} style={{ flex: 1, padding: '12px', background: 'transparent', border: '1px solid var(--input-border)', borderRadius: '8px', cursor: 'pointer', color: 'var(--text-color)' }}>Cancel</button>
                 </div>
             </div>
         </div>

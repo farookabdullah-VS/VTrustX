@@ -1,0 +1,64 @@
+{
+    "title": "Loop Logic Demonstration",
+    "showProgressBar": "top",
+    "pages": [
+        {
+            "name": "page_selection",
+            "elements": [
+                {
+                    "type": "checkbox",
+                    "name": "selected_products",
+                    "title": "Select Products to Review",
+                    "isRequired": true,
+                    "choices": [
+                        {
+                            "value": "prod_a",
+                            "text": "Alpha Widget"
+                        },
+                        {
+                            "value": "prod_b",
+                            "text": "Beta Gadget"
+                        },
+                        {
+                            "value": "prod_c",
+                            "text": "Gamma Tool"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "page_details",
+            "elements": [
+                {
+                    "type": "paneldynamic",
+                    "name": "product_details_loop",
+                    "title": "Product Feedback Details",
+                    "valueName": "product_details_loop",
+                    "templateElements": [
+                        {
+                            "type": "html",
+                            "name": "info_header",
+                            "html": "<h4 style='background:#f3f4f6; padding:10px;'>Reviewing: {panel.product_name}</h4>"
+                        },
+                        {
+                            "type": "rating",
+                            "name": "quality_rating",
+                            "title": "Rate the Quality",
+                            "isRequired": true
+                        },
+                        {
+                            "type": "comment",
+                            "name": "issues_comment",
+                            "title": "Describe any issues",
+                            "visibleIf": "{panel.quality_rating} <= 3"
+                        }
+                    ],
+                    "templateTitle": "Review: {panel.product_name}",
+                    "allowAddPanel": false,
+                    "allowRemovePanel": false
+                }
+            ]
+        }
+    ]
+}

@@ -1,18 +1,16 @@
-/* VTrustX FLIPPED Style: Pale Green Background, Metallic Dark Accents */
+/* RayiX FLIPPED Style: Dynamic Theme Support */
 .sidebar {
     width: var(--sidebar-width);
     height: calc(100vh - 24px);
-    /* Pale Green Background */
-    background: linear-gradient(180deg, #D9F8E5 0%, #ecfdf5 100%);
+    /* Dynamic Background */
+    background: var(--sidebar-bg, linear-gradient(180deg, #D9F8E5 0%, #ecfdf5 100%));
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    color: #064e3b;
-    /* Dark Green Text */
+    color: var(--sidebar-text, #064e3b);
     display: flex;
     flex-direction: column;
     transition: width 0.1s ease;
-    /* Faster transition for resize */
-    border: 1px solid rgba(6, 78, 59, 0.1);
+    border: 1px solid var(--sidebar-border, rgba(6, 78, 59, 0.1));
     position: fixed;
     left: 12px;
     top: 12px;
@@ -38,22 +36,52 @@
     justify-content: space-between;
     height: 150px;
     margin-bottom: 10px;
-    border-bottom: 1px solid rgba(6, 78, 59, 0.1);
+    border-bottom: 1px solid var(--sidebar-border, rgba(6, 78, 59, 0.1));
+}
+
+.sidebar.collapsed .sidebar-header {
+    flex-direction: column;
+    justify-content: center;
+    gap: 10px;
+    padding: 10px;
+}
+
+.sidebar-logo {
+    height: 100px;
+    max-width: 100%;
+    object-fit: contain;
+}
+
+.sidebar-logo-text {
+    margin: 0;
+    font-size: 1.5em;
+    color: var(--sidebar-text, #064e3b);
+    font-weight: 800;
+}
+
+.sidebar-controls {
+    display: flex;
+    gap: 8px;
+}
+
+.sidebar.collapsed .sidebar-controls {
+    flex-direction: column;
+    align-items: center;
 }
 
 .sidebar-header h3 {
     margin: 0;
     font-size: 1.5rem;
-    color: #064e3b;
+    color: var(--sidebar-text, #064e3b);
     font-weight: 800;
     letter-spacing: -1px;
     text-shadow: none;
 }
 
 .toggle-btn {
-    background: rgba(6, 78, 59, 0.1);
+    background: var(--sidebar-hover-bg, rgba(6, 78, 59, 0.1));
     border: none;
-    color: #064e3b;
+    color: var(--sidebar-text, #064e3b);
     cursor: pointer;
     font-size: 1rem;
     width: 32px;
@@ -67,8 +95,8 @@
 }
 
 .toggle-btn:hover {
-    background: #064e3b;
-    color: #D9F8E5;
+    background: var(--sidebar-active-bg, #064e3b);
+    color: var(--sidebar-active-text, #D9F8E5);
 }
 
 .sidebar-nav {
@@ -76,23 +104,21 @@
     padding: 10px;
     overflow-y: auto;
     scrollbar-width: auto;
-    /* Firefox: Increase width */
 }
 
-/* Custom Scrollbar for Sidebar */
 .sidebar-nav::-webkit-scrollbar {
     width: 12px;
 }
 
 .sidebar-nav::-webkit-scrollbar-thumb {
-    background-color: rgba(6, 78, 59, 0.2);
+    background-color: var(--sidebar-border, rgba(6, 78, 59, 0.2));
     border-radius: 6px;
     border: 3px solid transparent;
     background-clip: content-box;
 }
 
 .sidebar-nav::-webkit-scrollbar-thumb:hover {
-    background-color: rgba(6, 78, 59, 0.4);
+    background-color: var(--sidebar-active-bg, rgba(6, 78, 59, 0.4));
 }
 
 .sidebar-group {
@@ -105,10 +131,9 @@
     letter-spacing: 1px;
     margin: 20px 12px 8px;
     opacity: 1;
-    color: #064e3b;
-    /* Dark Headers */
+    color: var(--sidebar-text, #064e3b);
     font-weight: 700;
-    border-bottom: 1px solid rgba(6, 78, 59, 0.1);
+    border-bottom: 1px solid var(--sidebar-border, rgba(6, 78, 59, 0.1));
     padding-bottom: 4px;
 }
 
@@ -130,8 +155,7 @@
     transition: all 0.2s;
     white-space: nowrap;
     border-radius: 8px;
-    color: rgba(6, 78, 59, 0.8);
-    /* Semi-transparent dark green */
+    color: var(--sidebar-text, rgba(6, 78, 59, 0.8));
     font-weight: 600;
     min-height: 36px;
     border: 1px solid transparent;
@@ -146,16 +170,16 @@
 }
 
 .sidebar-nav li:hover {
-    background: rgba(6, 78, 59, 0.08);
-    color: #064e3b;
+    background: var(--sidebar-hover-bg, rgba(6, 78, 59, 0.08));
+    color: var(--sidebar-text, #064e3b);
     transform: translateX(2px);
 }
 
-/* Active State - UNIQUE LIGHT GREEN (Brand) */
+/* Active State */
 .sidebar-nav li.active {
-    background: #4ade80;
-    color: #064e3b;
-    box-shadow: 0 4px 12px rgba(74, 222, 128, 0.4);
+    background: var(--sidebar-active-bg, #4ade80);
+    color: var(--sidebar-active-text, #064e3b);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     border: none;
     font-weight: 700;
 }
@@ -165,18 +189,19 @@
     width: 20px;
     display: flex;
     justify-content: center;
-    /* Drop shadow removed for dark icons */
 }
 
 .sidebar-nav li.active .icon {
-    filter: drop-shadow(0 0 5px rgba(217, 248, 229, 0.5));
+    filter: none;
+    /* Removed drop shadow for cleaner look on generic themes */
 }
 
 /* Footer / Logout */
 .sidebar-footer {
     padding: 16px;
-    background: rgba(6, 78, 59, 0.05);
-    border-top: 1px solid rgba(6, 78, 59, 0.1);
+    background: rgba(0, 0, 0, 0.05);
+    /* Neutral */
+    border-top: 1px solid var(--sidebar-border, rgba(6, 78, 59, 0.1));
 }
 
 .logout-btn {
@@ -185,8 +210,8 @@
     align-items: center;
     gap: 10px;
     background: rgba(255, 255, 255, 0.5);
-    border: 1px solid rgba(6, 78, 59, 0.1);
-    color: #064e3b;
+    border: 1px solid var(--sidebar-border, rgba(6, 78, 59, 0.1));
+    color: var(--sidebar-text, #064e3b);
     justify-content: center;
     padding: 12px;
     border-radius: 12px;
@@ -196,9 +221,9 @@
 }
 
 .logout-btn:hover {
-    background: #064e3b;
-    border-color: #064e3b;
-    color: #D9F8E5;
+    background: var(--sidebar-active-bg, #064e3b);
+    border-color: var(--sidebar-active-bg, #064e3b);
+    color: var(--sidebar-active-text, #D9F8E5);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
@@ -219,8 +244,8 @@
 }
 
 .group-drag-handle:hover {
-    background: #064e3b;
-    color: #D9F8E5;
+    background: var(--sidebar-active-bg);
+    color: var(--sidebar-active-text);
 }
 
 /* Resizer Bar (Right Side) */
@@ -242,14 +267,14 @@
 
 .sidebar-resizer:hover,
 .sidebar-resizer-active {
-    background: rgba(6, 78, 59, 0.25);
+    background: var(--sidebar-hover-bg);
 }
 
 /* Visual Grip on Resizer */
 .resizer-grip {
     width: 4px;
     height: 30px;
-    background: #064e3b;
+    background: var(--primary-color);
     border-radius: 2px;
     opacity: 0;
     transition: opacity 0.2s;

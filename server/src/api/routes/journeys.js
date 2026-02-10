@@ -125,4 +125,25 @@ router.post('/:id/publish', authenticate, async (req, res) => {
     }
 });
 
+// DELETE /api/journeys/:id
+router.delete('/:id', authenticate, async (req, res) => {
+    try {
+        const tenantId = req.user.tenant_id;
+        const journeyId = req.params.id;
+
+        // Verify ownership
+        const check = await query('SELECT id FROM journeys WHERE id = $1 AND tenant_id = $2', [journeyId, tenantId]);
+        if (check.rows.length === 0) return res.status(404).json({ error: 'Journey not found' });
+
+        // Delete dependencies first (if constraints exist without cascade)
+        await query('DELETE FROM journey_instances WHERE journey_id = $1', [journeyId]);
+        await query('DELETE FROM journey_versions WHERE journey_id = $1', [journeyId]);
+        await query('DELETE FROM journeys WHERE id = $1', [journeyId]);
+
+        res.status(204).send();
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
 module.exports = router;

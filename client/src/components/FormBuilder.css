@@ -1,0 +1,27 @@
+/* Navigation Tabs in Form Builder */
+.fb-nav-item {
+    padding: 0 15px;
+    color: var(--text-muted, #64748b);
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+    border-bottom: 2px solid transparent;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    background: transparent;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+.fb-nav-item:hover {
+    color: var(--primary-color, #064e3b);
+    background: var(--input-bg, rgba(0, 0, 0, 0.02));
+    /* Subtle hover bg */
+}
+
+.fb-nav-item.active {
+    color: var(--primary-color, #064e3b);
+    font-weight: 600;
+    border-bottom: 2px solid var(--primary-color, #064e3b);
+}

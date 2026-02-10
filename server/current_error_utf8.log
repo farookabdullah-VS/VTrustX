@@ -1,0 +1,51 @@
+﻿Server Process Starting...
+[dotenv@17.2.3] injecting env (11) from .env -- tip: ΓÜÖ∩╕Å  specify custom .env file path with { path: '/custom/path/.env' }
+Stage 1: Modules Loaded. Config: {
+  host: 'localhost',
+  db: 'vtrustx_db',
+  instance: 'Unset',
+  port: '3000'
+}
+Stage 2: Starting VTrustX Server on 3000 (v2.2 - Debugging)...
+[DEBUG] forms.js loading...
+[DEBUG] db.js loading...
+[dotenv@17.2.3] injecting env (0) from .env -- tip: ≡ƒæÑ sync secrets across teammates & machines: https://dotenvx.com/ops
+[DEBUG] DB Config: {
+  user: 'postgres',
+  password: '***',
+  database: 'vtrustx_db',
+  port: '5433',
+  host: 'localhost'
+}
+Stage 3: Forms Router Loaded
+[dotenv@17.2.3] injecting env (0) from .env -- tip: ≡ƒùé∩╕Å backup and recover secrets: https://dotenvx.com/ops
+Stage 4: Passport Initialized
+Stage 5: Base Routes Loaded
+Agent Chat Router Type: function router
+Stage 6: All Routes Loaded
+node : node:events:496
+At line:1 char:1
++ node index.js > current_error.log 2>&1
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (node:events:496:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use 0.0.0.0:3000
+    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at node:net:2206:7
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:1976:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:90:21) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '0.0.0.0',
+  port: 3000
+}
+
+Node.js v22.18.0

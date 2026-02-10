@@ -10,6 +10,7 @@ app.use(cors());
 app.use(express.json());
 
 const generateSurvey = require('./src/handlers/generationHandler');
+const completeText = require('./src/handlers/completionHandler');
 const callHandler = require('./src/handlers/callHandler');
 
 app.get('/health', (req, res) => {
@@ -42,6 +43,25 @@ app.post('/generate', async (req, res) => {
     }
 });
 
+app.post('/completion', async (req, res) => {
+    try {
+        const { prompt, aiConfig } = req.body;
+        console.log("Received completion request");
+
+        const text = await completeText(prompt, aiConfig);
+        res.json({ text });
+    } catch (error) {
+        console.error("Completion failed:", error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+const { handleBatchAnalysis } = require('./src/handlers/batchHandler');
+const { handleAgentInteract } = require('./src/handlers/agentHandler');
+
+app.post('/analyze-batch', handleBatchAnalysis);
+app.post('/agent-interact', handleAgentInteract);
+
 app.post('/analyze', async (req, res) => {
     try {
         const { submission, formDefinition, aiConfig } = req.body;
@@ -60,7 +80,8 @@ app.post('/analyze', async (req, res) => {
                 // Callback to Main Server
                 // Assuming Main Server is at localhost:3000 (configurable via input or env?)
                 // Ideally passing the callback URL in the payload is safer.
-                const callbackUrl = `http://localhost:3000/api/submissions/${submission.id}/analysis`;
+                const coreUrl = process.env.CORE_SERVICE_URL || 'http://localhost:3000';
+                const callbackUrl = `${coreUrl}/api/submissions/${submission.id}/analysis`;
 
                 // Need axios or fetch. AI service has axios installed? (See Geminiprovider, yes)
                 const axios = require('axios');

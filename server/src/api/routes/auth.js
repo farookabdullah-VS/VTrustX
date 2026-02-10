@@ -18,16 +18,16 @@ router.post('/register', async (req, res) => {
         }
 
         // Check if exists
-        // FindAll is inefficient for this check, but sticking to existing logic flow for now.
-        // Better: userRepo.findByUsername (if we added it).
-        // Using generic findAll to mimic previous behavior exactly.
-        const users = await userRepo.findAll();
-        if (users.find(u => u.username === username)) {
+        const existingUser = await userRepo.findBy('username', username);
+        if (existingUser) {
             return res.status(409).json({ error: 'Username already exists' });
         }
 
-        // Create
-        // TODO: Hash password here
+        // Hash password
+        const bcrypt = require('bcryptjs');
+        const salt = await bcrypt.genSalt(10);
+        const passwordHash = await bcrypt.hash(password, salt);
+
         // Create Tenant
         // Use username's org if not specified
         const tenantName = `${username}'s Organization`;
@@ -39,10 +39,9 @@ router.post('/register', async (req, res) => {
         });
 
         // Create User
-        // TODO: Hash password here
         const newUser = {
             username,
-            password, // Storing plain text for this demo MVP steps. REPLACE with bcrypt in prod.
+            password: passwordHash, // Store Hash
             role: role || 'admin', // Default to Tenant Admin
             tenant_id: newTenant.id,
             created_at: new Date()
@@ -69,26 +68,58 @@ router.post('/login', async (req, res) => {
         // Let's optimize slightly by adding a specific query if possible, or stick to findAll for verified exact replacement.
 
         // Let's stick to findAll for now to be safe with the generic repo API we built.
-        const users = await userRepo.findAll();
-
-        console.log(`Login Attempt: '${username}' vs ${users.length} users in DB.`);
-
-        const user = users.find(u => u.username === username && u.password === password);
+        const user = await userRepo.findBy('username', username);
 
         if (!user) {
-            // Debug: Check if username exists but password wrong
-            const exists = users.find(u => u.username === username);
-            if (exists) console.log(`User '${username}' exists but password mismatch. Expected '${exists.password}' vs '${password}'`);
-            else console.log(`User '${username}' NOT FOUND in DB.`);
+            console.log(`User '${username}' NOT FOUND in DB.`);
+            return res.status(401).json({ error: 'Invalid credentials' });
+        }
 
+        // Verify Password (Bcrypt)
+        const bcrypt = require('bcryptjs');
+        let isMatch = false;
+
+        // Handle migration: Check if password is hash (starts with $2a$ or $2b$) or plain
+        if (user.password.startsWith('$2a$') || user.password.startsWith('$2b$')) {
+            isMatch = await bcrypt.compare(password, user.password);
+        } else {
+            // Legacy plain text check (can update to hash here automatically if we wanted)
+            isMatch = (user.password === password);
+            if (isMatch) {
+                // Auto-upgrade to hash
+                const salt = await bcrypt.genSalt(10);
+                const hash = await bcrypt.hash(password, salt);
+                await userRepo.update(user.id, { password: hash });
+                console.log(`Migrated user ${user.username} to hashed password.`);
+            }
+        }
+
+        if (!isMatch) {
+            console.log(`User '${username}' found but match failed.`);
             return res.status(401).json({ error: 'Invalid credentials' });
         }
 
         // Return user info (client will store this to "simulate" session)
+        const jwt = require('jsonwebtoken');
+
+        // Return user info
         const { password: _, ...safeUser } = user;
+
+        // Generate real JWT
+        const token = jwt.sign(
+            {
+                id: user.id,
+                username: user.username,
+                role: user.role,
+                tenant_id: user.tenant_id
+            },
+            process.env.JWT_SECRET || 'vtrustx_secret_key_2024',
+            { expiresIn: '24h' }
+        );
+
         res.json({
             user: safeUser,
-            token: 'mock-jwt-token-' + user.id // Mock token
+            token: token
         });
 
     } catch (error) {
@@ -131,5 +162,46 @@ router.get('/microsoft/callback',
         res.redirect(`/login?token=${token}&user=${encodeURIComponent(JSON.stringify(user))}`);
     }
 );
+
+router.post('/change-password', async (req, res) => {
+    try {
+        const { username, currentPassword, newPassword } = req.body;
+
+        if (!username || !currentPassword || !newPassword) {
+            return res.status(400).json({ error: 'Missing required fields' });
+        }
+
+        const user = await userRepo.findBy('username', username);
+
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        // Verify Current Password
+        const bcrypt = require('bcryptjs');
+        let isMatch = false;
+        if (user.password.startsWith('$2a$') || user.password.startsWith('$2b$')) {
+            isMatch = await bcrypt.compare(currentPassword, user.password);
+        } else {
+            isMatch = (user.password === currentPassword);
+        }
+
+        if (!isMatch) {
+            return res.status(401).json({ error: 'Incorrect current password' });
+        }
+
+        // Hash New Password
+        const salt = await bcrypt.genSalt(10);
+        const hash = await bcrypt.hash(newPassword, salt);
+
+        await userRepo.update(user.id, { password: hash });
+
+        res.json({ success: true, message: 'Password updated successfully' });
+
+    } catch (error) {
+        console.error("Change Password Error:", error);
+        res.status(500).json({ error: error.message });
+    }
+});
 
 module.exports = router;

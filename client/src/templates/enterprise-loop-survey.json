@@ -1,0 +1,89 @@
+{
+    "title": "Enterprise CX Feedback Survey",
+    "description": "Dynamic evaluation of selected services.",
+    "pages": [
+        {
+            "name": "page1",
+            "elements": [
+                {
+                    "type": "checkbox",
+                    "name": "selectedItems",
+                    "title": "Which services did you use today?",
+                    "description": "Select all that apply to generate feedback sections.",
+                    "isRequired": true,
+                    "choices": [
+                        "Cloud Hosting",
+                        "Managed Database",
+                        "AI Analytics",
+                        "Technical Support"
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "page2",
+            "elements": [
+                {
+                    "type": "paneldynamic",
+                    "name": "itemFeedback",
+                    "title": "Service Feedback Loop",
+                    "description": "Please provide details for each selected service.",
+                    "valueName": "itemFeedback",
+                    "templateTitle": "Evaluation: {selectedItems[panelIndex]}",
+                    "lockedPanelCount": true,
+                    "minPanelCount": 0,
+                    "panelCount": 0,
+                    "bindings": {
+                        "panelCount": "selectedItems.length"
+                    },
+                    "elements": [
+                        {
+                            "type": "html",
+                            "name": "banner",
+                            "html": "<h4 style='color: #0e7490'>#{panelIndex + 1}: {selectedItems[panelIndex]}</h4>"
+                        },
+                        {
+                            "type": "rating",
+                            "name": "nps",
+                            "title": "Net Promoter Score (NPS)",
+                            "rateMax": 10,
+                            "minRateDescription": "Not Likely",
+                            "maxRateDescription": "Very Likely"
+                        },
+                        {
+                            "type": "rating",
+                            "name": "satisfaction",
+                            "title": "Satisfaction Level",
+                            "rateMax": 5
+                        },
+                        {
+                            "type": "boolean",
+                            "name": "anyIssue",
+                            "title": "Did you experience any critical issues?",
+                            "defaultValue": "false"
+                        },
+                        {
+                            "type": "comment",
+                            "name": "issueDetails",
+                            "title": "Please describe the issue with {selectedItems[panelIndex]}:",
+                            "visibleIf": "{panel.anyIssue} = true",
+                            "isRequired": true
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "page3",
+            "elements": [
+                {
+                    "type": "html",
+                    "name": "review_text",
+                    "html": "<h3>Thank you!</h3><p>Your feedback on <b>{selectedItems.length}</b> services has been recorded.</p>"
+                }
+            ]
+        }
+    ],
+    "showProgressBar": "top",
+    "checkErrorsMode": "onNext"
+}

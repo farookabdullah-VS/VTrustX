@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const PostgresRepository = require('../../infrastructure/database/PostgresRepository');
 const { query } = require('../../infrastructure/database/db');
+const { getPeriodKey, matchesCriteria } = require('../../core/quotaUtils');
 
 const workflowEngine = require('../../core/workflowEngine');
 
@@ -59,14 +60,54 @@ router.post('/', async (req, res) => {
         const clientMetadata = req.body.metadata || {};
         const headerMetadata = req.headers || {};
 
+        // --- QUOTA & LIMIT CHECK ---
+        const formId = req.body.formId;
+
+        // 1. Check Global Form Response Limit
+        const formCheck = await query("SELECT response_limit FROM forms WHERE id = $1", [formId]);
+        if (formCheck.rows.length > 0 && formCheck.rows[0].response_limit) {
+            const currentSubmissions = await query("SELECT COUNT(*) FROM submissions WHERE form_id = $1", [formId]);
+            if (parseInt(currentSubmissions.rows[0].count) >= formCheck.rows[0].response_limit) {
+                return res.status(403).json({ error: 'Form response limit reached', code: 'LIMIT_EXCEEDED' });
+            }
+        }
+
+        // 2. Check Specific Quotas (Complex Criteria Matching)
+        const activeQuotasResult = await query("SELECT * FROM quotas WHERE form_id = $1 AND is_active = true", [formId]);
+        const activeQuotas = activeQuotasResult.rows;
+
+        const incomingData = req.body.data || {};
+        const matchedQuotas = activeQuotas.filter(q => matchesCriteria(incomingData, q.criteria));
+
+        // Validate matched quotas
+        let quotaViolation = null;
+        for (const quota of matchedQuotas) {
+            let currentCount = quota.current_count;
+
+            // IF periodic, we NEED to get the count for the current period
+            if (quota.reset_period && quota.reset_period !== 'never' && quota.reset_period !== 'global') {
+                const pKey = getPeriodKey(quota.reset_period);
+                const pCountRes = await query("SELECT count FROM quota_period_counters WHERE quota_id = $1 AND period_key = $2", [quota.id, pKey]);
+                currentCount = pCountRes.rows.length > 0 ? pCountRes.rows[0].count : 0;
+            }
+
+            if (currentCount >= quota.limit_count) {
+                quotaViolation = quota;
+                break;
+            }
+        }
+
         const newSubmission = {
             form_id: req.body.formId,
             form_version: req.body.formVersion,
+            user_id: req.body.userId || null, // Optional link to user
             data: req.body.data,
             // Merge client metadata, system headers, and explicit IP
             metadata: {
                 ...headerMetadata,
                 ...clientMetadata,
+                status: quotaViolation ? 'rejected' : (clientMetadata.status || 'completed'),
+                quota_reason: quotaViolation ? quotaViolation.label : null,
                 ip_address: req.ip || req.connection.remoteAddress || req.headers['x-forwarded-for'],
                 user_agent_parsed: req.get('User-Agent') // Ensure it's explicitly available
             },
@@ -82,10 +123,42 @@ router.post('/', async (req, res) => {
             entity_id: String(savedEntity.id),
             action: 'CREATE',
             user_id: 'system', // TODO: Auth
-            details: { source: 'api' },
+            details: { source: 'api', status: newSubmission.metadata.status },
             created_at: new Date()
         };
         await auditRepo.create(log);
+
+        // If it was a quota violation, return 403 AFTER saving the record
+        if (quotaViolation) {
+            return res.status(403).json({
+                error: `Quota exceeded: ${quotaViolation.label}`,
+                code: 'QUOTA_EXCEEDED',
+                action: quotaViolation.action,
+                action_data: quotaViolation.action_data,
+                label: quotaViolation.label,
+                submissionId: savedEntity.id
+            });
+        }
+
+        // --- UPDATE QUOTAS ---
+        // Increment all quotas that matched this submission (ONLY for completed status)
+        if (matchedQuotas.length > 0 && newSubmission.metadata.status === 'completed') {
+            for (const quota of matchedQuotas) {
+                // 1. Increment Global Count
+                await query("UPDATE quotas SET current_count = current_count + 1 WHERE id = $1", [quota.id]);
+
+                // 2. Increment Periodic Count if applicable
+                if (quota.reset_period && quota.reset_period !== 'never' && quota.reset_period !== 'global') {
+                    const pKey = getPeriodKey(quota.reset_period);
+                    await query(`
+                        INSERT INTO quota_period_counters (quota_id, period_key, count)
+                        VALUES ($1, $2, 1)
+                        ON CONFLICT (quota_id, period_key) 
+                        DO UPDATE SET count = quota_period_counters.count + 1, updated_at = CURRENT_TIMESTAMP
+                    `, [quota.id, pKey]);
+                }
+            }
+        }
 
         // --- WORKFLOW ENGINE ---
         // Trigger generic automation workflows
@@ -114,7 +187,8 @@ router.post('/', async (req, res) => {
             };
 
             // Using global fetch (Node 18+)
-            fetch('http://localhost:3001/analyze', {
+            const aiServiceUrl = process.env.AI_SERVICE_URL || 'http://localhost:3001';
+            fetch(`${aiServiceUrl}/analyze`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(aiPayload)
@@ -189,6 +263,31 @@ router.put('/:id/analysis', async (req, res) => {
         await auditRepo.create(log);
 
         res.json(toEntity(updatedRow));
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Delete submission
+router.delete('/:id', async (req, res) => {
+    try {
+        const existing = await submissionRepo.findById(req.params.id);
+        if (!existing) return res.status(404).json({ error: 'Submission not found' });
+
+        await submissionRepo.delete(req.params.id);
+
+        // Audit Log
+        const log = {
+            entity_type: 'Submission',
+            entity_id: String(req.params.id),
+            action: 'DELETE',
+            user_id: 'system', // or from req.user
+            details: { deletedData: existing.data },
+            created_at: new Date()
+        };
+        await auditRepo.create(log);
+
+        res.json({ message: 'Submission deleted successfully' });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }

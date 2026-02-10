@@ -2,7 +2,7 @@ import React from 'react';
 import { Copy, Mic } from 'lucide-react';
 
 export function VoiceAgentSettings({ formId, form }) {
-    const baseUrl = window.location.hostname.includes('localhost') ? window.location.origin : 'https://chat.crux360.ai';
+    const baseUrl = window.location.origin;
     const voiceUrl = `${baseUrl}/s/voice/${formId}`;
     const isEnabled = form?.enableVoiceAgent;
 
