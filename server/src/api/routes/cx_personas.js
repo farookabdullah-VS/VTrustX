@@ -7,7 +7,7 @@ const authenticate = require('../middleware/auth');
 router.get('/', authenticate, async (req, res) => {
     try {
         // Return summary
-        const result = await query('SELECT id, name, title, photo_url, updated_at FROM cx_personas ORDER BY updated_at DESC');
+        const result = await query('SELECT id, name, title, photo_url, updated_at FROM cx_personas WHERE tenant_id = $1 ORDER BY updated_at DESC', [req.user.tenant_id]);
         res.json(result.rows);
     } catch (e) {
         console.error("[CX_PERSONAS_ERROR]", e);
@@ -19,7 +19,7 @@ router.get('/', authenticate, async (req, res) => {
 router.get('/:id', authenticate, async (req, res) => {
     try {
         const { id } = req.params;
-        const result = await query('SELECT * FROM cx_personas WHERE id = $1', [id]);
+        const result = await query('SELECT * FROM cx_personas WHERE id = $1 AND tenant_id = $2', [id, req.user.tenant_id]);
         if (result.rows.length === 0) return res.status(404).json({ error: 'Persona not found' });
         res.json(result.rows[0]);
     } catch (e) {
@@ -60,8 +60,8 @@ router.post('/', authenticate, async (req, res) => {
 
         const result = await query(
             `INSERT INTO cx_personas 
-            (name, title, photo_url, layout_config, status, tags, accent_color, orientation, persona_type, domain, mapping_rules, owner_id) 
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *`,
+            (name, title, photo_url, layout_config, status, tags, accent_color, orientation, persona_type, domain, mapping_rules, owner_id, tenant_id) 
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING *`,
             [
                 name,
                 title,
@@ -74,7 +74,8 @@ router.post('/', authenticate, async (req, res) => {
                 persona_type || 'Customer',
                 domain || 'CX',
                 JSON.stringify(mapping_rules || {}),
-                req.user?.id || 'system'
+                req.user?.id || 'system',
+                req.user.tenant_id
             ]
         );
         res.status(201).json(result.rows[0]);
@@ -88,14 +89,14 @@ router.post('/', authenticate, async (req, res) => {
 router.post('/:id/clone', authenticate, async (req, res) => {
     try {
         const { id } = req.params;
-        const source = await query('SELECT * FROM cx_personas WHERE id = $1', [id]);
+        const source = await query('SELECT * FROM cx_personas WHERE id = $1 AND tenant_id = $2', [id, req.user.tenant_id]);
         if (source.rows.length === 0) return res.status(404).json({ error: 'Source not found' });
 
         const s = source.rows[0];
         const result = await query(
             `INSERT INTO cx_personas 
-            (name, title, photo_url, layout_config, status, tags, accent_color, orientation, persona_type, domain, mapping_rules, owner_id) 
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *`,
+            (name, title, photo_url, layout_config, status, tags, accent_color, orientation, persona_type, domain, mapping_rules, owner_id, tenant_id) 
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING *`,
             [
                 s.name + ' (Copy)',
                 s.title,
@@ -108,7 +109,8 @@ router.post('/:id/clone', authenticate, async (req, res) => {
                 s.persona_type,
                 s.domain,
                 s.mapping_rules,
-                req.user?.id || 'system'
+                req.user?.id || 'system',
+                req.user.tenant_id
             ]
         );
         res.status(201).json(result.rows[0]);
@@ -147,7 +149,8 @@ router.put('/:id', authenticate, async (req, res) => {
 
         if (updates.length > 1) { // At least one update + updated_at
             params.push(id);
-            await query(`UPDATE cx_personas SET ${updates.join(', ')} WHERE id=$${i}`, params);
+            params.push(req.user.tenant_id);
+            await query(`UPDATE cx_personas SET ${updates.join(', ')} WHERE id=$${i} AND tenant_id=$${i + 1}`, params);
         }
 
         res.json({ success: true });
@@ -160,7 +163,7 @@ router.put('/:id', authenticate, async (req, res) => {
 // DELETE /api/cx-personas/:id
 router.delete('/:id', authenticate, async (req, res) => {
     try {
-        await query('DELETE FROM cx_personas WHERE id = $1', [req.params.id]);
+        await query('DELETE FROM cx_personas WHERE id = $1 AND tenant_id = $2', [req.params.id, req.user.tenant_id]);
         res.status(204).send();
     } catch (e) {
         console.error("[CX_PERSONAS_ERROR]", e);

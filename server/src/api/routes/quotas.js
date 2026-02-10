@@ -2,12 +2,17 @@ const express = require('express');
 const router = express.Router();
 const db = require('../../infrastructure/database/db');
 const { getPeriodKey, matchesCriteria } = require('../../core/quotaUtils');
+const authenticate = require('../middleware/auth');
 
 // GET all quotas for a form
-router.get('/', async (req, res) => {
+router.get('/', authenticate, async (req, res) => {
     try {
         const { formId } = req.query;
         if (!formId) return res.status(400).json({ error: 'formId query required' });
+
+        // Ensure form belongs to tenant
+        const formCheck = await db.query("SELECT id FROM forms WHERE id = $1 AND tenant_id = $2", [formId, req.user.tenant_id]);
+        if (formCheck.rows.length === 0) return res.status(404).json({ error: "Form not found or access denied" });
 
         const result = await db.query(
             'SELECT * FROM quotas WHERE form_id = $1 ORDER BY id ASC',
@@ -43,9 +48,13 @@ router.get('/', async (req, res) => {
 });
 
 // POST create a quota
-router.post('/', async (req, res) => {
+router.post('/', authenticate, async (req, res) => {
     try {
         let { form_id, label, limit_count, criteria, action, action_data, reset_period, is_active, start_date, end_date } = req.body;
+
+        // Ensure form belongs to tenant
+        const formCheck = await db.query("SELECT id FROM forms WHERE id = $1 AND tenant_id = $2", [form_id, req.user.tenant_id]);
+        if (formCheck.rows.length === 0) return res.status(404).json({ error: "Form not found or access denied" });
 
         // Use criteria directly if it's an object, PG handles it for JSONB
         const criteriaToStore = (criteria && typeof criteria === 'object') ? criteria : (criteria ? JSON.parse(criteria) : {});
@@ -91,16 +100,35 @@ router.post('/', async (req, res) => {
         );
         res.status(201).json(result.rows[0]);
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: 'Failed to create quota' });
+        console.error("CREATE QUOTA ERROR:", err);
+        res.status(500).json({ error: 'Failed to create quota: ' + err.message });
     }
 });
 
 // PUT update a quota
-router.put('/:id', async (req, res) => {
+router.put('/:id', authenticate, async (req, res) => {
     try {
         const { id } = req.params;
         let { label, limit_count, criteria, action, action_data, reset_period, is_active, form_id, start_date, end_date } = req.body;
+
+        // First, find the quota and verify it belongs to a form owned by this tenant
+        const quotaCheck = await db.query(`
+            SELECT q.*, f.tenant_id 
+            FROM quotas q 
+            JOIN forms f ON q.form_id = f.id 
+            WHERE q.id = $1 AND f.tenant_id = $2
+        `, [id, req.user.tenant_id]);
+
+        if (quotaCheck.rows.length === 0) return res.status(404).json({ error: "Quota not found or access denied" });
+
+        const existingQuota = quotaCheck.rows[0];
+        let targetFormId = form_id || existingQuota.form_id;
+
+        // If form_id is changing, verify the new form also belongs to the tenant
+        if (form_id && form_id != existingQuota.form_id) {
+            const newFormCheck = await db.query("SELECT id FROM forms WHERE id = $1 AND tenant_id = $2", [form_id, req.user.tenant_id]);
+            if (newFormCheck.rows.length === 0) return res.status(403).json({ error: "Cannot move quota to a form you don't own" });
+        }
 
         const limitCountInt = parseInt(limit_count);
         if (isNaN(limitCountInt)) {
@@ -109,16 +137,9 @@ router.put('/:id', async (req, res) => {
 
         const criteriaToStore = (criteria && typeof criteria === 'object') ? criteria : (criteria ? JSON.parse(criteria) : {});
 
-        // Ensure we have a form_id for recalculation
-        let targetFormId = form_id;
-        if (!targetFormId) {
-            const existing = await db.query("SELECT form_id FROM quotas WHERE id = $1", [id]);
-            if (existing.rows.length > 0) targetFormId = existing.rows[0].form_id;
-        }
-
         console.log(`[QUOTA] Updating quota ${id} for form ${targetFormId}:`, { label, limit_count, criteria: criteriaToStore });
 
-        // Re-Calculate Count
+        // Re-Calculate Count correctly respecting period
         let newCount = 0;
         if (targetFormId) {
             const subsRes = await db.query(`
@@ -128,6 +149,24 @@ router.put('/:id', async (req, res) => {
             `, [targetFormId]);
 
             newCount = subsRes.rows.filter(row => {
+                // Check Periodic Reset logic
+                if (reset_period && reset_period !== 'never') {
+                    const createdAt = new Date(row.created_at);
+                    const now = new Date(); // Use current time for recalculation context
+
+                    if (reset_period === 'daily') {
+                        const today = new Date(now.setHours(0, 0, 0, 0));
+                        if (createdAt < today) return false;
+                    } else if (reset_period === 'monthly') {
+                        if (createdAt.getUTCMonth() !== now.getUTCMonth() || createdAt.getUTCFullYear() !== now.getUTCFullYear()) return false;
+                    } else if (reset_period === 'weekly') {
+                        const { getPeriodKey } = require('../../core/quotaUtils'); // lazy require inside function scope to be safe or reuse from top scope
+                        const pKeyRow = getPeriodKey('weekly', createdAt);
+                        const pKeyNow = getPeriodKey('weekly', now);
+                        if (pKeyRow !== pKeyNow) return false;
+                    }
+                }
+
                 return matchesCriteria(row.data, criteriaToStore);
             }).length;
         }
@@ -153,9 +192,19 @@ router.put('/:id', async (req, res) => {
 });
 
 // DELETE a quota
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', authenticate, async (req, res) => {
     try {
         const { id } = req.params;
+
+        // Verify ownership before delete
+        const quotaCheck = await db.query(`
+            SELECT q.id FROM quotas q 
+            JOIN forms f ON q.form_id = f.id 
+            WHERE q.id = $1 AND f.tenant_id = $2
+        `, [id, req.user.tenant_id]);
+
+        if (quotaCheck.rows.length === 0) return res.status(404).json({ error: "Quota not found or access denied" });
+
         await db.query('DELETE FROM quotas WHERE id = $1', [id]);
         res.json({ message: 'Quota deleted' });
     } catch (err) {

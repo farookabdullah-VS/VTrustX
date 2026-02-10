@@ -246,16 +246,19 @@ router.get('/detailed-responses', authenticate, async (req, res) => {
 // 6. Key Driver Analysis (Pearson Correlation)
 router.post('/key-drivers', authenticate, async (req, res) => {
     try {
-        const { surveyId, targetMetric } = req.body; // e.g., targetMetric = 'nps' or 'csat'
+        const { surveyId, targetMetric } = req.body;
+        const tenantId = req.user.tenant_id;
+
+        // Ensure survey belongs to tenant
+        const formRes = await query("SELECT id FROM forms WHERE id = $1 AND tenant_id = $2", [surveyId, tenantId]);
+        if (formRes.rows.length === 0) return res.status(404).json({ error: "Form not found" });
+
         if (!surveyId || !targetMetric) return res.status(400).json({ error: "Missing surveyId or targetMetric" });
 
         // Cache Key
         const cacheKey = `drivers_${surveyId}_${targetMetric}`;
         const cached = analyticsCache.get(cacheKey);
         if (cached) return res.json(cached);
-
-        // Fetch submissions for this survey (Sampled High Frequency)
-        // Optimization: LIMIT 2500 to prevent CPU blocking on massive datasets
         const sql = `
             SELECT data FROM submissions 
             WHERE form_id = $1 AND data->>$2 IS NOT NULL 
@@ -320,15 +323,18 @@ router.post('/key-drivers', authenticate, async (req, res) => {
 router.post('/text-analytics', authenticate, async (req, res) => {
     try {
         const { surveyId, textField, sentimentMetric } = req.body;
+        const tenantId = req.user.tenant_id;
+
+        // Ensure survey belongs to tenant
+        const formRes = await query("SELECT id FROM forms WHERE id = $1 AND tenant_id = $2", [surveyId, tenantId]);
+        if (formRes.rows.length === 0) return res.status(404).json({ error: "Form not found" });
+
         if (!surveyId || !textField) return res.status(400).json({ error: "Missing surveyId or textField" });
 
         // Cache Check
         const cacheKey = `text_${surveyId}_${textField}_${sentimentMetric || 'none'}`;
         const cached = analyticsCache.get(cacheKey);
         if (cached) return res.json(cached);
-
-        // Fetch submissions (Sampled)
-        // Optimization: LIMIT 2500
         const sql = `
             SELECT data FROM submissions 
             WHERE form_id = $1 AND data->>$2 IS NOT NULL
@@ -382,6 +388,12 @@ router.post('/text-analytics', authenticate, async (req, res) => {
 router.post('/nps-significance', authenticate, async (req, res) => {
     try {
         const { surveyId } = req.body;
+        const tenantId = req.user.tenant_id;
+
+        // Ensure survey belongs to tenant
+        const formRes = await query("SELECT id FROM forms WHERE id = $1 AND tenant_id = $2", [surveyId, tenantId]);
+        if (formRes.rows.length === 0) return res.status(404).json({ error: "Form not found" });
+
         // Compare Last 30 Days vs Previous 30 Days
         const sql = `
             SELECT 
@@ -455,6 +467,12 @@ router.post('/nps-significance', authenticate, async (req, res) => {
 router.post('/cross-tab', authenticate, async (req, res) => {
     try {
         const { surveyId, rowField, colField, valueField, operation } = req.body;
+        const tenantId = req.user.tenant_id;
+
+        // Ensure survey belongs to tenant
+        const formRes = await query("SELECT id FROM forms WHERE id = $1 AND tenant_id = $2", [surveyId, tenantId]);
+        if (formRes.rows.length === 0) return res.status(404).json({ error: "Form not found" });
+
         // Operation: 'count' or 'average'
         if (!surveyId || !rowField || !colField) return res.status(400).json({ error: "Missing required fields" });
 
@@ -530,6 +548,12 @@ router.post('/cross-tab', authenticate, async (req, res) => {
 router.post('/anomalies', authenticate, async (req, res) => {
     try {
         const { surveyId, targetMetric } = req.body;
+        const tenantId = req.user.tenant_id;
+
+        // Ensure survey belongs to tenant
+        const formRes = await query("SELECT id FROM forms WHERE id = $1 AND tenant_id = $2", [surveyId, tenantId]);
+        if (formRes.rows.length === 0) return res.status(404).json({ error: "Form not found" });
+
         if (!surveyId || !targetMetric) return res.status(400).json({ error: "Missing surveyId or targetMetric" });
 
         // Fetch daily averages for last 60 days

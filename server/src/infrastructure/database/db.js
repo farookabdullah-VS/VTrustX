@@ -6,11 +6,21 @@ try {
 } catch (e) { }
 
 const config = {
-    user: process.env.DB_USER || 'postgres',
-    password: process.env.DB_PASSWORD || 'Yaalla@123',
-    database: process.env.DB_NAME || 'rayix_db',
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
     port: process.env.DB_PORT || 5432,
 };
+
+if (!config.user || !config.password || !config.database) {
+    if (process.env.NODE_ENV === 'production') {
+        throw new Error('Database credentials (DB_USER, DB_PASSWORD, DB_NAME) must be defined in production.');
+    }
+    console.warn("WARNING: Missing DB credentials in environment. Using defaults for development.");
+    config.user = config.user || 'postgres';
+    config.password = config.password || 'Yaalla@123';
+    config.database = config.database || 'rayix_db';
+}
 
 // Cloud Run Connection Logic (Unix Socket)
 // Cloud Run Connection Logic (Unix Socket)

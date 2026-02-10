@@ -1,9 +1,10 @@
 import React from 'react';
-import { ArrowLeft, Save, Share, Download, MessageCircle, History, BarChart3, Users } from 'lucide-react';
+import { ArrowLeft, Save, Share, Download, MessageCircle, History, BarChart3, Users, Sparkles, Wand2 } from 'lucide-react';
 
 export function CJMHeader({
     title, onTitleChange, onSave, onBack,
     onShareClick, onExportClick, onCommentsClick, onVersionsClick, onAnalyticsClick,
+    onAIInsightsClick, onAIGenerateClick,
     commentCount, saveStatus, personas, selectedPersonaId, onPersonaChange
 }) {
     return (
@@ -36,6 +37,18 @@ export function CJMHeader({
                             <option key={p.id} value={p.id}>{p.name}</option>
                         ))}
                     </select>
+                )}
+
+                {onAIGenerateClick && (
+                    <button className="cjm-btn ai-btn" onClick={onAIGenerateClick} title="AI Generate Map">
+                        <Wand2 size={18} /> AI Generate
+                    </button>
+                )}
+
+                {onAIInsightsClick && (
+                    <button className="cjm-btn ai-btn" onClick={onAIInsightsClick} title="AI Insights">
+                        <Sparkles size={18} /> Insights
+                    </button>
                 )}
 
                 {onAnalyticsClick && (

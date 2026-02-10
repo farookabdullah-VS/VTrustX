@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
-import { Plus, Trash2, Edit2, Check, X, Filter, Settings2 } from 'lucide-react';
+import { Plus, Trash2, Edit2, CheckCircle, XCircle, Filter, Settings2 } from 'lucide-react';
 
 export function QuotaSettings({ form }) {
     const formId = form?.id;
@@ -70,6 +70,10 @@ export function QuotaSettings({ form }) {
     };
 
     const handleSave = (item, isNew = false) => {
+        if (!formId) {
+            alert("Error: No Form ID found. Please refresh.");
+            return;
+        }
         const payload = {
             ...item,
             limit_count: parseInt(item.limit_count),
@@ -113,149 +117,6 @@ export function QuotaSettings({ form }) {
         setIsModalOpen(true);
     };
 
-    // Row Component
-    const QuotaRow = ({ item, isEditing, isNew, onSave, onCancel }) => {
-        const [localState, setLocalState] = useState(item);
-
-        useEffect(() => {
-            setLocalState(item);
-        }, [item]);
-
-        const handleChange = (field, val) => {
-            setLocalState(prev => ({ ...prev, [field]: val }));
-        };
-
-        if (isEditing || isNew) {
-            const criteriaCount = localState.criteria ? Object.keys(localState.criteria).length : 0;
-
-            return (
-                <div style={styles.rowEditing}>
-                    <div style={{ ...styles.col, flex: 1.5 }}>
-                        <label style={styles.label}>Quota Label</label>
-                        <input
-                            style={styles.input}
-                            value={localState.label || ''}
-                            onChange={e => handleChange('label', e.target.value)}
-                            placeholder="e.g. Daily Response Limit"
-                        />
-                    </div>
-                    <div style={{ ...styles.col, maxWidth: '100px' }}>
-                        <label style={styles.label}>Limit</label>
-                        <input
-                            style={styles.input}
-                            type="number"
-                            value={localState.limit_count || ''}
-                            onChange={e => handleChange('limit_count', e.target.value)}
-                        />
-                    </div>
-                    <div style={styles.col}>
-                        <label style={styles.label}>Reset Period</label>
-                        <select
-                            style={styles.input}
-                            value={localState.reset_period || 'never'}
-                            onChange={e => handleChange('reset_period', e.target.value)}
-                        >
-                            <option value="never">No Reset (Global)</option>
-                            <option value="daily">Daily</option>
-                            <option value="weekly">Weekly</option>
-                            <option value="monthly">Monthly</option>
-                        </select>
-                    </div>
-                    <div style={styles.col}>
-                        <label style={styles.label}>Action</label>
-                        <select
-                            style={styles.input}
-                            value={localState.action || 'reject'}
-                            onChange={e => handleChange('action', e.target.value)}
-                        >
-                            <option value="reject">Reject Response</option>
-                            <option value="termination">Termination Message</option>
-                        </select>
-                    </div>
-                    <div style={styles.col}>
-                        <label style={styles.label}>Conditions</label>
-                        <button
-                            onClick={() => openFilterBuilder(localState.criteria, (newCriteria) => handleChange('criteria', newCriteria))}
-                            style={styles.filterBtn}
-                        >
-                            <Settings2 size={16} />
-                            {criteriaCount === 0 ? "All Responses" : `${criteriaCount} Filter(s)`}
-                        </button>
-                    </div>
-                    <div style={styles.actions}>
-                        <button onClick={() => onSave(localState, isNew)} style={styles.saveBtn}><Check size={16} /></button>
-                        <button onClick={onCancel} style={styles.cancelBtn}><X size={16} /></button>
-                    </div>
-                </div>
-            );
-        }
-
-        const criteriaCount = item.criteria ? Object.keys(item.criteria).length : 0;
-        const progress = Math.min(100, (item.current_count / item.limit_count) * 100);
-
-        return (
-            <div style={styles.row}>
-                <div style={{ ...styles.col, flex: 2 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <strong style={{ color: '#0f172a', fontSize: '1.05em' }}>{item.label}</strong>
-                        {item.reset_period && item.reset_period !== 'never' && (
-                            <span style={{ fontSize: '0.7em', padding: '2px 6px', background: '#e0f2fe', color: '#0369a1', borderRadius: '4px', fontWeight: 'bold', textTransform: 'uppercase' }}>
-                                {item.reset_period}
-                            </span>
-                        )}
-                    </div>
-                    <div style={{ marginTop: '8px', display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                        {criteriaCount === 0 ? (
-                            <span style={{ fontSize: '0.85em', color: '#94a3b8', fontStyle: 'italic' }}>Global Quota</span>
-                        ) : (
-                            Object.entries(item.criteria || {}).map(([k, v]) => {
-                                const valStr = String(v);
-                                let op = '=';
-                                let displayVal = valStr;
-                                if (valStr.startsWith('>=')) { op = '≥'; displayVal = valStr.substring(2); }
-                                else if (valStr.startsWith('<=')) { op = '≤'; displayVal = valStr.substring(2); }
-                                else if (valStr.startsWith('>')) { op = '>'; displayVal = valStr.substring(1); }
-                                else if (valStr.startsWith('<')) { op = '<'; displayVal = valStr.substring(1); }
-                                else if (valStr.startsWith('!=')) { op = '≠'; displayVal = valStr.substring(2); }
-
-                                return (
-                                    <div key={k} style={{ background: '#f8fafc', padding: '2px 8px', borderRadius: '4px', border: '1px solid #e2e8f0', fontSize: '0.81em', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                        <Filter size={10} color="#94a3b8" />
-                                        <span style={{ color: '#64748b' }}>{k}</span>
-                                        <span style={{ fontWeight: 'bold', color: '#3b82f6' }}>{op}</span>
-                                        <span style={{ fontWeight: '600', color: '#334155' }}>{displayVal}</span>
-                                    </div>
-                                );
-                            })
-                        )}
-                    </div>
-                </div>
-                <div style={{ display: 'flex', gap: '32px', alignItems: 'center' }}>
-                    <div style={{ textAlign: 'right', minWidth: '120px' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                            <span style={{ fontSize: '0.8em', color: '#64748b' }}>Usage</span>
-                            <span style={{ fontSize: '0.8em', fontWeight: 'bold', color: item.current_count >= item.limit_count ? '#ef4444' : '#0f172a' }}>
-                                {item.current_count} / {item.limit_count}
-                            </span>
-                        </div>
-                        <div style={{ width: '100%', height: '6px', background: '#e2e8f0', borderRadius: '3px', overflow: 'hidden' }}>
-                            <div style={{ width: `${progress}%`, height: '100%', background: progress >= 100 ? '#ef4444' : (progress >= 80 ? '#f59e0b' : '#10b981'), transition: 'width 0.3s ease' }}></div>
-                        </div>
-                    </div>
-                    <div style={{ textAlign: 'center', borderLeft: '1px solid #e2e8f0', paddingLeft: '20px' }}>
-                        <div style={{ fontSize: '0.75em', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Modified</div>
-                        <div style={{ fontWeight: '500', fontSize: '0.85em', color: '#475569', marginTop: '2px' }}>
-                            {new Date(item.updated_at || item.created_at).toLocaleDateString()}
-                        </div>
-                    </div>
-                </div>
-                <div style={styles.actions}>
-                    <button onClick={() => setEditingId(item.id)} style={styles.editBtn} title="Edit"><Edit2 size={18} /></button>
-                    <button onClick={() => handleDelete(item.id)} style={styles.deleteBtn} title="Delete"><Trash2 size={18} /></button>
-                </div>
-            </div>
-        );
-    };
 
     return (
         <div style={styles.container}>
@@ -279,6 +140,9 @@ export function QuotaSettings({ form }) {
                         isEditing={editingId === q.id}
                         onSave={handleSave}
                         onCancel={() => setEditingId(null)}
+                        onOpenFilter={openFilterBuilder}
+                        onEdit={() => setEditingId(q.id)}
+                        onDelete={() => handleDelete(q.id)}
                     />
                 ))}
 
@@ -288,6 +152,7 @@ export function QuotaSettings({ form }) {
                         isNew={true}
                         onSave={handleSave}
                         onCancel={() => setNewQuota(null)}
+                        onOpenFilter={openFilterBuilder}
                     />
                 )}
             </div>
@@ -304,9 +169,154 @@ export function QuotaSettings({ form }) {
                     onClose={() => setIsModalOpen(false)}
                 />
             )}
-        </div>
+        </div >
     );
 }
+
+// Extracted Row Component
+function QuotaRow({ item, isEditing, isNew, onSave, onCancel, onOpenFilter, onEdit, onDelete }) {
+    const [localState, setLocalState] = useState(item);
+
+    useEffect(() => {
+        setLocalState(item);
+    }, [item]);
+
+    const handleChange = (field, val) => {
+        setLocalState(prev => ({ ...prev, [field]: val }));
+    };
+
+    if (isEditing || isNew) {
+        const criteriaCount = localState.criteria ? Object.keys(localState.criteria).length : 0;
+
+        return (
+            <div style={styles.rowEditing}>
+                <div style={{ ...styles.col, flex: 1.5 }}>
+                    <label style={styles.label}>Quota Label</label>
+                    <input
+                        style={styles.input}
+                        value={localState.label || ''}
+                        onChange={e => handleChange('label', e.target.value)}
+                        placeholder="e.g. Daily Response Limit"
+                    />
+                </div>
+                <div style={{ ...styles.col, maxWidth: '100px' }}>
+                    <label style={styles.label}>Limit</label>
+                    <input
+                        style={styles.input}
+                        type="number"
+                        value={localState.limit_count || ''}
+                        onChange={e => handleChange('limit_count', e.target.value)}
+                    />
+                </div>
+                <div style={styles.col}>
+                    <label style={styles.label}>Reset Period</label>
+                    <select
+                        style={styles.input}
+                        value={localState.reset_period || 'never'}
+                        onChange={e => handleChange('reset_period', e.target.value)}
+                    >
+                        <option value="never">No Reset (Global)</option>
+                        <option value="daily">Daily</option>
+                        <option value="weekly">Weekly</option>
+                        <option value="monthly">Monthly</option>
+                    </select>
+                </div>
+                <div style={styles.col}>
+                    <label style={styles.label}>Action</label>
+                    <select
+                        style={styles.input}
+                        value={localState.action || 'reject'}
+                        onChange={e => handleChange('action', e.target.value)}
+                    >
+                        <option value="reject">Reject Response</option>
+                        <option value="termination">Termination Message</option>
+                    </select>
+                </div>
+                <div style={styles.col}>
+                    <label style={styles.label}>Conditions</label>
+                    <button
+                        onClick={() => onOpenFilter(localState.criteria, (newCriteria) => handleChange('criteria', newCriteria))}
+                        style={styles.filterBtn}
+                    >
+                        <Settings2 size={16} />
+                        {criteriaCount === 0 ? "All Responses" : `${criteriaCount} Filter(s)`}
+                    </button>
+                </div>
+                <div style={styles.actions}>
+                    <button onClick={() => onSave(localState, isNew)} style={styles.saveBtn}>Save</button>
+                    <button onClick={onCancel} style={styles.cancelBtn}>Cancel</button>
+                </div>
+            </div>
+        );
+    }
+
+    const criteriaCount = item.criteria ? Object.keys(item.criteria).length : 0;
+    const progress = Math.min(100, (item.current_count / item.limit_count) * 100);
+
+    return (
+        <div style={styles.row}>
+            <div style={{ ...styles.col, flex: 2 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <strong style={{ color: '#0f172a', fontSize: '1.05em' }}>{item.label}</strong>
+                    {item.reset_period && item.reset_period !== 'never' && (
+                        <span style={{ fontSize: '0.7em', padding: '2px 6px', background: '#e0f2fe', color: '#0369a1', borderRadius: '4px', fontWeight: 'bold', textTransform: 'uppercase' }}>
+                            {item.reset_period}
+                        </span>
+                    )}
+                </div>
+                <div style={{ marginTop: '8px', display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                    {criteriaCount === 0 ? (
+                        <span style={{ fontSize: '0.85em', color: '#94a3b8', fontStyle: 'italic' }}>Global Quota</span>
+                    ) : (
+                        Object.entries(item.criteria || {}).map(([k, v]) => {
+                            const valStr = String(v);
+                            let op = '=';
+                            let displayVal = valStr;
+                            if (valStr.startsWith('>=')) { op = '≥'; displayVal = valStr.substring(2); }
+                            else if (valStr.startsWith('<=')) { op = '≤'; displayVal = valStr.substring(2); }
+                            else if (valStr.startsWith('>')) { op = '>'; displayVal = valStr.substring(1); }
+                            else if (valStr.startsWith('<')) { op = '<'; displayVal = valStr.substring(1); }
+                            else if (valStr.startsWith('!=')) { op = '≠'; displayVal = valStr.substring(2); }
+
+                            return (
+                                <div key={k} style={{ background: '#f8fafc', padding: '2px 8px', borderRadius: '4px', border: '1px solid #e2e8f0', fontSize: '0.81em', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                    <Filter size={10} color="#94a3b8" />
+                                    <span style={{ color: '#64748b' }}>{k}</span>
+                                    <span style={{ fontWeight: 'bold', color: '#3b82f6' }}>{op}</span>
+                                    <span style={{ fontWeight: '600', color: '#334155' }}>{displayVal}</span>
+                                </div>
+                            );
+                        })
+                    )}
+                </div>
+            </div>
+            <div style={{ display: 'flex', gap: '32px', alignItems: 'center' }}>
+                <div style={{ textAlign: 'right', minWidth: '120px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                        <span style={{ fontSize: '0.8em', color: '#64748b' }}>Usage</span>
+                        <span style={{ fontSize: '0.8em', fontWeight: 'bold', color: item.current_count >= item.limit_count ? '#ef4444' : '#0f172a' }}>
+                            {item.current_count} / {item.limit_count}
+                        </span>
+                    </div>
+                    <div style={{ width: '100%', height: '6px', background: '#e2e8f0', borderRadius: '3px', overflow: 'hidden' }}>
+                        <div style={{ width: `${progress}%`, height: '100%', background: progress >= 100 ? '#ef4444' : (progress >= 80 ? '#f59e0b' : '#10b981'), transition: 'width 0.3s ease' }}></div>
+                    </div>
+                </div>
+                <div style={{ textAlign: 'center', borderLeft: '1px solid #e2e8f0', paddingLeft: '20px' }}>
+                    <div style={{ fontSize: '0.75em', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Modified</div>
+                    <div style={{ fontWeight: '500', fontSize: '0.85em', color: '#475569', marginTop: '2px' }}>
+                        {new Date(item.updated_at || item.created_at).toLocaleDateString()}
+                    </div>
+                </div>
+            </div>
+            <div style={styles.actions}>
+                <button onClick={() => onEdit(item.id)} style={styles.editBtn} title="Edit"><Edit2 size={18} /></button>
+                <button onClick={() => onDelete(item.id)} style={styles.deleteBtn} title="Delete"><Trash2 size={18} /></button>
+            </div>
+        </div>
+    );
+};
+
 
 // Sub-component: Filter Builder Modal
 function FilterModal({ initialCriteria, questions, onSave, onClose }) {
@@ -553,8 +563,8 @@ const styles = {
     },
     editBtn: { background: 'none', border: 'none', cursor: 'pointer', color: '#64748b', padding: '8px', borderRadius: '6px', transition: 'all 0.2s' },
     deleteBtn: { background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444', padding: '8px', borderRadius: '6px', transition: 'all 0.2s' },
-    saveBtn: { background: '#10b981', border: 'none', borderRadius: '8px', width: '36px', height: '36px', color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' },
-    cancelBtn: { background: '#94a3b8', border: 'none', borderRadius: '8px', width: '36px', height: '36px', color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' },
+    saveBtn: { background: '#059669', border: 'none', borderRadius: '6px', padding: '8px 20px', color: '#ffffff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s', boxShadow: '0 2px 4px rgba(5, 150, 105, 0.2)', fontWeight: '600', fontSize: '0.9em' },
+    cancelBtn: { background: '#64748b', border: 'none', borderRadius: '6px', padding: '8px 20px', color: '#ffffff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s', boxShadow: '0 2px 4px rgba(100, 116, 139, 0.2)', fontWeight: '600', fontSize: '0.9em' },
     filterBtn: {
         display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center',
         padding: '10px', borderRadius: '8px', border: '1px solid #e2e8f0',

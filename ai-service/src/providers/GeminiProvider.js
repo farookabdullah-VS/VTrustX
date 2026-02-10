@@ -284,13 +284,23 @@ class GeminiProvider {
             if (!candidate) throw new Error("No candidates returned.");
 
             const textResponse = candidate.content.parts[0].text;
-            const cleanText = textResponse.replace(/```json/g, '').replace(/```/g, '').trim();
 
             try {
+                // Attempt to find JSON object in the response
+                const jsonMatch = textResponse.match(/\{[\s\S]*\}/);
+                if (jsonMatch) {
+                    return JSON.parse(jsonMatch[0]);
+                }
+                // If it looks like JSON but regex failed or just plain text
+                const cleanText = textResponse.replace(/```json/g, '').replace(/```/g, '').trim();
                 return JSON.parse(cleanText);
             } catch (e) {
-                console.error("Gemini JSON Parse Error:", cleanText);
-                throw new Error("AI returned invalid JSON: " + cleanText.substring(0, 50) + "...");
+                console.warn("Gemini JSON Parse Error (Falling back to raw text):", textResponse);
+                // Fallback: Treat the raw text as the spoken response
+                return {
+                    speak: textResponse.replace(/"/g, ''), // Simple cleanup
+                    action: "next"
+                };
             }
         });
     }

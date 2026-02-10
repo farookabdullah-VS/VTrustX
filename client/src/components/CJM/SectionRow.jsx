@@ -3,6 +3,24 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { GripVertical, Trash2, Settings, MessageCircle } from 'lucide-react';
 import { CellControl } from './CellControl';
+import { AICellAssistant } from './AICellAssistant';
+
+function getCellText(cellData, type) {
+    if (!cellData) return '';
+    if (type === 'text' || type === 'pain_point' || type === 'opportunity') return cellData.value || '';
+    if (type === 'think_feel') return [cellData.thought, cellData.feeling].filter(Boolean).join(' — ');
+    if (type === 'goals' || type === 'frontstage' || type === 'backstage') return (cellData.items || []).join(', ');
+    if (type === 'actions') return (cellData.items || []).map(i => i.text || '').join(', ');
+    if (type === 'barriers') return (cellData.items || []).map(i => i.text || '').join(', ');
+    if (type === 'motivators') return (cellData.items || []).map(i => i.text || '').join(', ');
+    if (type === 'touchpoints') return (cellData.items || []).map(i => i.label || '').join(', ');
+    if (type === 'kpi') return `${cellData.label || ''}: ${cellData.value || ''}`;
+    if (type === 'sentiment_graph') return cellData.note || '';
+    if (type === 'emotion_curve') return cellData.annotation || '';
+    if (type === 'channels') return (cellData.channels || []).map(c => c.label || c.id).join(', ');
+    if (type === 'process_flow') return (cellData.steps || []).join(' → ');
+    return cellData.value || '';
+}
 
 export function SectionRow({ section, stages, onUpdateCell, onUpdateSection, onDeleteSection, comments }) {
     const { attributes, listeners, setNodeRef, transform, transition } = useSortable({
@@ -104,8 +122,10 @@ export function SectionRow({ section, stages, onUpdateCell, onUpdateSection, onD
 
                 {stages.map(stage => {
                     const commentCount = getCommentCount(section.id, stage.id);
+                    const cellData = section.cells[stage.id] || {};
+                    const cellText = getCellText(cellData, section.type);
                     return (
-                        <div key={stage.id} className="cjm-cell" style={{ minWidth: '200px', flex: 1 }}>
+                        <div key={stage.id} className="cjm-cell" style={{ minWidth: '200px', flex: 1, position: 'relative' }}>
                             {commentCount > 0 && (
                                 <div className="cjm-comment-badge" title={`${commentCount} comment(s)`}>
                                     {commentCount}
@@ -113,10 +133,23 @@ export function SectionRow({ section, stages, onUpdateCell, onUpdateSection, onD
                             )}
                             <CellControl
                                 type={section.type}
-                                data={section.cells[stage.id] || {}}
+                                data={cellData}
                                 onChange={(val) => onUpdateCell(section.id, stage.id, val)}
                                 sectionId={section.id}
                                 stageId={stage.id}
+                            />
+                            <AICellAssistant
+                                cellText={cellText}
+                                sectionType={section.type}
+                                sectionTitle={section.title}
+                                stageName={stage.name}
+                                onApply={(text) => {
+                                    if (section.type === 'think_feel') {
+                                        onUpdateCell(section.id, stage.id, { ...cellData, thought: text });
+                                    } else {
+                                        onUpdateCell(section.id, stage.id, { ...cellData, value: text });
+                                    }
+                                }}
                             />
                         </div>
                     );

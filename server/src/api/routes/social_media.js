@@ -220,6 +220,11 @@ router.delete('/campaigns/:id', authenticate, async (req, res) => {
 router.get('/campaigns/:campaignId/posts', authenticate, async (req, res) => {
     try {
         const { campaignId } = req.params;
+        const tenantId = req.user.tenant_id;
+
+        // Verify campaign ownership
+        const campCheck = await query('SELECT id FROM social_media_campaigns WHERE id = $1 AND tenant_id = $2', [campaignId, tenantId]);
+        if (campCheck.rows.length === 0) return res.status(404).json({ error: 'Campaign not found' });
 
         const result = await query(`
             SELECT * FROM social_media_posts
@@ -249,6 +254,10 @@ router.post('/posts', authenticate, async (req, res) => {
         if (!campaign_id || !content || !platforms) {
             return res.status(400).json({ error: 'Campaign ID, content, and platforms required' });
         }
+
+        // Verify campaign ownership
+        const campCheck = await query('SELECT id FROM social_media_campaigns WHERE id = $1 AND tenant_id = $2', [campaign_id, req.user.tenant_id]);
+        if (campCheck.rows.length === 0) return res.status(403).json({ error: 'Invalid campaign ID' });
 
         const result = await query(`
             INSERT INTO social_media_posts (

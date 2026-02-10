@@ -3,9 +3,11 @@ const router = express.Router();
 const PostgresRepository = require('../../infrastructure/database/PostgresRepository');
 
 const providerRepo = new PostgresRepository('ai_providers');
+const authenticate = require('../middleware/auth');
+const { encrypt } = require('../../infrastructure/security/encryption');
 
 // Get all providers
-router.get('/', async (req, res) => {
+router.get('/', authenticate, async (req, res) => {
     try {
         const providers = await providerRepo.findAll();
         // Map DB snake_case to Client camelCase and mask key
@@ -24,7 +26,7 @@ router.get('/', async (req, res) => {
 });
 
 // Get active provider
-router.get('/active', async (req, res) => {
+router.get('/active', authenticate, async (req, res) => {
     try {
         const providers = await providerRepo.findAll();
         const active = providers.find(p => p.is_active);
@@ -44,21 +46,18 @@ router.get('/active', async (req, res) => {
 });
 
 // Create provider
-router.post('/', async (req, res) => {
+router.post('/', authenticate, async (req, res) => {
     try {
         const { name, provider, apiKey } = req.body;
 
-        // validation
         if (!name || !provider || !apiKey) {
             return res.status(400).json({ error: 'Missing fields' });
         }
 
-        // Map to DB snake_case
-        // Let DB handle 'id' (SERIAL) and 'created_at' (DEFAULT)
         const newConfig = {
             name,
             provider,
-            api_key: apiKey,
+            api_key: encrypt(apiKey),
             is_active: false
         };
 
@@ -70,7 +69,7 @@ router.post('/', async (req, res) => {
 });
 
 // Delete provider
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', authenticate, async (req, res) => {
     try {
         await providerRepo.delete(req.params.id);
         res.json({ success: true });
@@ -80,7 +79,7 @@ router.delete('/:id', async (req, res) => {
 });
 
 // Set Active Provider
-router.post('/:id/activate', async (req, res) => {
+router.post('/:id/activate', authenticate, async (req, res) => {
     try {
         const providers = await providerRepo.findAll();
 

@@ -11,7 +11,7 @@ const tenantRepo = new PostgresRepository('tenants');
 // Register
 router.post('/register', async (req, res) => {
     try {
-        const { username, password, role } = req.body;
+        const { username, password } = req.body; // Remove role from body
 
         if (!username || !password) {
             return res.status(400).json({ error: 'Username and password required' });
@@ -29,7 +29,6 @@ router.post('/register', async (req, res) => {
         const passwordHash = await bcrypt.hash(password, salt);
 
         // Create Tenant
-        // Use username's org if not specified
         const tenantName = `${username}'s Organization`;
         const newTenant = await tenantRepo.create({
             name: tenantName,
@@ -41,8 +40,8 @@ router.post('/register', async (req, res) => {
         // Create User
         const newUser = {
             username,
-            password: passwordHash, // Store Hash
-            role: role || 'admin', // Default to Tenant Admin
+            password: passwordHash,
+            role: 'admin', // Always default to Admin for first user
             tenant_id: newTenant.id,
             created_at: new Date()
         };
@@ -59,19 +58,29 @@ router.post('/register', async (req, res) => {
     }
 });
 
+// Helper to sign JWT
+const signToken = (user) => {
+    const jwt = require('jsonwebtoken');
+    const secret = process.env.JWT_SECRET || 'vtrustx_secret_key_2024';
+    return jwt.sign(
+        {
+            id: user.id,
+            username: user.username,
+            role: user.role,
+            tenant_id: user.tenant_id
+        },
+        secret,
+        { expiresIn: '24h' }
+    );
+};
+
 // Login
 router.post('/login', async (req, res) => {
     try {
         const { username, password } = req.body;
-        // Inefficient, should be findOne({ where: ... }). 
-        // For MVP speed and generic repo limitations, we query all or add custom query later.
-        // Let's optimize slightly by adding a specific query if possible, or stick to findAll for verified exact replacement.
-
-        // Let's stick to findAll for now to be safe with the generic repo API we built.
         const user = await userRepo.findBy('username', username);
 
         if (!user) {
-            console.log(`User '${username}' NOT FOUND in DB.`);
             return res.status(401).json({ error: 'Invalid credentials' });
         }
 
@@ -79,43 +88,28 @@ router.post('/login', async (req, res) => {
         const bcrypt = require('bcryptjs');
         let isMatch = false;
 
-        // Handle migration: Check if password is hash (starts with $2a$ or $2b$) or plain
         if (user.password.startsWith('$2a$') || user.password.startsWith('$2b$')) {
             isMatch = await bcrypt.compare(password, user.password);
         } else {
-            // Legacy plain text check (can update to hash here automatically if we wanted)
+            // Legacy plain text check
             isMatch = (user.password === password);
             if (isMatch) {
                 // Auto-upgrade to hash
                 const salt = await bcrypt.genSalt(10);
                 const hash = await bcrypt.hash(password, salt);
                 await userRepo.update(user.id, { password: hash });
-                console.log(`Migrated user ${user.username} to hashed password.`);
             }
         }
 
         if (!isMatch) {
-            console.log(`User '${username}' found but match failed.`);
             return res.status(401).json({ error: 'Invalid credentials' });
         }
 
-        // Return user info (client will store this to "simulate" session)
-        const jwt = require('jsonwebtoken');
+        // Update last login timestamp
+        await userRepo.update(user.id, { last_login_at: new Date() });
 
-        // Return user info
+        const token = signToken(user);
         const { password: _, ...safeUser } = user;
-
-        // Generate real JWT
-        const token = jwt.sign(
-            {
-                id: user.id,
-                username: user.username,
-                role: user.role,
-                tenant_id: user.tenant_id
-            },
-            process.env.JWT_SECRET || 'vtrustx_secret_key_2024',
-            { expiresIn: '24h' }
-        );
 
         res.json({
             user: safeUser,
@@ -128,26 +122,15 @@ router.post('/login', async (req, res) => {
     }
 });
 
-// OAUTH PLACEHOLDERS
-// --------------------
-// To enable Google/Microsoft Login:
-// 1. Install passport: npm install passport passport-google-oauth20 passport-microsoft-oauth
-// 2. Configure strategies in a new 'passport.js' config file
-// 3. Add routes below
-
-// GOOGLE OAUTH
+// OAUTH ROUTES
 router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'], session: false }));
 
 router.get('/google/callback',
     passport.authenticate('google', { session: false, failureRedirect: '/login?error=auth_failed' }),
     function (req, res) {
-        // Successful authentication
         const user = req.user;
-        // create a token
-        const token = 'mock-jwt-token-' + user.id; // Consistent with existing mock auth
+        const token = signToken(user); // REAL JWT
 
-        // Redirect to frontend with token
-        // In a real app, you might set a cookie or redirect to a page that grabs the token from URL
         res.redirect(`/login?token=${token}&user=${encodeURIComponent(JSON.stringify(user))}`);
     }
 );
@@ -156,23 +139,27 @@ router.get('/microsoft', passport.authenticate('microsoft', { session: false }))
 router.get('/microsoft/callback',
     passport.authenticate('microsoft', { session: false, failureRedirect: '/login?error=auth_failed_ms' }),
     function (req, res) {
-        // Successful authentication
         const user = req.user;
-        const token = 'mock-jwt-token-' + user.id;
+        const token = signToken(user); // REAL JWT
         res.redirect(`/login?token=${token}&user=${encodeURIComponent(JSON.stringify(user))}`);
     }
 );
 
-router.post('/change-password', async (req, res) => {
-    try {
-        const { username, currentPassword, newPassword } = req.body;
+const authenticate = require('../middleware/auth');
 
-        if (!username || !currentPassword || !newPassword) {
-            return res.status(400).json({ error: 'Missing required fields' });
+router.post('/change-password', authenticate, async (req, res) => {
+    try {
+        const { currentPassword, newPassword } = req.body;
+
+        if (!currentPassword || !newPassword) {
+            return res.status(400).json({ error: 'Current password and new password are required' });
+        }
+        if (newPassword.length < 6) {
+            return res.status(400).json({ error: 'New password must be at least 6 characters' });
         }
 
-        const user = await userRepo.findBy('username', username);
-
+        // Use authenticated user's ID, not username from body
+        const user = await userRepo.findById(req.user.id);
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
         }
@@ -194,7 +181,7 @@ router.post('/change-password', async (req, res) => {
         const salt = await bcrypt.genSalt(10);
         const hash = await bcrypt.hash(newPassword, salt);
 
-        await userRepo.update(user.id, { password: hash });
+        await userRepo.update(user.id, { password: hash, updated_at: new Date() });
 
         res.json({ success: true, message: 'Password updated successfully' });
 

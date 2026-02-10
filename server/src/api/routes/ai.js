@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const AiService = require('../../services/AiService');
 const { query } = require('../../infrastructure/database/db');
+const { decrypt } = require('../../infrastructure/security/encryption');
+const authenticate = require('../middleware/auth');
 
 // Helper to get settings from DB
 // Helper to get settings from DB
@@ -28,11 +30,11 @@ async function getAiSettings() {
 
         // Find keys from ai_providers based on provider name
         const geminiProvider = providers.find(p => p.provider === 'google' || p.provider === 'gemini');
-        if (geminiProvider) config.apiKey = geminiProvider.api_key;
+        if (geminiProvider) config.apiKey = decrypt(geminiProvider.api_key);
         if (!config.apiKey) config.apiKey = process.env.GEMINI_API_KEY; // Fallback
 
         const groqProvider = providers.find(p => p.provider === 'groq');
-        if (groqProvider) config.groqApiKey = groqProvider.api_key;
+        if (groqProvider) config.groqApiKey = decrypt(groqProvider.api_key);
         if (!config.groqApiKey) config.groqApiKey = process.env.GROQ_API_KEY; // Fallback
 
         // If specific provider is active/selected, ensure it has a key
@@ -59,7 +61,7 @@ async function getAiSettings() {
 const multer = require('multer');
 const upload = multer({ storage: multer.memoryStorage() });
 
-router.post('/generate', async (req, res) => {
+router.post('/generate', authenticate, async (req, res) => {
     try {
         const { prompt } = req.body;
         const axios = require('axios');
@@ -91,7 +93,7 @@ router.post('/generate', async (req, res) => {
 
 });
 
-router.post('/agent-interact', async (req, res) => {
+router.post('/agent-interact', authenticate, async (req, res) => {
     try {
         const { prompt, systemContext } = req.body;
         const axios = require('axios');
@@ -109,7 +111,7 @@ router.post('/agent-interact', async (req, res) => {
     }
 });
 
-router.post('/transcribe', upload.single('audio'), async (req, res) => {
+router.post('/transcribe', authenticate, upload.single('audio'), async (req, res) => {
     try {
         const fileData = req.file;
         if (!fileData) return res.status(400).json({ error: 'No audio file provided' });
@@ -134,7 +136,7 @@ router.post('/transcribe', upload.single('audio'), async (req, res) => {
     }
 });
 
-router.post('/upload-video', upload.single('video'), async (req, res) => {
+router.post('/upload-video', authenticate, upload.single('video'), async (req, res) => {
     try {
         const file = req.file;
         if (!file) return res.status(400).json({ error: 'No video file provided' });
@@ -197,7 +199,7 @@ router.post('/upload-video', upload.single('video'), async (req, res) => {
     }
 });
 
-router.post('/analyze-survey', async (req, res) => {
+router.post('/analyze-survey', authenticate, async (req, res) => {
     try {
         const { formId, surveyTitle, questions, submissions } = req.body;
 

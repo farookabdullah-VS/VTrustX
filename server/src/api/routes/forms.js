@@ -25,7 +25,7 @@ const toEntity = (row) => {
         endDate: row.end_date,
         responseLimit: row.response_limit,
         redirectUrl: row.redirect_url,
-        password: row.password,
+        // password: row.password, // REMOVED: Never send password to client
         allowAudio: row.allow_audio,
         allowCamera: row.allow_camera,
         allowLocation: row.allow_location,
@@ -129,7 +129,7 @@ router.get('/slug/:slug', async (req, res) => {
 
         // IP Protection Check
         if (row.allowed_ips) {
-            const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+            const clientIp = req.ip;
             if (!checkIpAccess(row.allowed_ips, clientIp)) {
                 return res.status(403).json({ error: 'Access Denied: IP not allowed' });
             }
@@ -245,14 +245,14 @@ router.post('/:id/publish', authenticate, authenticate.checkPermission('forms', 
 });
 
 // Request Approval (Maker)
-router.post('/:id/request-approval', async (req, res) => {
+router.post('/:id/request-approval', authenticate, async (req, res) => {
     try {
         const existing = await formRepo.findById(req.params.id);
-        if (!existing) return res.status(404).json({ error: 'Form not found' });
+        if (!existing || existing.tenant_id !== req.user.tenant_id) return res.status(404).json({ error: 'Form not found' });
 
         const updatedRow = await formRepo.update(req.params.id, {
             status: 'pending_approval',
-            request_by: req.body.username || 'unknown',
+            request_by: req.user.username,
             updated_at: new Date()
         });
         res.json(toEntity(updatedRow));
@@ -262,15 +262,20 @@ router.post('/:id/request-approval', async (req, res) => {
 });
 
 // Approve Form (Checker)
-router.post('/:id/approve', async (req, res) => {
+router.post('/:id/approve', authenticate, async (req, res) => {
     try {
         const existing = await formRepo.findById(req.params.id);
-        if (!existing) return res.status(404).json({ error: 'Form not found' });
+        if (!existing || existing.tenant_id !== req.user.tenant_id) return res.status(404).json({ error: 'Form not found' });
+
+        // Simple Maker-Checker: user cannot approve their own request
+        if (existing.request_by === req.user.username && process.env.NODE_ENV === 'production') {
+            return res.status(403).json({ error: 'Maker cannot be the Checker' });
+        }
 
         const updatedRow = await formRepo.update(req.params.id, {
             status: 'published',
             is_published: true,
-            approved_by: req.body.username || 'admin',
+            approved_by: req.user.username,
             updated_at: new Date()
         });
         res.json(toEntity(updatedRow));
@@ -280,10 +285,10 @@ router.post('/:id/approve', async (req, res) => {
 });
 
 // Reject Form (Checker)
-router.post('/:id/reject', async (req, res) => {
+router.post('/:id/reject', authenticate, async (req, res) => {
     try {
         const existing = await formRepo.findById(req.params.id);
-        if (!existing) return res.status(404).json({ error: 'Form not found' });
+        if (!existing || existing.tenant_id !== req.user.tenant_id) return res.status(404).json({ error: 'Form not found' });
 
         const updatedRow = await formRepo.update(req.params.id, {
             status: 'rejected',
@@ -297,27 +302,44 @@ router.post('/:id/reject', async (req, res) => {
     }
 });
 
-// Create new version (draft) logic - Simplified for DB
-router.post('/:id/draft', async (req, res) => {
+// Create new version (draft) logic
+router.post('/:id/draft', authenticate, async (req, res) => {
     try {
         const existing = await formRepo.findById(req.params.id);
-        if (!existing) return res.status(404).json({ error: 'Form not found' });
+        if (!existing || existing.tenant_id !== req.user.tenant_id) return res.status(404).json({ error: 'Form not found' });
 
-        // Logic: Increment version, set published false, new ID (insert)
         const newVersionData = {
-            tenant_id: existing.tenant_id, // Copy tenant_id
+            tenant_id: existing.tenant_id,
             title: existing.title,
             definition: existing.definition,
             version: (existing.version || 1) + 1,
             is_published: false,
+            status: 'draft',
             created_at: new Date(),
-            updated_at: new Date()
+            updated_at: new Date(),
+            created_by: req.user.id
         };
 
         const savedRow = await formRepo.create(newVersionData);
         res.status(201).json(toEntity(savedRow));
     } catch (error) {
         res.status(500).json({ error: error.message });
+    }
+});
+
+// Secure Password Check
+router.post('/:id/check-password', async (req, res) => {
+    try {
+        const { password } = req.body;
+        const form = await formRepo.findById(req.params.id);
+        if (!form) return res.status(404).json({ error: 'Form not found' });
+
+        if (!form.password || form.password === password) {
+            return res.json({ success: true });
+        }
+        res.status(401).json({ error: 'Incorrect password' });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
     }
 });
 

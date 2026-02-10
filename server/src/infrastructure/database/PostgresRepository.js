@@ -15,28 +15,34 @@ class PostgresRepository {
         return res.rows[0];
     }
 
+    validateKey(key) {
+        if (!/^[a-zA-Z0-9_]+$/.test(key)) {
+            throw new Error(`Invalid column name: ${key}`);
+        }
+        return key;
+    }
+
     async findBy(column, value) {
+        this.validateKey(column);
         const res = await query(`SELECT * FROM ${this.tableName} WHERE ${column} = $1`, [value]);
         return res.rows[0];
     }
 
     async findAllBy(column, value, orderBy = null) {
+        this.validateKey(column);
         let sql = `SELECT * FROM ${this.tableName} WHERE ${column} = $1`;
-        if (orderBy) sql += ` ORDER BY ${orderBy}`;
+        if (orderBy) {
+            // orderBy is a bit more complex, we should at least check parts
+            const parts = orderBy.split(' ');
+            parts.forEach(p => this.validateKey(p));
+            sql += ` ORDER BY ${orderBy}`;
+        }
         const res = await query(sql, [value]);
         return res.rows;
     }
 
     async create(item) {
-        // Construct keys and values for INSERT
-        // Note: item should match table columns.
-        // For 'submissions' and 'forms', we have specific JSON columns, so we might need specialized handling 
-        // OR we ensure the 'item' passed here extracts them correctly.
-        // 
-        // For a generic repo, this is tricky because of the different schemas.
-        // However, looking at the code, we can probably treat this simple repo as accepting an object mapping to columns.
-
-        const keys = Object.keys(item);
+        const keys = Object.keys(item).map(k => this.validateKey(k));
         const values = Object.values(item);
         const placeholders = keys.map((_, i) => `$${i + 1}`).join(', ');
 
@@ -52,19 +58,16 @@ class PostgresRepository {
     }
 
     async update(id, item) {
-        // IMPORTANT: Generic update is hard if we don't know which fields changed.
-        // For now, let's assume 'item' contains ALL fields including the one to update?
-        // OR we strictly update what's passed.
-        // Also need to exclude 'id' from the update set if passed.
+        const keys = Object.keys(item)
+            .filter(k => k !== 'id' && k !== 'created_at')
+            .map(k => this.validateKey(k));
 
-        const keys = Object.keys(item).filter(k => k !== 'id' && k !== 'created_at');
         const values = keys.map(k => item[k]);
 
         if (keys.length === 0) return this.findById(id);
 
         const setClause = keys.map((k, i) => `${k} = $${i + 1}`).join(', ');
 
-        // Add ID as the last parameter
         values.push(id);
         const sql = `UPDATE ${this.tableName} SET ${setClause} WHERE id = $${values.length} RETURNING *`;
 

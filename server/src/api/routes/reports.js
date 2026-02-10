@@ -73,6 +73,8 @@ router.get('/powerbi', async (req, res) => {
         const integRes = await query("SELECT * FROM integrations WHERE provider = 'Power BI' AND api_key = $1 AND is_active = true", [secret]);
         if (integRes.rows.length === 0) return res.status(403).json({ error: "Invalid or inactive access key" });
 
+        const tenantId = integRes.rows[0].tenant_id;
+
         const sql = `
             SELECT 
                 f.title as survey_title,
@@ -81,11 +83,12 @@ router.get('/powerbi', async (req, res) => {
                 s.metadata
             FROM submissions s
             JOIN forms f ON s.form_id = f.id
+            WHERE f.tenant_id = $1
             ORDER BY s.created_at DESC
             LIMIT 5000 
         `;
 
-        const result = await query(sql);
+        const result = await query(sql, [tenantId]);
 
         const flatData = result.rows.map(row => ({
             Survey: row.survey_title,

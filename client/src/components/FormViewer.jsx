@@ -413,16 +413,25 @@ export function FormViewer({ formId, submissionId, onSelectForm, onEditSubmissio
                     return;
                 }
 
-                // CHECK PASSWORD (Frontend Check - Weak)
-                // Ideally this should be server-side enforced (403), but for MVP:
+                // CHECK PASSWORD (Server-Side Enforcement)
                 if (formDef.password && !sessionStorage.getItem(`auth_${resolvedId}`)) {
                     const input = prompt("This survey is password protected. Enter password:");
-                    if (input !== formDef.password) {
-                        setError("Incorrect Password.");
+                    if (input) {
+                        axios.post(`/api/forms/${resolvedId}/check-password`, { password: input })
+                            .then(() => {
+                                sessionStorage.setItem(`auth_${resolvedId}`, 'true');
+                                window.location.reload(); // Reload to initialize with session
+                            })
+                            .catch(() => {
+                                setError("Incorrect Password.");
+                                setIsLoading(false);
+                            });
+                        return; // Wait for async check
+                    } else {
+                        setError("Password required.");
                         setIsLoading(false);
                         return;
                     }
-                    sessionStorage.setItem(`auth_${resolvedId}`, 'true');
                 }
 
                 const model = new Model(formDef.definition);
@@ -567,15 +576,6 @@ export function FormViewer({ formId, submissionId, onSelectForm, onEditSubmissio
                         }
                     }
 
-                    // 2. Terminal Logic (First Question)
-                    const questions = sender.getAllQuestions();
-                    if (questions.length > 0 && options.question.name === questions[0].name) {
-                        const val = options.value;
-                        const isNegative = val === false || val === 0 || (typeof val === 'string' && val.toLowerCase() === 'no');
-                        if (isNegative) {
-                            sender.doComplete();
-                        }
-                    }
                 });
 
                 // Submission Handler
@@ -588,15 +588,9 @@ export function FormViewer({ formId, submissionId, onSelectForm, onEditSubmissio
                     let status = 'completed';
                     let completedHtml = "<h3>Thank you for your feedback!</h3>"; // Default
 
-                    if (questions.length > 0) {
-                        const firstQ = questions[0];
-                        const firstAnswer = results[firstQ.name];
-                        // strict check for "No" or similar negative indicators on the first question
-                        if (firstAnswer === 'No' || firstAnswer === 'no' || firstAnswer === false || firstAnswer === 0) {
-                            status = 'rejected';
-                            completedHtml = "<h3>Thank you.</h3><p>You are not eligible for this survey.</p>";
-                        }
-                    }
+                    // REMOVED: Automatic rejection based on first question value.
+                    // This was causing valid responses (e.g. "No" to "Have you used us before?") to be rejected and not count towards quotas.
+                    // Screen-outs should be handled via Survey Triggers or explicit Logic.
 
                     // 1.5 LOGIC: Client-Side Quota Violation
                     if (sender.getVariable("isQuotaExceeded")) {
@@ -637,20 +631,7 @@ export function FormViewer({ formId, submissionId, onSelectForm, onEditSubmissio
                     // Note: SurveyJS renders immediately, so we toggle the `completedHtml` property
                     model.completedHtml = completedHtml;
 
-                    // Capture Device & Browser Info
-                    const metadata = {
-                        status: status, // 'completed' | 'rejected'
-                        device_info: {
-                            userAgent: navigator.userAgent,
-                            platform: navigator.platform,
-                            language: navigator.language,
-                            screenResolution: `${window.screen.width}x${window.screen.height}`,
-                            windowSize: `${window.innerWidth}x${window.innerHeight}`,
-                            deviceMemory: navigator.deviceMemory || 'unknown',
-                            hardwareConcurrency: navigator.hardwareConcurrency || 'unknown',
-                            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
-                        }
-                    };
+                    let metadata = {};
 
                     // Show visual feedback
                     const loadingMsg = document.createElement('div');
@@ -705,7 +686,23 @@ export function FormViewer({ formId, submissionId, onSelectForm, onEditSubmissio
                         formId: resolvedId,
                         formVersion: formDef.version || 1,
                         data: results,
-                        metadata: metadata,
+                        metadata: {
+                            status: status,
+                            device_info: {
+                                userAgent: navigator.userAgent, // General tech info usually okay
+                                language: navigator.language,
+                                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                                ...(consentGiven ? {
+                                    // Sensitive Fingerprinting - only with consent
+                                    platform: navigator.platform,
+                                    screenResolution: `${window.screen.width}x${window.screen.height}`,
+                                    windowSize: `${window.innerWidth}x${window.innerHeight}`,
+                                    deviceMemory: navigator.deviceMemory || 'unknown',
+                                    hardwareConcurrency: navigator.hardwareConcurrency || 'unknown'
+                                } : {})
+                            },
+                            ...metadata // Include location if acquired
+                        },
                         startedAt: startTimeRef.current?.toISOString(),
                         durationSeconds: durationSeconds,
                         consentGiven: consentGiven

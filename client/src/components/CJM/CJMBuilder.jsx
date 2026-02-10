@@ -11,6 +11,8 @@ import { ShareDialog } from './ShareDialog';
 import { VersionHistory } from './VersionHistory';
 import { CJMAnalytics } from './CJMAnalytics';
 import { CJMExportModal } from './CJMExportModal';
+import { AIInsightsPanel } from './AIInsightsPanel';
+import { AIMapGenerator } from './AIMapGenerator';
 
 import './CJMBuilder.css';
 
@@ -35,6 +37,8 @@ export function CJMBuilder({ mapId, onBack }) {
     const [showVersions, setShowVersions] = useState(false);
     const [showAnalytics, setShowAnalytics] = useState(false);
     const [showExport, setShowExport] = useState(false);
+    const [showAIInsights, setShowAIInsights] = useState(false);
+    const [showAIGenerator, setShowAIGenerator] = useState(false);
 
     // Auto-save ref
     const autoSaveTimer = useRef(null);
@@ -251,6 +255,8 @@ export function CJMBuilder({ mapId, onBack }) {
                 onCommentsClick={() => setShowComments(!showComments)}
                 onVersionsClick={() => setShowVersions(!showVersions)}
                 onAnalyticsClick={() => setShowAnalytics(!showAnalytics)}
+                onAIInsightsClick={() => setShowAIInsights(!showAIInsights)}
+                onAIGenerateClick={() => setShowAIGenerator(true)}
                 commentCount={comments.filter(c => !c.resolved).length}
                 saveStatus={saveStatus}
                 personas={personas}
@@ -308,6 +314,13 @@ export function CJMBuilder({ mapId, onBack }) {
                             onClose={() => setShowVersions(false)}
                         />
                     )}
+
+                    {showAIInsights && (
+                        <AIInsightsPanel
+                            mapData={mapData}
+                            onClose={() => setShowAIInsights(false)}
+                        />
+                    )}
                 </div>
                 <DragOverlay>
                     {activeDragId ? <div className="cjm-drag-overlay">Dragging...</div> : null}
@@ -327,6 +340,20 @@ export function CJMBuilder({ mapId, onBack }) {
                     mapId={currentMapId}
                     mapData={mapData}
                     onClose={() => setShowExport(false)}
+                />
+            )}
+
+            {showAIGenerator && (
+                <AIMapGenerator
+                    onGenerate={(generatedData) => {
+                        setMapData({
+                            project_name: generatedData.project_name || mapData.project_name,
+                            stages: generatedData.stages || [],
+                            sections: generatedData.sections || []
+                        });
+                        setShowAIGenerator(false);
+                    }}
+                    onClose={() => setShowAIGenerator(false)}
                 />
             )}
         </div>

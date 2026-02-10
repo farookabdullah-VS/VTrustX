@@ -364,7 +364,17 @@ router.get('/accounts', authenticate, async (req, res) => {
 
 router.post('/accounts', authenticate, async (req, res) => {
     try {
-        const account = { ...req.body, tenant_id: req.user.tenant_id };
+        const { name, industry, domain, website, address } = req.body;
+        const account = {
+            name,
+            industry,
+            domain,
+            website,
+            address,
+            tenant_id: req.user.tenant_id,
+            owner_id: req.user.id,
+            created_at: new Date()
+        };
         const saved = await accountRepo.create(account);
         res.status(201).json(saved);
     } catch (e) { res.status(500).json({ error: e.message }); }
@@ -379,7 +389,16 @@ router.get('/contacts', authenticate, async (req, res) => {
 
 router.post('/contacts', authenticate, async (req, res) => {
     try {
-        const contact = { ...req.body, tenant_id: req.user.tenant_id };
+        const { name, email, phone, title, account_id } = req.body;
+        const contact = {
+            name,
+            email,
+            phone,
+            title,
+            account_id,
+            tenant_id: req.user.tenant_id,
+            created_at: new Date()
+        };
         const saved = await contactRepo.create(contact);
         res.status(201).json(saved);
     } catch (e) { res.status(500).json({ error: e.message }); }
@@ -435,6 +454,11 @@ router.get('/stats', authenticate, async (req, res) => {
 // --- WEBHOOKS ---
 router.post('/webhooks/email', async (req, res) => {
     try {
+        const webhookSecret = req.headers['x-webhook-secret'];
+        if (process.env.WEBHOOK_SECRET && webhookSecret !== process.env.WEBHOOK_SECRET) {
+            return res.status(401).json({ error: 'Invalid webhook secret' });
+        }
+
         const { from, subject, body, tenant_id } = req.body;
         console.log("Receiving Email Webhook:", req.body);
 

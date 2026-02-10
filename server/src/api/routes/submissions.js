@@ -9,7 +9,8 @@ const workflowEngine = require('../../core/workflowEngine');
 // Initialize Repositories
 const submissionRepo = new PostgresRepository('submissions');
 const auditRepo = new PostgresRepository('audit_logs');
-// const providerRepo = new PostgresRepository('ai_providers'); // DEPRECATED for Form-Config
+
+const authenticate = require('../middleware/auth');
 
 // Helper to map DB to Entity
 const toEntity = (row) => {
@@ -22,20 +23,27 @@ const toEntity = (row) => {
         analysis: row.analysis,
         metadata: row.metadata,
         createdAt: row.created_at,
-        updatedAt: row.updated_at
+        updatedAt: row.updated_at,
+        tenantId: row.tenant_id
     };
 };
 
-// Get all submissions
-router.get('/', async (req, res) => {
+// Get all submissions (Filtered by Tenant)
+router.get('/', authenticate, async (req, res) => {
     try {
+        const tenantId = req.user.tenant_id;
         const formId = req.query.formId;
         let rows;
+
         if (formId) {
-            const result = await query('SELECT * FROM submissions WHERE form_id = $1', [formId]);
+            // Security check: Verify form belongs to tenant
+            const formRes = await query('SELECT id FROM forms WHERE id = $1 AND tenant_id = $2', [formId, tenantId]);
+            if (formRes.rows.length === 0) return res.status(404).json({ error: 'Form not found or access denied' });
+
+            const result = await query('SELECT * FROM submissions WHERE form_id = $1 AND tenant_id = $2', [formId, tenantId]);
             rows = result.rows;
         } else {
-            rows = await submissionRepo.findAll();
+            rows = await submissionRepo.findAllBy('tenant_id', tenantId, 'created_at DESC');
         }
         res.json(rows.map(toEntity));
     } catch (error) {
@@ -44,10 +52,10 @@ router.get('/', async (req, res) => {
 });
 
 // Get submission by ID
-router.get('/:id', async (req, res) => {
+router.get('/:id', authenticate, async (req, res) => {
     try {
         const row = await submissionRepo.findById(req.params.id);
-        if (!row) return res.status(404).json({ error: 'Submission not found' });
+        if (!row || row.tenant_id !== req.user.tenant_id) return res.status(404).json({ error: 'Submission not found' });
         res.json(toEntity(row));
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -64,8 +72,12 @@ router.post('/', async (req, res) => {
         const formId = req.body.formId;
 
         // 1. Check Global Form Response Limit
-        const formCheck = await query("SELECT response_limit FROM forms WHERE id = $1", [formId]);
-        if (formCheck.rows.length > 0 && formCheck.rows[0].response_limit) {
+        const formCheck = await query("SELECT response_limit, tenant_id FROM forms WHERE id = $1", [formId]);
+        if (formCheck.rows.length === 0) return res.status(404).json({ error: 'Form not found' });
+
+        const tenantId = formCheck.rows[0].tenant_id;
+
+        if (formCheck.rows[0].response_limit) {
             const currentSubmissions = await query("SELECT COUNT(*) FROM submissions WHERE form_id = $1", [formId]);
             if (parseInt(currentSubmissions.rows[0].count) >= formCheck.rows[0].response_limit) {
                 return res.status(403).json({ error: 'Form response limit reached', code: 'LIMIT_EXCEEDED' });
@@ -102,14 +114,14 @@ router.post('/', async (req, res) => {
             form_version: req.body.formVersion,
             user_id: req.body.userId || null, // Optional link to user
             data: req.body.data,
-            // Merge client metadata, system headers, and explicit IP
+            tenant_id: tenantId, // CRITICAL: Populate tenant_id
             metadata: {
                 ...headerMetadata,
                 ...clientMetadata,
                 status: quotaViolation ? 'rejected' : (clientMetadata.status || 'completed'),
                 quota_reason: quotaViolation ? quotaViolation.label : null,
-                ip_address: req.ip || req.connection.remoteAddress || req.headers['x-forwarded-for'],
-                user_agent_parsed: req.get('User-Agent') // Ensure it's explicitly available
+                ip_address: req.ip,
+                user_agent_parsed: req.get('User-Agent')
             },
             created_at: new Date()
         };
@@ -205,10 +217,10 @@ router.post('/', async (req, res) => {
 });
 
 // Update submission
-router.put('/:id', async (req, res) => {
+router.put('/:id', authenticate, async (req, res) => {
     try {
         const existing = await submissionRepo.findById(req.params.id);
-        if (!existing) return res.status(404).json({ error: 'Submission not found' });
+        if (!existing || existing.tenant_id !== req.user.tenant_id) return res.status(404).json({ error: 'Submission not found' });
 
         const prevData = existing.data;
         const newData = req.body.data;
@@ -225,7 +237,7 @@ router.put('/:id', async (req, res) => {
             entity_type: 'Submission',
             entity_id: String(updatedRow.id),
             action: 'UPDATE',
-            user_id: 'system',
+            user_id: req.user.id,
             details: { previousData: prevData, newData: newData },
             created_at: new Date()
         };
@@ -269,10 +281,10 @@ router.put('/:id/analysis', async (req, res) => {
 });
 
 // Delete submission
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', authenticate, async (req, res) => {
     try {
         const existing = await submissionRepo.findById(req.params.id);
-        if (!existing) return res.status(404).json({ error: 'Submission not found' });
+        if (!existing || existing.tenant_id !== req.user.tenant_id) return res.status(404).json({ error: 'Submission not found' });
 
         await submissionRepo.delete(req.params.id);
 
@@ -281,7 +293,7 @@ router.delete('/:id', async (req, res) => {
             entity_type: 'Submission',
             entity_id: String(req.params.id),
             action: 'DELETE',
-            user_id: 'system', // or from req.user
+            user_id: req.user.id,
             details: { deletedData: existing.data },
             created_at: new Date()
         };
@@ -294,9 +306,12 @@ router.delete('/:id', async (req, res) => {
 });
 
 // Get Audit Logs for a submission
-router.get('/:id/audit', async (req, res) => {
+router.get('/:id/audit', authenticate, async (req, res) => {
     try {
-        // Optimization: Query DB directly
+        // Security check
+        const sub = await submissionRepo.findById(req.params.id);
+        if (!sub || sub.tenant_id !== req.user.tenant_id) return res.status(404).json({ error: 'Submission not found' });
+
         const logsRes = await query("SELECT * FROM audit_logs WHERE entity_type = 'Submission' AND entity_id = $1", [req.params.id]);
         res.json(logsRes.rows);
     } catch (error) {
@@ -304,53 +319,27 @@ router.get('/:id/audit', async (req, res) => {
     }
 });
 
-// DELETE a specific submission
-router.delete('/:id', async (req, res) => {
-    try {
-        const id = req.params.id;
-        const existing = await submissionRepo.findById(id);
-        if (!existing) return res.status(404).json({ error: 'Submission not found' });
-
-        await submissionRepo.delete(id);
-
-        // Audit Log
-        const log = {
-            entity_type: 'Submission',
-            entity_id: String(id),
-            action: 'DELETE',
-            user_id: 'system',
-            details: { form_id: existing.form_id },
-            created_at: new Date()
-        };
-        await auditRepo.create(log);
-
-        res.json({ message: 'Submission deleted' });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
 
 // DELETE all submissions for a form
-router.delete('/', async (req, res) => {
+router.delete('/', authenticate, async (req, res) => {
     try {
         const formId = req.query.formId;
         if (!formId) {
             return res.status(400).json({ error: 'Missing formId query parameter' });
         }
 
-        // Check if form exists and belongs to tenant (implicit check via form query usually needed, 
-        // but for now we trust the ID if authenticated)
-        // Ideally we check ownership using req.user.tenant_id vs form.tenant_id
+        // Check ownership
+        const formCheck = await query('SELECT id FROM forms WHERE id = $1 AND tenant_id = $2', [formId, req.user.tenant_id]);
+        if (formCheck.rows.length === 0) return res.status(404).json({ error: 'Form not found or access denied' });
 
-        await query('DELETE FROM submissions WHERE form_id = $1', [formId]);
+        await query('DELETE FROM submissions WHERE form_id = $1 AND tenant_id = $2', [formId, req.user.tenant_id]);
 
         // Log action
-        const auditRepo = new PostgresRepository('audit_logs');
         await auditRepo.create({
             entity_type: 'Form',
             entity_id: String(formId),
             action: 'DELETE_ALL_SUBMISSIONS',
-            user_id: 'system',
+            user_id: req.user.id,
             details: { action: 'Cleared all responses' },
             created_at: new Date()
         });

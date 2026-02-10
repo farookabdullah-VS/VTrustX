@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Plus, Search, Grid, List, Copy, Trash2, Edit3, Filter, Clock, MoreVertical } from 'lucide-react';
+import { Plus, Search, Grid, List, Copy, Trash2, Edit3, Filter, Clock, MoreVertical, Wand2 } from 'lucide-react';
 import { TemplateGallery } from './TemplateGallery';
+import { AIMapGenerator } from './AIMapGenerator';
 import './CJMDashboard.css';
 
 const STATUS_COLORS = {
@@ -77,6 +78,7 @@ export function CJMDashboard({ onSelectMap }) {
     const [statusFilter, setStatusFilter] = useState('');
     const [viewMode, setViewMode] = useState('gallery');
     const [showTemplates, setShowTemplates] = useState(false);
+    const [showAIGenerator, setShowAIGenerator] = useState(false);
 
     const loadMaps = async () => {
         try {
@@ -129,6 +131,17 @@ export function CJMDashboard({ onSelectMap }) {
         } catch (e) { alert("Create failed: " + e.message); }
     };
 
+    const handleAIGenerate = async (generatedData) => {
+        setShowAIGenerator(false);
+        try {
+            const res = await axios.post('/api/cjm', {
+                title: generatedData.project_name || 'AI Generated Journey Map',
+                data: generatedData
+            });
+            onSelectMap(res.data.id);
+        } catch (e) { alert("Create failed: " + e.message); }
+    };
+
     return (
         <div className="cjm-dashboard">
             {showTemplates && (
@@ -139,11 +152,23 @@ export function CJMDashboard({ onSelectMap }) {
                 />
             )}
 
+            {showAIGenerator && (
+                <AIMapGenerator
+                    onGenerate={handleAIGenerate}
+                    onClose={() => setShowAIGenerator(false)}
+                />
+            )}
+
             <div className="cjm-dash-header">
                 <h2>Customer Journey Maps</h2>
-                <button className="cjm-dash-new-btn" onClick={() => setShowTemplates(true)}>
-                    <Plus size={18} /> New Map
-                </button>
+                <div style={{ display: 'flex', gap: '10px' }}>
+                    <button className="cjm-dash-ai-btn" onClick={() => setShowAIGenerator(true)}>
+                        <Wand2 size={18} /> AI Generate
+                    </button>
+                    <button className="cjm-dash-new-btn" onClick={() => setShowTemplates(true)}>
+                        <Plus size={18} /> New Map
+                    </button>
+                </div>
             </div>
 
             <div className="cjm-dash-toolbar">

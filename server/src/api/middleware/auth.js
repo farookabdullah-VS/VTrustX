@@ -14,12 +14,20 @@ const authenticate = async (req, res, next) => {
         const token = authHeader.split(' ')[1];
         if (!token) return res.status(401).json({ error: 'Invalid token format' });
 
-        const secret = process.env.JWT_SECRET || 'vtrustx_secret_key_2024';
+        const secret = process.env.JWT_SECRET;
+        if (!secret) {
+            if (process.env.NODE_ENV === 'production') {
+                throw new Error('JWT_SECRET is not defined in production environment');
+            }
+            // Fallback for development only
+            console.warn("WARNING: Using insecure fallback JWT secret. Set JWT_SECRET in .env");
+        }
+        const finalSecret = secret || 'vtrustx_secret_key_2024';
 
         // Verify Token
         let decoded;
         try {
-            decoded = jwt.verify(token, secret);
+            decoded = jwt.verify(token, finalSecret);
         } catch (err) {
             return res.status(401).json({ error: 'Invalid or expired token' });
         }

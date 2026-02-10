@@ -8,10 +8,12 @@ async function handleAgentInteract(req, res) {
         console.log(`[AgentInteract] Processing Prompt: ${prompt.substring(0, 50)}...`);
 
         // Get API Key
-        const apiKey = await ConfigService.get('gemini_api_key');
+        let apiKey = await ConfigService.get('gemini_api_key');
+        if (!apiKey) apiKey = process.env.GEMINI_API_KEY;
+
         if (!apiKey) {
             console.warn("Gemini API Key missing for agent interaction");
-            return res.json({ error: "API Key Missing", speak: "Service unavailable.", action: "end" });
+            return res.json({ error: "API Key Missing", speak: "Service unavailable. Please configure the AI credentials.", action: "end" });
         }
 
         const provider = new GeminiProvider(apiKey);

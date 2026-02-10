@@ -141,8 +141,13 @@ router.post('/profile', authenticate, async (req, res) => {
 router.post('/event', authenticate, async (req, res) => {
     try {
         const { customer_id, event_type, channel, timestamp, payload } = req.body;
+        const tenantId = req.user.tenant_id;
 
         if (!customer_id) return res.status(400).json({ error: 'Customer ID required' });
+
+        // Verify customer belongs to tenant
+        const check = await query('SELECT id FROM customers WHERE id = $1 AND tenant_id = $2', [customer_id, tenantId]);
+        if (check.rows.length === 0) return res.status(404).json({ error: 'Customer not found' });
 
         await query(
             `INSERT INTO customer_events (customer_id, event_type, channel, occurred_at, payload)
@@ -201,10 +206,14 @@ router.get('/search', authenticate, async (req, res) => {
 router.get('/:id', authenticate, async (req, res) => {
     try {
         const customerId = req.params.id;
+        const tenantId = req.user.tenant_id;
 
-        // Parallel fetch for 360 view (6 Dimensions)
+        // Verify tenant first
+        const profile = await query('SELECT * FROM customers WHERE id = $1 AND tenant_id = $2', [customerId, tenantId]);
+        if (profile.rows.length === 0) return res.status(404).json({ error: 'Customer not found' });
+
+        // Parallel fetch for remaining Dimensions
         const [
-            profile,
             identities,
             contacts,
             products,
@@ -213,9 +222,9 @@ router.get('/:id', authenticate, async (req, res) => {
             firmographics,
             preferences,
             financials,
-            cx_metrics
+            cx_metrics,
+            relationships
         ] = await Promise.all([
-            query('SELECT * FROM customers WHERE id = $1', [customerId]),
             query('SELECT * FROM customer_identities WHERE customer_id = $1', [customerId]),
             query('SELECT * FROM customer_contacts WHERE customer_id = $1', [customerId]),
             query('SELECT * FROM customer_products WHERE customer_id = $1', [customerId]),
@@ -348,7 +357,12 @@ router.get('/:id', authenticate, async (req, res) => {
 router.post('/relationships', authenticate, async (req, res) => {
     try {
         const { from_id, to_id, type } = req.body;
+        const tenantId = req.user.tenant_id;
         if (!from_id || !to_id) return res.status(400).json({ error: 'IDs required' });
+
+        // Verify BOTH belong to tenant
+        const check = await query('SELECT id FROM customers WHERE id IN ($1, $2) AND tenant_id = $3', [from_id, to_id, tenantId]);
+        if (check.rows.length < 2 && from_id !== to_id) return res.status(403).json({ error: 'Access denied' });
 
         await query('INSERT INTO customer_relationships (customer_id_from, customer_id_to, relationship_type) VALUES ($1, $2, $3)', [from_id, to_id, type]);
         res.json({ success: true });
@@ -360,6 +374,16 @@ router.post('/relationships', authenticate, async (req, res) => {
 // DELETE /api/customer360/relationships/:id - Delete Relationship
 router.delete('/relationships/:id', authenticate, async (req, res) => {
     try {
+        const tenantId = req.user.tenant_id;
+        // Verify ownership via join
+        const check = await query(`
+            SELECT r.id FROM customer_relationships r
+            JOIN customers c ON r.customer_id_from = c.id
+            WHERE r.id = $1 AND c.tenant_id = $2
+        `, [req.params.id, tenantId]);
+
+        if (check.rows.length === 0) return res.status(404).json({ error: 'Relationship not found' });
+
         await query('DELETE FROM customer_relationships WHERE id = $1', [req.params.id]);
         res.json({ success: true });
     } catch (e) {
@@ -370,7 +394,13 @@ router.delete('/relationships/:id', authenticate, async (req, res) => {
 // GET /api/customer360/:id/products (Specific endpoint)
 router.get('/:id/products', authenticate, async (req, res) => {
     try {
-        const result = await query('SELECT * FROM customer_products WHERE customer_id = $1', [req.params.id]);
+        const customerId = req.params.id;
+        const tenantId = req.user.tenant_id;
+
+        const check = await query('SELECT id FROM customers WHERE id = $1 AND tenant_id = $2', [customerId, tenantId]);
+        if (check.rows.length === 0) return res.status(404).json({ error: 'Customer not found' });
+
+        const result = await query('SELECT * FROM customer_products WHERE customer_id = $1', [customerId]);
         res.json(result.rows);
     } catch (e) {
         res.status(500).json({ error: e.message });
@@ -381,7 +411,11 @@ router.get('/:id/products', authenticate, async (req, res) => {
 router.post('/products', authenticate, async (req, res) => {
     try {
         const { customer_id, product_name, product_type, account_number, status, balance, currency } = req.body;
+        const tenantId = req.user.tenant_id;
         if (!customer_id) return res.status(400).json({ error: 'Customer ID required' });
+
+        const check = await query('SELECT id FROM customers WHERE id = $1 AND tenant_id = $2', [customer_id, tenantId]);
+        if (check.rows.length === 0) return res.status(404).json({ error: 'Customer not found' });
 
         await query(
             `INSERT INTO customer_products (customer_id, product_name, product_type, account_number, status, balance, currency)
@@ -420,10 +454,13 @@ router.delete('/:id', authenticate, async (req, res) => {
 router.put('/:id/consent', authenticate, async (req, res) => {
     try {
         const customerId = req.params.id;
+        const tenantId = req.user.tenant_id;
         const { consent_type, status } = req.body; // status: 'granted' or 'revoked'
 
+        const checkAuth = await query('SELECT id FROM customers WHERE id = $1 AND tenant_id = $2', [customerId, tenantId]);
+        if (checkAuth.rows.length === 0) return res.status(404).json({ error: 'Customer not found' });
+
         // Upsert Consent
-        // Check existence
         const check = await query('SELECT id FROM customer_consents WHERE customer_id = $1 AND consent_type = $2', [customerId, consent_type]);
 
         if (check.rows.length > 0) {

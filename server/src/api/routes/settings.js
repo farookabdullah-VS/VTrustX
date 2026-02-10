@@ -3,6 +3,7 @@ const router = express.Router();
 const { query } = require('../../infrastructure/database/db');
 const nodemailer = require('nodemailer');
 const authenticate = require('../middleware/auth');
+const { encrypt, decrypt } = require('../../infrastructure/security/encryption');
 
 // EMAIL CHANNELS ROUTES
 router.get('/channels', authenticate, async (req, res) => {
@@ -22,7 +23,7 @@ router.post('/channels', authenticate, async (req, res) => {
         await query(`
             INSERT INTO email_channels (tenant_id, name, email, host, port, username, password, is_secure)
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-        `, [tenantId, name, email, host, port, username, password, is_secure === undefined ? true : is_secure]);
+        `, [tenantId, name, email, host, port, username, encrypt(password), is_secure === undefined ? true : is_secure]);
 
         res.json({ message: 'Channel added' });
     } catch (e) { res.status(500).json({ error: e.message }); }
@@ -237,6 +238,26 @@ router.post('/test-email', authenticate, async (req, res) => {
     }
 });
 
+// Helper: resolve plan limits dynamically
+async function getPlanFeatures(tenant) {
+    const defaults = { max_users: 2, max_forms: 5, max_submissions: 500, max_ai_calls: 100, voice_agent: false, custom_branding: false, api_access: false, priority_support: false };
+    if (tenant.plan_id) {
+        const planRes = await query('SELECT features, name FROM plans WHERE id = $1', [tenant.plan_id]);
+        if (planRes.rows.length > 0 && planRes.rows[0].features) {
+            return { ...defaults, ...planRes.rows[0].features, plan_name: planRes.rows[0].name };
+        }
+    }
+    // Fallback to legacy plan name
+    const legacyLimits = {
+        free: { max_users: 2, max_forms: 5, max_submissions: 500 },
+        starter: { max_users: 3, max_forms: 10, max_submissions: 1000 },
+        pro: { max_users: 10, max_forms: 50, max_submissions: 5000, voice_agent: true },
+        business: { max_users: 25, max_forms: 100, max_submissions: 25000, voice_agent: true, custom_branding: true },
+        enterprise: { max_users: 100, max_forms: 999, max_submissions: 999999, voice_agent: true, custom_branding: true, api_access: true, priority_support: true }
+    };
+    return { ...defaults, ...(legacyLimits[tenant.plan] || {}) };
+}
+
 // GET Subscription Info
 router.get('/subscription', authenticate, async (req, res) => {
     try {
@@ -252,32 +273,48 @@ router.get('/subscription', authenticate, async (req, res) => {
                 tenant = tRes.rows[0];
             } else {
                 const newTenantName = (req.user.username || 'User') + "'s Organization";
-                const tRes = await query("INSERT INTO tenants (name, plan, subscription_status) VALUES ($1, 'free', 'active') RETURNING *", [newTenantName]);
+                const tRes = await query("INSERT INTO tenants (name, plan, subscription_status, created_at, updated_at) VALUES ($1, 'free', 'active', NOW(), NOW()) RETURNING *", [newTenantName]);
                 const newTenant = tRes.rows[0];
                 await query("UPDATE users SET tenant_id = $1 WHERE id = $2", [newTenant.id, req.user.id]);
                 tenant = newTenant;
             }
-            // Helper for downstream if needed, though we use local var 'tenant'
             req.tenant = tenant;
         }
 
         if (!tenant) return res.status(404).json({ error: 'Tenant creation failed' });
 
+        const features = await getPlanFeatures(tenant);
+
         // Calculate Usage
         const userCountRes = await query('SELECT COUNT(*) FROM users WHERE tenant_id = $1', [tenant.id]);
+        const formCountRes = await query('SELECT COUNT(*) FROM forms WHERE tenant_id = $1', [tenant.id]);
         const userCount = parseInt(userCountRes.rows[0].count);
+        const formCount = parseInt(formCountRes.rows[0].count);
 
-        let limit = 2;
-        if (tenant.plan === 'pro') limit = 5;
-        if (tenant.plan === 'enterprise') limit = 100;
+        // Get active subscription if any
+        let subscription = null;
+        const subRes = await query(`
+            SELECT s.*, p.name as plan_name, p.interval as billing_interval, p.base_price
+            FROM subscriptions s
+            JOIN plans p ON s.plan_id = p.id
+            WHERE s.tenant_id = $1 AND s.status = 'ACTIVE'
+            ORDER BY s.created_at DESC LIMIT 1
+        `, [tenant.id]);
+        if (subRes.rows.length > 0) subscription = subRes.rows[0];
 
         res.json({
-            plan: tenant.plan,
+            plan: features.plan_name || tenant.plan,
+            plan_id: tenant.plan_id,
             status: tenant.subscription_status,
-            users: {
-                current: userCount,
-                limit: limit
-            }
+            expires_at: tenant.subscription_expires_at,
+            features,
+            subscription,
+            usage: {
+                users: { current: userCount, limit: features.max_users },
+                forms: { current: formCount, limit: features.max_forms }
+            },
+            // Keep backward compatible
+            users: { current: userCount, limit: features.max_users }
         });
     } catch (e) {
         console.error("Subscription Error:", e);
@@ -285,13 +322,15 @@ router.get('/subscription', authenticate, async (req, res) => {
     }
 });
 
-// UPGRADE Subscription
-router.post('/subscription/upgrade', authenticate, async (req, res) => {
+router.post('/subscription/upgrade', authenticate, authenticate.checkPermission('billing', 'update'), async (req, res) => {
     try {
-        const { plan } = req.body; // 'pro' or 'enterprise' - skipping payment gateway for prototype
+        const { plan, payment_token } = req.body;
+
+        if (process.env.NODE_ENV === 'production' && !payment_token) {
+            return res.status(402).json({ error: 'Payment verification required' });
+        }
 
         let tenant = req.tenant;
-        // If req.tenant is null here (middleware issue or no tenant yet), fetch via user again
         if (!tenant) {
             const userRes = await query("SELECT tenant_id FROM users WHERE id = $1", [req.user.id]);
             if (userRes.rows.length && userRes.rows[0].tenant_id) {
@@ -329,10 +368,16 @@ router.post('/subscription/license', authenticate, async (req, res) => {
 
         if (!licenseKey) return res.status(400).json({ error: 'License key required' });
 
-        const secret = process.env.LICENSE_SECRET || process.env.JWT_SECRET || 'vtrustx_secret_key';
+        const secret = process.env.LICENSE_SECRET || process.env.JWT_SECRET;
+        if (!secret) {
+            if (process.env.NODE_ENV === 'production') throw new Error('LICENSE_SECRET not defined');
+            console.warn("Using insecure fallback for LICENSE_SECRET");
+        }
+        const finalSecret = secret || 'vtrustx_secret_key';
+
         let payload;
         try {
-            payload = jwt.verify(licenseKey, secret);
+            payload = jwt.verify(licenseKey, finalSecret);
         } catch (err) {
             return res.status(400).json({ error: 'Invalid or corrupted license key' });
         }

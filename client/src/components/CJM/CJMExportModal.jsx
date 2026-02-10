@@ -122,7 +122,7 @@ export function CJMExportModal({ mapId, mapData, onClose }) {
     const exportServerSide = async (format) => {
         setStatus({ type: 'info', message: `Generating ${format.toUpperCase()} on server...` });
         try {
-            const res = await axios.post(`/api/cjm/${mapId}/export`, { format }, { responseType: 'blob' });
+            const res = await axios.post(`/api/cjm-export/${format}`, { mapId }, { responseType: 'blob' });
             const blob = new Blob([res.data]);
             const url = window.URL.createObjectURL(blob);
             const link = document.createElement('a');
@@ -135,7 +135,7 @@ export function CJMExportModal({ mapId, mapData, onClose }) {
             setStatus({ type: 'success', message: `${format.toUpperCase()} downloaded!` });
             setTimeout(() => { setExporting(false); onClose(); }, 1000);
         } catch (e) {
-            if (e.response?.status === 404) {
+            if (e.response?.status === 404 || e.response?.status === 501) {
                 throw new Error(`Server-side ${format.toUpperCase()} export not available. Try PNG or Excel.`);
             }
             throw e;

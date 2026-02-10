@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Smile, Frown, Meh, Plus, Star, X, Check, Upload, Paperclip, User } from 'lucide-react';
+import { Smile, Frown, Meh, Plus, Star, X, Check, Upload, Paperclip, User, Target, Brain, ShieldAlert, Zap, Play, Quote, Cog, Eye, HeadphonesIcon, Code, Minus, Hash } from 'lucide-react';
 
 export function CellControl({ type, data, onChange, sectionId, stageId }) {
 
@@ -349,6 +349,349 @@ export function CellControl({ type, data, onChange, sectionId, stageId }) {
                     placeholder="Annotation..."
                     style={{ textAlign: 'center', border: 'none', fontSize: '0.8rem', color: '#64748b' }}
                 />
+            </div>
+        );
+    }
+
+    // 13. Goals - Customer objectives at each stage
+    if (type === 'goals') {
+        const items = data.items || [];
+        const addGoal = () => onChange({ ...data, items: [...items, ''] });
+        const updateGoal = (idx, v) => { const next = [...items]; next[idx] = v; onChange({ ...data, items: next }); };
+        const removeGoal = (idx) => onChange({ ...data, items: items.filter((_, i) => i !== idx) });
+        return (
+            <div className="cjm-cell-goals">
+                {items.map((g, idx) => (
+                    <div key={idx} className="goal-item">
+                        <Target size={12} className="goal-icon" />
+                        <input value={g} onChange={e => updateGoal(idx, e.target.value)} placeholder={`Goal ${idx + 1}`} className="goal-input" />
+                        <button onClick={() => removeGoal(idx)} className="goal-remove"><X size={10} /></button>
+                    </div>
+                ))}
+                <button className="cjm-add-tp-btn" onClick={addGoal}><Plus size={14} /> Goal</button>
+            </div>
+        );
+    }
+
+    // 14. Think & Feel - Customer thoughts/quotes
+    if (type === 'think_feel') {
+        return (
+            <div className="cjm-cell-thinkfeel">
+                <div className="thinkfeel-bubble">
+                    <Quote size={12} className="thinkfeel-icon" />
+                    <textarea
+                        value={data.thought || ''}
+                        onChange={e => onChange({ ...data, thought: e.target.value })}
+                        placeholder='"What the customer is thinking..."'
+                        className="thinkfeel-thought"
+                    />
+                </div>
+                <textarea
+                    value={data.feeling || ''}
+                    onChange={e => onChange({ ...data, feeling: e.target.value })}
+                    placeholder="How they feel..."
+                    className="thinkfeel-feeling"
+                />
+            </div>
+        );
+    }
+
+    // 15. Barriers - Obstacles preventing progress
+    if (type === 'barriers') {
+        const items = data.items || [];
+        const addBarrier = () => onChange({ ...data, items: [...items, { text: '', severity: 'medium' }] });
+        const updateBarrier = (idx, field, val) => { const next = [...items]; next[idx] = { ...next[idx], [field]: val }; onChange({ ...data, items: next }); };
+        const removeBarrier = (idx) => onChange({ ...data, items: items.filter((_, i) => i !== idx) });
+        const sevColors = { low: '#fde047', medium: '#fb923c', high: '#ef4444' };
+        return (
+            <div className="cjm-cell-barriers">
+                {items.map((b, idx) => (
+                    <div key={idx} className="barrier-item">
+                        <ShieldAlert size={12} style={{ color: sevColors[b.severity], flexShrink: 0 }} />
+                        <input value={b.text} onChange={e => updateBarrier(idx, 'text', e.target.value)} placeholder="Barrier..." className="barrier-input" />
+                        <select value={b.severity} onChange={e => updateBarrier(idx, 'severity', e.target.value)} className="barrier-severity">
+                            <option value="low">Low</option>
+                            <option value="medium">Med</option>
+                            <option value="high">High</option>
+                        </select>
+                        <button onClick={() => removeBarrier(idx)} className="barrier-remove"><X size={10} /></button>
+                    </div>
+                ))}
+                <button className="cjm-add-tp-btn" onClick={addBarrier}><Plus size={14} /> Barrier</button>
+            </div>
+        );
+    }
+
+    // 16. Motivators - Drivers pushing user forward
+    if (type === 'motivators') {
+        const items = data.items || [];
+        const addMotivator = () => onChange({ ...data, items: [...items, { text: '', strength: 3 }] });
+        const updateMotivator = (idx, field, val) => { const next = [...items]; next[idx] = { ...next[idx], [field]: val }; onChange({ ...data, items: next }); };
+        const removeMotivator = (idx) => onChange({ ...data, items: items.filter((_, i) => i !== idx) });
+        return (
+            <div className="cjm-cell-motivators">
+                {items.map((m, idx) => (
+                    <div key={idx} className="motivator-item">
+                        <Zap size={12} style={{ color: '#10b981', flexShrink: 0 }} />
+                        <input value={m.text} onChange={e => updateMotivator(idx, 'text', e.target.value)} placeholder="Motivator..." className="motivator-input" />
+                        <div className="motivator-strength">
+                            {[1, 2, 3, 4, 5].map(n => (
+                                <span key={n} onClick={() => updateMotivator(idx, 'strength', n)}
+                                    style={{ cursor: 'pointer', color: n <= (m.strength || 0) ? '#10b981' : '#e2e8f0', fontSize: '0.8rem' }}>●</span>
+                            ))}
+                        </div>
+                        <button onClick={() => removeMotivator(idx)} className="motivator-remove"><X size={10} /></button>
+                    </div>
+                ))}
+                <button className="cjm-add-tp-btn" onClick={addMotivator}><Plus size={14} /> Motivator</button>
+            </div>
+        );
+    }
+
+    // 17. Video Embed - YouTube/Vimeo embed
+    if (type === 'video_embed') {
+        const getEmbedUrl = (url) => {
+            if (!url) return null;
+            const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]+)/);
+            if (ytMatch) return `https://www.youtube.com/embed/${ytMatch[1]}`;
+            const vimeoMatch = url.match(/vimeo\.com\/(\d+)/);
+            if (vimeoMatch) return `https://player.vimeo.com/video/${vimeoMatch[1]}`;
+            return url;
+        };
+        const embedUrl = getEmbedUrl(data.url);
+        return (
+            <div className="cjm-cell-video">
+                {embedUrl ? (
+                    <div className="video-wrapper">
+                        <iframe src={embedUrl} title="video" frameBorder="0" allowFullScreen className="video-iframe" />
+                        <button className="video-clear" onClick={() => onChange({ ...data, url: '' })}><X size={12} /></button>
+                    </div>
+                ) : (
+                    <div className="video-input-wrapper">
+                        <Play size={20} style={{ color: '#94a3b8' }} />
+                        <input
+                            value={data.url || ''}
+                            onChange={e => onChange({ ...data, url: e.target.value })}
+                            placeholder="Paste YouTube or Vimeo URL..."
+                            className="video-url-input"
+                        />
+                    </div>
+                )}
+                <input
+                    value={data.caption || ''}
+                    onChange={e => onChange({ ...data, caption: e.target.value })}
+                    placeholder="Caption..."
+                    className="video-caption"
+                />
+            </div>
+        );
+    }
+
+    // 18. Chart - Inline pie/bar mini chart
+    if (type === 'chart') {
+        const chartType = data.chartType || 'bar';
+        const items = data.items || [{ label: 'Item 1', value: 50 }];
+        const addItem = () => onChange({ ...data, items: [...items, { label: `Item ${items.length + 1}`, value: 30 }] });
+        const updateItem = (idx, field, val) => { const next = [...items]; next[idx] = { ...next[idx], [field]: val }; onChange({ ...data, items: next }); };
+        const removeItem = (idx) => onChange({ ...data, items: items.filter((_, i) => i !== idx) });
+        const maxVal = Math.max(...items.map(i => Number(i.value) || 0), 1);
+        const chartColors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316'];
+        return (
+            <div className="cjm-cell-chart">
+                <div className="chart-type-toggle">
+                    {['bar', 'pie'].map(t => (
+                        <button key={t} className={`chart-type-btn ${chartType === t ? 'active' : ''}`}
+                            onClick={() => onChange({ ...data, chartType: t })}>{t === 'bar' ? '▥' : '◕'}</button>
+                    ))}
+                </div>
+                {chartType === 'bar' ? (
+                    <div className="chart-bars">
+                        {items.map((item, idx) => (
+                            <div key={idx} className="chart-bar-row">
+                                <input value={item.label} onChange={e => updateItem(idx, 'label', e.target.value)} className="chart-bar-label" />
+                                <div className="chart-bar-track">
+                                    <div className="chart-bar-fill" style={{ width: `${(Number(item.value) / maxVal) * 100}%`, background: chartColors[idx % chartColors.length] }} />
+                                </div>
+                                <input type="number" value={item.value} onChange={e => updateItem(idx, 'value', e.target.value)} className="chart-bar-value" />
+                                <button onClick={() => removeItem(idx)} className="chart-bar-remove"><X size={10} /></button>
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <div className="chart-pie-wrapper">
+                        <svg viewBox="0 0 100 100" className="chart-pie-svg">
+                            {(() => {
+                                const total = items.reduce((a, i) => a + (Number(i.value) || 0), 0) || 1;
+                                let cumulative = 0;
+                                return items.map((item, idx) => {
+                                    const pct = (Number(item.value) || 0) / total;
+                                    const startAngle = cumulative * 2 * Math.PI - Math.PI / 2;
+                                    cumulative += pct;
+                                    const endAngle = cumulative * 2 * Math.PI - Math.PI / 2;
+                                    const largeArc = pct > 0.5 ? 1 : 0;
+                                    const x1 = 50 + 40 * Math.cos(startAngle), y1 = 50 + 40 * Math.sin(startAngle);
+                                    const x2 = 50 + 40 * Math.cos(endAngle), y2 = 50 + 40 * Math.sin(endAngle);
+                                    return <path key={idx} d={`M50,50 L${x1},${y1} A40,40 0 ${largeArc},1 ${x2},${y2} Z`} fill={chartColors[idx % chartColors.length]} />;
+                                });
+                            })()}
+                        </svg>
+                        <div className="chart-pie-legend">
+                            {items.map((item, idx) => (
+                                <div key={idx} className="chart-pie-legend-item">
+                                    <span className="chart-pie-dot" style={{ background: chartColors[idx % chartColors.length] }} />
+                                    <input value={item.label} onChange={e => updateItem(idx, 'label', e.target.value)} className="chart-pie-label-input" />
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+                <button className="cjm-add-tp-btn" onClick={addItem}><Plus size={14} /> Item</button>
+            </div>
+        );
+    }
+
+    // 19. Frontstage - Employee actions visible to customer
+    if (type === 'frontstage') {
+        const items = data.items || [];
+        const addItem = () => onChange({ ...data, items: [...items, ''] });
+        const updateItem = (idx, v) => { const next = [...items]; next[idx] = v; onChange({ ...data, items: next }); };
+        const removeItem = (idx) => onChange({ ...data, items: items.filter((_, i) => i !== idx) });
+        return (
+            <div className="cjm-cell-frontstage">
+                <div className="frontstage-label"><Eye size={10} /> Visible to Customer</div>
+                {items.map((item, idx) => (
+                    <div key={idx} className="frontstage-item">
+                        <span className="frontstage-num">{idx + 1}</span>
+                        <input value={item} onChange={e => updateItem(idx, e.target.value)} placeholder="Employee action..." className="frontstage-input" />
+                        <button onClick={() => removeItem(idx)} className="frontstage-remove"><X size={10} /></button>
+                    </div>
+                ))}
+                <button className="cjm-add-tp-btn" onClick={addItem}><Plus size={14} /> Action</button>
+            </div>
+        );
+    }
+
+    // 20. Backstage - Behind-the-scenes processes
+    if (type === 'backstage') {
+        const items = data.items || [];
+        const addItem = () => onChange({ ...data, items: [...items, ''] });
+        const updateItem = (idx, v) => { const next = [...items]; next[idx] = v; onChange({ ...data, items: next }); };
+        const removeItem = (idx) => onChange({ ...data, items: items.filter((_, i) => i !== idx) });
+        return (
+            <div className="cjm-cell-backstage">
+                <div className="backstage-label"><Cog size={10} /> Behind the Scenes</div>
+                {items.map((item, idx) => (
+                    <div key={idx} className="backstage-item">
+                        <Cog size={12} style={{ color: '#94a3b8', flexShrink: 0 }} />
+                        <input value={item} onChange={e => updateItem(idx, e.target.value)} placeholder="Internal process..." className="backstage-input" />
+                        <button onClick={() => removeItem(idx)} className="backstage-remove"><X size={10} /></button>
+                    </div>
+                ))}
+                <button className="cjm-add-tp-btn" onClick={addItem}><Plus size={14} /> Process</button>
+            </div>
+        );
+    }
+
+    // 21. Support Process - Internal systems
+    if (type === 'support_process') {
+        const items = data.items || [];
+        const addItem = () => onChange({ ...data, items: [...items, { system: '', action: '' }] });
+        const updateItem = (idx, field, val) => { const next = [...items]; next[idx] = { ...next[idx], [field]: val }; onChange({ ...data, items: next }); };
+        const removeItem = (idx) => onChange({ ...data, items: items.filter((_, i) => i !== idx) });
+        return (
+            <div className="cjm-cell-support">
+                {items.map((item, idx) => (
+                    <div key={idx} className="support-item">
+                        <HeadphonesIcon size={12} style={{ color: '#6366f1', flexShrink: 0 }} />
+                        <input value={item.system} onChange={e => updateItem(idx, 'system', e.target.value)} placeholder="System..." className="support-system" />
+                        <input value={item.action} onChange={e => updateItem(idx, 'action', e.target.value)} placeholder="Action..." className="support-action" />
+                        <button onClick={() => removeItem(idx)} className="support-remove"><X size={10} /></button>
+                    </div>
+                ))}
+                <button className="cjm-add-tp-btn" onClick={addItem}><Plus size={14} /> System</button>
+            </div>
+        );
+    }
+
+    // 22. Embed Code - iframe/HTML embed
+    if (type === 'embed_code') {
+        const [editing, setEditing] = useState(!data.url);
+        return (
+            <div className="cjm-cell-embed">
+                {!editing && data.url ? (
+                    <div className="embed-preview">
+                        <iframe src={data.url} title="embed" frameBorder="0" className="embed-iframe" sandbox="allow-scripts allow-same-origin" />
+                        <button className="embed-edit-btn" onClick={() => setEditing(true)}>Edit</button>
+                    </div>
+                ) : (
+                    <div className="embed-form">
+                        <Code size={18} style={{ color: '#94a3b8' }} />
+                        <input
+                            value={data.url || ''}
+                            onChange={e => onChange({ ...data, url: e.target.value })}
+                            placeholder="Embed URL (Figma, Miro, Google Docs...)"
+                            className="embed-url-input"
+                        />
+                        {data.url && <button className="embed-apply-btn" onClick={() => setEditing(false)}>Apply</button>}
+                    </div>
+                )}
+            </div>
+        );
+    }
+
+    // 23. Divider - Visual separator
+    if (type === 'divider') {
+        return (
+            <div className="cjm-cell-divider">
+                <div className="divider-line" style={{ borderColor: data.color || '#e2e8f0' }} />
+                <input
+                    value={data.label || ''}
+                    onChange={e => onChange({ ...data, label: e.target.value })}
+                    placeholder="Section label (optional)"
+                    className="divider-label"
+                />
+            </div>
+        );
+    }
+
+    // 24. Channels - Channel icons with flow mapping
+    if (type === 'channels') {
+        const CHANNEL_OPTIONS = [
+            { id: 'web', label: 'Website', icon: '🌐' },
+            { id: 'mobile', label: 'Mobile App', icon: '📱' },
+            { id: 'email', label: 'Email', icon: '📧' },
+            { id: 'phone', label: 'Phone', icon: '📞' },
+            { id: 'chat', label: 'Live Chat', icon: '💬' },
+            { id: 'social', label: 'Social Media', icon: '📣' },
+            { id: 'store', label: 'In-Store', icon: '🏪' },
+            { id: 'sms', label: 'SMS', icon: '📲' },
+            { id: 'whatsapp', label: 'WhatsApp', icon: '💚' },
+            { id: 'video', label: 'Video Call', icon: '📹' },
+            { id: 'self_service', label: 'Self-Service', icon: '🖥️' },
+            { id: 'pos', label: 'POS', icon: '💳' }
+        ];
+        const selected = data.channels || [];
+        const toggleChannel = (ch) => {
+            const exists = selected.find(s => s.id === ch.id);
+            if (exists) onChange({ ...data, channels: selected.filter(s => s.id !== ch.id) });
+            else onChange({ ...data, channels: [...selected, ch] });
+        };
+        return (
+            <div className="cjm-cell-channels">
+                <div className="channels-grid">
+                    {CHANNEL_OPTIONS.map(ch => {
+                        const isActive = selected.some(s => s.id === ch.id);
+                        return (
+                            <button key={ch.id} className={`channel-chip ${isActive ? 'active' : ''}`} onClick={() => toggleChannel(ch)} title={ch.label}>
+                                <span className="channel-icon">{ch.icon}</span>
+                                <span className="channel-name">{ch.label}</span>
+                            </button>
+                        );
+                    })}
+                </div>
+                {data.note !== undefined && (
+                    <input value={data.note || ''} onChange={e => onChange({ ...data, note: e.target.value })} placeholder="Channel note..." className="channels-note" />
+                )}
             </div>
         );
     }

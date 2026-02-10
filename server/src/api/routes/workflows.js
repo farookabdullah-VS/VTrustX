@@ -44,10 +44,10 @@ router.get('/', authenticate, async (req, res) => {
 });
 
 // GET /api/workflows/:id
-router.get('/:id', async (req, res) => {
+router.get('/:id', authenticate, async (req, res) => {
     try {
         const row = await workflowRepo.findById(req.params.id);
-        if (!row) return res.status(404).json({ error: 'Workflow not found' });
+        if (!row || row.tenant_id !== req.user.tenant_id) return res.status(404).json({ error: 'Workflow not found' });
         res.json(toEntity(row));
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -77,10 +77,10 @@ router.post('/', authenticate, async (req, res) => {
 });
 
 // PUT /api/workflows/:id
-router.put('/:id', async (req, res) => {
+router.put('/:id', authenticate, async (req, res) => {
     try {
         const existing = await workflowRepo.findById(req.params.id);
-        if (!existing) return res.status(404).json({ error: "Not found" });
+        if (!existing || existing.tenant_id !== req.user.tenant_id) return res.status(404).json({ error: "Not found" });
 
         const updateData = {
             name: req.body.name || existing.name,
@@ -97,8 +97,11 @@ router.put('/:id', async (req, res) => {
 });
 
 // DELETE /api/workflows/:id
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', authenticate, async (req, res) => {
     try {
+        const existing = await workflowRepo.findById(req.params.id);
+        if (!existing || existing.tenant_id !== req.user.tenant_id) return res.status(404).json({ error: "Not found" });
+
         await workflowRepo.delete(req.params.id);
         res.status(204).send();
     } catch (error) {
