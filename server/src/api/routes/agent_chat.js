@@ -355,4 +355,198 @@ router.post('/analyze', async (req, res) => {
     }
 });
 
+// 5. Platform-Wide AI Agent (Cross-platform intelligence)
+router.post('/platform-agent', async (req, res) => {
+    try {
+        const { message, context, language } = req.body;
+        if (!message) return res.status(400).json({ error: "Message is required" });
+
+        const apiKey = await getActiveKey();
+        if (!apiKey) return res.status(500).json({ error: "AI Config Missing" });
+
+        const { query } = require('../../infrastructure/database/db');
+
+        // --- Aggregate Platform Data ---
+
+        // 1. Survey/Forms stats
+        let formsCount = 0, totalSubmissions = 0, recentSubmissions = 0;
+        try {
+            const formsRes = await query("SELECT COUNT(*) as count FROM forms");
+            formsCount = parseInt(formsRes.rows[0].count);
+
+            const subsRes = await query("SELECT COUNT(*) as count FROM submissions");
+            totalSubmissions = parseInt(subsRes.rows[0].count);
+
+            const recentSubsRes = await query("SELECT COUNT(*) as count FROM submissions WHERE created_at >= NOW() - INTERVAL '7 days'");
+            recentSubmissions = parseInt(recentSubsRes.rows[0].count);
+        } catch (e) { /* tables may not exist */ }
+
+        // 2. CSAT/NPS metrics
+        let csatData = null;
+        try {
+            const csatRes = await query(`
+                SELECT
+                    AVG(CAST(data->>'csat' AS NUMERIC)) as avg_csat,
+                    AVG(CAST(data->>'nps' AS NUMERIC)) as avg_nps,
+                    COUNT(CASE WHEN data->>'csat' IS NOT NULL THEN 1 END) as csat_count,
+                    COUNT(CASE WHEN data->>'nps' IS NOT NULL THEN 1 END) as nps_count,
+                    COUNT(CASE WHEN CAST(data->>'nps' AS NUMERIC) >= 9 THEN 1 END) as promoters,
+                    COUNT(CASE WHEN CAST(data->>'nps' AS NUMERIC) <= 6 THEN 1 END) as detractors
+                FROM submissions
+                WHERE (data->>'csat' IS NOT NULL OR data->>'nps' IS NOT NULL)
+                AND (metadata->>'status' IS NULL OR metadata->>'status' = 'completed')
+            `);
+            const row = csatRes.rows[0];
+            const npsTotal = parseInt(row.nps_count) || 0;
+            csatData = {
+                avgCSAT: row.avg_csat ? parseFloat(row.avg_csat).toFixed(1) : 'N/A',
+                avgNPS: row.avg_nps ? parseFloat(row.avg_nps).toFixed(1) : 'N/A',
+                csatResponses: parseInt(row.csat_count) || 0,
+                npsResponses: npsTotal,
+                npsScore: npsTotal > 0
+                    ? Math.round(((parseInt(row.promoters) - parseInt(row.detractors)) / npsTotal) * 100)
+                    : 'N/A'
+            };
+        } catch (e) { /* no csat data */ }
+
+        // 3. Submissions by form (top 5)
+        let submissionsByForm = [];
+        try {
+            const byFormRes = await query(`
+                SELECT f.title, COUNT(s.id) as count
+                FROM submissions s
+                JOIN forms f ON s.form_id = f.id
+                GROUP BY f.title
+                ORDER BY count DESC
+                LIMIT 5
+            `);
+            submissionsByForm = byFormRes.rows.map(r => ({ form: r.title, responses: parseInt(r.count) }));
+        } catch (e) { /* skip */ }
+
+        // 4. CJM data
+        let cjmCount = 0;
+        try {
+            const cjmRes = await query("SELECT COUNT(*) as count FROM cjm_maps");
+            cjmCount = parseInt(cjmRes.rows[0].count);
+        } catch (e) { /* table may not exist */ }
+
+        // 5. Personas count
+        let personasCount = 0;
+        try {
+            const personasRes = await query("SELECT COUNT(*) as count FROM cx_personas");
+            personasCount = parseInt(personasRes.rows[0].count);
+        } catch (e) { /* table may not exist */ }
+
+        // 6. Recent text feedback samples (latest 20)
+        let recentFeedback = [];
+        try {
+            const feedbackRes = await query(`
+                SELECT f.title as form_title, s.data, s.created_at
+                FROM submissions s
+                JOIN forms f ON s.form_id = f.id
+                WHERE s.created_at >= NOW() - INTERVAL '30 days'
+                ORDER BY s.created_at DESC
+                LIMIT 20
+            `);
+            recentFeedback = feedbackRes.rows.map(r => {
+                const textFields = {};
+                if (r.data) {
+                    Object.entries(r.data).forEach(([k, v]) => {
+                        if (typeof v === 'string' && v.length > 10 && !['ticket_code', 'formId'].includes(k)) {
+                            textFields[k] = v.substring(0, 200);
+                        }
+                    });
+                }
+                return { form: r.form_title, date: r.created_at, feedback: textFields };
+            }).filter(r => Object.keys(r.feedback).length > 0);
+        } catch (e) { /* skip */ }
+
+        // --- Construct System Prompt ---
+        const isArabic = language && language.startsWith('ar');
+        const langInstruction = isArabic ? "Answer in Arabic." : "Answer in the user's language (default to English).";
+
+        const platformPrompt = `
+            You are the **VTrustX AI Agent** - an intelligent assistant for the VTrustX Customer Experience Management Platform.
+
+            PLATFORM CAPABILITIES:
+            VTrustX is a comprehensive CX platform that includes:
+            - **Survey Management**: Create, distribute, and analyze surveys (NPS, CSAT, CES, custom forms)
+            - **Customer Journey Mapping (CJM)**: Visual journey maps with touchpoints, emotions, and pain points
+            - **CX Personas**: Customer persona builder with demographics, behaviors, and goals
+            - **Analytics Studio**: Advanced analytics with cross-tabulation, key drivers, anomaly detection
+            - **Ticket/CRM System**: Customer support ticketing with SLA tracking
+            - **AI Features**: AI survey generation, AI video agents, voice agents, text analytics
+            - **Reports & Dashboards**: Dynamic dashboards, PDF exports, public report sharing
+            - **Integrations**: Webhook, Slack, Email, WhatsApp distribution channels
+
+            LIVE PLATFORM METRICS:
+            - Total Surveys/Forms: ${formsCount}
+            - Total Submissions: ${totalSubmissions}
+            - Submissions This Week: ${recentSubmissions}
+            - CSAT Average: ${csatData ? csatData.avgCSAT : 'No data'} (from ${csatData ? csatData.csatResponses : 0} responses)
+            - NPS Average Score: ${csatData ? csatData.avgNPS : 'No data'} (from ${csatData ? csatData.npsResponses : 0} responses)
+            - NPS Score (Calculated): ${csatData ? csatData.npsScore : 'No data'}
+            - Customer Journey Maps: ${cjmCount}
+            - CX Personas: ${personasCount}
+
+            TOP SURVEYS BY RESPONSES:
+            ${submissionsByForm.length > 0 ? submissionsByForm.map(s => `- "${s.form}": ${s.responses} responses`).join('\n') : 'No survey data available yet.'}
+
+            RECENT CUSTOMER FEEDBACK (Last 30 days):
+            ${recentFeedback.length > 0 ? JSON.stringify(recentFeedback.slice(0, 10)) : 'No recent feedback available.'}
+
+            ${context ? `ADDITIONAL CONTEXT: ${context}` : ''}
+
+            USER QUESTION: "${message}"
+
+            LANGUAGE INSTRUCTION: ${langInstruction}
+
+            STRICT SAFETY & SCOPE GUIDELINES:
+            1. **NO EXPLICIT CONTENT**: If the user question contains sexual, pornographic, or offensive content, REFUSE to answer.
+            2. **SYSTEM SCOPE ONLY**: You are an expert on the VTrustX platform and its data. Do NOT answer general knowledge questions unless directly related to CX analytics.
+            3. **DATA FOCUS**: Base your answers on the real metrics provided above. If data is insufficient, say so clearly.
+            4. **PROACTIVE INSIGHTS**: When appropriate, suggest actions the user can take within VTrustX.
+
+            RESPONSE FORMAT:
+            - Use **bold** for key numbers and terms
+            - Use bullet points for lists
+            - Include an Executive Summary when giving analysis
+            - Include Recommendations when relevant
+            - Maintain a professional, analytical tone
+            - Keep responses concise but thorough
+        `;
+
+        const cleanKey = apiKey.trim();
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${cleanKey}`;
+
+        let fetchFunc = global.fetch;
+        if (!fetchFunc) fetchFunc = (await import('node-fetch')).default;
+
+        const resp = await fetchFunc(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ contents: [{ parts: [{ text: platformPrompt }] }] })
+        });
+
+        const data = await resp.json();
+        const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "I'm sorry, I couldn't process that right now. Please try again.";
+
+        res.json({
+            text,
+            data: {
+                formsCount,
+                totalSubmissions,
+                recentSubmissions,
+                csat: csatData,
+                cjmCount,
+                personasCount
+            }
+        });
+
+    } catch (err) {
+        console.error("Platform Agent Error:", err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
 module.exports = router;

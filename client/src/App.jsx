@@ -41,6 +41,7 @@ import axios from 'axios';
 import CxPersonaTemplates from './components/CxPersonaTemplates';
 import { AnalyticsStudio } from './components/analytics/AnalyticsStudio';
 import { SurveyAnalystChat } from './components/analytics/SurveyAnalystChat';
+import { AIAgentChat } from './components/AIAgentChat';
 import { AnalyticsBuilder } from './components/analytics/AnalyticsBuilder';
 import { SurveyAnalyticsDashboard } from './components/analytics/SurveyAnalyticsDashboard';
 import DynamicDashboard from './components/DynamicDashboard';
@@ -811,6 +812,9 @@ function App() {
           setView('builder');
         }}
       />
+
+      {/* AI Agent Floating Chatbot - Always visible when logged in */}
+      <AIAgentChat user={user} />
 
     </div>
   );
