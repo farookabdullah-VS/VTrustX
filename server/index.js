@@ -151,6 +151,15 @@ app.get('/ready', async (req, res) => {
     }
 });
 
+// --- Swagger API Docs ---
+if (process.env.NODE_ENV !== 'production') {
+    const swaggerUi = require('swagger-ui-express');
+    const swaggerSpec = require('./src/config/swagger');
+    app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+    app.get('/api-docs.json', (req, res) => res.json(swaggerSpec));
+    logger.info('Swagger UI available at /api-docs');
+}
+
 // --- Routes ---
 const formsRouter = require('./src/api/routes/forms');
 app.use('/api/forms', formsRouter);
@@ -202,6 +211,7 @@ app.use('/api/master', require('./src/api/routes/master_data'));
 app.use('/api/v1/social-media', require('./src/api/routes/social_media'));
 app.use('/api/v1/smm', require('./src/api/routes/smm'));
 app.use('/api/actions', require('./src/api/routes/actions'));
+app.use('/api/close-loop', require('./src/api/routes/close_loop'));
 app.use('/api/distributions', require('./src/api/routes/distributions/index'));
 app.use('/api/reputation', require('./src/api/routes/reputation/index'));
 app.use('/api/directory', require('./src/api/routes/directory/index'));

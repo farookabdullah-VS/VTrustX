@@ -1,8 +1,9 @@
 const nodemailer = require('nodemailer');
 const { query } = require('../infrastructure/database/db');
+const logger = require('../infrastructure/logger');
 
 async function processSubmission(formId, submission) {
-    console.log(`[WorkflowEngine] Processing submission for Form ${formId}`);
+    logger.info('[WorkflowEngine] Processing submission', { formId });
 
     try {
         // Fetch active workflows
@@ -18,7 +19,7 @@ async function processSubmission(formId, submission) {
             }
         }
     } catch (err) {
-        console.error("[WorkflowEngine] Error:", err);
+        logger.error('[WorkflowEngine] Error', { error: err.message });
     }
 }
 
@@ -28,12 +29,16 @@ function evaluateConditions(conditions, data) {
         const val = data[cond.field];
         if (cond.operator === 'equals' && val != cond.value) return false;
         if (cond.operator === 'contains' && (!val || !val.includes(cond.value))) return false;
+        if (cond.operator === 'less_than' && (isNaN(Number(val)) || Number(val) >= Number(cond.value))) return false;
+        if (cond.operator === 'greater_than' && (isNaN(Number(val)) || Number(val) <= Number(cond.value))) return false;
+        if (cond.operator === 'less_than_or_equal' && (isNaN(Number(val)) || Number(val) > Number(cond.value))) return false;
+        if (cond.operator === 'greater_than_or_equal' && (isNaN(Number(val)) || Number(val) < Number(cond.value))) return false;
     }
     return true;
 }
 
 async function executeActions(workflow, submission) {
-    console.log(`[WorkflowEngine] Executing Workflow: ${workflow.name}`);
+    logger.info('[WorkflowEngine] Executing workflow', { name: workflow.name });
     if (!workflow.actions || !Array.isArray(workflow.actions)) return;
 
     for (const action of workflow.actions) {
@@ -48,14 +53,14 @@ async function executeActions(workflow, submission) {
 }
 
 async function createTicket(action, submission) {
-    console.log(`[WorkflowEngine] Creating Ticket based on Submission...`);
+    logger.info('[WorkflowEngine] Creating ticket from submission');
     try {
         // 1. Resolve Contact (Try email from submission data)
         let contactId = null;
         // Common keys for email in surveys
         const email = submission.data.email || submission.data.Email || submission.data.contact_email;
         const name = submission.data.name || submission.data.Name || 'Anonymous Surveyor';
-        const tenantId = submission.metadata?.tenant_id || 'default'; // Need tenant context
+        const tenantId = submission.metadata?.tenant_id || submission.tenantId || 'default';
 
         if (email) {
             // Find or Create
@@ -76,18 +81,19 @@ async function createTicket(action, submission) {
         const code = 'TCK-' + Math.floor(100000 + Math.random() * 900000);
         const subject = action.subject || `Survey Follow-up: ${submission.formId}`;
         const description = `Auto-generated from Survey Submission.\n\nScore: ${JSON.stringify(submission.data)}`;
+        const submissionId = submission.id || null;
 
         // SLA defaults
         const now = new Date();
         const created = await query(`
             INSERT INTO tickets (
-                ticket_code, subject, description, priority, status, 
+                ticket_code, subject, description, priority, status,
                 channel, contact_id, created_at, updated_at, tenant_id,
-                first_response_due_at, resolution_due_at
+                first_response_due_at, resolution_due_at, submission_id
             ) VALUES (
-                $1, $2, $3, $4, 'new', 
+                $1, $2, $3, $4, 'new',
                 'survey', $5, NOW(), NOW(), $6,
-                $7, $8
+                $7, $8, $9
             ) RETURNING id, ticket_code
         `, [
             code,
@@ -97,19 +103,20 @@ async function createTicket(action, submission) {
             contactId,
             tenantId,
             new Date(now.getTime() + 24 * 60 * 60 * 1000), // 24h response
-            new Date(now.getTime() + 48 * 60 * 60 * 1000)  // 48h resolution
+            new Date(now.getTime() + 48 * 60 * 60 * 1000), // 48h resolution
+            submissionId
         ]);
 
-        console.log(`[WorkflowEngine] ✅ Ticket Created: ${created.rows[0].ticket_code}`);
+        logger.info('[WorkflowEngine] Ticket created', { ticketCode: created.rows[0].ticket_code });
 
     } catch (e) {
-        console.error("[WorkflowEngine] Ticket Creation Failed:", e);
+        logger.error('[WorkflowEngine] Ticket creation failed', { error: e.message });
     }
 
 }
 
 async function syncIntegration(action, submission) {
-    console.log(`[WorkflowEngine] Syncing to Integration ID: ${action.integration_id}`);
+    logger.info('[WorkflowEngine] Syncing to integration', { integrationId: action.integration_id });
     try {
         if (!action.integration_id) return;
 
@@ -119,14 +126,11 @@ async function syncIntegration(action, submission) {
 
         const integration = res.rows[0];
 
-        console.log(`[WorkflowEngine] Target: ${integration.provider}`);
+        logger.info('[WorkflowEngine] Target provider', { provider: integration.provider });
 
         // Mode 1: Webhook (Generic)
         if (integration.webhook_url) {
-            console.log(`[WorkflowEngine] Sending Webhook to: ${integration.webhook_url}`);
-            // Use axios? Need to import generic fetch or axios. 
-            // Built-in fetch in Node 18+ or install axios.
-            // I'll use fetch.
+            logger.info('[WorkflowEngine] Sending webhook', { url: integration.webhook_url });
             try {
                 const response = await fetch(integration.webhook_url, {
                     method: 'POST',
@@ -139,21 +143,18 @@ async function syncIntegration(action, submission) {
                         timestamp: new Date()
                     })
                 });
-                console.log(`[WorkflowEngine] Webhook Reponse: ${response.status}`);
+                logger.info('[WorkflowEngine] Webhook response', { status: response.status });
             } catch (e) {
-                console.error(`[WorkflowEngine] Webhook Failed:`, e.message);
+                logger.error('[WorkflowEngine] Webhook failed', { error: e.message });
             }
         }
         // Mode 2: Simulated API Sync (for demo)
         else {
-            console.log(`[WorkflowEngine] Native API Sync to ${integration.provider} initiated...`);
-            console.log(`[WorkflowEngine] (Simulation) Pushing data:`, JSON.stringify(submission.data).substring(0, 50) + "...");
-            // In real app, we'd use 'integration.api_key' to authenticate against HubSpot/SFDC API here.
-            console.log(`[WorkflowEngine] ✅ Sync Successful (Simulated)`);
+            logger.info('[WorkflowEngine] Native API sync initiated (simulated)', { provider: integration.provider });
         }
 
     } catch (e) {
-        console.error("Integration Sync Failed:", e);
+        logger.error('[WorkflowEngine] Integration sync failed', { error: e.message });
     }
 }
 
@@ -166,11 +167,7 @@ async function sendEmail(action, submission) {
 
         // Check if SMTP configured
         if (!settings.smtp_host || !settings.smtp_user) {
-            console.log("---------------------------------------------------");
-            console.log(`⚠️ SMTP MISSING. SIMULATING EMAIL:`);
-            console.log(`To: ${action.to}`);
-            console.log(`Subject: ${action.subject}`);
-            console.log("---------------------------------------------------");
+            logger.warn('[WorkflowEngine] SMTP not configured, simulating email', { to: action.to, subject: action.subject });
             return;
         }
 
@@ -195,10 +192,10 @@ async function sendEmail(action, submission) {
             text: body + "\n\n---\nSubmission Data:\n" + dataDump
         });
 
-        console.log("✅ Email sent via SMTP to " + action.to);
+        logger.info('[WorkflowEngine] Email sent', { to: action.to });
 
     } catch (e) {
-        console.error("❌ Email Send Failed:", e);
+        logger.error('[WorkflowEngine] Email send failed', { error: e.message });
     }
 }
 

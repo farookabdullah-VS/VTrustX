@@ -1,16 +1,20 @@
 const express = require('express');
 const router = express.Router();
 const PostgresRepository = require('../../infrastructure/database/PostgresRepository');
-const { query } = require('../../infrastructure/database/db');
+const { query, transaction } = require('../../infrastructure/database/db');
 const { getPeriodKey, matchesCriteria } = require('../../core/quotaUtils');
+const logger = require('../../infrastructure/logger');
 
 const workflowEngine = require('../../core/workflowEngine');
+const { classifySubmission } = require('../../core/ctlClassifier');
 
 // Initialize Repositories
 const submissionRepo = new PostgresRepository('submissions');
 const auditRepo = new PostgresRepository('audit_logs');
 
 const authenticate = require('../middleware/auth');
+const validate = require('../middleware/validate');
+const { createSubmissionSchema } = require('../schemas/submissions.schemas');
 
 // Helper to map DB to Entity
 const toEntity = (row) => {
@@ -28,6 +32,50 @@ const toEntity = (row) => {
     };
 };
 
+/**
+ * @swagger
+ * /api/submissions:
+ *   get:
+ *     summary: List submissions
+ *     description: Retrieve all submissions for the authenticated tenant, optionally filtered by form ID, with pagination support.
+ *     tags: [Submissions]
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: formId
+ *         schema:
+ *           type: integer
+ *         description: Filter submissions by form ID
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           default: 1
+ *         description: Page number for pagination
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 1000
+ *           default: 1000
+ *         description: Number of submissions per page
+ *     responses:
+ *       200:
+ *         description: Array of submissions
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Submission'
+ *       404:
+ *         description: Form not found or access denied
+ *       500:
+ *         description: Internal server error
+ */
 // Get all submissions (Filtered by Tenant) — with pagination
 router.get('/', authenticate, async (req, res) => {
     try {
@@ -57,10 +105,39 @@ router.get('/', authenticate, async (req, res) => {
         }
         res.json(rows.map(toEntity));
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        logger.error('Submissions list error', { error: error.message });
+        res.status(500).json({ error: 'Failed to fetch submissions' });
     }
 });
 
+/**
+ * @swagger
+ * /api/submissions/{id}:
+ *   get:
+ *     summary: Get submission by ID
+ *     description: Retrieve a single submission by its ID. Only accessible if the submission belongs to the authenticated tenant.
+ *     tags: [Submissions]
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Submission ID
+ *     responses:
+ *       200:
+ *         description: Submission object
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Submission'
+ *       404:
+ *         description: Submission not found
+ *       500:
+ *         description: Internal server error
+ */
 // Get submission by ID
 router.get('/:id', authenticate, async (req, res) => {
     try {
@@ -68,87 +145,199 @@ router.get('/:id', authenticate, async (req, res) => {
         if (!row || row.tenant_id !== req.user.tenant_id) return res.status(404).json({ error: 'Submission not found' });
         res.json(toEntity(row));
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        logger.error('Submission get error', { error: error.message });
+        res.status(500).json({ error: 'Failed to fetch submission' });
     }
 });
 
+/**
+ * @swagger
+ * /api/submissions:
+ *   post:
+ *     summary: Create submission
+ *     description: Create a new form submission. This is a public endpoint (no authentication required). Validates against form response limits and quota rules.
+ *     tags: [Submissions]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - formId
+ *               - data
+ *             properties:
+ *               formId:
+ *                 type: integer
+ *                 description: ID of the form being submitted
+ *               data:
+ *                 type: object
+ *                 description: Form field responses
+ *               formVersion:
+ *                 type: integer
+ *                 nullable: true
+ *                 description: Version of the form at time of submission
+ *               metadata:
+ *                 type: object
+ *                 nullable: true
+ *                 description: Additional metadata (e.g. status)
+ *               userId:
+ *                 oneOf:
+ *                   - type: integer
+ *                   - type: string
+ *                 nullable: true
+ *                 description: Optional user ID of the respondent
+ *     responses:
+ *       201:
+ *         description: Submission created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Submission'
+ *       403:
+ *         description: Form response limit or quota exceeded
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                 code:
+ *                   type: string
+ *                   enum: [LIMIT_EXCEEDED, QUOTA_EXCEEDED]
+ *       404:
+ *         description: Form not found
+ *       422:
+ *         description: Validation error
+ *       500:
+ *         description: Internal server error
+ */
 // Create new submission
-router.post('/', async (req, res) => {
+router.post('/', validate(createSubmissionSchema), async (req, res) => {
     try {
         const clientMetadata = req.body.metadata || {};
-        const headerMetadata = req.headers || {};
-
-        // --- QUOTA & LIMIT CHECK ---
         const formId = req.body.formId;
 
-        // 1. Check Global Form Response Limit
-        const formCheck = await query("SELECT response_limit, tenant_id FROM forms WHERE id = $1", [formId]);
-        if (formCheck.rows.length === 0) return res.status(404).json({ error: 'Form not found' });
+        // Use transaction for atomic limit/quota check + insert
+        const result = await transaction(async (client) => {
+            // 1. Check Global Form Response Limit (with FOR UPDATE lock to prevent race)
+            const formCheck = await client.query(
+                "SELECT response_limit, tenant_id FROM forms WHERE id = $1 FOR UPDATE",
+                [formId]
+            );
+            if (formCheck.rows.length === 0) return { status: 404, body: { error: 'Form not found' } };
 
-        const tenantId = formCheck.rows[0].tenant_id;
+            const tenantId = formCheck.rows[0].tenant_id;
 
-        if (formCheck.rows[0].response_limit) {
-            const currentSubmissions = await query("SELECT COUNT(*) FROM submissions WHERE form_id = $1", [formId]);
-            if (parseInt(currentSubmissions.rows[0].count) >= formCheck.rows[0].response_limit) {
-                return res.status(403).json({ error: 'Form response limit reached', code: 'LIMIT_EXCEEDED' });
+            if (formCheck.rows[0].response_limit) {
+                const currentSubmissions = await client.query(
+                    "SELECT COUNT(*) FROM submissions WHERE form_id = $1",
+                    [formId]
+                );
+                if (parseInt(currentSubmissions.rows[0].count) >= formCheck.rows[0].response_limit) {
+                    return { status: 403, body: { error: 'Form response limit reached', code: 'LIMIT_EXCEEDED' } };
+                }
             }
+
+            // 2. Check Specific Quotas
+            const activeQuotasResult = await client.query(
+                "SELECT * FROM quotas WHERE form_id = $1 AND is_active = true FOR UPDATE",
+                [formId]
+            );
+            const activeQuotas = activeQuotasResult.rows;
+            const incomingData = req.body.data || {};
+            const matchedQuotas = activeQuotas.filter(q => matchesCriteria(incomingData, q.criteria));
+
+            // Batch fetch periodic counters for all matched quotas (N+1 fix)
+            let quotaViolation = null;
+            if (matchedQuotas.length > 0) {
+                const periodicQuotas = matchedQuotas.filter(q =>
+                    q.reset_period && q.reset_period !== 'never' && q.reset_period !== 'global'
+                );
+
+                let periodCountMap = {};
+                if (periodicQuotas.length > 0) {
+                    const quotaIds = periodicQuotas.map(q => q.id);
+                    const periodKeys = periodicQuotas.map(q => getPeriodKey(q.reset_period));
+                    const pcRes = await client.query(
+                        `SELECT quota_id, period_key, count FROM quota_period_counters
+                         WHERE quota_id = ANY($1) AND period_key = ANY($2)`,
+                        [quotaIds, periodKeys]
+                    );
+                    for (const row of pcRes.rows) {
+                        periodCountMap[`${row.quota_id}:${row.period_key}`] = row.count;
+                    }
+                }
+
+                for (const quota of matchedQuotas) {
+                    let currentCount = quota.current_count;
+                    if (quota.reset_period && quota.reset_period !== 'never' && quota.reset_period !== 'global') {
+                        const pKey = getPeriodKey(quota.reset_period);
+                        currentCount = periodCountMap[`${quota.id}:${pKey}`] || 0;
+                    }
+                    if (currentCount >= quota.limit_count) {
+                        quotaViolation = quota;
+                        break;
+                    }
+                }
+            }
+
+            const newSubmission = {
+                form_id: formId,
+                form_version: req.body.formVersion,
+                user_id: req.body.userId || null,
+                data: req.body.data,
+                tenant_id: tenantId,
+                metadata: {
+                    ...clientMetadata,
+                    status: quotaViolation ? 'rejected' : (clientMetadata.status || 'completed'),
+                    quota_reason: quotaViolation ? quotaViolation.label : null,
+                    ip_address: req.ip,
+                    user_agent_parsed: req.get('User-Agent')
+                },
+                created_at: new Date()
+            };
+
+            const savedRow = await submissionRepo.withClient(client).create(newSubmission);
+            const savedEntity = toEntity(savedRow);
+
+            // Audit Log
+            await auditRepo.withClient(client).create({
+                entity_type: 'Submission',
+                entity_id: String(savedEntity.id),
+                action: 'CREATE',
+                user_id: 'system',
+                details: { source: 'api', status: newSubmission.metadata.status },
+                created_at: new Date()
+            });
+
+            // Update quota counters atomically within the same transaction
+            if (matchedQuotas.length > 0 && newSubmission.metadata.status === 'completed') {
+                for (const quota of matchedQuotas) {
+                    await client.query("UPDATE quotas SET current_count = current_count + 1 WHERE id = $1", [quota.id]);
+
+                    if (quota.reset_period && quota.reset_period !== 'never' && quota.reset_period !== 'global') {
+                        const pKey = getPeriodKey(quota.reset_period);
+                        await client.query(`
+                            INSERT INTO quota_period_counters (quota_id, period_key, count)
+                            VALUES ($1, $2, 1)
+                            ON CONFLICT (quota_id, period_key)
+                            DO UPDATE SET count = quota_period_counters.count + 1, updated_at = CURRENT_TIMESTAMP
+                        `, [quota.id, pKey]);
+                    }
+                }
+            }
+
+            return { savedEntity, quotaViolation, matchedQuotas };
+        });
+
+        // Handle early returns from transaction (limit/quota exceeded before insert)
+        if (result.status) {
+            return res.status(result.status).json(result.body);
         }
 
-        // 2. Check Specific Quotas (Complex Criteria Matching)
-        const activeQuotasResult = await query("SELECT * FROM quotas WHERE form_id = $1 AND is_active = true", [formId]);
-        const activeQuotas = activeQuotasResult.rows;
-
-        const incomingData = req.body.data || {};
-        const matchedQuotas = activeQuotas.filter(q => matchesCriteria(incomingData, q.criteria));
-
-        // Validate matched quotas
-        let quotaViolation = null;
-        for (const quota of matchedQuotas) {
-            let currentCount = quota.current_count;
-
-            // IF periodic, we NEED to get the count for the current period
-            if (quota.reset_period && quota.reset_period !== 'never' && quota.reset_period !== 'global') {
-                const pKey = getPeriodKey(quota.reset_period);
-                const pCountRes = await query("SELECT count FROM quota_period_counters WHERE quota_id = $1 AND period_key = $2", [quota.id, pKey]);
-                currentCount = pCountRes.rows.length > 0 ? pCountRes.rows[0].count : 0;
-            }
-
-            if (currentCount >= quota.limit_count) {
-                quotaViolation = quota;
-                break;
-            }
-        }
-
-        const newSubmission = {
-            form_id: req.body.formId,
-            form_version: req.body.formVersion,
-            user_id: req.body.userId || null, // Optional link to user
-            data: req.body.data,
-            tenant_id: tenantId, // CRITICAL: Populate tenant_id
-            metadata: {
-                ...headerMetadata,
-                ...clientMetadata,
-                status: quotaViolation ? 'rejected' : (clientMetadata.status || 'completed'),
-                quota_reason: quotaViolation ? quotaViolation.label : null,
-                ip_address: req.ip,
-                user_agent_parsed: req.get('User-Agent')
-            },
-            created_at: new Date()
-        };
-
-        const savedRow = await submissionRepo.create(newSubmission);
-        const savedEntity = toEntity(savedRow);
-
-        // Audit Log
-        const log = {
-            entity_type: 'Submission',
-            entity_id: String(savedEntity.id),
-            action: 'CREATE',
-            user_id: 'system', // TODO: Auth
-            details: { source: 'api', status: newSubmission.metadata.status },
-            created_at: new Date()
-        };
-        await auditRepo.create(log);
+        const { savedEntity, quotaViolation } = result;
 
         // If it was a quota violation, return 403 AFTER saving the record
         if (quotaViolation) {
@@ -162,70 +351,97 @@ router.post('/', async (req, res) => {
             });
         }
 
-        // --- UPDATE QUOTAS ---
-        // Increment all quotas that matched this submission (ONLY for completed status)
-        if (matchedQuotas.length > 0 && newSubmission.metadata.status === 'completed') {
-            for (const quota of matchedQuotas) {
-                // 1. Increment Global Count
-                await query("UPDATE quotas SET current_count = current_count + 1 WHERE id = $1", [quota.id]);
-
-                // 2. Increment Periodic Count if applicable
-                if (quota.reset_period && quota.reset_period !== 'never' && quota.reset_period !== 'global') {
-                    const pKey = getPeriodKey(quota.reset_period);
-                    await query(`
-                        INSERT INTO quota_period_counters (quota_id, period_key, count)
-                        VALUES ($1, $2, 1)
-                        ON CONFLICT (quota_id, period_key) 
-                        DO UPDATE SET count = quota_period_counters.count + 1, updated_at = CURRENT_TIMESTAMP
-                    `, [quota.id, pKey]);
-                }
-            }
-        }
-
-        // --- WORKFLOW ENGINE ---
-        // Trigger generic automation workflows
+        // Fire-and-forget: workflow engine + AI + CTL (outside transaction)
         workflowEngine.processSubmission(savedEntity.formId, savedEntity);
 
-        // --- AI TRIGGER LOGIC ---
-        // 1. Fetch Active AI Provider from 'ai_providers' table
+        // CTL auto-classify (fire-and-forget)
+        try {
+            const ctlResult = classifySubmission(savedEntity.data);
+            if (ctlResult.shouldAlert) {
+                const formCheck = await query('SELECT tenant_id FROM forms WHERE id = $1', [savedEntity.formId]);
+                const tenantId = formCheck.rows[0]?.tenant_id;
+                if (tenantId) {
+                    query(
+                        `INSERT INTO ctl_alerts (tenant_id, form_id, submission_id, alert_level, score_value, score_type, sentiment)
+                         VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+                        [tenantId, savedEntity.formId, savedEntity.id, ctlResult.alertLevel, ctlResult.scoreValue, ctlResult.scoreType, ctlResult.sentiment]
+                    ).catch(err => logger.error('CTL auto-classify insert failed', { error: err.message }));
+                }
+            }
+        } catch (ctlErr) {
+            logger.error('CTL auto-classify error', { error: ctlErr.message });
+        }
+
+        // AI Trigger Logic
         const aiProvidersRes = await query("SELECT * FROM ai_providers WHERE is_active = true LIMIT 1");
         const activeProviderRow = aiProvidersRes.rows[0];
 
-        let activeAI = null;
-        if (activeProviderRow) {
-            activeAI = {
-                provider: activeProviderRow.provider,
-                apiKey: activeProviderRow.api_key,
-                model: 'gemini-2.0-flash' // Default or fetch from config
-            };
-        }
-
-        // Trigger AI Analysis
-        if (savedEntity.data && activeAI) {
+        if (savedEntity.data && activeProviderRow) {
             const aiPayload = {
                 submission: savedEntity,
-                formDefinition: {}, // TODO: fetch form def
-                aiConfig: activeAI
+                formDefinition: {},
+                aiConfig: {
+                    provider: activeProviderRow.provider,
+                    apiKey: activeProviderRow.api_key,
+                    model: 'gemini-2.0-flash'
+                }
             };
 
-            // Using global fetch (Node 18+)
             const aiServiceUrl = process.env.AI_SERVICE_URL || 'http://localhost:3001';
             fetch(`${aiServiceUrl}/analyze`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(aiPayload)
             }).then(r => r.json())
-                .then(data => console.log('AI Triggered:', data))
-                .catch(err => console.error("AI Trigger Failed:", err.message));
+                .then(data => logger.info('AI analysis triggered', { submissionId: savedEntity.id }))
+                .catch(err => logger.error('AI trigger failed', { error: err.message }));
         }
 
         res.status(201).json(savedEntity);
     } catch (error) {
-        console.error("Submission Create Error:", error);
-        res.status(500).json({ error: error.message });
+        logger.error('Submission create error', { error: error.message });
+        res.status(500).json({ error: 'Failed to create submission' });
     }
 });
 
+/**
+ * @swagger
+ * /api/submissions/{id}:
+ *   put:
+ *     summary: Update submission
+ *     description: Update the data of an existing submission. Only accessible if the submission belongs to the authenticated tenant. Creates an audit log entry.
+ *     tags: [Submissions]
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Submission ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               data:
+ *                 type: object
+ *                 description: Updated form field responses
+ *     responses:
+ *       200:
+ *         description: Updated submission object
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Submission'
+ *       404:
+ *         description: Submission not found
+ *       500:
+ *         description: Internal server error
+ */
 // Update submission
 router.put('/:id', authenticate, async (req, res) => {
     try {
@@ -255,15 +471,56 @@ router.put('/:id', authenticate, async (req, res) => {
 
         res.json(toEntity(updatedRow));
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        logger.error('Submission update error', { error: error.message });
+        res.status(500).json({ error: 'Failed to update submission' });
     }
 });
 
+/**
+ * @swagger
+ * /api/submissions/{id}/analysis:
+ *   put:
+ *     summary: Update submission analysis
+ *     description: Store or update AI-generated analysis results for a submission. Typically called by the internal AI service after processing.
+ *     tags: [Submissions]
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Submission ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - analysis
+ *             properties:
+ *               analysis:
+ *                 type: object
+ *                 description: AI analysis results including provider, sentiment, themes, etc.
+ *     responses:
+ *       200:
+ *         description: Updated submission with analysis
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Submission'
+ *       404:
+ *         description: Submission not found
+ *       500:
+ *         description: Internal server error
+ */
 // Callback for AI Analysis (internal service endpoint)
 router.put('/:id/analysis', authenticate, async (req, res) => {
     try {
         const { analysis } = req.body;
-        console.log(`Received analysis for submission ${req.params.id}`);
+        logger.info('Received AI analysis', { submissionId: req.params.id });
 
         const existing = await submissionRepo.findById(req.params.id);
         if (!existing) return res.status(404).json({ error: 'Submission not found' });
@@ -286,10 +543,43 @@ router.put('/:id/analysis', authenticate, async (req, res) => {
 
         res.json(toEntity(updatedRow));
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        logger.error('Submission analysis update error', { error: error.message });
+        res.status(500).json({ error: 'Failed to update analysis' });
     }
 });
 
+/**
+ * @swagger
+ * /api/submissions/{id}:
+ *   delete:
+ *     summary: Delete submission
+ *     description: Delete a submission by ID. Only accessible if the submission belongs to the authenticated tenant. Creates an audit log entry.
+ *     tags: [Submissions]
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Submission ID
+ *     responses:
+ *       200:
+ *         description: Submission deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Submission deleted successfully
+ *       404:
+ *         description: Submission not found
+ *       500:
+ *         description: Internal server error
+ */
 // Delete submission
 router.delete('/:id', authenticate, async (req, res) => {
     try {
@@ -311,10 +601,59 @@ router.delete('/:id', authenticate, async (req, res) => {
 
         res.json({ message: 'Submission deleted successfully' });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        logger.error('Submission delete error', { error: error.message });
+        res.status(500).json({ error: 'Failed to delete submission' });
     }
 });
 
+/**
+ * @swagger
+ * /api/submissions/{id}/audit:
+ *   get:
+ *     summary: Get submission audit trail
+ *     description: Retrieve all audit log entries for a specific submission. Only accessible if the submission belongs to the authenticated tenant.
+ *     tags: [Submissions]
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Submission ID
+ *     responses:
+ *       200:
+ *         description: Array of audit log entries
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: integer
+ *                   entity_type:
+ *                     type: string
+ *                     example: Submission
+ *                   entity_id:
+ *                     type: string
+ *                   action:
+ *                     type: string
+ *                     enum: [CREATE, UPDATE, DELETE, ANALYSIS_ADDED]
+ *                   user_id:
+ *                     type: string
+ *                   details:
+ *                     type: object
+ *                   created_at:
+ *                     type: string
+ *                     format: date-time
+ *       404:
+ *         description: Submission not found
+ *       500:
+ *         description: Internal server error
+ */
 // Get Audit Logs for a submission
 router.get('/:id/audit', authenticate, async (req, res) => {
     try {
@@ -325,11 +664,46 @@ router.get('/:id/audit', authenticate, async (req, res) => {
         const logsRes = await query("SELECT * FROM audit_logs WHERE entity_type = 'Submission' AND entity_id = $1", [req.params.id]);
         res.json(logsRes.rows);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        logger.error('Submission audit log error', { error: error.message });
+        res.status(500).json({ error: 'Failed to fetch audit logs' });
     }
 });
 
 
+/**
+ * @swagger
+ * /api/submissions:
+ *   delete:
+ *     summary: Bulk delete submissions
+ *     description: Delete all submissions for a specific form. Requires the formId query parameter. Only accessible if the form belongs to the authenticated tenant.
+ *     tags: [Submissions]
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: formId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Form ID whose submissions should be deleted
+ *     responses:
+ *       200:
+ *         description: All submissions deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: All submissions deleted
+ *       400:
+ *         description: Missing formId query parameter
+ *       404:
+ *         description: Form not found or access denied
+ *       500:
+ *         description: Internal server error
+ */
 // DELETE all submissions for a form
 router.delete('/', authenticate, async (req, res) => {
     try {
@@ -356,8 +730,8 @@ router.delete('/', authenticate, async (req, res) => {
 
         res.json({ message: 'All submissions deleted' });
     } catch (error) {
-        console.error("Delete All Error:", error);
-        res.status(500).json({ error: error.message });
+        logger.error('Submissions bulk delete error', { error: error.message });
+        res.status(500).json({ error: 'Failed to delete submissions' });
     }
 });
 

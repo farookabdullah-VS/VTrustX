@@ -4,6 +4,7 @@ import * as XLSX from 'xlsx';
 import { AnalyticsView } from './AnalyticsView';
 import { ResultsGrid } from './ResultsGrid';
 import { useToast } from './common/Toast';
+import { CloseTheLoop } from './CloseTheLoop';
 
 const ShareModal = React.memo(({ isOpen, onClose, shareUrl }) => {
     const toast = useToast();
@@ -447,12 +448,9 @@ export function ResultsViewer({ formId, onBack, onEditSubmission, initialView, o
     const sidebarItems = [
         { id: 'dashboard', icon: '📊', label: 'Dashboard' },
         { id: 'individual', icon: '📝', label: 'Responses Grid' },
+        ...(!isPublic ? [{ id: 'closeloop', icon: '🔔', label: 'Close the Loop' }] : []),
         { id: 'analytics', icon: '📈', label: 'Analytics' }
     ];
-
-    if (isPublic) {
-        // Remove analytics from public view if desired, or keep it. Let's keep it.
-    }
 
     return (
         <div style={{ background: 'var(--deep-bg, #f8fafc)', minHeight: '100vh', display: 'flex', flexDirection: 'column', fontFamily: "'Outfit', sans-serif" }}>
@@ -539,6 +537,7 @@ export function ResultsViewer({ formId, onBack, onEditSubmission, initialView, o
                 <div style={{ flex: 1, padding: '30px', overflowY: 'auto', maxHeight: 'calc(100vh - 120px)' }}>
                     {activeSidebar === 'dashboard' && renderDashboard()}
                     {activeSidebar === 'individual' && renderIndividual()}
+                    {activeSidebar === 'closeloop' && <CloseTheLoop formId={formId} />}
                     {activeSidebar === 'analytics' && <AnalyticsView form={formMetadata} submissions={submissions} onBack={!isPublic ? onBack : undefined} />}
                 </div>
             </div>
