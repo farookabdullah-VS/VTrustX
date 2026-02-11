@@ -297,22 +297,13 @@ export function FormBuilder({ user, formId, initialData, onBack, onNavigate, onF
             creator.readOnly = false;
         }
 
-        // Apply Theme and map to sjs variables that we also set in App.js
-        // This ensures the Creator UI itself uses the user's color scheme
+        // Apply Theme — use var() references so surveys inherit the tenant's brand
         creator.theme = {
-            "themeName": "default",
-            "colorPalette": "light",
-            "isPanelless": false,
+            ...VTrustTheme,
             "cssVariables": {
-                // Using var() here works if SurveyJS supports dynamic CSS Vars in their config,
-                // otherwise we rely on index.css .svc-creator overrides.
-                // However, mapping them explicitly is safer for the compiled CSS.
-                "--sjs-primary-backcolor": "var(--primary-color, #064e3b)",
-                "--sjs-primary-backcolor-light": "rgba(6, 78, 59, 0.1)", // Approximate
-                "--sjs-primary-backcolor-dark": "var(--primary-hover, #047857)",
-                "--sjs-primary-forecolor": "var(--button-text, #ffffff)",
+                ...VTrustTheme.cssVariables,
                 "--sjs-primary-forecolor-light": "#ffffff",
-                "--sjs-special-red": "#b91c1c"
+                "--sjs-special-red": "var(--status-error, #B3261E)"
             }
         };
 

@@ -86,15 +86,16 @@ export const setupSurveyColors = (survey) => {
     });
 };
 
-// 4. Default VTrust Theme (Red)
+// 4. Default VTrust Theme — derives from platform CSS variables
 export const VTrustTheme = {
     "themeName": "default",
     "colorPalette": "light",
     "isPanelless": false,
     "cssVariables": {
-        "--sjs-primary-backcolor": "#b91c1c",
-        "--sjs-primary-backcolor-light": "rgba(185, 28, 28, 0.1)",
-        "--sjs-primary-backcolor-dark": "rgba(153, 27, 27, 1)",
-        "--sjs-primary-forecolor": "rgba(255, 255, 255, 1)"
+        "--sjs-primary-backcolor": "var(--primary-color, #00695C)",
+        "--sjs-primary-backcolor-light": "color-mix(in srgb, var(--primary-color, #00695C) 10%, transparent)",
+        "--sjs-primary-backcolor-dark": "color-mix(in srgb, var(--primary-color, #00695C), black 20%)",
+        "--sjs-primary-forecolor": "rgba(255, 255, 255, 1)",
+        "--sjs-font-family": "var(--font-family, 'Outfit', 'Google Sans', 'Inter', system-ui, sans-serif)"
     }
 };

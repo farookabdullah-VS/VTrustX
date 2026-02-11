@@ -167,6 +167,31 @@ button:hover {
   filter: brightness(1.1);
 }
 
+/* Reset global button overrides for SurveyJS — let SurveyJS handle its own styling */
+.sd-root-modern button,
+.sd-root-modern__overlay button,
+.svc-creator button,
+.sv-popup button {
+  background-image: none;
+  text-transform: none;
+  letter-spacing: normal;
+  box-shadow: none;
+  border-radius: initial;
+  padding: initial;
+  font-size: inherit;
+  font-weight: inherit;
+  border: none;
+  color: inherit;
+}
+
+.sd-root-modern button:hover,
+.svc-creator button:hover,
+.sv-popup button:hover {
+  transform: none;
+  filter: none;
+  box-shadow: none;
+}
+
 /* Glassmorphism Card Utility */
 .glass-panel {
   background: var(--glass-bg);

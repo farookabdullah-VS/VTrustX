@@ -17,7 +17,7 @@ import ExportModal from './ExportModal';
 
 import { useTranslation } from 'react-i18next';
 import { FilePlus, LayoutTemplate, Sparkles, Download, Upload, Pencil, Megaphone, Settings, Zap, Share2, BarChart, History as HistoryIcon, Copy, FileSignature, StickyNote, Image as ImageIcon, ChevronLeft, ChevronRight, Grid, List, User, Users, Archive, Folder } from 'lucide-react';
-import { registerCustomTypes, setupSurveyColors } from '../survey-config';
+import { registerCustomTypes, setupSurveyColors, VTrustTheme } from '../survey-config';
 import { initCustomControls } from './CustomSurveyControls';
 
 const PREMIUM_GRADIENTS = [
@@ -440,7 +440,8 @@ export function FormViewer({ formId, submissionId, onSelectForm, onEditSubmissio
                 if (formDef.definition && formDef.definition.theme) {
                     model.applyTheme(formDef.definition.theme);
                 } else {
-                    model.applyTheme({ "themeName": "default", "colorPalette": "light", "isPanelless": false });
+                    // Fallback: derive theme from platform CSS variables
+                    model.applyTheme(VTrustTheme);
                 }
                 model.locale = i18n.language; // Set SurveyJS locale
 
