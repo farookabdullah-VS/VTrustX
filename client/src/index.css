@@ -217,8 +217,9 @@ textarea:focus {
    BUTTON SYSTEM (Scoped)
    ======================================== */
 
-/* Base button reset - minimal styling */
-button {
+/* Base button reset - minimal styling
+   Only applies to buttons WITHOUT classes to avoid conflicts with component-specific styles */
+button:not([class]) {
   cursor: pointer;
   font-family: inherit;
   font-size: inherit;
@@ -232,6 +233,12 @@ button {
   text-decoration: none;
   outline: none;
   transition: var(--transition-fast);
+}
+
+/* For all buttons, ensure cursor is pointer */
+button {
+  cursor: pointer;
+  font-family: inherit;
 }
 
 /* Scoped button styles - only apply to .btn class */
