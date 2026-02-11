@@ -3,7 +3,7 @@ const router = express.Router();
 const { query } = require('../../infrastructure/database/db');
 const authenticate = require('../middleware/auth');
 
-// CRM DASHBOARD STATS
+// CRM DASHBOARD STATS (Enhanced)
 router.get('/crm-stats', authenticate, async (req, res) => {
     try {
         const tenantId = req.user.tenant_id;
@@ -16,24 +16,140 @@ router.get('/crm-stats', authenticate, async (req, res) => {
         const statusMap = statusRes.rows.reduce((acc, row) => ({ ...acc, [row.status]: parseInt(row.count) }), {});
 
         // 2. Avg Resolution Time (in hours)
-        // Only for closed/resolved tickets
-        const timeRes = await query(`
-            SELECT AVG(EXTRACT(EPOCH FROM (resolution_due_at - created_at))/3600) as avg_resolution_hours
-            FROM tickets 
-            WHERE tenant_id = $1 AND status IN ('resolved', 'closed')
-        `, [tenantId]);
-
         const perfRes = await query(`
             SELECT AVG(EXTRACT(EPOCH FROM (closed_at - created_at))/3600) as avg_hours
             FROM tickets
             WHERE tenant_id = $1 AND closed_at IS NOT NULL
         `, [tenantId]);
 
+        // 3. By Priority
+        const prioRes = await query(
+            "SELECT priority, count(*) as count FROM tickets WHERE tenant_id = $1 GROUP BY priority",
+            [tenantId]
+        );
+        const byPriority = prioRes.rows.reduce((acc, row) => ({ ...acc, [row.priority]: parseInt(row.count) }), {});
+
+        // 4. By Channel
+        const channelRes = await query(
+            "SELECT COALESCE(channel, 'web') as channel, count(*) as count FROM tickets WHERE tenant_id = $1 GROUP BY COALESCE(channel, 'web')",
+            [tenantId]
+        );
+        const byChannel = channelRes.rows.reduce((acc, row) => ({ ...acc, [row.channel]: parseInt(row.count) }), {});
+
+        // 5. SLA data
+        const totalTickets = Object.values(statusMap).reduce((a, b) => a + b, 0);
+        const breachRes = await query(`
+            SELECT COUNT(*) as count FROM tickets
+            WHERE tenant_id = $1
+               AND ((resolution_due_at < NOW() AND status NOT IN ('resolved', 'closed'))
+               OR (first_response_due_at < NOW() AND first_response_at IS NULL AND status NOT IN ('new', 'resolved', 'closed')))
+        `, [tenantId]);
+        const breached = parseInt(breachRes.rows[0].count);
+
         res.json({
             stats: statusMap,
             performance: {
                 avgResolutionUrl: perfRes.rows[0].avg_hours || 0
+            },
+            byPriority,
+            byChannel,
+            sla: {
+                breached,
+                complianceRate: totalTickets > 0 ? Math.round(((totalTickets - breached) / totalTickets) * 100) : 100
             }
+        });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// AGENT PERFORMANCE
+router.get('/agent-performance', authenticate, async (req, res) => {
+    try {
+        const tenantId = req.user.tenant_id;
+
+        const result = await query(`
+            SELECT
+                u.id as user_id,
+                u.username,
+                COUNT(t.id) as total_tickets,
+                COUNT(CASE WHEN t.status IN ('resolved', 'closed') THEN 1 END) as resolved,
+                COUNT(CASE WHEN (t.resolution_due_at < NOW() AND t.status NOT IN ('resolved', 'closed')) THEN 1 END) as sla_breaches,
+                ROUND(AVG(CASE WHEN t.closed_at IS NOT NULL THEN EXTRACT(EPOCH FROM (t.closed_at - t.created_at))/3600 END)::numeric, 1) as avg_resolution_hours,
+                COUNT(CASE WHEN t.created_at >= NOW() - INTERVAL '7 days' THEN 1 END) as tickets_this_week
+            FROM users u
+            LEFT JOIN tickets t ON t.assigned_user_id = u.id AND t.tenant_id = $1
+            WHERE u.tenant_id = $1
+            GROUP BY u.id, u.username
+            HAVING COUNT(t.id) > 0
+            ORDER BY COUNT(t.id) DESC
+        `, [tenantId]);
+
+        res.json(result.rows);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// SLA COMPLIANCE
+router.get('/sla-compliance', authenticate, async (req, res) => {
+    try {
+        const tenantId = req.user.tenant_id;
+
+        // Overall
+        const totalRes = await query("SELECT COUNT(*) as count FROM tickets WHERE tenant_id = $1", [tenantId]);
+        const total = parseInt(totalRes.rows[0].count);
+
+        const breachRes = await query(`
+            SELECT COUNT(*) as count FROM tickets
+            WHERE tenant_id = $1
+               AND ((resolution_due_at < NOW() AND status NOT IN ('resolved', 'closed'))
+               OR (first_response_due_at < NOW() AND first_response_at IS NULL AND status NOT IN ('new', 'resolved', 'closed')))
+        `, [tenantId]);
+        const breached = parseInt(breachRes.rows[0].count);
+        const metSla = total - breached;
+
+        // By Week (last 8 weeks)
+        const weeklyRes = await query(`
+            SELECT
+                date_trunc('week', t.created_at) as week,
+                COUNT(*) as total,
+                COUNT(CASE WHEN (t.resolution_due_at < NOW() AND t.status NOT IN ('resolved', 'closed')) THEN 1 END) as breached
+            FROM tickets t
+            WHERE t.tenant_id = $1 AND t.created_at >= NOW() - INTERVAL '8 weeks'
+            GROUP BY 1
+            ORDER BY 1
+        `, [tenantId]);
+        const byWeek = weeklyRes.rows.map(r => ({
+            week: r.week,
+            total: parseInt(r.total),
+            breached: parseInt(r.breached),
+            met: parseInt(r.total) - parseInt(r.breached),
+            complianceRate: parseInt(r.total) > 0 ? Math.round(((parseInt(r.total) - parseInt(r.breached)) / parseInt(r.total)) * 100) : 100
+        }));
+
+        // By Priority
+        const prioRes = await query(`
+            SELECT
+                t.priority,
+                COUNT(*) as total,
+                COUNT(CASE WHEN (t.resolution_due_at < NOW() AND t.status NOT IN ('resolved', 'closed')) THEN 1 END) as breached
+            FROM tickets t
+            WHERE t.tenant_id = $1
+            GROUP BY t.priority
+        `, [tenantId]);
+        const byPriority = prioRes.rows.map(r => ({
+            priority: r.priority,
+            total: parseInt(r.total),
+            breached: parseInt(r.breached),
+            met: parseInt(r.total) - parseInt(r.breached),
+            complianceRate: parseInt(r.total) > 0 ? Math.round(((parseInt(r.total) - parseInt(r.breached)) / parseInt(r.total)) * 100) : 100
+        }));
+
+        res.json({
+            overall: { total, metSla, breached, complianceRate: total > 0 ? Math.round((metSla / total) * 100) : 100 },
+            byWeek,
+            byPriority
         });
     } catch (err) {
         res.status(500).json({ error: err.message });

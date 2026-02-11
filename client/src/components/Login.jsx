@@ -15,22 +15,29 @@ export function Login({ onLogin }) {
 
     useEffect(() => {
         const params = new URLSearchParams(window.location.search);
-        const token = params.get('token');
-        const userStr = params.get('user');
+        const oauthSuccess = params.get('oauth');
         const errorType = params.get('error');
 
-        if (token && userStr) {
-            try {
-                const user = JSON.parse(decodeURIComponent(userStr));
-                onLogin({ user, token });
-                // Clean URL and go to root
-                window.history.replaceState({}, document.title, '/');
-            } catch (e) {
-                console.error("Failed to parse user from URL", e);
-                setError(t('login.error.invalid_data'));
-            }
+        if (oauthSuccess === 'success') {
+            // OAuth token is delivered via httpOnly cookie.
+            // Fetch current user from a /me endpoint to complete login.
+            fetch('/api/auth/me', {
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' }
+            })
+                .then(r => r.ok ? r.json() : Promise.reject(new Error('OAuth session invalid')))
+                .then(data => {
+                    onLogin(data);
+                    window.history.replaceState({}, document.title, '/');
+                })
+                .catch(e => {
+                    console.error("OAuth login failed", e);
+                    setError(t('login.error.auth_failed'));
+                    window.history.replaceState({}, document.title, '/login');
+                });
         } else if (errorType) {
             setError(t('login.error.auth_failed'));
+            window.history.replaceState({}, document.title, '/login');
         }
     }, [onLogin, t]);
 

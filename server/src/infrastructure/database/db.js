@@ -18,7 +18,7 @@ if (!config.user || !config.password || !config.database) {
     }
     console.warn("WARNING: Missing DB credentials in environment. Using defaults for development.");
     config.user = config.user || 'postgres';
-    config.password = config.password || 'Yaalla@123';
+    config.password = config.password || process.env.DB_PASSWORD_DEV || 'change_me_in_env';
     config.database = config.database || 'rayix_db';
 }
 
@@ -49,7 +49,16 @@ if (process.env.INSTANCE_CONNECTION_NAME && isCloudRun) {
 
 console.log("[DEBUG] DB Config:", { ...config, password: '***' });
 
-const pool = new Pool(config);
+const pool = new Pool({
+    ...config,
+    max: parseInt(process.env.DB_POOL_MAX, 10) || 20,
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 5000,
+});
+
+pool.on('error', (err) => {
+    console.error('[DB] Unexpected pool error:', err.message);
+});
 
 module.exports = {
     query: (text, params) => pool.query(text, params),

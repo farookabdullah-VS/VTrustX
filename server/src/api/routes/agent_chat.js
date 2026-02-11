@@ -19,8 +19,10 @@ async function getActiveKey() {
     return anyGemini ? anyGemini.api_key : null;
 }
 
+const authenticate = require('../middleware/auth');
+
 // 1. List Available Surveys (For Dropdown)
-router.get('/forms', async (req, res) => {
+router.get('/forms', authenticate, async (req, res) => {
     try {
         const forms = await formRepo.findAll();
         // Return simple list

@@ -2,480 +2,588 @@ import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { useTranslation } from 'react-i18next';
 
-export function TicketDetailView({ ticketId, onBack }) {
+const FONT = 'var(--font-family, "Outfit", "Google Sans", "Inter", system-ui, sans-serif)';
+const RADIUS = 'var(--border-radius, 24px)';
+const TRANSITION = 'var(--transition-fast, 0.2s cubic-bezier(0.2, 0, 0, 1))';
+
+const BTN_RESET = {
+    backgroundImage: 'none', textTransform: 'none', letterSpacing: 'normal',
+    boxShadow: 'none', fontFamily: FONT, fontSize: 'inherit', fontWeight: 'inherit',
+    padding: 0, border: 'none', borderRadius: 0, cursor: 'pointer', background: 'none',
+};
+
+const WORKFLOW_STEPS = ['new', 'open', 'pending', 'resolved', 'closed'];
+
+export function TicketDetailView({ ticketId, onBack, user }) {
     const { t, i18n } = useTranslation();
-    const isRtl = i18n.language === 'ar';
+    const isRtl = i18n.language?.startsWith('ar');
+
     const [ticket, setTicket] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState('details'); // Default to Details as per request context
-    const [sidebarTab, setSidebarTab] = useState('properties');
-
-    // Chat Application State
-    const [newMessage, setNewMessage] = useState('');
-    const [msgType, setMsgType] = useState('public');
+    const [activeTab, setActiveTab] = useState('details');
     const [auditLogs, setAuditLogs] = useState([]);
-    const messagesEndRef = useRef(null);
+    const [transitions, setTransitions] = useState([]);
+    const [users, setUsers] = useState([]);
 
-    // Edit State
+    // Edit state
     const [isEditing, setIsEditing] = useState(false);
     const [editData, setEditData] = useState({});
-    const [users, setUsers] = useState([]);
+
+    // Conversation state
+    const [newMessage, setNewMessage] = useState('');
+    const [msgType, setMsgType] = useState('public');
+    const [sending, setSending] = useState(false);
+    const messagesEndRef = useRef(null);
 
     useEffect(() => {
         loadTicket();
         loadUsers();
+        loadTransitions();
     }, [ticketId]);
 
     useEffect(() => {
-        if (sidebarTab === 'history' && ticketId) {
-            fetchAuditLogs();
-        }
-    }, [sidebarTab, ticketId]);
+        if (activeTab === 'activity') loadAuditLogs();
+    }, [activeTab, ticketId]);
 
-    const loadUsers = () => {
-        axios.get('/api/users')
-            .then(res => setUsers(res.data))
-            .catch(err => console.error("Failed to load users", err));
-    };
+    useEffect(() => {
+        if (messagesEndRef.current && activeTab === 'conversations') {
+            messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+        }
+    }, [ticket?.messages, activeTab]);
 
     const loadTicket = () => {
         setLoading(true);
         axios.get(`/api/crm/tickets/${ticketId}`)
             .then(res => {
                 setTicket(res.data);
-                // Initialize edit data with all potential fields
                 setEditData({
                     subject: res.data.subject,
-                    description: res.data.description,
-                    issue: res.data.issue || '',
-                    analysis: res.data.analysis || '',
-                    solution: res.data.solution || '',
-                    request_type: res.data.request_type || '',
-                    impact: res.data.impact || '',
-                    status: res.data.status,
-                    mode: res.data.mode || '',
-                    level: res.data.level || '',
-                    urgency: res.data.urgency || '',
-                    priority: res.data.priority,
-                    group_name: res.data.group_name || '',
-                    category: res.data.category || '',
-                    assets: res.data.assets || '',
-                    assigned_user_id: res.data.assigned_user_id
+                    description: res.data.description || '',
+                    issue: res.data.issue || '', analysis: res.data.analysis || '', solution: res.data.solution || '',
+                    request_type: res.data.request_type || '', impact: res.data.impact || '',
+                    status: res.data.status, priority: res.data.priority,
+                    mode: res.data.mode || '', level: res.data.level || '', urgency: res.data.urgency || '',
+                    group_name: res.data.group_name || '', category: res.data.category || '',
+                    assets: res.data.assets || '', assigned_user_id: res.data.assigned_user_id,
                 });
                 setLoading(false);
             })
-            .catch(err => {
-                console.error(err);
-                setLoading(false);
-            });
+            .catch(() => setLoading(false));
     };
 
-    const fetchAuditLogs = () => {
-        axios.get(`/api/crm/tickets/${ticketId}/audit`)
-            .then(res => setAuditLogs(res.data))
-            .catch(err => console.error("Failed to load audit logs", err));
-    };
+    const loadUsers = () => { axios.get('/api/users').then(r => setUsers(r.data)).catch(() => {}); };
+    const loadTransitions = () => { axios.get(`/api/crm/tickets/${ticketId}/transitions`).then(r => setTransitions(r.data.allowedTransitions || [])).catch(() => {}); };
+    const loadAuditLogs = () => { axios.get(`/api/crm/tickets/${ticketId}/audit`).then(r => setAuditLogs(r.data)).catch(() => {}); };
 
     const handleUpdate = async () => {
         try {
             await axios.put(`/api/crm/tickets/${ticketId}`, editData);
-            setTicket(prev => ({ ...prev, ...editData }));
             setIsEditing(false);
-            // If user changed, update local display name lookup if needed
-            if (editData.assigned_user_id) {
-                const u = users.find(x => x.id == editData.assigned_user_id);
-                if (u) loadTicket(); // Reload to get joined names if backend handles it, or just update local
-            }
+            loadTicket();
+            loadTransitions();
         } catch (err) {
-            alert("Failed to update ticket");
+            const msg = err.response?.data?.error || 'Update failed';
+            console.error(msg);
         }
+    };
+
+    const handleTransition = async (newStatus) => {
+        try {
+            await axios.put(`/api/crm/tickets/${ticketId}`, { status: newStatus });
+            loadTicket();
+            loadTransitions();
+        } catch (err) {
+            console.error('Transition failed:', err.response?.data?.error || err.message);
+        }
+    };
+
+    const handleAssignToMe = async () => {
+        const userId = user?.user?.id || user?.id;
+        if (!userId) return;
+        try {
+            await axios.put(`/api/crm/tickets/${ticketId}`, { assigned_user_id: userId });
+            loadTicket();
+        } catch (err) { console.error(err); }
     };
 
     const handleSendMessage = async () => {
-        if (!newMessage.trim()) return;
+        if (!newMessage.trim() || sending) return;
+        setSending(true);
         try {
-            await axios.post(`/api/crm/tickets/${ticketId}/messages`, {
-                body: newMessage,
-                type: msgType,
-                user_id: 1 // Mock user
-            });
+            await axios.post(`/api/crm/tickets/${ticketId}/messages`, { body: newMessage, type: msgType });
             setNewMessage('');
             loadTicket();
-        } catch (err) {
-            alert("Failed to send message");
-        }
+        } catch (err) { console.error(err); }
+        finally { setSending(false); }
     };
 
-    if (loading) return <div className="p-10 flex justify-center text-slate-500">Loading Ticket...</div>;
-    if (!ticket) return <div className="p-10 text-red-500">Ticket Not Found</div>;
-
-    // Helper for status colors
-    const getStatusColor = (s) => {
-        switch (s) {
-            case 'open': return '#ef4444'; // Red for Open (as in screenshot)
-            case 'new': return '#3b82f6';
-            case 'resolved': return '#22c55e';
-            default: return '#64748b';
-        }
+    const getSlaInfo = (ticket) => {
+        if (!ticket.resolution_due_at) return { text: '-', color: 'var(--text-muted)' };
+        if (ticket.status === 'resolved' || ticket.status === 'closed') return { text: 'Met', color: '#22c55e' };
+        const diff = (new Date(ticket.resolution_due_at) - new Date()) / (1000 * 60 * 60);
+        if (diff < 0) return { text: `Overdue ${Math.abs(Math.round(diff))}h`, color: '#ef4444', bold: true };
+        if (diff < 4) return { text: `${Math.round(diff)}h remaining`, color: '#f59e0b' };
+        return { text: `${Math.round(diff)}h remaining`, color: 'var(--text-muted)' };
     };
+
+    // Styles
+    const glassCard = {
+        background: 'var(--glass-bg, rgba(255,255,255,0.85))',
+        backdropFilter: 'blur(var(--glass-blur, 24px))',
+        WebkitBackdropFilter: 'blur(var(--glass-blur, 24px))',
+        border: '1px solid var(--glass-border, rgba(0,0,0,0.08))',
+        borderRadius: `calc(${RADIUS} * 0.67)`,
+        padding: '20px',
+        transition: TRANSITION,
+    };
+
+    const inputBase = {
+        background: 'var(--input-bg, #f0f2f5)',
+        border: '1px solid var(--glass-border, rgba(0,0,0,0.08))',
+        borderRadius: `calc(${RADIUS} * 0.33)`,
+        padding: '8px 12px', fontSize: '0.9em', color: 'var(--text-color)', fontFamily: FONT,
+        outline: 'none', width: '100%', boxSizing: 'border-box',
+    };
+
+    const labelSt = { fontSize: '0.8em', fontWeight: 700, color: 'var(--text-muted, #64748b)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 6, display: 'block' };
+
+    if (loading) {
+        return (
+            <div style={{ padding: 40, fontFamily: FONT, direction: isRtl ? 'rtl' : 'ltr' }}>
+                <div style={{ ...glassCard, maxWidth: 800, margin: '0 auto', textAlign: 'center', padding: 60 }}>
+                    <div style={{ fontSize: '1.1em', color: 'var(--text-muted)' }}>Loading ticket...</div>
+                </div>
+            </div>
+        );
+    }
+
+    if (!ticket) {
+        return (
+            <div style={{ padding: 40, fontFamily: FONT, direction: isRtl ? 'rtl' : 'ltr' }}>
+                <div style={{ ...glassCard, maxWidth: 600, margin: '0 auto', textAlign: 'center', padding: 60 }}>
+                    <div style={{ fontSize: '1.1em', color: '#ef4444', fontWeight: 600 }}>Ticket not found</div>
+                    <button onClick={onBack} style={{ ...BTN_RESET, marginTop: 16, padding: '10px 24px', borderRadius: `calc(${RADIUS} * 0.33)`, border: '1px solid var(--glass-border)', fontWeight: 600, color: 'var(--text-color)' }}>Go Back</button>
+                </div>
+            </div>
+        );
+    }
+
+    const statusColors = { new: '#3b82f6', open: '#22c55e', pending: '#f59e0b', resolved: '#64748b', closed: '#0f172a' };
+    const prioColors = { urgent: '#ef4444', high: '#f97316', medium: '#eab308', low: '#94a3b8' };
+    const sla = getSlaInfo(ticket);
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: '#ffffff', fontFamily: "'Inter', sans-serif", color: '#000000' }}>
+        <div style={{ fontFamily: FONT, direction: isRtl ? 'rtl' : 'ltr', color: 'var(--text-color, #1a1c1e)', minHeight: '100vh' }}>
 
-            {/* TOP ACTIONS BAR */}
-            <div style={{ padding: '10px 20px', background: 'white', borderBottom: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div style={{ display: 'flex', gap: '10px' }}>
-                    <button onClick={onBack} style={btnStyle('light')}>← Back</button>
-                    <button onClick={() => setIsEditing(!isEditing)} style={btnStyle('light')}>{isEditing ? 'Cancel Edit' : 'Edit'}</button>
-                    {isEditing && <button onClick={handleUpdate} style={btnStyle('primary')}>Save Changes</button>}
-                    {!isEditing && (
-                        <>
-                            <button style={btnStyle('light')}>Close</button>
-                            <button style={btnStyle('light')}>Pick up</button>
-                            <button style={btnStyle('light')}>Assign</button>
-                            <button style={btnStyle('light')}>Print</button>
-                        </>
+            {/* Top Action Bar */}
+            <div style={{ ...glassCard, borderRadius: `calc(${RADIUS} * 0.5)`, padding: '10px 18px', marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                    <button onClick={onBack} style={{ ...BTN_RESET, padding: '8px 16px', borderRadius: `calc(${RADIUS} * 0.25)`, border: '1px solid var(--glass-border, rgba(0,0,0,0.08))', fontWeight: 600, fontSize: '0.9em', color: 'var(--text-color)' }}>
+                        {isRtl ? '\u2192' : '\u2190'} {t('common.back', 'Back')}
+                    </button>
+                    <button onClick={() => { if (isEditing) { handleUpdate(); } else { setIsEditing(true); } }} style={{ ...BTN_RESET, padding: '8px 16px', borderRadius: `calc(${RADIUS} * 0.25)`, border: '1px solid var(--glass-border, rgba(0,0,0,0.08))', fontWeight: 600, fontSize: '0.9em', color: isEditing ? '#22c55e' : 'var(--text-color)' }}>
+                        {isEditing ? t('common.save', 'Save') : t('common.edit', 'Edit')}
+                    </button>
+                    {isEditing && (
+                        <button onClick={() => { setIsEditing(false); loadTicket(); }} style={{ ...BTN_RESET, padding: '8px 16px', borderRadius: `calc(${RADIUS} * 0.25)`, border: '1px solid var(--glass-border)', fontWeight: 600, fontSize: '0.9em', color: '#ef4444' }}>
+                            {t('common.cancel', 'Cancel')}
+                        </button>
                     )}
                 </div>
-                <div style={{ display: 'flex', gap: '10px' }}>
-                    <button style={btnStyle('light')}>Actions v</button>
+                {!isEditing && transitions.length > 0 && (
+                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                        {transitions.map(tr => (
+                            <button key={tr} onClick={() => handleTransition(tr)} style={{ ...BTN_RESET, padding: '7px 16px', borderRadius: `calc(${RADIUS} * 0.25)`, background: tr === 'closed' ? '#ef4444' : 'var(--primary-color)', color: '#fff', fontWeight: 700, fontSize: '0.82em', textTransform: 'uppercase' }}>
+                                {tr === 'open' && ticket.status === 'closed' ? 'Reopen' : tr === 'open' && ticket.status === 'resolved' ? 'Reopen' : tr}
+                            </button>
+                        ))}
+                    </div>
+                )}
+            </div>
+
+            {/* Header Card */}
+            <div style={{ ...glassCard, marginBottom: 16, display: 'flex', gap: 16, alignItems: 'flex-start', flexWrap: 'wrap' }}>
+                <div style={{ width: 44, height: 44, borderRadius: `calc(${RADIUS} * 0.33)`, background: `color-mix(in srgb, var(--primary-color) 15%, transparent)`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.3em', flexShrink: 0 }}>
+                    &#127915;
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
+                        <h1 style={{ margin: 0, fontSize: '1.4em', fontWeight: 800, color: 'var(--text-color)' }}>
+                            {ticket.ticket_code || `#${ticket.id}`} — {ticket.subject}
+                        </h1>
+                    </div>
+                    <div style={{ marginTop: 8, display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center', fontSize: '0.88em', color: 'var(--text-muted)' }}>
+                        <span style={{ padding: '3px 10px', borderRadius: 16, fontSize: '0.85em', fontWeight: 700, background: `color-mix(in srgb, ${statusColors[ticket.status] || '#64748b'} 15%, transparent)`, color: statusColors[ticket.status] || 'var(--text-muted)', textTransform: 'uppercase' }}>
+                            {ticket.status}
+                        </span>
+                        <span style={{ color: prioColors[ticket.priority] || 'var(--text-muted)', fontWeight: 700 }}>
+                            &#9679; {ticket.priority}
+                        </span>
+                        <span>
+                            SLA: <span style={{ color: sla.color, fontWeight: sla.bold ? 700 : 500 }}>{sla.text}</span>
+                        </span>
+                        <span>
+                            By <span style={{ color: 'var(--primary-color)', fontWeight: 600 }}>{ticket.contact_name || 'Unknown'}</span> on {new Date(ticket.created_at).toLocaleString()}
+                        </span>
+                    </div>
                 </div>
             </div>
 
-            <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
-
-                {/* MAIN CONTENT AREA */}
-                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflowY: 'auto', padding: '20px' }}>
-
-                    {/* TICKET HEADER CARD */}
-                    <div style={{ background: 'white', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '20px', marginBottom: '20px', display: 'flex', gap: '20px' }}>
-                        {/* ICON */}
-                        <div style={{ width: '40px', height: '40px', background: '#f59e0b', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '1.2em' }}>
-                            🎫
-                        </div>
-                        {/* INFO */}
-                        <div style={{ flex: 1 }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <h1 style={{ margin: 0, fontSize: '1.4em', fontWeight: '600', color: '#0f172a' }}>
-                                    #{ticket.ticket_code && ticket.ticket_code.split('-')[1] || ticket.id} {ticket.subject}
-                                </h1>
-                                <button style={btnStyle('light')}>↩ Reply All v</button>
-                            </div>
-                            <div style={{ marginTop: '10px', display: 'flex', gap: '15px', fontSize: '0.9em', color: '#64748b', alignItems: 'center' }}>
-                                <span style={{ background: '#e0f2fe', color: '#0369a1', padding: '2px 8px', borderRadius: '4px', fontSize: '0.85em' }}>Incident Request</span>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                                    Priority: <span style={{ color: '#ef4444', fontWeight: 'bold' }}>■ {ticket.priority ? ticket.priority.charAt(0).toUpperCase() + ticket.priority.slice(1) : '-'}</span>
+            {/* Workflow Progress Bar */}
+            <div style={{ ...glassCard, marginBottom: 16, padding: '16px 24px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'relative' }}>
+                    {/* Connecting line */}
+                    <div style={{ position: 'absolute', top: '50%', [isRtl ? 'right' : 'left']: 24, [isRtl ? 'left' : 'right']: 24, height: 3, background: 'var(--input-bg, #e2e8f0)', borderRadius: 2, transform: 'translateY(-50%)', zIndex: 0 }} />
+                    {/* Active line */}
+                    {(() => {
+                        const idx = WORKFLOW_STEPS.indexOf(ticket.status);
+                        const pct = idx >= 0 ? (idx / (WORKFLOW_STEPS.length - 1)) * 100 : 0;
+                        return (
+                            <div style={{ position: 'absolute', top: '50%', [isRtl ? 'right' : 'left']: 24, width: `calc(${pct}% - 48px)`, height: 3, background: 'var(--primary-color)', borderRadius: 2, transform: 'translateY(-50%)', zIndex: 1, transition: 'width 0.4s ease' }} />
+                        );
+                    })()}
+                    {WORKFLOW_STEPS.map((step, i) => {
+                        const currentIdx = WORKFLOW_STEPS.indexOf(ticket.status);
+                        const isPast = i < currentIdx;
+                        const isCurrent = i === currentIdx;
+                        return (
+                            <div key={step} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', zIndex: 2, position: 'relative' }}>
+                                <div style={{
+                                    width: isCurrent ? 32 : 24, height: isCurrent ? 32 : 24,
+                                    borderRadius: '50%',
+                                    background: isCurrent ? 'var(--primary-color)' : isPast ? `color-mix(in srgb, var(--primary-color) 60%, transparent)` : 'var(--input-bg, #e2e8f0)',
+                                    border: isCurrent ? '3px solid var(--primary-color)' : 'none',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    color: (isCurrent || isPast) ? '#fff' : 'var(--text-muted)',
+                                    fontSize: '0.7em', fontWeight: 700,
+                                    transition: TRANSITION,
+                                    boxShadow: isCurrent ? '0 0 0 4px color-mix(in srgb, var(--primary-color) 20%, transparent)' : 'none',
+                                }}>
+                                    {isPast ? '\u2713' : (i + 1)}
                                 </div>
-                                <div>Requested By <span style={{ color: '#2563eb', cursor: 'pointer' }}>{ticket.contact_name || 'Unknown'}</span> on {new Date(ticket.created_at).toLocaleString()}</div>
+                                <span style={{ fontSize: '0.72em', fontWeight: isCurrent ? 700 : 500, color: isCurrent ? 'var(--primary-color)' : 'var(--text-muted)', marginTop: 6, textTransform: 'capitalize' }}>
+                                    {step}
+                                </span>
                             </div>
-                        </div>
-                    </div>
+                        );
+                    })}
+                </div>
+            </div>
 
-                    {/* TABS */}
-                    <div style={{ display: 'flex', borderBottom: '1px solid #e2e8f0', marginBottom: '20px', background: 'none' }}>
-                        {['Conversations', 'Details', 'Approvals', 'Tasks', 'History'].map(tab => (
+            {/* Main Layout: Tabs + Sidebar */}
+            <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start' }}>
+
+                {/* Left: Tabs */}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                    {/* Tab Bar */}
+                    <div style={{ display: 'flex', gap: 0, marginBottom: 16, borderBottom: '2px solid var(--glass-border, rgba(0,0,0,0.06))' }}>
+                        {['details', 'conversations', 'activity'].map(tab => (
                             <button
                                 key={tab}
-                                onClick={() => setActiveTab(tab.toLowerCase())}
+                                onClick={() => setActiveTab(tab)}
                                 style={{
-                                    padding: '10px 20px',
-                                    borderBottom: activeTab === tab.toLowerCase() ? '2px solid #2563eb' : '2px solid transparent',
-                                    color: activeTab === tab.toLowerCase() ? '#2563eb' : '#64748b',
-                                    fontWeight: activeTab === tab.toLowerCase() ? '600' : '500',
-                                    background: 'none',
-                                    borderTop: 'none', borderLeft: 'none', borderRight: 'none',
-                                    cursor: 'pointer'
+                                    ...BTN_RESET,
+                                    padding: '12px 24px',
+                                    fontWeight: activeTab === tab ? 700 : 500,
+                                    fontSize: '0.92em',
+                                    color: activeTab === tab ? 'var(--primary-color)' : 'var(--text-muted)',
+                                    borderBottom: activeTab === tab ? '2px solid var(--primary-color)' : '2px solid transparent',
+                                    marginBottom: -2,
+                                    textTransform: 'capitalize',
+                                    transition: TRANSITION,
                                 }}
                             >
-                                {tab}
+                                {t(`tickets.tabs.${tab}`, tab)}
                             </button>
                         ))}
                     </div>
 
-                    {/* TAB CONTENT */}
-                    <div style={{ flex: 1 }}>
+                    {/* Details Tab */}
+                    {activeTab === 'details' && (
+                        <div style={{ display: 'grid', gap: 16 }}>
+                            {/* Description */}
+                            <div style={glassCard}>
+                                <div style={labelSt}>{t('tickets.detail.description', 'Description')}</div>
+                                {isEditing ? (
+                                    <textarea value={editData.description} onChange={e => setEditData(d => ({ ...d, description: e.target.value }))} rows={4} style={{ ...inputBase, resize: 'vertical' }} />
+                                ) : (
+                                    <div style={{ color: 'var(--text-color)', lineHeight: 1.7, fontSize: '0.95em' }}>{ticket.description || '-'}</div>
+                                )}
+                            </div>
 
-                        {/* DETAILS TAB */}
-                        {activeTab === 'details' && (
-                            <div style={{ background: 'white', borderRadius: '8px', border: '1px solid #e2e8f0', padding: '30px' }}>
-                                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                                    <button style={{ color: '#3b82f6', background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.9em' }}>👁 Hide Empty Fields</button>
-                                </div>
-
-                                {/* Section: Description */}
-                                <div style={{ marginBottom: '30px' }}>
-                                    <h3 style={sectionHeaderStyle}>Description</h3>
-                                    <div style={{ color: '#334155', lineHeight: '1.6' }}>
+                            {/* Resolution */}
+                            <div style={glassCard}>
+                                <div style={{ ...labelSt, marginBottom: 14 }}>{t('tickets.detail.resolution', 'Resolution')}</div>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                                    {[
+                                        { key: 'issue', label: t('tickets.detail.issue', 'Issue') },
+                                        { key: 'analysis', label: t('tickets.detail.analysis', 'Analysis') },
+                                    ].map(f => (
+                                        <div key={f.key}>
+                                            <div style={{ ...labelSt, fontSize: '0.75em' }}>{f.label}</div>
+                                            {isEditing ? (
+                                                <textarea value={editData[f.key]} onChange={e => setEditData(d => ({ ...d, [f.key]: e.target.value }))} rows={3} style={{ ...inputBase, resize: 'vertical' }} />
+                                            ) : (
+                                                <div style={{ fontSize: '0.9em', color: 'var(--text-color)' }}>{ticket[f.key] || '-'}</div>
+                                            )}
+                                        </div>
+                                    ))}
+                                    <div style={{ gridColumn: '1 / -1' }}>
+                                        <div style={{ ...labelSt, fontSize: '0.75em' }}>{t('tickets.detail.solution', 'Solution')}</div>
                                         {isEditing ? (
-                                            <textarea
-                                                value={editData.description}
-                                                onChange={e => setEditData({ ...editData, description: e.target.value })}
-                                                style={inputStyle} rows={3}
-                                            />
+                                            <textarea value={editData.solution} onChange={e => setEditData(d => ({ ...d, solution: e.target.value }))} rows={3} style={{ ...inputBase, resize: 'vertical' }} />
                                         ) : (
-                                            ticket.description || '-'
+                                            <div style={{ fontSize: '0.9em', color: 'var(--text-color)' }}>{ticket.solution || '-'}</div>
                                         )}
                                     </div>
                                 </div>
-
-                                {/* Section: Resolution */}
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px', marginBottom: '30px' }}>
-                                    <div>
-                                        <h3 style={sectionHeaderStyle}>Issue</h3>
-                                        {isEditing ? <textarea value={editData.issue} onChange={e => setEditData({ ...editData, issue: e.target.value })} style={inputStyle} /> : <div style={{ color: '#334155' }}>{ticket.issue || '-'}</div>}
-                                    </div>
-                                    <div>
-                                        <h3 style={sectionHeaderStyle}>Analysis</h3>
-                                        {isEditing ? <textarea value={editData.analysis} onChange={e => setEditData({ ...editData, analysis: e.target.value })} style={inputStyle} /> : <div style={{ color: '#334155' }}>{ticket.analysis || 'Added as an attachment'}</div>}
-                                    </div>
-                                    <div style={{ gridColumn: '1 / -1' }}>
-                                        <h3 style={sectionHeaderStyle}>Solution</h3>
-                                        {isEditing ? <textarea value={editData.solution} onChange={e => setEditData({ ...editData, solution: e.target.value })} style={inputStyle} /> : <div style={{ color: '#334155' }}>{ticket.solution || 'Replace the attached XML file'}</div>}
-                                    </div>
-                                </div>
-
-                                <hr style={{ border: 'none', borderBottom: '1px solid #f1f5f9', margin: '20px 0' }} />
-
-                                {/* Section: Fields Matrix */}
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px 40px', fontSize: '0.95em' }}>
-                                    <FieldRow label="Request Type" value={ticket.request_type} isEditing={isEditing} field="request_type" type="select" options={['Incident', 'Service Request', 'Problem', 'Change', 'Access']} onChange={setEditData} data={editData} />
-                                    <FieldRow label="Impact" value={ticket.impact} isEditing={isEditing} field="impact" type="select" options={['Low', 'Medium', 'High', 'Critical', 'Site Wide']} onChange={setEditData} data={editData} />
-
-                                    <FieldRow label="Status" value={ticket.status} isEditing={isEditing} field="status" type="select" options={['new', 'open', 'pending', 'resolved', 'closed']} onChange={setEditData} data={editData} />
-                                    <FieldRow label="Impact Details" value={ticket.impact_details} isEditing={isEditing} field="impact_details" onChange={setEditData} data={editData} />
-
-                                    <FieldRow label="Mode" value={ticket.mode} isEditing={isEditing} field="mode" type="select" options={['Web', 'E-Mail', 'Telephone', 'Walk-in', 'Chat']} onChange={setEditData} data={editData} />
-                                    <FieldRow label="Urgency" value={ticket.urgency} isEditing={isEditing} field="urgency" type="select" options={['Low', 'Medium', 'High', 'Urgent']} onChange={setEditData} data={editData} />
-
-                                    <FieldRow label="Level" value={ticket.level} isEditing={isEditing} field="level" type="select" options={['Tier 1', 'Tier 2', 'Tier 3', 'Tier 4']} onChange={setEditData} data={editData} />
-                                    <FieldRow label="Priority" value={ticket.priority} isEditing={isEditing} field="priority" type="select" options={['Low', 'Medium', 'High', 'Urgent']} onChange={setEditData} data={editData} />
-                                </div>
-
-                                <hr style={{ border: 'none', borderBottom: '1px solid #f1f5f9', margin: '30px 0' }} />
-
-                                {/* Section: Requester Details */}
-                                <h3 style={{ ...sectionHeaderStyle, marginBottom: '20px' }}>Requester Details</h3>
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px 40px', fontSize: '0.95em' }}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                                        <span style={labelStyle}>Requester Name</span>
-                                        <span style={valueStyle}>{ticket.contact_name}</span>
-                                    </div>
-                                    <FieldRow label="Assets" value={ticket.assets} isEditing={isEditing} field="assets" onChange={setEditData} data={editData} />
-                                    <FieldRow label="Group" value={ticket.group_name} isEditing={isEditing} field="group_name" onChange={setEditData} data={editData} />
-                                    <FieldRow label="Category" value={ticket.category} isEditing={isEditing} field="category" onChange={setEditData} data={editData} />
-                                </div>
-
                             </div>
-                        )}
 
-                        {/* CONVERSATIONS TAB (Legacy Chat) */}
-                        {activeTab === 'conversations' && (
-                            <div style={{ background: 'white', borderRadius: '8px', border: '1px solid #e2e8f0', padding: '20px', display: 'flex', flexDirection: 'column', height: '600px' }}>
-                                <div style={{ flex: 1, overflowY: 'auto', marginBottom: '20px' }}>
-                                    {ticket.messages && ticket.messages.map(msg => (
-                                        <div key={msg.id} style={{
-                                            marginBottom: '15px',
-                                            padding: '15px',
-                                            background: msg.type === 'internal' ? '#fffbeb' : '#ffffff',
-                                            border: msg.type === 'internal' ? '1px solid #fcd34d' : '1px solid #e2e8f0',
-                                            borderRadius: '8px'
-                                        }}>
-                                            <div style={{ fontSize: '0.85em', color: '#64748b', marginBottom: '5px' }}>
-                                                <strong>{msg.sender_name || 'System'}</strong> • {new Date(msg.created_at).toLocaleString()}
-                                            </div>
-                                            <div>{msg.body}</div>
+                            {/* Classification Fields */}
+                            <div style={glassCard}>
+                                <div style={{ ...labelSt, marginBottom: 14 }}>{t('tickets.detail.classification', 'Classification')}</div>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px 24px' }}>
+                                    {[
+                                        { key: 'request_type', label: 'Request Type', opts: ['Incident', 'Service Request', 'Problem', 'Change', 'Access'] },
+                                        { key: 'impact', label: 'Impact', opts: ['Low', 'Medium', 'High', 'Critical', 'Site Wide'] },
+                                        { key: 'mode', label: 'Mode', opts: ['Web', 'E-Mail', 'Telephone', 'Walk-in', 'Chat'] },
+                                        { key: 'urgency', label: 'Urgency', opts: ['Low', 'Medium', 'High', 'Urgent'] },
+                                        { key: 'level', label: 'Level', opts: ['Tier 1', 'Tier 2', 'Tier 3', 'Tier 4'] },
+                                        { key: 'priority', label: 'Priority', opts: ['low', 'medium', 'high', 'urgent'] },
+                                    ].map(f => (
+                                        <div key={f.key} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                            <span style={{ fontSize: '0.85em', color: 'var(--text-muted)', fontWeight: 600 }}>{f.label}</span>
+                                            {isEditing ? (
+                                                <select value={editData[f.key] || ''} onChange={e => setEditData(d => ({ ...d, [f.key]: e.target.value }))} style={{ ...inputBase, width: '55%', cursor: 'pointer' }}>
+                                                    <option value="">-</option>
+                                                    {f.opts.map(o => <option key={o} value={o}>{o}</option>)}
+                                                </select>
+                                            ) : (
+                                                <span style={{ fontSize: '0.9em', fontWeight: 600, color: 'var(--text-color)' }}>{ticket[f.key] || '-'}</span>
+                                            )}
                                         </div>
                                     ))}
                                 </div>
-                                <textarea
-                                    value={newMessage}
-                                    onChange={e => setNewMessage(e.target.value)}
-                                    placeholder="Type a reply..."
-                                    style={{ width: '100%', padding: '10px', border: '1px solid #cbd5e1', borderRadius: '4px', marginBottom: '10px' }}
-                                />
-                                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
-                                    <select value={msgType} onChange={e => setMsgType(e.target.value)} style={{ padding: '8px', border: '1px solid #cbd5e1', borderRadius: '4px' }}>
-                                        <option value="public">Public Reply</option>
-                                        <option value="internal">Internal Note</option>
-                                    </select>
-                                    <button onClick={handleSendMessage} style={btnStyle('primary')}>Send</button>
+                            </div>
+
+                            {/* Requester */}
+                            <div style={glassCard}>
+                                <div style={{ ...labelSt, marginBottom: 14 }}>{t('tickets.detail.requester', 'Requester Details')}</div>
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px 24px' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <span style={{ fontSize: '0.85em', color: 'var(--text-muted)', fontWeight: 600 }}>Name</span>
+                                        <span style={{ fontSize: '0.9em', fontWeight: 600, color: 'var(--primary-color)' }}>{ticket.contact_name || '-'}</span>
+                                    </div>
+                                    {[
+                                        { key: 'group_name', label: 'Group' },
+                                        { key: 'category', label: 'Category' },
+                                        { key: 'assets', label: 'Assets' },
+                                    ].map(f => (
+                                        <div key={f.key} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                            <span style={{ fontSize: '0.85em', color: 'var(--text-muted)', fontWeight: 600 }}>{f.label}</span>
+                                            {isEditing ? (
+                                                <input value={editData[f.key] || ''} onChange={e => setEditData(d => ({ ...d, [f.key]: e.target.value }))} style={{ ...inputBase, width: '55%' }} />
+                                            ) : (
+                                                <span style={{ fontSize: '0.9em', fontWeight: 600, color: 'var(--text-color)' }}>{ticket[f.key] || '-'}</span>
+                                            )}
+                                        </div>
+                                    ))}
                                 </div>
                             </div>
-                        )}
+                        </div>
+                    )}
 
-                        {/* OTHER TABS PLACEHOLDER */}
-                        {(activeTab !== 'details' && activeTab !== 'conversations') && (
-                            <div style={{ padding: '40px', textAlign: 'center', color: '#94a3b8', background: 'white', border: '1px solid #e2e8f0', borderRadius: '8px' }}>
-                                Content for {activeTab} is not yet implemented.
+                    {/* Conversations Tab */}
+                    {activeTab === 'conversations' && (
+                        <div style={{ display: 'grid', gap: 12 }}>
+                            {/* Messages */}
+                            <div style={{ ...glassCard, maxHeight: 500, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 12, padding: '16px 20px' }}>
+                                {(!ticket.messages || ticket.messages.length === 0) && (
+                                    <div style={{ textAlign: 'center', color: 'var(--text-muted)', padding: 40, fontSize: '0.95em' }}>No messages yet. Start the conversation below.</div>
+                                )}
+                                {ticket.messages?.map(msg => (
+                                    <div key={msg.id} style={{
+                                        padding: '14px 18px',
+                                        borderRadius: `calc(${RADIUS} * 0.4)`,
+                                        background: msg.type === 'internal'
+                                            ? 'color-mix(in srgb, #f59e0b 8%, var(--glass-bg, white))'
+                                            : 'var(--card-bg, #fff)',
+                                        border: msg.type === 'internal'
+                                            ? '1px solid color-mix(in srgb, #f59e0b 25%, transparent)'
+                                            : '1px solid var(--glass-border, rgba(0,0,0,0.08))',
+                                    }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                                <div style={{ width: 28, height: 28, borderRadius: '50%', background: `color-mix(in srgb, var(--primary-color) 15%, transparent)`, color: 'var(--primary-color)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7em', fontWeight: 700 }}>
+                                                    {(msg.sender_name || 'S')[0].toUpperCase()}
+                                                </div>
+                                                <span style={{ fontWeight: 700, fontSize: '0.88em', color: 'var(--text-color)' }}>{msg.sender_name || 'System'}</span>
+                                                {msg.type === 'internal' && <span style={{ fontSize: '0.72em', fontWeight: 700, color: '#f59e0b', background: 'color-mix(in srgb, #f59e0b 12%, transparent)', padding: '2px 8px', borderRadius: 10 }}>Internal</span>}
+                                            </div>
+                                            <span style={{ fontSize: '0.78em', color: 'var(--text-muted)' }}>{new Date(msg.created_at).toLocaleString()}</span>
+                                        </div>
+                                        <div style={{ fontSize: '0.92em', lineHeight: 1.6, color: 'var(--text-color)' }}>{msg.body}</div>
+                                    </div>
+                                ))}
+                                <div ref={messagesEndRef} />
                             </div>
-                        )}
 
-                    </div>
-                </div>
+                            {/* Reply Box */}
+                            <div style={glassCard}>
+                                <textarea
+                                    value={newMessage} onChange={e => setNewMessage(e.target.value)}
+                                    placeholder={t('tickets.conversations.placeholder', 'Type a reply...')}
+                                    rows={3}
+                                    onKeyDown={e => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) handleSendMessage(); }}
+                                    style={{ ...inputBase, resize: 'vertical', marginBottom: 12 }}
+                                />
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <div style={{ display: 'flex', gap: 4, background: 'var(--input-bg)', borderRadius: `calc(${RADIUS} * 0.25)`, padding: 3 }}>
+                                        {['public', 'internal'].map(type => (
+                                            <button key={type} onClick={() => setMsgType(type)} style={{
+                                                ...BTN_RESET, padding: '6px 14px', borderRadius: `calc(${RADIUS} * 0.2)`,
+                                                background: msgType === type ? (type === 'internal' ? '#f59e0b' : 'var(--primary-color)') : 'transparent',
+                                                color: msgType === type ? '#fff' : 'var(--text-muted)',
+                                                fontWeight: 700, fontSize: '0.8em', textTransform: 'capitalize',
+                                            }}>
+                                                {type === 'public' ? t('tickets.conversations.public', 'Public') : t('tickets.conversations.internal', 'Internal')}
+                                            </button>
+                                        ))}
+                                    </div>
+                                    <button onClick={handleSendMessage} disabled={!newMessage.trim() || sending} style={{ ...BTN_RESET, background: 'var(--primary-color)', color: '#fff', padding: '8px 24px', borderRadius: `calc(${RADIUS} * 0.33)`, fontWeight: 700, fontSize: '0.88em', opacity: (!newMessage.trim() || sending) ? 0.5 : 1 }}>
+                                        {sending ? t('tickets.conversations.sending', 'Sending...') : t('tickets.conversations.send', 'Send')}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
 
-                {/* SIDEBAR PROPERTIES */}
-                <div style={{ width: '320px', background: 'white', borderLeft: '1px solid #e2e8f0', overflowY: 'auto', padding: '20px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                        <h3 style={{ margin: 0, fontSize: '1.1em', fontWeight: 'bold' }}>Properties</h3>
-                        <span style={{ fontSize: '0.9em', color: '#3b82f6', cursor: 'pointer' }}>v</span>
-                    </div>
-
-                    <div style={{ display: 'grid', gap: '20px' }}>
-                        <SidebarField label="Request ID" value={`#${ticket.id}`} />
-                        <SidebarField label="Status" value={ticket.status} isStatus />
-                        <SidebarField label="Life cycle" value="Not Assigned" />
-                        <SidebarField label="Workflow" value="Not Assigned" />
-                        <SidebarField label="Priority" value={ticket.priority} isPriority />
-
-                        <div>
-                            <div style={labelStyle}>Technician</div>
-                            {isEditing ? (
-                                <select
-                                    value={editData.assigned_user_id || ''}
-                                    onChange={e => setEditData({ ...editData, assigned_user_id: e.target.value })}
-                                    style={{ ...inputStyle, marginTop: '5px' }}
-                                >
-                                    <option value="">Unassigned</option>
-                                    {users.map(u => <option key={u.id} value={u.id}>{u.username}</option>)}
-                                </select>
+                    {/* Activity Tab */}
+                    {activeTab === 'activity' && (
+                        <div style={glassCard}>
+                            <div style={{ ...labelSt, marginBottom: 16 }}>{t('tickets.activity.title', 'Activity Timeline')}</div>
+                            {auditLogs.length === 0 ? (
+                                <div style={{ textAlign: 'center', color: 'var(--text-muted)', padding: 40, fontSize: '0.95em' }}>No activity recorded yet.</div>
                             ) : (
-                                <div style={{ marginTop: '5px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: ticket.assigned_user_id ? '#22c55e' : '#cbd5e1' }}></div>
-                                    <span>{ticket.assignee_name || (users.find(u => u.id == ticket.assigned_user_id)?.username) || 'Unassigned'}</span>
+                                <div style={{ position: 'relative', paddingInlineStart: 24 }}>
+                                    {/* Timeline line */}
+                                    <div style={{ position: 'absolute', [isRtl ? 'right' : 'left']: 8, top: 6, bottom: 6, width: 2, background: 'var(--glass-border, rgba(0,0,0,0.1))', borderRadius: 1 }} />
+                                    {auditLogs.map((log, i) => {
+                                        let details = {};
+                                        try { details = typeof log.details === 'string' ? JSON.parse(log.details) : (log.details || {}); } catch { details = {}; }
+                                        return (
+                                            <div key={log.id || i} style={{ position: 'relative', marginBottom: 20, paddingInlineStart: 20 }}>
+                                                <div style={{ position: 'absolute', [isRtl ? 'right' : 'left']: -20, top: 4, width: 12, height: 12, borderRadius: '50%', background: 'var(--primary-color)', border: '2px solid var(--glass-bg, white)', zIndex: 1 }} />
+                                                <div style={{ fontSize: '0.78em', color: 'var(--text-muted)', marginBottom: 4 }}>
+                                                    {new Date(log.created_at).toLocaleString()} — <span style={{ fontWeight: 700 }}>{log.actor_name || 'System'}</span>
+                                                </div>
+                                                <div style={{ fontSize: '0.88em', color: 'var(--text-color)' }}>
+                                                    <span style={{ fontWeight: 600, textTransform: 'capitalize' }}>{log.action}</span>
+                                                    {Object.keys(details).length > 0 && (
+                                                        <span style={{ color: 'var(--text-muted)', marginInlineStart: 8 }}>
+                                                            {Object.entries(details).map(([k, v]) => `${k}: ${v}`).join(', ')}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
                                 </div>
                             )}
                         </div>
-
-                        <SidebarField label="Group & Site" value={`${ticket.group_name || 'Development'}, ${ticket.site || 'Base Site'}`} />
-
-                        <div style={{ display: 'flex', justifyContent: 'space-between', color: '#64748b', fontSize: '0.9em' }}>
-                            <span>Tasks</span>
-                            <span>0/0</span>
-                        </div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', color: '#64748b', fontSize: '0.9em' }}>
-                            <span>Checklists</span>
-                            <span>0/0</span>
-                        </div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', color: '#64748b', fontSize: '0.9em' }}>
-                            <span>Reminders</span>
-                            <span>0</span>
-                        </div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', color: '#64748b', fontSize: '0.9em' }}>
-                            <span>Approval Status</span>
-                            <span>⚪ Not Configured</span>
-                        </div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', color: '#64748b', fontSize: '0.9em' }}>
-                            <span>Attachments</span>
-                            <span>0 📎</span>
-                        </div>
-                        <SidebarField label="Due By" value={ticket.due_by ? new Date(ticket.due_by).toLocaleString() : 'Delay by 8Hrs'} />
-                    </div>
-
-                    <hr style={{ margin: '20px 0', border: 'none', borderTop: '1px solid #e2e8f0' }} />
-
-                    <div style={{ marginBottom: '20px' }}>
-                        <h3 style={{ margin: '0 0 10px 0', fontSize: '1em', fontWeight: 'bold' }}>Associations v</h3>
-                        <div style={{ fontSize: '0.9em', color: '#64748b' }}>Linked Requests</div>
-                        <div style={{ fontSize: '0.9em', color: '#3b82f6', cursor: 'pointer', marginTop: '5px' }}>Linked to #32</div>
-                    </div>
-
+                    )}
                 </div>
 
-            </div>
+                {/* Right Sidebar */}
+                <div style={{ width: 320, flexShrink: 0 }}>
+                    <div style={{ ...glassCard, position: 'sticky', top: 20 }}>
+                        <div style={{ ...labelSt, marginBottom: 16, fontSize: '0.9em' }}>{t('tickets.sidebar.properties', 'Properties')}</div>
+                        <div style={{ display: 'grid', gap: 16 }}>
+                            {/* Status */}
+                            <div>
+                                <div style={labelSt}>Status</div>
+                                <span style={{ padding: '4px 12px', borderRadius: 14, fontSize: '0.82em', fontWeight: 700, background: `color-mix(in srgb, ${statusColors[ticket.status]} 15%, transparent)`, color: statusColors[ticket.status], textTransform: 'uppercase' }}>
+                                    {ticket.status}
+                                </span>
+                            </div>
 
-            {/* FAB or Helper Icon */}
-            <div style={{ position: 'fixed', bottom: '30px', right: '30px', width: '50px', height: '50px', background: '#3b82f6', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', boxShadow: '0 4px 10px rgba(0,0,0,0.2)', cursor: 'pointer' }}>
-                💬
-            </div>
+                            {/* Priority */}
+                            <div>
+                                <div style={labelSt}>Priority</div>
+                                <span style={{ color: prioColors[ticket.priority] || 'var(--text-muted)', fontWeight: 700, fontSize: '0.92em' }}>
+                                    &#9679; {ticket.priority}
+                                </span>
+                            </div>
 
+                            {/* Assignee */}
+                            <div>
+                                <div style={labelSt}>Assignee</div>
+                                {isEditing ? (
+                                    <select value={editData.assigned_user_id || ''} onChange={e => setEditData(d => ({ ...d, assigned_user_id: e.target.value ? parseInt(e.target.value) : null }))} style={{ ...inputBase, cursor: 'pointer' }}>
+                                        <option value="">Unassigned</option>
+                                        {users.map(u => <option key={u.id} value={u.id}>{u.username}</option>)}
+                                    </select>
+                                ) : (
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                        {ticket.assignee_name ? (
+                                            <>
+                                                <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#22c55e' }} />
+                                                <span style={{ fontSize: '0.9em', fontWeight: 600 }}>{ticket.assignee_name}</span>
+                                            </>
+                                        ) : (
+                                            <span style={{ fontSize: '0.9em', color: 'var(--text-muted)' }}>Unassigned</span>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Assign to Me */}
+                            {!isEditing && (
+                                <button onClick={handleAssignToMe} style={{ ...BTN_RESET, padding: '8px 16px', borderRadius: `calc(${RADIUS} * 0.25)`, border: '1px solid var(--primary-color)', color: 'var(--primary-color)', fontWeight: 700, fontSize: '0.85em', textAlign: 'center' }}>
+                                    {t('tickets.sidebar.assignMe', 'Assign to Me')}
+                                </button>
+                            )}
+
+                            <div style={{ height: 1, background: 'var(--glass-border, rgba(0,0,0,0.08))' }} />
+
+                            {/* SLA Dates */}
+                            <div>
+                                <div style={labelSt}>First Response Due</div>
+                                <div style={{ fontSize: '0.88em', color: 'var(--text-color)' }}>
+                                    {ticket.first_response_due_at ? new Date(ticket.first_response_due_at).toLocaleString() : '-'}
+                                </div>
+                            </div>
+                            <div>
+                                <div style={labelSt}>Resolution Due</div>
+                                <div style={{ fontSize: '0.88em', color: sla.color, fontWeight: sla.bold ? 700 : 500 }}>
+                                    {ticket.resolution_due_at ? new Date(ticket.resolution_due_at).toLocaleString() : '-'}
+                                </div>
+                            </div>
+
+                            {ticket.closed_at && (
+                                <div>
+                                    <div style={labelSt}>Closed At</div>
+                                    <div style={{ fontSize: '0.88em', color: 'var(--text-color)' }}>{new Date(ticket.closed_at).toLocaleString()}</div>
+                                </div>
+                            )}
+
+                            <div style={{ height: 1, background: 'var(--glass-border, rgba(0,0,0,0.08))' }} />
+
+                            {/* Channel */}
+                            <div>
+                                <div style={labelSt}>Channel</div>
+                                <span style={{ fontSize: '0.88em', fontWeight: 600, color: 'var(--text-color)', textTransform: 'capitalize' }}>{ticket.channel || 'web'}</span>
+                            </div>
+
+                            {/* Ticket ID */}
+                            <div>
+                                <div style={labelSt}>Ticket ID</div>
+                                <span style={{ fontSize: '0.88em', color: 'var(--text-muted)' }}>#{ticket.id}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     );
 }
-
-// Sub-components & Styles
-
-function FieldRow({ label, value, isEditing, field, onChange, data, type = 'text', options = [] }) {
-    return (
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={labelStyle}>{label}</span>
-            <div style={{ width: '60%', textAlign: 'left' }}>
-                {isEditing ? (
-                    type === 'select' ? (
-                        <select
-                            value={data[field] || ''}
-                            onChange={e => onChange({ ...data, [field]: e.target.value })}
-                            style={{ ...inputStyle, width: '100%' }}
-                        >
-                            {options.map(o => <option key={o} value={o}>{o}</option>)}
-                        </select>
-                    ) : (
-                        <input
-                            type="text"
-                            value={data[field] || ''}
-                            onChange={e => onChange({ ...data, [field]: e.target.value })}
-                            style={{ ...inputStyle, width: '100%' }}
-                        />
-                    )
-                ) : (
-                    <span style={valueStyle}>{value || '-'}</span>
-                )}
-            </div>
-        </div>
-    );
-}
-
-function SidebarField({ label, value, isStatus, isPriority }) {
-    return (
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={labelStyle}>{label}</span>
-            <span style={{
-                ...valueStyle,
-                fontWeight: (isStatus || isPriority) ? 'bold' : 'normal',
-                color: isStatus && value === 'open' ? '#ef4444' : (isPriority && value === 'high' ? '#ef4444' : '#334155')
-            }}>
-                {isStatus && <span style={{ marginRight: '5px' }}>🚩</span>}
-                {isPriority && <span style={{ marginRight: '5px', color: '#ef4444' }}>■</span>}
-                {value || '-'}
-            </span>
-        </div>
-    );
-}
-
-const btnStyle = (variant) => ({
-    padding: '8px 16px',
-    borderRadius: '4px',
-    border: variant === 'light' ? '1px solid #cbd5e1' : 'none',
-    background: variant === 'light' ? 'white' : '#2563eb',
-    color: variant === 'light' ? '#475569' : 'white',
-    cursor: 'pointer',
-    fontSize: '0.9em',
-    fontWeight: '500'
-});
-
-const sectionHeaderStyle = {
-    fontSize: '0.9em',
-    fontWeight: 'bold',
-    color: '#64748b',
-    textTransform: 'uppercase',
-    marginBottom: '10px'
-};
-
-const labelStyle = {
-    color: '#64748b',
-    fontSize: '0.9em'
-};
-
-const valueStyle = {
-    color: '#334155',
-    fontWeight: '500',
-    fontSize: '0.95em'
-};
-
-const inputStyle = {
-    padding: '8px',
-    border: '1px solid #cbd5e1',
-    borderRadius: '4px',
-    fontSize: '0.9em',
-    width: '100%',
-    fontFamily: 'inherit'
-};

@@ -3,7 +3,7 @@ const router = express.Router();
 const { query } = require('../../infrastructure/database/db');
 const authenticate = require('../middleware/auth');
 const NodeCache = require('node-cache');
-const analyticsCache = new NodeCache({ stdTTL: 600 }); // 10 minutes cache
+const analyticsCache = new NodeCache({ stdTTL: 600, maxKeys: 500 }); // 10 minutes cache, max 500 entries
 
 const STOP_WORDS = new Set(['the', 'and', 'a', 'to', 'of', 'in', 'i', 'is', 'that', 'it', 'on', 'you', 'this', 'for', 'but', 'with', 'are', 'have', 'be', 'at', 'or', 'as', 'was', 'so', 'if', 'out', 'not', 'an', 'very', 'my', 'me', 'we']);
 
@@ -65,10 +65,25 @@ router.get('/question-stats', authenticate, async (req, res) => {
         let allQuestions = [];
         let allAnswers = {};
 
+        // Batch fetch all submissions for tenant's forms to avoid N+1
+        const formIds = formsRes.rows.map(f => f.id);
+        let allSubmissions = [];
+        if (formIds.length > 0) {
+            const subRes = await query(
+                "SELECT form_id, data FROM submissions WHERE form_id = ANY($1) AND (metadata->>'status' IS NULL OR metadata->>'status' = 'completed')",
+                [formIds]
+            );
+            allSubmissions = subRes.rows;
+        }
+        const submissionsByForm = {};
+        allSubmissions.forEach(s => {
+            if (!submissionsByForm[s.form_id]) submissionsByForm[s.form_id] = [];
+            submissionsByForm[s.form_id].push(s);
+        });
+
         for (const form of formsRes.rows) {
             const questions = getAllQuestions(form.definition);
-            const subRes = await query("SELECT data FROM submissions WHERE form_id = $1 AND (metadata->>'status' IS NULL OR metadata->>'status' = 'completed')", [form.id]);
-            const submissions = subRes.rows;
+            const submissions = submissionsByForm[form.id] || [];
 
             questions.forEach(q => {
                 const qId = `${form.id}_${q.name}`;

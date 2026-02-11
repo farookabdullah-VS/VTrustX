@@ -106,7 +106,7 @@ router.post('/', authenticate, authenticate.checkPermission('users', 'create'), 
         const newUser = {
             username,
             password: hashedPassword,
-            role: role || 'user',
+            role: (['user', 'admin', 'viewer', 'editor'].includes(role) ? role : 'user'),
             role_id: role_id || null,
             email: email || null,
             phone: phone || null,
@@ -153,7 +153,11 @@ router.put('/:id', authenticate, authenticate.checkPermission('users', 'update')
             const salt = await bcrypt.genSalt(10);
             updates.password = await bcrypt.hash(password, salt);
         }
-        if (role) updates.role = role;
+        if (role) {
+            const ALLOWED_ROLES = ['user', 'admin', 'viewer', 'editor'];
+            if (!ALLOWED_ROLES.includes(role)) return res.status(400).json({ error: 'Invalid role' });
+            updates.role = role;
+        }
         if (role_id !== undefined) updates.role_id = role_id;
         if (email !== undefined) updates.email = email;
         if (phone !== undefined) updates.phone = phone;

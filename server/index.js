@@ -45,13 +45,17 @@ const formsRouter = require('./src/api/routes/forms');
 console.log("Stage 3: Forms Router Loaded");
 
 app.set('trust proxy', 1); // Only trust the first proxy (e.g. Cloud Run LB)
-// app.use(helmet({
-//     contentSecurityPolicy: false, 
-// }));
+app.use(helmet({
+    contentSecurityPolicy: false, // Disabled for SPA compatibility
+    crossOriginEmbedderPolicy: false,
+}));
 
 const corsOptions = {
-    origin: process.env.FRONTEND_URL ? process.env.FRONTEND_URL.split(',') : true,
-    credentials: true
+    origin: process.env.FRONTEND_URL
+        ? process.env.FRONTEND_URL.split(',').map(u => u.trim())
+        : (process.env.NODE_ENV === 'production' ? false : true),
+    credentials: true,
+    optionsSuccessStatus: 200,
 };
 app.use(cors(corsOptions));
 
@@ -153,7 +157,7 @@ app.use((err, req, res, next) => {
 
     res.status(err.status || 500).json({
         error: isProd ? 'An internal error occurred.' : err.message,
-        stack: isProd ? null : err.stack
+        ...(isProd ? {} : { stack: err.stack }),
     });
 });
 

@@ -373,7 +373,10 @@ router.post('/subscription/license', authenticate, async (req, res) => {
             if (process.env.NODE_ENV === 'production') throw new Error('LICENSE_SECRET not defined');
             console.warn("Using insecure fallback for LICENSE_SECRET");
         }
-        const finalSecret = secret || 'vtrustx_secret_key';
+        if (!secret) {
+            return res.status(500).json({ error: 'License verification not configured. Set LICENSE_SECRET or JWT_SECRET.' });
+        }
+        const finalSecret = secret;
 
         let payload;
         try {

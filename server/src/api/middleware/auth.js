@@ -16,18 +16,13 @@ const authenticate = async (req, res, next) => {
 
         const secret = process.env.JWT_SECRET;
         if (!secret) {
-            if (process.env.NODE_ENV === 'production') {
-                throw new Error('JWT_SECRET is not defined in production environment');
-            }
-            // Fallback for development only
-            console.warn("WARNING: Using insecure fallback JWT secret. Set JWT_SECRET in .env");
+            throw new Error('JWT_SECRET environment variable is required. Set it in your .env file.');
         }
-        const finalSecret = secret || 'vtrustx_secret_key_2024';
 
         // Verify Token
         let decoded;
         try {
-            decoded = jwt.verify(token, finalSecret);
+            decoded = jwt.verify(token, secret);
         } catch (err) {
             return res.status(401).json({ error: 'Invalid or expired token' });
         }
@@ -66,7 +61,7 @@ const authenticate = async (req, res, next) => {
                 const expiry = new Date(tenant.subscription_expires_at);
                 if (expiry < new Date()) {
                     // Allow global admin bypass or specific route bypasses here if needed
-                    if (user.role !== 'global_admin' && user.username !== 'admin') {
+                    if (user.role !== 'global_admin') {
                         return res.status(403).json({ error: 'Subscription expired. Please contact administrator.' });
                     }
                 }

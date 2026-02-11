@@ -13,16 +13,24 @@ const contactRepo = new PostgresRepository('contacts');
 const workflowEngine = require('../../services/workflowEngine');
 const emailService = require('../../services/emailService');
 
+// --- WORKFLOW TRANSITIONS ---
+const VALID_TRANSITIONS = {
+    new: ['open', 'closed'],
+    open: ['pending', 'resolved', 'closed'],
+    pending: ['open', 'resolved', 'closed'],
+    resolved: ['closed', 'open'],
+    closed: ['open']
+};
+
 // --- TICKETS ---
 
-// GET Tickets (List)
+// GET Tickets (List) — with pagination, search, sorting
 router.get('/tickets', authenticate, async (req, res) => {
     try {
-        const { status, priority, assignee } = req.query;
+        const { status, priority, assignee, page, limit, sort, order, search, dateFrom, dateTo, team } = req.query;
         const tenantId = req.user.tenant_id;
 
-        let query = `
-            SELECT t.*, c.name as contact_name, a.name as account_name, u.username as assignee_name 
+        let baseQuery = `
             FROM tickets t
             LEFT JOIN crm_contacts c ON t.contact_id = c.id
             LEFT JOIN crm_accounts a ON t.account_id = a.id
@@ -32,14 +40,56 @@ router.get('/tickets', authenticate, async (req, res) => {
         const params = [tenantId];
         let pIdx = 2;
 
-        if (status) { query += ` AND t.status = $${pIdx++}`; params.push(status); }
-        if (priority) { query += ` AND t.priority = $${pIdx++}`; params.push(priority); }
-        if (assignee) { query += ` AND t.assigned_user_id = $${pIdx++}`; params.push(assignee); }
+        if (status) { baseQuery += ` AND t.status = $${pIdx++}`; params.push(status); }
+        if (priority) { baseQuery += ` AND t.priority = $${pIdx++}`; params.push(priority); }
+        if (assignee) { baseQuery += ` AND t.assigned_user_id = $${pIdx++}`; params.push(parseInt(assignee)); }
+        if (team) { baseQuery += ` AND t.assigned_team_id = $${pIdx++}`; params.push(parseInt(team)); }
+        if (dateFrom) { baseQuery += ` AND t.created_at >= $${pIdx++}`; params.push(new Date(dateFrom)); }
+        if (dateTo) { baseQuery += ` AND t.created_at <= $${pIdx++}`; params.push(new Date(dateTo)); }
+        if (search) {
+            baseQuery += ` AND (t.subject ILIKE $${pIdx} OR t.description ILIKE $${pIdx} OR t.ticket_code ILIKE $${pIdx})`;
+            params.push(`%${search}%`);
+            pIdx++;
+        }
 
-        query += ` ORDER BY t.created_at DESC LIMIT 50`;
+        // If no page param, return raw array for backward compat
+        if (!page) {
+            const allowedSorts = { created_at: 't.created_at', priority: 't.priority', status: 't.status', subject: 't.subject' };
+            const sortCol = allowedSorts[sort] || 't.created_at';
+            const sortDir = order === 'asc' ? 'ASC' : 'DESC';
+            const dataQuery = `SELECT t.*, c.name as contact_name, a.name as account_name, u.username as assignee_name ${baseQuery} ORDER BY ${sortCol} ${sortDir} LIMIT 50`;
+            const result = await pool.query(dataQuery, params);
+            return res.json(result.rows);
+        }
 
-        const result = await pool.query(query, params);
-        res.json(result.rows);
+        // Paginated response
+        const pageNum = Math.max(1, parseInt(page) || 1);
+        const pageSize = Math.min(100, Math.max(1, parseInt(limit) || 20));
+        const offset = (pageNum - 1) * pageSize;
+
+        const allowedSorts = { created_at: 't.created_at', priority: 't.priority', status: 't.status', subject: 't.subject', ticket_code: 't.ticket_code' };
+        const sortCol = allowedSorts[sort] || 't.created_at';
+        const sortDir = order === 'asc' ? 'ASC' : 'DESC';
+
+        const countQuery = `SELECT COUNT(*) as total ${baseQuery}`;
+        const dataParams = [...params, pageSize, offset];
+        const dataQuery = `SELECT t.*, c.name as contact_name, a.name as account_name, u.username as assignee_name ${baseQuery} ORDER BY ${sortCol} ${sortDir} LIMIT $${pIdx} OFFSET $${pIdx + 1}`;
+
+        const [countResult, dataResult] = await Promise.all([
+            pool.query(countQuery, params),
+            pool.query(dataQuery, dataParams)
+        ]);
+
+        const total = parseInt(countResult.rows[0].total);
+        res.json({
+            data: dataResult.rows,
+            pagination: {
+                page: pageNum,
+                limit: pageSize,
+                total,
+                totalPages: Math.ceil(total / pageSize)
+            }
+        });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -203,6 +253,71 @@ router.post('/tickets', authenticate, async (req, res) => {
     }
 });
 
+// GET Allowed Transitions for a Ticket
+router.get('/tickets/:id/transitions', authenticate, async (req, res) => {
+    try {
+        const id = req.params.id;
+        const tenantId = req.user.tenant_id;
+        const check = await pool.query('SELECT status FROM tickets WHERE id = $1 AND tenant_id = $2', [id, tenantId]);
+        if (check.rows.length === 0) return res.status(404).json({ error: 'Ticket not found' });
+        const currentStatus = check.rows[0].status;
+        res.json({ currentStatus, allowedTransitions: VALID_TRANSITIONS[currentStatus] || [] });
+    } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
+// PUT Bulk Update Tickets
+router.put('/tickets/bulk', authenticate, async (req, res) => {
+    const client = await pool.connect();
+    try {
+        const { ticketIds, updates } = req.body;
+        const tenantId = req.user.tenant_id;
+        if (!Array.isArray(ticketIds) || ticketIds.length === 0) return res.status(400).json({ error: 'ticketIds array required' });
+
+        const allowed = ['status', 'priority', 'assigned_user_id', 'assigned_team_id'];
+        const safeUpdates = {};
+        allowed.forEach(k => { if (updates[k] !== undefined) safeUpdates[k] = updates[k]; });
+        if (Object.keys(safeUpdates).length === 0) return res.status(400).json({ error: 'No valid fields to update' });
+
+        await client.query('BEGIN');
+        const results = { updated: [], errors: [] };
+
+        for (const ticketId of ticketIds) {
+            const check = await client.query('SELECT id, status FROM tickets WHERE id = $1 AND tenant_id = $2', [ticketId, tenantId]);
+            if (check.rows.length === 0) { results.errors.push({ id: ticketId, error: 'Not found' }); continue; }
+
+            const currentStatus = check.rows[0].status;
+            const applyUpdates = { ...safeUpdates };
+
+            // Validate workflow transition if status change
+            if (applyUpdates.status && applyUpdates.status !== currentStatus) {
+                const allowed = VALID_TRANSITIONS[currentStatus] || [];
+                if (!allowed.includes(applyUpdates.status)) {
+                    results.errors.push({ id: ticketId, error: `Invalid transition from ${currentStatus} to ${applyUpdates.status}`, allowedTransitions: allowed });
+                    continue;
+                }
+            }
+
+            if (applyUpdates.status === 'closed') applyUpdates.closed_at = new Date();
+            if (applyUpdates.status === 'open' && currentStatus === 'closed') applyUpdates.closed_at = null;
+
+            await ticketRepo.update(ticketId, applyUpdates);
+            await client.query(
+                `INSERT INTO audit_logs (entity_type, entity_id, action, details, actor_id) VALUES ($1, $2, $3, $4, $5)`,
+                ['ticket', ticketId, 'bulk_update', JSON.stringify(applyUpdates), req.user.id]
+            );
+            results.updated.push(ticketId);
+        }
+
+        await client.query('COMMIT');
+        res.json(results);
+    } catch (err) {
+        await client.query('ROLLBACK');
+        res.status(500).json({ error: err.message });
+    } finally {
+        client.release();
+    }
+});
+
 // PUT Update Ticket
 router.put('/tickets/:id', authenticate, async (req, res) => {
     try {
@@ -210,9 +325,11 @@ router.put('/tickets/:id', authenticate, async (req, res) => {
         const tenantId = req.user.tenant_id;
         const updates = req.body;
 
-        // Verify Ownership
-        const check = await pool.query('SELECT id FROM tickets WHERE id = $1 AND tenant_id = $2', [id, tenantId]);
+        // Verify Ownership & get current status
+        const check = await pool.query('SELECT id, status FROM tickets WHERE id = $1 AND tenant_id = $2', [id, tenantId]);
         if (check.rows.length === 0) return res.status(404).json({ error: 'Ticket not found' });
+
+        const currentStatus = check.rows[0].status;
 
         // Sanitize: allow only specific fields
         const allowed = [
@@ -225,7 +342,20 @@ router.put('/tickets/:id', authenticate, async (req, res) => {
         const safeUpdates = {};
         allowed.forEach(k => { if (updates[k] !== undefined) safeUpdates[k] = updates[k]; });
 
-        if (updates.status === 'closed') safeUpdates.closed_at = new Date();
+        // Workflow transition validation
+        if (safeUpdates.status && safeUpdates.status !== currentStatus) {
+            const allowedTransitions = VALID_TRANSITIONS[currentStatus] || [];
+            if (!allowedTransitions.includes(safeUpdates.status)) {
+                return res.status(400).json({
+                    error: `Invalid status transition from '${currentStatus}' to '${safeUpdates.status}'`,
+                    currentStatus,
+                    allowedTransitions
+                });
+            }
+        }
+
+        if (safeUpdates.status === 'closed') safeUpdates.closed_at = new Date();
+        if (safeUpdates.status === 'open' && currentStatus === 'closed') safeUpdates.closed_at = null;
 
         const updated = await ticketRepo.update(id, safeUpdates);
 

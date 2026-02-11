@@ -1,9 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const { query } = require('../../infrastructure/database/db');
+const authenticate = require('../middleware/auth');
 
 // GET all integrations
-router.get('/', async (req, res) => {
+router.get('/', authenticate, async (req, res) => {
     try {
         const result = await query('SELECT * FROM integrations ORDER BY provider ASC');
         res.json(result.rows);
@@ -13,7 +14,7 @@ router.get('/', async (req, res) => {
 });
 
 // UPDATE specific integration
-router.put('/:id', async (req, res) => {
+router.put('/:id', authenticate, async (req, res) => {
     try {
         const { api_key, webhook_url, is_active, config } = req.body;
         await query(
@@ -33,7 +34,7 @@ router.put('/:id', async (req, res) => {
 });
 
 // CREATE new integration
-router.post('/', async (req, res) => {
+router.post('/', authenticate, async (req, res) => {
     try {
         const { provider, api_key, webhook_url, is_active, config } = req.body;
 

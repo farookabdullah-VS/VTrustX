@@ -361,7 +361,19 @@ const ExportModal = ({ isOpen, onClose, formId, formTitle }) => {
                     setExportStatus({ type: 'success', message: 'Export completed! Downloading...' });
 
                     // Download file
-                    window.location.href = `/api/exports/download/${jobId}?token=${token}`;
+                    // Download via fetch + blob to avoid token in URL
+                    const dlResp = await fetch(`/api/exports/download/${jobId}`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    if (dlResp.ok) {
+                        const blob = await dlResp.blob();
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `export-${jobId}`;
+                        a.click();
+                        URL.revokeObjectURL(url);
+                    }
 
                     setTimeout(() => {
                         setIsExporting(false);

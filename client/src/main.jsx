@@ -57,6 +57,14 @@ if (!rootElement) {
     console.log('React Application Mounted.');
   } catch (err) {
     console.error('Failed to mount React app:', err);
-    rootElement.innerHTML = `<div style="color:red; padding:20px;"><h1>Failed to mount App</h1><pre>${err.message}</pre></div>`;
+    const errDiv = document.createElement('div');
+    errDiv.style.cssText = 'color:red; padding:20px;';
+    const h1 = document.createElement('h1');
+    h1.textContent = 'Failed to mount App';
+    const pre = document.createElement('pre');
+    pre.textContent = err.message;
+    errDiv.appendChild(h1);
+    errDiv.appendChild(pre);
+    rootElement.replaceChildren(errDiv);
   }
 }

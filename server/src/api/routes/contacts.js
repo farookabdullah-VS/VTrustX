@@ -72,7 +72,9 @@ router.post('/', authenticate, async (req, res) => {
 // Delete Contact
 router.delete('/:id', authenticate, async (req, res) => {
     try {
-        // Todo: Verify tenant ownership before delete
+        const pool = require('../../infrastructure/database/db');
+        const existing = await pool.query('SELECT id FROM contacts WHERE id = $1 AND tenant_id = $2', [req.params.id, req.user.tenant_id]);
+        if (existing.rows.length === 0) return res.status(404).json({ error: 'Contact not found' });
         await contactRepo.delete(req.params.id);
         res.status(204).send();
     } catch (err) {

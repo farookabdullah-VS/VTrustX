@@ -711,27 +711,20 @@ function App() {
 
           {view === 'tickets' && (
             <TicketListView
+              user={user}
               onSelectTicket={(id) => {
                 if (id === 'reports') setView('crm-reports');
                 else { setCurrentTicketId(id); setView('ticket-detail'); }
               }}
-              onCreateTicket={() => {
-                const subject = prompt("Ticket Subject:");
-                if (subject) {
-                  // Quick create for MVP
-                  axios.post('/api/crm/tickets', { subject, description: "Created via Quick Add" })
-                    .then(() => alert("Ticket Created! Refesh to see."))
-                    .catch(e => alert(e.message));
-                }
-              }}
             />
           )}
 
-          {view === 'crm-reports' && <CrmDashboard />}
+          {view === 'crm-reports' && <CrmDashboard user={user} />}
 
           {view === 'ticket-detail' && (
             <TicketDetailView
               ticketId={currentTicketId}
+              user={user}
               onBack={() => { setView('tickets'); setCurrentTicketId(null); }}
             />
           )}

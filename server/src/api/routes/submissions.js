@@ -249,8 +249,8 @@ router.put('/:id', authenticate, async (req, res) => {
     }
 });
 
-// Callback for AI Analysis
-router.put('/:id/analysis', async (req, res) => {
+// Callback for AI Analysis (internal service endpoint)
+router.put('/:id/analysis', authenticate, async (req, res) => {
     try {
         const { analysis } = req.body;
         console.log(`Received analysis for submission ${req.params.id}`);

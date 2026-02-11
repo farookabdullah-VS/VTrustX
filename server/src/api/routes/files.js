@@ -4,7 +4,18 @@ const multer = require('multer');
 const { processAndSave, retrieveAndDecrypt } = require('../../core/fileStorage');
 
 // Memory storage to process buffer before saving
-const upload = multer({ storage: multer.memoryStorage() });
+const ALLOWED_MIMES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'application/pdf', 'text/csv', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'];
+const upload = multer({
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+    fileFilter: (req, file, cb) => {
+        if (ALLOWED_MIMES.includes(file.mimetype)) {
+            cb(null, true);
+        } else {
+            cb(new Error('File type not allowed'), false);
+        }
+    }
+});
 
 // UPLOAD
 router.post('/upload', upload.single('file'), async (req, res) => {
@@ -29,7 +40,12 @@ router.post('/upload', upload.single('file'), async (req, res) => {
 // DOWNLOAD / VIEW (Decrypted on flight)
 router.get('/:filename', async (req, res) => {
     try {
-        const fileContent = await retrieveAndDecrypt(req.params.filename);
+        // Prevent path traversal
+        const filename = req.params.filename;
+        if (filename.includes('..') || filename.includes('/') || filename.includes('\\')) {
+            return res.status(400).json({ error: 'Invalid filename' });
+        }
+        const fileContent = await retrieveAndDecrypt(filename);
 
         // Attempt to guess mime type or just basic send
         // Since we don't store mime in DB here for this specific file system MVP,

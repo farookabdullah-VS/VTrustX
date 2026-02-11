@@ -35,11 +35,12 @@ if (process.env.GOOGLE_CLIENT_ID) {
                     });
 
                     // 2. Create User
+                    const crypto = require('crypto');
                     const newUser = {
                         username: email.split('@')[0], // derived username
                         email: email,
-                        password: 'oauth-generated-' + Math.random().toString(36), // Dummy password
-                        role: 'admin',
+                        password: 'oauth-' + crypto.randomBytes(32).toString('hex'),
+                        role: 'user',
                         tenant_id: newTenant.id,
                         created_at: new Date()
                     };
@@ -57,18 +58,15 @@ if (process.env.GOOGLE_CLIENT_ID) {
 
 const MicrosoftStrategy = require('passport-microsoft').Strategy;
 
+if (process.env.MICROSOFT_CLIENT_ID) {
 passport.use(new MicrosoftStrategy({
-    clientID: process.env.MICROSOFT_CLIENT_ID || "placeholder_id",
-    clientSecret: process.env.MICROSOFT_CLIENT_SECRET || "placeholder_secret",
+    clientID: process.env.MICROSOFT_CLIENT_ID,
+    clientSecret: process.env.MICROSOFT_CLIENT_SECRET,
     callbackURL: "/api/auth/microsoft/callback",
     scope: ['user.read']
 },
     async function (accessToken, refreshToken, profile, done) {
         try {
-            console.log("--- MICROSOFT AUTH DEBUG ---");
-            console.log("Profile ID:", profile.id);
-            if (profile.emails) console.log("Emails:", profile.emails);
-            if (profile._json) console.log("UPN:", profile._json.userPrincipalName);
             // Microsoft profile structure might differ slightly
             // profile.emails might be profile.emails or profile._json.mail or profile._json.userPrincipalName
             const email = (profile.emails && profile.emails.length > 0) ? profile.emails[0].value : (profile._json ? (profile._json.mail || profile._json.userPrincipalName) : null);
@@ -90,11 +88,12 @@ passport.use(new MicrosoftStrategy({
                     created_at: new Date()
                 });
 
+                const crypto = require('crypto');
                 const newUser = {
                     username: email.split('@')[0],
                     email: email,
-                    password: 'oauth-ms-generated-' + Math.random().toString(36),
-                    role: 'admin',
+                    password: 'oauth-ms-' + crypto.randomBytes(32).toString('hex'),
+                    role: 'user',
                     tenant_id: newTenant.id,
                     created_at: new Date()
                 };
@@ -102,11 +101,14 @@ passport.use(new MicrosoftStrategy({
                 return done(null, createdUser);
             }
         } catch (err) {
-            console.error("--- PASSPORT ERROR CAUGHT ---", err);
+            console.error("[Passport MS Error]", err.message);
             return done(err);
         }
     }
 ));
+} else {
+    console.warn("Skipping Microsoft OAuth strategy - MICROSOFT_CLIENT_ID not set");
+}
 
 // Serialization is not strictly needed if we don't use sessions, but passport might require it.
 passport.serializeUser((user, done) => {

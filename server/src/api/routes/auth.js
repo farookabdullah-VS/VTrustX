@@ -61,7 +61,10 @@ router.post('/register', async (req, res) => {
 // Helper to sign JWT
 const signToken = (user) => {
     const jwt = require('jsonwebtoken');
-    const secret = process.env.JWT_SECRET || 'vtrustx_secret_key_2024';
+    const secret = process.env.JWT_SECRET;
+    if (!secret) {
+        throw new Error('JWT_SECRET environment variable is required.');
+    }
     return jwt.sign(
         {
             id: user.id,
@@ -91,14 +94,11 @@ router.post('/login', async (req, res) => {
         if (user.password.startsWith('$2a$') || user.password.startsWith('$2b$')) {
             isMatch = await bcrypt.compare(password, user.password);
         } else {
-            // Legacy plain text check
-            isMatch = (user.password === password);
-            if (isMatch) {
-                // Auto-upgrade to hash
-                const salt = await bcrypt.genSalt(10);
-                const hash = await bcrypt.hash(password, salt);
-                await userRepo.update(user.id, { password: hash });
-            }
+            // Force password reset for legacy plaintext passwords
+            return res.status(401).json({
+                error: 'Password requires reset. Please use the password reset flow.',
+                requiresReset: true
+            });
         }
 
         if (!isMatch) {
@@ -131,7 +131,14 @@ router.get('/google/callback',
         const user = req.user;
         const token = signToken(user); // REAL JWT
 
-        res.redirect(`/login?token=${token}&user=${encodeURIComponent(JSON.stringify(user))}`);
+        // Set token in a secure httpOnly cookie instead of URL query params
+        res.cookie('auth_token', token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            maxAge: 24 * 60 * 60 * 1000 // 24h
+        });
+        res.redirect(`/login?oauth=success`);
     }
 );
 
@@ -141,11 +148,43 @@ router.get('/microsoft/callback',
     function (req, res) {
         const user = req.user;
         const token = signToken(user); // REAL JWT
-        res.redirect(`/login?token=${token}&user=${encodeURIComponent(JSON.stringify(user))}`);
+        res.cookie('auth_token', token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            maxAge: 24 * 60 * 60 * 1000
+        });
+        res.redirect(`/login?oauth=success`);
     }
 );
 
 const authenticate = require('../middleware/auth');
+
+// OAuth cookie-based auth: returns current user from httpOnly cookie
+router.get('/me', async (req, res) => {
+    try {
+        // Parse cookie manually to avoid cookie-parser dependency
+        const cookieHeader = req.headers.cookie || '';
+        const cookies = Object.fromEntries(cookieHeader.split(';').map(c => c.trim().split('=').map(s => s.trim())));
+        const token = cookies.auth_token;
+        if (!token) return res.status(401).json({ error: 'No auth cookie' });
+
+        const jwt = require('jsonwebtoken');
+        const secret = process.env.JWT_SECRET;
+        if (!secret) return res.status(500).json({ error: 'JWT_SECRET not configured' });
+
+        const decoded = jwt.verify(token, secret);
+        const user = await userRepo.findById(decoded.id);
+        if (!user) return res.status(401).json({ error: 'User not found' });
+
+        const { password: _, ...safeUser } = user;
+        // Clear the cookie after reading (token handed off to client localStorage via response)
+        res.clearCookie('auth_token');
+        res.json({ user: safeUser, token });
+    } catch (e) {
+        res.status(401).json({ error: 'Invalid or expired auth cookie' });
+    }
+});
 
 router.post('/change-password', authenticate, async (req, res) => {
     try {
@@ -154,8 +193,11 @@ router.post('/change-password', authenticate, async (req, res) => {
         if (!currentPassword || !newPassword) {
             return res.status(400).json({ error: 'Current password and new password are required' });
         }
-        if (newPassword.length < 6) {
-            return res.status(400).json({ error: 'New password must be at least 6 characters' });
+        if (newPassword.length < 10) {
+            return res.status(400).json({ error: 'New password must be at least 10 characters' });
+        }
+        if (!/[A-Z]/.test(newPassword) || !/[a-z]/.test(newPassword) || !/[0-9]/.test(newPassword)) {
+            return res.status(400).json({ error: 'Password must contain uppercase, lowercase, and a number' });
         }
 
         // Use authenticated user's ID, not username from body
@@ -170,6 +212,7 @@ router.post('/change-password', authenticate, async (req, res) => {
         if (user.password.startsWith('$2a$') || user.password.startsWith('$2b$')) {
             isMatch = await bcrypt.compare(currentPassword, user.password);
         } else {
+            // Legacy plaintext: still allow change-password to upgrade
             isMatch = (user.password === currentPassword);
         }
 

@@ -160,7 +160,8 @@ router.post('/', authenticate, authenticate.checkPermission('forms', 'create'), 
         console.log("POST /api/forms - Creating Form. User:", req.user);
 
         // Generate Slug
-        const generateSlug = () => Math.random().toString(36).substring(2, 8).toUpperCase();
+        const crypto = require('crypto');
+        const generateSlug = () => crypto.randomBytes(4).toString('hex').toUpperCase();
 
         // Map to DB columns
         const newForm = {
@@ -205,7 +206,7 @@ router.put('/:id', authenticate, authenticate.checkPermission('forms', 'update')
             start_date: req.body.startDate !== undefined ? req.body.startDate : existing.start_date,
             end_date: req.body.endDate !== undefined ? req.body.endDate : existing.end_date,
             response_limit: req.body.responseLimit !== undefined ? req.body.responseLimit : existing.response_limit,
-            redirect_url: req.body.redirectUrl !== undefined ? req.body.redirectUrl : existing.redirect_url,
+            redirect_url: req.body.redirectUrl !== undefined ? (req.body.redirectUrl && /^https?:\/\//.test(req.body.redirectUrl) ? req.body.redirectUrl : null) : existing.redirect_url,
             password: req.body.password !== undefined ? req.body.password : existing.password,
 
             allow_audio: req.body.allowAudio !== undefined ? req.body.allowAudio : existing.allow_audio,
