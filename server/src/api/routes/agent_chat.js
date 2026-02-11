@@ -69,7 +69,7 @@ router.post('/start', async (req, res) => {
             stage: 'GREETING' // New State: GREETING, CONSENT, SURVEY
         });
 
-        const introText = `Hello, I'm Layla from VTrustX. How are you doing today?`;
+        const introText = `Hello, I'm Layla from RayiX. How are you doing today?`;
 
         res.json({ sessionId, text: introText, stage: 'GREETING' }); // Send stage
 
@@ -299,7 +299,7 @@ router.post('/analyze', async (req, res) => {
         const langInstruction = isArabic ? "Answer in Arabic." : "Answer in the user's language (default to English).";
 
         const analystPrompt = `
-            You are the "VTrustX Survey Analyst". 
+            You are the "RayiX Survey Analyst". 
             You are assisting a user who is looking at the survey: "${form.title}".
             
             AGGREGATED SURVEY STATS:
@@ -320,7 +320,7 @@ router.post('/analyze', async (req, res) => {
 
             STRICT SAFETY & SCOPE GUIDELINES:
             1. **NO EXPLICIT CONTENT**: Strictly prohibited. If the user question contains sexual, pornographic, or explicitly offensive content, YOU MUST REFUSE to answer. State clearly that such content is not allowed.
-            2. **SYSTEM SCOPE ONLY**: You are an expert on this specific survey and the VTrustX system. Do NOT answer general knowledge questions (e.g., about history, celebrities, weather, coding) unless they are directly analogy-related to the data.
+            2. **SYSTEM SCOPE ONLY**: You are an expert on this specific survey and the RayiX system. Do NOT answer general knowledge questions (e.g., about history, celebrities, weather, coding) unless they are directly analogy-related to the data.
             3. **DATA FOCUS**: Your job is to analyze the survey results provided above. If the question is "What is in the database?", refer to these statistics.
             
             TASK:
@@ -473,10 +473,10 @@ router.post('/platform-agent', async (req, res) => {
         const langInstruction = isArabic ? "Answer in Arabic." : "Answer in the user's language (default to English).";
 
         const platformPrompt = `
-            You are the **VTrustX AI Agent** - an intelligent assistant for the VTrustX Customer Experience Management Platform.
+            You are the **RayiX AI Agent** - an intelligent assistant for the RayiX Customer Experience Management Platform.
 
             PLATFORM CAPABILITIES:
-            VTrustX is a comprehensive CX platform that includes:
+            RayiX is a comprehensive CX platform that includes:
             - **Survey Management**: Create, distribute, and analyze surveys (NPS, CSAT, CES, custom forms)
             - **Customer Journey Mapping (CJM)**: Visual journey maps with touchpoints, emotions, and pain points
             - **CX Personas**: Customer persona builder with demographics, behaviors, and goals
@@ -510,9 +510,9 @@ router.post('/platform-agent', async (req, res) => {
 
             STRICT SAFETY & SCOPE GUIDELINES:
             1. **NO EXPLICIT CONTENT**: If the user question contains sexual, pornographic, or offensive content, REFUSE to answer.
-            2. **SYSTEM SCOPE ONLY**: You are an expert on the VTrustX platform and its data. Do NOT answer general knowledge questions unless directly related to CX analytics.
+            2. **SYSTEM SCOPE ONLY**: You are an expert on the RayiX platform and its data. Do NOT answer general knowledge questions unless directly related to CX analytics.
             3. **DATA FOCUS**: Base your answers on the real metrics provided above. If data is insufficient, say so clearly.
-            4. **PROACTIVE INSIGHTS**: When appropriate, suggest actions the user can take within VTrustX.
+            4. **PROACTIVE INSIGHTS**: When appropriate, suggest actions the user can take within RayiX.
 
             RESPONSE FORMAT:
             - Use **bold** for key numbers and terms

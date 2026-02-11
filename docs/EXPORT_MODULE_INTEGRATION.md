@@ -1,7 +1,7 @@
 # Export Module Integration Guide
 
 ## Overview
-This guide walks you through integrating the Export Module into your VTrustX application.
+This guide walks you through integrating the Export Module into your RayiX application.
 
 ## Step 1: Install Dependencies
 

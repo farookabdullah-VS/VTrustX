@@ -84,7 +84,7 @@ describe('AuthContext', () => {
       screen.getByTestId('login-btn').click();
     });
 
-    const stored = localStorage.getItem('vtrustx_user');
+    const stored = localStorage.getItem('rayix_user');
     expect(stored).toBeTruthy();
     expect(JSON.parse(stored).token).toBe('test-token');
   });
@@ -103,11 +103,11 @@ describe('AuthContext', () => {
       screen.getByTestId('logout-btn').click();
     });
 
-    expect(localStorage.getItem('vtrustx_user')).toBeNull();
+    expect(localStorage.getItem('rayix_user')).toBeNull();
   });
 
   it('should restore user from localStorage', () => {
-    localStorage.setItem('vtrustx_user', JSON.stringify({
+    localStorage.setItem('rayix_user', JSON.stringify({
       token: 'saved-token',
       user: { username: 'saveduser' },
     }));

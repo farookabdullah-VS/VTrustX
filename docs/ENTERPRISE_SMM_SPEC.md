@@ -3,7 +3,7 @@
 **Date**: 2026-01-15
 
 ## 1. Overview
-This module upgrades the VTrustX Social Media capabilities to an Enterprise-grade platform. It implementation is based on the `smm` database schema and a modular frontend architecture.
+This module upgrades the RayiX Social Media capabilities to an Enterprise-grade platform. It implementation is based on the `smm` database schema and a modular frontend architecture.
 
 ## 2. Architecture
 

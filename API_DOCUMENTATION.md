@@ -1,6 +1,6 @@
-# VTrustX API Documentation
+# RayiX API Documentation
 
-> Comprehensive REST API reference for the VTrustX Customer Experience Management Platform.
+> Comprehensive REST API reference for the RayiX Customer Experience Management Platform.
 >
 > **Base URL:** `/api`
 >

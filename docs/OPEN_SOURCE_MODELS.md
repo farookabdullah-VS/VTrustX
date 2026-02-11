@@ -37,7 +37,7 @@ If you have a GPU (Graphics Card), you can use Coqui XTTS.
 *   It can inherently "Hear" audio and "Speak" audio without converting to text first.
 *   **Status**: Expensive and restricted API access.
 
-## Recommendation for VTrustX
+## Recommendation for RayiX
 If you want to move away from the Browser:
 1.  **For Hearing**: Use **Groq (Whisper V3)**. It is free and faster than anything else.
 2.  **For Speaking**: Stick to **Browser TTS** or install **Piper TTS** locally.

@@ -18,7 +18,7 @@ export function PxDashboard() {
     useEffect(() => {
         const loadData = async () => {
             try {
-                const userStr = localStorage.getItem('vtrustx_user');
+                const userStr = localStorage.getItem('rayix_user');
                 const user = userStr ? JSON.parse(userStr) : null;
                 const token = user?.token;
 

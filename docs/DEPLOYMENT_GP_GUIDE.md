@@ -1,6 +1,6 @@
-# Deploying VTrustX to Google Cloud Platform (GCP)
+# Deploying RayiX to Google Cloud Platform (GCP)
 
-This guide outlines the steps to deploy the VTrustX full-stack application (React + Node.js + PostgreSQL) to Google Cloud.
+This guide outlines the steps to deploy the RayiX full-stack application (React + Node.js + PostgreSQL) to Google Cloud.
 
 ## Architecture Overview
 - **Frontend (Client)**: Deployed to **Firebase Hosting** (served via global CDN).
@@ -35,10 +35,10 @@ graph LR
 
 1.  Go to **Cloud SQL** in GCP Console.
 2.  Create a **PostgreSQL** instance.
-    -   **Instance ID**: `vtrustx-db`
+    -   **Instance ID**: `rayix-db`
     -   **Password**: *[Create a strong password]*
     -   **Region**: Same as where you plan to deploy (e.g., `us-central1`).
-3.  Once created, create a database named `vtrustx_db`.
+3.  Once created, create a database named `rayix_db`.
 4.  **Important**: Note the **Connection Name** (e.g., `project-id:region:instance-id`).
 
 ---
@@ -51,7 +51,7 @@ We will containerize the server and deploy it.
 A `Dockerfile` has been created in `./server/Dockerfile`.
 
 ### 2.2. Build & Push Container
-Run these commands in your terminal (from `VTrustX/server` folder):
+Run these commands in your terminal (from `RayiX/server` folder):
 
 ```powershell
 # Authenticate
@@ -62,18 +62,18 @@ gcloud config set project [YOUR_PROJECT_ID]
 gcloud services enable artifactregistry.googleapis.com run.googleapis.com sqladmin.googleapis.com
 
 # Create a repository (only once)
-gcloud artifacts repositories create vtrustx-repo --repository-format=docker --location=us-central1 --description="VTrustX Repository"
+gcloud artifacts repositories create rayix-repo --repository-format=docker --location=us-central1 --description="RayiX Repository"
 
 # Build and Push Image
-gcloud builds submit --tag us-central1-docker.pkg.dev/[YOUR_PROJECT_ID]/vtrustx-repo/server
+gcloud builds submit --tag us-central1-docker.pkg.dev/[YOUR_PROJECT_ID]/rayix-repo/server
 ```
 
 ### 2.3. Deploy to Cloud Run
 Replace the values in brackets `[]` before running.
 
 ```powershell
-gcloud run deploy vtrustx-api \
-  --image us-central1-docker.pkg.dev/[YOUR_PROJECT_ID]/vtrustx-repo/server \
+gcloud run deploy rayix-api \
+  --image us-central1-docker.pkg.dev/[YOUR_PROJECT_ID]/rayix-repo/server \
   --platform managed \
   --region us-central1 \
   --allow-unauthenticated \
@@ -81,12 +81,12 @@ gcloud run deploy vtrustx-api \
   --set-env-vars DB_HOST=/cloudsql/[YOUR_DB_CONNECTION_NAME] \
   --set-env-vars DB_USER=postgres \
   --set-env-vars DB_PASSWORD=[YOUR_DB_PASSWORD] \
-  --set-env-vars DB_NAME=vtrustx_db \
+  --set-env-vars DB_NAME=rayix_db \
   --set-env-vars GENESYS_CLIENT_ID=[YOUR_ID] \
   --set-env-vars GENESYS_CLIENT_SECRET=[YOUR_SECRET]
 ```
 
-*Note the URL provided after deployment (e.g., `https://vtrustx-api-xyz.a.run.app`). You will need this for the frontend.*
+*Note the URL provided after deployment (e.g., `https://rayix-api-xyz.a.run.app`). You will need this for the frontend.*
 
 ---
 
@@ -96,11 +96,11 @@ gcloud run deploy vtrustx-api \
 In your `client` folder, create `.env.production`:
 
 ```env
-VITE_API_URL=https://vtrustx-api-xyz.a.run.app
+VITE_API_URL=https://rayix-api-xyz.a.run.app
 ```
 
 ### 3.2. Initialize Firebase
-Run inside `VTrustX/client`:
+Run inside `RayiX/client`:
 
 ```powershell
 firebase login

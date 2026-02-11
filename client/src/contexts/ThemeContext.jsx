@@ -10,7 +10,7 @@ export function ThemeProvider({ children, user }) {
 
   // Dark mode: check localStorage first, then system preference
   const [isDark, setIsDark] = useState(() => {
-    const saved = localStorage.getItem('vtrustx_theme_mode');
+    const saved = localStorage.getItem('rayix_theme_mode');
     if (saved) return saved === 'dark';
     return window.matchMedia?.('(prefers-color-scheme: dark)').matches ?? false;
   });
@@ -23,7 +23,7 @@ export function ThemeProvider({ children, user }) {
   // Apply dark/light theme attribute
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
-    localStorage.setItem('vtrustx_theme_mode', isDark ? 'dark' : 'light');
+    localStorage.setItem('rayix_theme_mode', isDark ? 'dark' : 'light');
   }, [isDark]);
 
   // Listen for system theme changes
@@ -31,7 +31,7 @@ export function ThemeProvider({ children, user }) {
     const mq = window.matchMedia?.('(prefers-color-scheme: dark)');
     if (!mq) return;
     const handler = (e) => {
-      const saved = localStorage.getItem('vtrustx_theme_mode');
+      const saved = localStorage.getItem('rayix_theme_mode');
       if (!saved) setIsDark(e.matches);
     };
     mq.addEventListener('change', handler);

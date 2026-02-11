@@ -1,6 +1,6 @@
-# VTrustX Export Module
+# RayiX Export Module
 
-A comprehensive data export system for VTrustX survey responses with support for multiple formats and advanced filtering options.
+A comprehensive data export system for RayiX survey responses with support for multiple formats and advanced filtering options.
 
 ![Export Module](https://img.shields.io/badge/Status-Production%20Ready-green)
 ![Version](https://img.shields.io/badge/Version-1.0.0-blue)
@@ -261,7 +261,7 @@ interface ExportModalProps {
 }
 ```
 
-### Color Scheme (Matching VTrustX Design)
+### Color Scheme (Matching RayiX Design)
 
 ```css
 Primary Blue: #00a8e8
@@ -294,8 +294,8 @@ EXPORT_MAX_RESPONSES=100000        # Maximum responses per export
 EXPORT_TIMEOUT=300000              # Timeout in milliseconds (5 minutes)
 
 # Storage (Optional - for cloud storage)
-GCS_BUCKET_NAME=vtrustx-exports
-AWS_S3_BUCKET=vtrustx-exports
+GCS_BUCKET_NAME=rayix-exports
+AWS_S3_BUCKET=rayix-exports
 ```
 
 ### Cleanup Configuration
@@ -392,12 +392,12 @@ node --max-old-space-size=4096 server.js
 
 ## 📄 License
 
-This module is part of VTrustX and follows the same license terms.
+This module is part of RayiX and follows the same license terms.
 
 ## 👥 Contributors
 
 - Export Module Development Team
-- VTrustX Core Team
+- RayiX Core Team
 
 ## 📞 Support
 
@@ -407,6 +407,6 @@ This module is part of VTrustX and follows the same license terms.
 
 ---
 
-**Built with ❤️ for VTrustX**
+**Built with ❤️ for RayiX**
 
 Last Updated: January 22, 2026

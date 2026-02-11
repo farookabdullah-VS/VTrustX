@@ -10,7 +10,7 @@ Since you cannot easily control the iPhone via software, the professional soluti
 1.  **Buy a GSM Gateway (GoIP)** or a **USB 4G Dongle**.
     *   Cost: $30 - $100.
     *   How: You put your SIM card into this device. It connects to your PC/Server.
-    *   Result: Your computer sees it as a "Modem". VTrustX can send standard "AT Commands" to dial numbers instantly.
+    *   Result: Your computer sees it as a "Modem". RayiX can send standard "AT Commands" to dial numbers instantly.
     *   *Note*: This requires buying hardware, but it is the most robust "Professional" solution for KSA.
 
 ## Option 2: The "Burner Android" (Cheapest & Easiest)

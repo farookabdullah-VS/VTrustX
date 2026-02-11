@@ -24,7 +24,7 @@ async function getAiSettings() {
         const config = {
             stt_provider: settingsMap.voice_agent_provider || 'google', // Default to google or browser?
             provider: settingsMap.ai_llm_provider || 'gemini',
-            vertexProject: 'vtrustx',
+            vertexProject: 'rayix',
             vertexLocation: 'us-central1',
             modelName: 'gemini-pro',
             apiKey: null,
@@ -51,7 +51,7 @@ async function getAiSettings() {
         return {
             provider: 'gemini',
             stt_provider: 'google',
-            vertexProject: 'vtrustx',
+            vertexProject: 'rayix',
             variant: 'fallback',
             vertexLocation: 'us-central1',
             modelName: 'gemini-pro',

@@ -6,7 +6,7 @@ import React from 'react';
  * Replaces global button styling with scoped, intentional button variants.
  *
  * Variants:
- * - primary: Gradient teal button (default VTrustX style)
+ * - primary: Gradient teal button (default RayiX style)
  * - secondary: Light gray button with border
  * - danger: Red/destructive action button
  * - success: Green/positive action button

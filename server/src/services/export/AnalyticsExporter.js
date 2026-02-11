@@ -369,8 +369,8 @@ class AnalyticsExporter {
 
         // Apply template settings (simplified)
         pptx.layout = 'LAYOUT_WIDE';
-        pptx.author = 'VTrustX';
-        pptx.company = 'VTrustX';
+        pptx.author = 'RayiX';
+        pptx.company = 'RayiX';
         pptx.subject = 'Survey Analytics Report';
     }
 

@@ -33,7 +33,7 @@ export function MobileExperience() {
 
     const loadDashboardData = async () => {
         try {
-            const userStr = localStorage.getItem('vtrustx_user');
+            const userStr = localStorage.getItem('rayix_user');
             const user = userStr ? JSON.parse(userStr) : null;
             const token = user?.token;
 
@@ -85,7 +85,7 @@ export function MobileExperience() {
 
     const loadTickets = async () => {
         try {
-            const userStr = localStorage.getItem('vtrustx_user');
+            const userStr = localStorage.getItem('rayix_user');
             const user = userStr ? JSON.parse(userStr) : null;
             const token = user?.token;
 
@@ -107,7 +107,7 @@ export function MobileExperience() {
 
     const loadSurveys = async () => {
         try {
-            const userStr = localStorage.getItem('vtrustx_user');
+            const userStr = localStorage.getItem('rayix_user');
             const user = userStr ? JSON.parse(userStr) : null;
             const token = user?.token;
 
@@ -239,7 +239,7 @@ export function MobileExperience() {
 
             {/* DESKTOP HINT */}
             <div style={{ marginLeft: '40px', maxWidth: '350px', color: 'white' }}>
-                <h2 style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '12px' }}>VTrustX Frontline</h2>
+                <h2 style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '12px' }}>RayiX Frontline</h2>
                 <p style={{ opacity: 0.9, marginBottom: '20px', lineHeight: '1.6' }}>
                     Empower your frontline workers with real-time access to tickets, surveys, and customer feedback - all from their mobile device.
                 </p>
@@ -414,7 +414,7 @@ function ProfileScreen() {
             </div>
 
             <div style={{ textAlign: 'center', marginTop: '30px', fontSize: '0.75rem', color: '#94a3b8' }}>
-                VTrustX Frontline v1.0.0
+                RayiX Frontline v1.0.0
             </div>
         </div>
     );

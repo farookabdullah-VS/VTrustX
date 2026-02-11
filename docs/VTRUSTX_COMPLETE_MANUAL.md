@@ -1,7 +1,7 @@
-# VTrustX - Complete Application Manual & Documentation
+# RayiX - Complete Application Manual & Documentation
 
 ## 1. Introduction
-VTrustX is an advanced Customer Experience (CX) and Marketing Engagement platform designed to help businesses understand, manage, and engage with their customers effectively. It combines powerful Persona Engine technology, AI-driven surveys, and a comprehensive Social Media Marketing module into a unified ecosystem.
+RayiX is an advanced Customer Experience (CX) and Marketing Engagement platform designed to help businesses understand, manage, and engage with their customers effectively. It combines powerful Persona Engine technology, AI-driven surveys, and a comprehensive Social Media Marketing module into a unified ecosystem.
 
 ### Key Capabilities
 - **Persona Engine**: Create and assign dynamic customer personas based on demographic and behavioral data.
@@ -41,7 +41,7 @@ Create a `.env` file in the root directory with the following keys:
 ```env
 DB_USER=postgres
 DB_PASSWORD=your_password
-DB_NAME=vtrustx-db
+DB_NAME=rayix-db
 DB_HOST=localhost
 DB_PORT=5432
 JWT_SECRET=your_jwt_secret
@@ -49,7 +49,7 @@ API_KEY_GEMINI=your_gemini_key
 ```
 
 ### 3.3 Running Locally
-VTrustX includes a helper script to start all services simultaneously.
+RayiX includes a helper script to start all services simultaneously.
 
 **Option 1: Using PowerShell Script**
 ```powershell
@@ -70,7 +70,7 @@ This will launch the Main Server (Port 3000), AI Service (Port 3001), and Client
 Upon logging in, the **Dashboard** provides a high-level view of system health, active users, and key metrics. The sidebar allows navigation to all major modules.
 
 ### 4.2 Persona Engine
-The **Persona Engine** is the heart of VTrustX's targeting capability.
+The **Persona Engine** is the heart of RayiX's targeting capability.
 - **Persona Builder**: Define personas visually using demographic traits, income levels, and behavioral patterns.
 - **Persona Assignment**: The system automatically assigns personas to customers based on their profile data.
 - **Audit Logs**: Track why a persona was assigned or removed for compliance purposes.

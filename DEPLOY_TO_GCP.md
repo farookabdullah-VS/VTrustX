@@ -1,6 +1,6 @@
-# Deploying VTrustX to Google Cloud
+# Deploying RayiX to Google Cloud
 
-This guide will help you deploy the VTrustX full-stack application (React + Node.js + PostgreSQL) to Google Cloud Platform (GCP) using **Cloud Run** and **Cloud SQL**.
+This guide will help you deploy the RayiX full-stack application (React + Node.js + PostgreSQL) to Google Cloud Platform (GCP) using **Cloud Run** and **Cloud SQL**.
 
 ## Architecture Overview
 - **Frontend**: React (Vite) - served statically by the Node.js backend.
@@ -35,7 +35,7 @@ This guide will help you deploy the VTrustX full-stack application (React + Node
 
 1.  **Create a PostgreSQL Instance**:
     ```bash
-    gcloud sql instances create vtrustx \
+    gcloud sql instances create rayix \
         --database-version=POSTGRES_15 \
         --cpu=1 --memory=3840MiB \
         --region=us-central1
@@ -45,13 +45,13 @@ This guide will help you deploy the VTrustX full-stack application (React + Node
 2.  **Set the 'postgres' user password**:
     ```bash
     gcloud sql users set-password postgres \
-        --instance=vtrustx \
-        --password=VTrustX@2030
+        --instance=rayix \
+        --password=RayiX@2030
     ```
 
 3.  **Create the Database**:
     ```bash
-    gcloud sql databases create vtrustx-db --instance=vtrustx
+    gcloud sql databases create rayix-db --instance=rayix
     ```
 
 ## Step 3: Deploy the Application
@@ -61,23 +61,23 @@ We have configured the application to build both the Client and Server into a si
 1.  **Submit the Build to Cloud Build**:
     This will zip your code, build it in the cloud, and store the image.
     ```bash
-    gcloud builds submit --tag gcr.io/gen-lang-client-0151326334/vtrustx .
+    gcloud builds submit --tag gcr.io/gen-lang-client-0151326334/rayix .
     ```
     *(Replace `YOUR_PROJECT_ID` with your actual project ID).*
 
 2.  **Deploy to Cloud Run**:
     You need to set the environment variables properly. Replace the values below with your actual database credentials.
     ```bash
-    gcloud run deploy vtrustx-service \
-        --image gcr.io/gen-lang-client-0151326334/vtrustx \
+    gcloud run deploy rayix-service \
+        --image gcr.io/gen-lang-client-0151326334/rayix \
         --platform managed \
         --allow-unauthenticated \
-        --add-cloudsql-instances gen-lang-client-0151326334:us-central1:vtrustx \
-        --set-env-vars INSTANCE_CONNECTION_NAME="gen-lang-client-0151326334:us-central1:vtrustx" \
+        --add-cloudsql-instances gen-lang-client-0151326334:us-central1:rayix \
+        --set-env-vars INSTANCE_CONNECTION_NAME="gen-lang-client-0151326334:us-central1:rayix" \
         --set-env-vars DB_HOST="127.0.0.1" \
         --set-env-vars DB_USER="postgres" \
-        --set-env-vars DB_PASSWORD="VTrustX@2030" \
-        --set-env-vars DB_NAME="vtrustx_db" \
+        --set-env-vars DB_PASSWORD="RayiX@2030" \
+        --set-env-vars DB_NAME="rayix_db" \
         --set-env-vars NODE_ENV="development"
     ```
     *Important*: Cloud Run automatically proxies the Cloud SQL connection to `127.0.0.1` when you use the `--add-cloudsql-instances` flag.
@@ -90,7 +90,7 @@ Since the database is brand new, you need to run your schemas.
 1.  Install the [Cloud SQL Auth Proxy](https://cloud.google.com/sql/docs/postgres/sql-proxy).
 2.  Start the proxy locally:
     ```bash
-    ./cloud_sql_proxy -instances=gen-lang-client-0151326334:us-central1:vtrustx=tcp:5432
+    ./cloud_sql_proxy -instances=gen-lang-client-0151326334:us-central1:rayix=tcp:5432
     ```
 3.  Run your local initialization script pointing to localhost:
     ```bash
@@ -106,9 +106,9 @@ You can also deploy a "Job" in Cloud Run that uses the same container but runs t
 ## Step 5: (Optional) Separate AI Service
 If the `ai-service` folder contains a separate microservice required for calling/SMS features:
 1.  Create a separate `Dockerfile` inside `ai-service/`.
-2.  Deploy it as a separate Cloud Run service (e.g., `vtrustx-ai`).
-3.  Update the main `vtrustx-service` environment variables to point to this new service URL if they communicate via HTTP.
+2.  Deploy it as a separate Cloud Run service (e.g., `rayix-ai`).
+3.  Update the main `rayix-service` environment variables to point to this new service URL if they communicate via HTTP.
 
 ## Troubleshooting
-- **Logs**: View logs in the Google Cloud Console > Cloud Run > vtrustx-service > Logs.
+- **Logs**: View logs in the Google Cloud Console > Cloud Run > rayix-service > Logs.
 - **Connection Issues**: Ensure the `INSTANCE_CONNECTION_NAME` is correct and the Service Account has permissions (Cloud Run usually does by default).

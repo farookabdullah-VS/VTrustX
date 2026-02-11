@@ -1,6 +1,6 @@
 # How to Enable USB Debugging on Motorola G35 (Android)
 
-To enable your phone to be controlled by the VTrustX Agent, follow these steps to turn on **USB Debugging**.
+To enable your phone to be controlled by the RayiX Agent, follow these steps to turn on **USB Debugging**.
 
 ## Step 1: Enable Developer Options
 1.  Open **Settings**.

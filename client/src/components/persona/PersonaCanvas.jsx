@@ -27,7 +27,7 @@ const MetricsWidget = ({ section }) => {
         const fetchMetric = async () => {
             setLoading(true);
             try {
-                if (sourceType === 'vtrustx' && surveyId) {
+                if (sourceType === 'rayix' && surveyId) {
                     const res = await axios.get('/api/analytics/csat-stats'); // Assuming this endpoint returns breakdown
                     const breakdown = res.data.breakdown || [];
                     const survey = breakdown.find(s => s.id == surveyId || s.name.includes(surveyId)); // Fallback matching

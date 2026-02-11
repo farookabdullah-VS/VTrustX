@@ -289,7 +289,7 @@ export function EmptySettings() {
       titleKey="empty.settings.title"
       titleFallback="No custom settings"
       descriptionKey="empty.settings.description"
-      descriptionFallback="Configure settings to customize your VTrustX experience."
+      descriptionFallback="Configure settings to customize your RayiX experience."
     />
   );
 }
@@ -316,7 +316,7 @@ export function EmptyIntegrations({ onBrowseIntegrations }) {
       titleKey="empty.integrations.title"
       titleFallback="No active integrations"
       descriptionKey="empty.integrations.description"
-      descriptionFallback="Connect VTrustX with your favorite tools to automate workflows."
+      descriptionFallback="Connect RayiX with your favorite tools to automate workflows."
       ctaKey="empty.integrations.cta"
       ctaFallback="Browse Integrations"
       onCta={onBrowseIntegrations}

@@ -1,7 +1,7 @@
 
 # iOS Application Setup Guide
 
-This guide explains how to build the VTrustX web application for iOS using Capacitor.
+This guide explains how to build the RayiX web application for iOS using Capacitor.
 
 ## ⚠️ Important Requirement
 **You strictly need a macOS computer with Xcode installed to build and run iOS applications.** 
@@ -16,7 +16,7 @@ The steps below **must be performed on a Mac**. You cannot build the iOS app dir
 We have already:
 1. Installed `@capacitor/ios`.
 2. Added the `ios` platform folder to the project.
-3. Configured the API to use the Cloud Run URL (`https://vtrustx-service-ewhlzzsutq-uc.a.run.app`) automatically when running on a device.
+3. Configured the API to use the Cloud Run URL (`https://rayix-service-ewhlzzsutq-uc.a.run.app`) automatically when running on a device.
 
 ## How to Build & Run (On macOS)
 
@@ -45,14 +45,14 @@ npx cap open ios
 2. Select the **App** target.
 3. Go to the **Signing & Capabilities** tab.
 4. Select a **Team** (you need an Apple Developer Account, or a free Apple ID for testing).
-5. Ensure the **Bundle Identifier** is `com.vtrustx.app`.
+5. Ensure the **Bundle Identifier** is `com.rayix.app`.
 
 ### Step 5: Run on Simulator/Device
 1. Select a simulator (e.g., iPhone 15) or connect your iPhone via USB.
 2. Click the **Play** button (Run).
 
 ## Testing Procedure
-1. **Launch App**: The app should load the VTrustX login screen.
+1. **Launch App**: The app should load the RayiX login screen.
 2. **Login**: Attempt to log in. It will connect to the production Cloud Run server.
 3. **Permissions**: If testing Voice AI, the app will request Microphone permission.
 

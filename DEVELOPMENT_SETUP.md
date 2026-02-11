@@ -1,4 +1,4 @@
-# VTrustX Development Setup
+# RayiX Development Setup
 
 ## Prerequisites
 
@@ -12,7 +12,7 @@
 
 ```bash
 git clone <repository-url>
-cd VTrustX
+cd RayiX
 
 # Install server dependencies
 cd server && npm install
@@ -67,7 +67,7 @@ cd client && npm test
 ## Project Structure
 
 ```
-VTrustX/
+RayiX/
 ├── server/                          # Express.js backend
 │   ├── index.js                     # Entry point, routes, middleware
 │   ├── src/

@@ -1,7 +1,7 @@
 # Export Module Architecture
 
 ## Overview
-The Export Module provides comprehensive data export capabilities for VTrustX survey responses, supporting multiple output formats and advanced filtering options.
+The Export Module provides comprehensive data export capabilities for RayiX survey responses, supporting multiple output formats and advanced filtering options.
 
 ## Features
 

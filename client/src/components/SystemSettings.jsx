@@ -515,7 +515,7 @@ export function SystemSettings() {
                                 name="db_name"
                                 value={settings.db_name}
                                 onChange={handleChange}
-                                placeholder="vtrustx-db"
+                                placeholder="rayix-db"
                                 style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--input-border)', background: 'var(--input-bg)', color: 'var(--input-text)' }}
                             />
                         </div>

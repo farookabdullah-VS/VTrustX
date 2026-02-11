@@ -3,7 +3,7 @@ import { Capacitor } from '@capacitor/core';
 
 // Automatically configure API Base URL
 if (Capacitor.isNativePlatform()) {
-    axios.defaults.baseURL = import.meta.env.VITE_API_BASE_URL || 'https://vtrustx-service-ewhlzzsutq-uc.a.run.app';
+    axios.defaults.baseURL = import.meta.env.VITE_API_BASE_URL || 'https://rayix-service-ewhlzzsutq-uc.a.run.app';
 } else {
     // Web: Use env var or rely on Vite proxy (relative paths)
     if (import.meta.env.VITE_API_BASE_URL) {

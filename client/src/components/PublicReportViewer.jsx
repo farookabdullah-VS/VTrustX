@@ -239,7 +239,7 @@ export const PublicReportViewer = ({ token }) => {
 
                 {/* Footer */}
                 <div style={{ padding: '20px 40px', background: '#f8fafc', color: '#94a3b8', fontSize: '0.8rem', textAlign: 'center', borderTop: '1px solid #f1f5f9' }}>
-                    Powered by VTrustX Analytical Studio © {new Date().getFullYear()}
+                    Powered by RayiX Analytical Studio © {new Date().getFullYear()}
                 </div>
             </div>
 

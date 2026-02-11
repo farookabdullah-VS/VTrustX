@@ -11,7 +11,7 @@ router.get('/sources', async (req, res) => {
         // Mock Sources
         res.json([
             { id: 1, platform: 'Google Maps', name: 'Downtown Branch', last_sync: new Date(), review_count: 1240, avg_rating: 4.2 },
-            { id: 2, platform: 'Trustpilot', name: 'VTrustX Corporate', last_sync: new Date(), review_count: 450, avg_rating: 3.8 }
+            { id: 2, platform: 'Trustpilot', name: 'RayiX Corporate', last_sync: new Date(), review_count: 450, avg_rating: 3.8 }
         ]);
     } catch (err) {
         logger.error('Failed to fetch reputation sources', { error: err.message });
@@ -60,7 +60,7 @@ router.post('/generate-reply', async (req, res) => {
     if (rating >= 8) {
         reply = `Hi ${author}, thank you so much for the ${rating}-star review! We're thrilled to hear you had a great experience. We look forward to seeing you again soon!`;
     } else {
-        reply = `Hi ${author}, we're sorry to hear about your experience. We take feedback like this seriously. Could you please reach out to us at support@vtrustx.com so we can make this right?`;
+        reply = `Hi ${author}, we're sorry to hear about your experience. We take feedback like this seriously. Could you please reach out to us at support@rayix.com so we can make this right?`;
     }
 
     // Add slight AI "flavor" delay

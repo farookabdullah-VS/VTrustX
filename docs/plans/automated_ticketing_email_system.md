@@ -1,7 +1,7 @@
 # Automated Ticketing Email System: Implementation Plan
 
 ## 1. Executive Summary
-This document outlines the architecture and implementation strategy for an automated email ticketing system within the VTrustX platform. The system will handle the end-to-end lifecycle of support tickets generated via email, ensuring consistent and professional communication with customers at every stage (Creation, Assignment, Resolution, Closure) using customizable templates.
+This document outlines the architecture and implementation strategy for an automated email ticketing system within the RayiX platform. The system will handle the end-to-end lifecycle of support tickets generated via email, ensuring consistent and professional communication with customers at every stage (Creation, Assignment, Resolution, Closure) using customizable templates.
 
 ## 2. System Architecture
 
@@ -11,7 +11,7 @@ The system consists of three main modules:
 3.  **Notification Engine**: Service to fetch templates, interpolate data, and dispatch emails.
 
 ### High-Level Data Flow
-1.  **Customer** sends email to `support@vtrustx.com`.
+1.  **Customer** sends email to `support@rayix.com`.
 2.  **Ingestion Service** parses the sender, subject, and body.
 3.  **Ticket Orchestrator** creates a new Ticket record in the database.
 4.  **Notification Engine** triggers the "Ticket Created" event:
@@ -93,8 +93,8 @@ The system needs a centralized configuration mapping. This can be stored in the 
 ```json
 {
   "email_settings": {
-    "sender_name": "VTrustX Support",
-    "sender_email": "support@vtrustx.com",
+    "sender_name": "RayiX Support",
+    "sender_email": "support@rayix.com",
     "stages": {
       "creation": {
         "enabled": true,

@@ -18,7 +18,7 @@ The best way to operate an AI Agent in Saudi Arabia is to use a **Local Android 
 ### 1. The Hardware
 *   **Android Phone**: Any cheap Android phone running Android 10+.
 *   **Local SIM**: A prepaid or postpaid SIM with unlimited minutes.
-*   **PC/Server**: Your laptop or a local server running the VTrustX software.
+*   **PC/Server**: Your laptop or a local server running the RayiX software.
 *   **Connection**: USB Cable (for stability) or Wi-Fi (for convenience).
 
 ### 2. The Software Stack
@@ -39,7 +39,7 @@ This is the trickiest part. We need the AI's "Voice" from the PC to go into the 
 1.  **Install ADB** on your PC.
 2.  **Connect Phone** via USB and enable "USB Debugging".
 3.  **Install `scrcpy`** (Optional): A free tool to see your phone screen on your PC, making management easier.
-4.  **Configure VTrustX**:
+4.  **Configure RayiX**:
     *   Instead of sending API requests to Twilio, we write a script that executes the `adb` dial command.
     *   We configure the Microphone/Speaker source in the browser to be the **Bluetooth Phone Connection**.
 

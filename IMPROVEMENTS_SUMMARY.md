@@ -1,4 +1,4 @@
-# VTrustX UI/UX Improvements Summary
+# RayiX UI/UX Improvements Summary
 
 **Date:** 2026-02-11
 **Sprint:** Phase 1 - Quick Wins ✅ COMPLETED
@@ -55,7 +55,7 @@ toast.error("Error: " + err.message);  // ✅ Styled, dismissible
 - ✅ **User Experience:** No more jarring browser alerts
 - ✅ **Consistency:** Uniform notification appearance across all browsers
 - ✅ **Accessibility:** ARIA-compliant (role="alert", aria-live="assertive")
-- ✅ **Branding:** Matches VTrustX green theme
+- ✅ **Branding:** Matches RayiX green theme
 - ✅ **Functionality:** Auto-dismiss (4s), manual dismiss, stacking support
 
 ---
@@ -138,7 +138,7 @@ const FONT = "'Outfit', system-ui, sans-serif";  // ✅ Consistent everywhere
 
 #### Benefits:
 - ✅ **Visual Consistency:** Uniform typography across all pages
-- ✅ **Brand Identity:** Outfit is VTrustX's brand font
+- ✅ **Brand Identity:** Outfit is RayiX's brand font
 - ✅ **User Experience:** Smoother navigation (no font jarring)
 - ✅ **Maintainability:** Single source of truth for fonts
 

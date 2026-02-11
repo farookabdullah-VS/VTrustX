@@ -17,7 +17,7 @@ A fully native SDK for iOS (Swift/Obj-C) and Android (Kotlin/Java) to enable in-
   - Runtime configuration of theme (JSON/Remote config).
 
 ### 3. Survey Features
-- Support all VTrustX question types (Rating, NPS, Text, Choice, etc.).
+- Support all RayiX question types (Rating, NPS, Text, Choice, etc.).
 - Logic Engine: Native implementation of survey logic (skip logic, branching) running on-device.
 - Validation: Native input validation.
 

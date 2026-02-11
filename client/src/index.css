@@ -1,5 +1,6 @@
 /* Import Design Token System */
 @import './design-tokens.css';
+@import './responsive.css';
 
 /* GEMINI AI / RAYI STITCH DESIGN SYSTEM */
 :root {
@@ -254,7 +255,7 @@ button {
   font-family: inherit;
 }
 
-/* Primary button - VTrustX branded style */
+/* Primary button - RayiX branded style */
 .btn-primary {
   background-image: var(--primary-gradient);
   background-color: var(--button-bg);
@@ -1043,5 +1044,4 @@ a:focus-visible {
   /* Ensure at least 4.5:1 contrast ratio */
 }
 
-/* Responsive Design */
-@import './responsive.css';
+/* Responsive Design - imported at top of file */

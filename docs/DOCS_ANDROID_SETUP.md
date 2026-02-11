@@ -1,7 +1,7 @@
 
 # Android Application Setup Guide
 
-This guide explains how to convert the VTrustX web application into a native Android app using Capacitor.
+This guide explains how to convert the RayiX web application into a native Android app using Capacitor.
 
 ## Prerequisites
 1. **Android Studio**: Install the latest version from [developer.android.com](https://developer.android.com/studio).
@@ -12,7 +12,7 @@ We have already:
 1. Installed Capacitor dependencies (`@capacitor/core`, `@capacitor/cli`, `@capacitor/android`).
 2. Initialized the project.
 3. Added the Android platform.
-4. Configured the app to use the Cloud Run API URL (`https://vtrustx-service-ewhlzzsutq-uc.a.run.app`) when running on mobile (see `client/src/axiosConfig.js`).
+4. Configured the app to use the Cloud Run API URL (`https://rayix-service-ewhlzzsutq-uc.a.run.app`) when running on mobile (see `client/src/axiosConfig.js`).
 
 ## How to Build & Run
 

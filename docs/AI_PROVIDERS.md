@@ -1,6 +1,6 @@
 # Choosing Your AI Brain: Gemini vs. OpenAI
 
-In VTrustX, the **AI Agent** is the "Brain" (Intelligence), and your **Phone/Twilio** is the "Body" (Hardware).
+In RayiX, the **AI Agent** is the "Brain" (Intelligence), and your **Phone/Twilio** is the "Body" (Hardware).
 
 You can use either **Google Gemini** or **OpenAI (GPT-4)** as the Brain. Both are fully supported.
 
@@ -14,7 +14,7 @@ You can use either **Google Gemini** or **OpenAI (GPT-4)** as the Brain. Both ar
 | **Best For** | High Volume, Free Testing | Complex Business Logic |
 
 ## 2. How to Switch Providers
-You can switch the brain instantly by editing the configuration file: `d:\VTrustX\ai-service\.env`.
+You can switch the brain instantly by editing the configuration file: `d:\RayiX\ai-service\.env`.
 
 ### To use Gemini (Free):
 ```env
@@ -33,4 +33,4 @@ OPENAI_API_KEY=sk-proj... (Your OpenAI Key)
 *   They generate the **Text** and **Audio**.
 *   They need a **Gateway** (Your Android Phone or Twilio) to actually connect to the telephone network.
 
-**VTrustX handles this connection for you automatically.** You just choose the Brain and the Gateway.
+**RayiX handles this connection for you automatically.** You just choose the Brain and the Gateway.

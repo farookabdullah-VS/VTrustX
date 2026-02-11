@@ -41,7 +41,7 @@ We have already implemented the software side in `WebCallModal.jsx`.
 
 ## 5. Workflow for "Zero Cost" Operations
 
-1.  **Open the Survey Audience** in the VTrustX Dashboard.
+1.  **Open the Survey Audience** in the RayiX Dashboard.
 2.  **Setup Hardware**: 
     *   Phone on desk (Speaker mode) OR Connected via Bluetooth.
 3.  **Start Automator** (Hypothetical Script):

@@ -57,7 +57,7 @@ class EmailService {
 
     async sendEmail(to, subject, html, text) {
         const mailOptions = {
-            from: process.env.SMTP_FROM || '"VTrustX Support" <support@vtrustx.com>',
+            from: process.env.SMTP_FROM || '"RayiX Support" <support@rayix.com>',
             to,
             subject,
             text,

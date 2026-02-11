@@ -1,11 +1,11 @@
-# VTrustX
+# RayiX
 
 Multi-tenant Customer Experience Management Platform built with React + Express + PostgreSQL.
 
 ## Architecture
 
 ```
-VTrustX/
+RayiX/
 ├── client/          React 18 + Vite frontend
 ├── server/          Express.js REST API
 ├── ai-service/      Standalone AI microservice
@@ -34,7 +34,7 @@ VTrustX/
 
 ```bash
 # 1. Clone
-git clone <repo-url> && cd VTrustX
+git clone <repo-url> && cd RayiX
 
 # 2. Install dependencies
 cd server && npm install
@@ -84,10 +84,10 @@ See [DEPLOY_TO_GCP.md](./DEPLOY_TO_GCP.md) for Google Cloud Run deployment instr
 
 ```bash
 # Build Docker image
-docker build -t vtrustx .
+docker build -t rayix .
 
 # Run container
-docker run -p 8080:8080 --env-file .env vtrustx
+docker run -p 8080:8080 --env-file .env rayix
 ```
 
 ## Key Features

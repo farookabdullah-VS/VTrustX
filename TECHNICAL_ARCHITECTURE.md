@@ -1,12 +1,12 @@
-# VTrustX Technical Architecture & Best Practices
+# RayiX Technical Architecture & Best Practices
 
-This document provides a comprehensive overview of the VTrustX software architecture, technology stack, and the engineering best practices implemented within the project.
+This document provides a comprehensive overview of the RayiX software architecture, technology stack, and the engineering best practices implemented within the project.
 
 ---
 
 ## 🏗 System Architecture
 
-VTrustX follows a **Client-Server Architecture** designed for scalability, modularity, and high-performance Experience Management (XM).
+RayiX follows a **Client-Server Architecture** designed for scalability, modularity, and high-performance Experience Management (XM).
 
 ### 1. Frontend (Client)
 - **Framework**: [React.js](https://reactjs.org/) (Version 18+)
@@ -34,7 +34,7 @@ VTrustX follows a **Client-Server Architecture** designed for scalability, modul
 
 ## 🚀 AI Integration Layer
 
-VTrustX is an "AI-First" platform with a robust integration layer:
+RayiX is an "AI-First" platform with a robust integration layer:
 - **LLM Support**: Built-in support for **Google Gemini (Vertex AI)** and **OpenAI**.
 - **Capabilities**:
   - **AI Survey Generation**: Automated creation of surveys from prompts.
@@ -57,7 +57,7 @@ We follow industry-standard security practices:
 
 ## 🛠 Engineering Best Practices
 
-The development of VTrustX adheres to the following best practices:
+The development of RayiX adheres to the following best practices:
 
 ### 1. Separation of Concerns
 - Business logic is strictly kept out of route handlers and placed into dedicated **Services**.

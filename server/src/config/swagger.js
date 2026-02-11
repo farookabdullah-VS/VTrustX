@@ -4,9 +4,9 @@ const options = {
   definition: {
     openapi: '3.0.3',
     info: {
-      title: 'VTrustX API',
+      title: 'RayiX API',
       version: '1.0.0',
-      description: 'VTrustX platform API — forms, CRM, CJM, analytics, and more.',
+      description: 'RayiX platform API — forms, CRM, CJM, analytics, and more.',
     },
     servers: [
       { url: `http://localhost:${process.env.PORT || 3000}`, description: 'Local' },

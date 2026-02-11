@@ -623,7 +623,7 @@ router.post('/tenants/:id/license', authenticate, checkGlobalAdmin, async (req, 
             generatedAt: Date.now()
         };
 
-        const secret = process.env.LICENSE_SECRET || process.env.JWT_SECRET || 'vtrustx_secret_key';
+        const secret = process.env.LICENSE_SECRET || process.env.JWT_SECRET || 'rayix_secret_key';
         const licenseKey = jwt.sign(payload, secret);
 
         res.json({ licenseKey, expiresAt });

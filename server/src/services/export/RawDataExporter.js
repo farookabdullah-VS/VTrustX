@@ -29,7 +29,7 @@ class RawDataExporter {
      */
     async exportToExcel(transformedData, options) {
         const workbook = new ExcelJS.Workbook();
-        workbook.creator = 'VTrustX';
+        workbook.creator = 'RayiX';
         workbook.created = new Date();
 
         // Create main data sheet

@@ -56,7 +56,7 @@ router.post('/send', authenticate, async (req, res) => {
             // req.body = { batch: [ { to: 'x@y.com', body: 'Final Content' } ], subject: 'Subj' }
 
             const mailOptions = {
-                from: process.env.SMTP_FROM || '"VTrustX Survey" <no-reply@vtrustx.com>',
+                from: process.env.SMTP_FROM || '"RayiX Survey" <no-reply@rayix.com>',
                 to: recipient.to,
                 subject: subject,
                 text: recipient.body,

@@ -1,4 +1,4 @@
-# 🛠️ VTrustX Deployment Prerequisites
+# 🛠️ RayiX Deployment Prerequisites
 
 It seems you are missing the necessary Command Line Tools to deploy to Google Cloud. 
 Please install the following to proceed:

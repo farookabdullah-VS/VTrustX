@@ -1,7 +1,7 @@
 # Social Media Marketing Module - Implementation Guide
 
 ## Overview
-A comprehensive Social Media Marketing module has been developed for VTrustX, enabling multi-platform campaign management with persona targeting integration.
+A comprehensive Social Media Marketing module has been developed for RayiX, enabling multi-platform campaign management with persona targeting integration.
 
 ## Files Created
 
@@ -161,8 +161,8 @@ Displays:
 
 ### 1. Run Database Migration
 ```bash
-cd d:\VTrustX\server
-$env:DB_PORT="5432"; $env:DB_PASSWORD="VTrustX@2030"; $env:DB_NAME="vtrustx-db"; node scripts/migrate_social_media.js
+cd d:\RayiX\server
+$env:DB_PORT="5432"; $env:DB_PASSWORD="RayiX@2030"; $env:DB_NAME="rayix-db"; node scripts/migrate_social_media.js
 ```
 
 ### 2. Update App.jsx

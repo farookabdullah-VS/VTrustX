@@ -8,7 +8,7 @@ Successfully implemented three critical integrations for the GCC Persona Engine,
 ## 1. CRM Integration: Persona Profile Display
 
 ### Component: `PersonaProfileCard.jsx`
-**Location**: `d:\VTrustX\client\src\components\PersonaEngine\PersonaProfileCard.jsx`
+**Location**: `d:\RayiX\client\src\components\PersonaEngine\PersonaProfileCard.jsx`
 
 ### Features Implemented:
 ✅ **Persona Display Cards**
@@ -43,7 +43,7 @@ Successfully implemented three critical integrations for the GCC Persona Engine,
 ## 2. Audit Log Viewer: Compliance Dashboard
 
 ### Component: `EnhancedAuditLogViewer.jsx`
-**Location**: `d:\VTrustX\client\src\components\PersonaEngine\EnhancedAuditLogViewer.jsx`
+**Location**: `d:\RayiX\client\src\components\PersonaEngine\EnhancedAuditLogViewer.jsx`
 
 ### Features Implemented:
 ✅ **Advanced Filtering**
@@ -83,7 +83,7 @@ Successfully implemented three critical integrations for the GCC Persona Engine,
 ## 3. Marketing Integration: Persona Selector
 
 ### Component: `PersonaSelector.jsx`
-**Location**: `d:\VTrustX\client\src\components\PersonaEngine\PersonaSelector.jsx`
+**Location**: `d:\RayiX\client\src\components\PersonaEngine\PersonaSelector.jsx`
 
 ### Features Implemented:
 ✅ **Persona Dropdown Selector**
@@ -144,7 +144,7 @@ Successfully implemented three critical integrations for the GCC Persona Engine,
 - `cx_persona_maps`: Lookup maps
 
 ### API Routes Updated
-**File**: `d:\VTrustX\server\src\api\routes\persona_engine.js`
+**File**: `d:\RayiX\server\src\api\routes\persona_engine.js`
 
 **Existing Endpoints Used**:
 - `GET /api/v1/persona/profiles/:profileId` - Get persona data
@@ -180,7 +180,7 @@ Successfully implemented three critical integrations for the GCC Persona Engine,
 .\deploy.ps1
 ```
 
-**Service URL**: `https://vtrustx-service-913176322756.us-central1.run.app`
+**Service URL**: `https://rayix-service-913176322756.us-central1.run.app`
 
 ---
 

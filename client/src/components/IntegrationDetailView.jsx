@@ -165,7 +165,7 @@ export function IntegrationDetailView({ integration, onBack, onUpdate }) {
                                     placeholder="YourBrand"
                                     style={{ width: '100%', padding: '12px', borderRadius: '6px', border: '1px solid #cbd5e1' }}
                                 />
-                                <p style={{ fontSize: '0.85em', color: '#94a3b8', marginTop: '4px' }}>Must be pre-approved by Unifonic. Defaults to VTrustX if empty.</p>
+                                <p style={{ fontSize: '0.85em', color: '#94a3b8', marginTop: '4px' }}>Must be pre-approved by Unifonic. Defaults to RayiX if empty.</p>
                             </div>
 
                             <div style={{ padding: '12px', background: '#fff7ed', borderRadius: '8px', border: '1px solid #fed7aa', fontSize: '0.9em', color: '#c2410c' }}>

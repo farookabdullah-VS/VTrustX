@@ -688,7 +688,7 @@ router.post('/test-email', authenticate, async (req, res) => {
         await transporter.sendMail({
             from,
             to,
-            subject: 'VTrustX SMTP Test',
+            subject: 'RayiX SMTP Test',
             text: 'If you are reading this, your SMTP configuration is working!'
         });
 

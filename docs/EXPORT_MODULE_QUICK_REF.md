@@ -1,4 +1,4 @@
-# VTrustX Export Module - Quick Reference Card
+# RayiX Export Module - Quick Reference Card
 
 ## 🚀 Installation
 

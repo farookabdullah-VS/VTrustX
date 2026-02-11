@@ -251,7 +251,7 @@ const SECTION_TEMPLATES = {
         iconStr: 'trending-up',
         style: { backgroundColor: '#FFFFFF', border: '1px solid #e2e8f0' },
         defaultData: {
-            sourceType: 'vtrustx', // vtrustx, qualtrics, manual
+            sourceType: 'rayix', // rayix, qualtrics, manual
             surveyId: '',
             metricType: 'nps', // nps, csat
             value: 0,
@@ -824,16 +824,16 @@ export function ModernPersonaEditor({ persona, setPersona: setParentPersona, per
                                         <div style={{ marginTop: '15px', borderTop: '1px solid #f1f5f9', paddingTop: '15px' }}>
                                             <label style={{ display: 'block', fontSize: '0.8em', marginBottom: '8px', fontWeight: 'bold' }}>Data Source</label>
                                             <select
-                                                value={selectedSection.data?.sourceType || 'vtrustx'}
+                                                value={selectedSection.data?.sourceType || 'rayix'}
                                                 onChange={e => updateSection(selectedSection.id, { data: { ...selectedSection.data, sourceType: e.target.value } })}
                                                 style={{ width: '100%', padding: '8px', marginBottom: '10px', borderRadius: '4px', border: '1px solid #e2e8f0' }}
                                             >
-                                                <option value="vtrustx">VTrustX Surveys</option>
+                                                <option value="rayix">RayiX Surveys</option>
                                                 <option value="qualtrics">Qualtrics Integration</option>
                                                 <option value="manual">Manual Entry</option>
                                             </select>
 
-                                            {selectedSection.data?.sourceType === 'vtrustx' && (
+                                            {selectedSection.data?.sourceType === 'rayix' && (
                                                 <>
                                                     <label style={{ display: 'block', fontSize: '0.8em', marginBottom: '5px' }}>Select Survey</label>
                                                     <select

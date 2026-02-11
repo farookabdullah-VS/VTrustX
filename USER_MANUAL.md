@@ -1,6 +1,6 @@
 # RayixCX User Manual
 
-Welcome to **RayixCX** (formerly VTrustX), your comprehensive Customer Experience and Survey Management Platform. This guide helps you navigate the features, from creating surveys to customizing themes and setting quotas.
+Welcome to **RayixCX** (formerly RayiX), your comprehensive Customer Experience and Survey Management Platform. This guide helps you navigate the features, from creating surveys to customizing themes and setting quotas.
 
 ---
 

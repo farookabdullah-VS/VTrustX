@@ -218,8 +218,8 @@ export function AIAgentChat({ user }) {
         if (isOpen && activeTab === 'agent' && messages.length === 0) {
             const name = user?.user?.username || 'there';
             const greeting = isArabic
-                ? `مرحبا ${name}! أنا مساعد VTrustX الذكي. يمكنني مساعدتك في تحليل بيانات الاستبيانات، مقاييس CSAT/NPS، رؤى العملاء وأكثر. كيف أستطيع مساعدتك؟`
-                : `Hello ${name}! I'm your VTrustX AI Agent. I can help you with survey analytics, CSAT/NPS metrics, customer insights, journey maps, and more. How can I assist you today?`;
+                ? `مرحبا ${name}! أنا مساعد RayiX الذكي. يمكنني مساعدتك في تحليل بيانات الاستبيانات، مقاييس CSAT/NPS، رؤى العملاء وأكثر. كيف أستطيع مساعدتك؟`
+                : `Hello ${name}! I'm your RayiX AI Agent. I can help you with survey analytics, CSAT/NPS metrics, customer insights, journey maps, and more. How can I assist you today?`;
             setMessages([{ role: 'assistant', content: greeting }]);
         }
     }, [isOpen, activeTab]);
@@ -756,7 +756,7 @@ export function AIAgentChat({ user }) {
                     style={s.floatingBtn}
                     onMouseOver={(e) => { e.currentTarget.style.transform = 'scale(1.1)'; }}
                     onMouseOut={(e) => { e.currentTarget.style.transform = 'scale(1)'; }}
-                    aria-label={isArabic ? 'فتح مساعد VTrustX الذكي' : 'Open VTrustX AI Agent'}
+                    aria-label={isArabic ? 'فتح مساعد RayiX الذكي' : 'Open RayiX AI Agent'}
                 >
                     <Bot size={28} strokeWidth={2.2} />
                     <div style={s.aiBadge}>AI</div>
@@ -804,7 +804,7 @@ export function AIAgentChat({ user }) {
                                 <div style={{ fontSize: 14, fontWeight: 700, letterSpacing: 0.3 }}>
                                     {activeTab === 'surveys' && activeSurvey
                                         ? (isArabic ? 'محلل الاستبيان' : 'Survey Analyst')
-                                        : 'VTrustX AI Agent'}
+                                        : 'RayiX AI Agent'}
                                 </div>
                                 <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.7)', fontWeight: 500 }}>
                                     {activeTab === 'surveys' && activeSurvey
