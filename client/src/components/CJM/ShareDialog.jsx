@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { X, Link, Copy, Trash2, UserPlus } from 'lucide-react';
+import { useToast } from '../common/Toast';
 
 export function ShareDialog({ mapId, onClose }) {
+    const toast = useToast();
     const [shares, setShares] = useState([]);
     const [users, setUsers] = useState([]);
     const [selectedUserId, setSelectedUserId] = useState('');
@@ -33,7 +35,7 @@ export function ShareDialog({ mapId, onClose }) {
             setShares([res.data, ...shares]);
             setSelectedUserId('');
         } catch (e) {
-            alert("Share failed: " + e.message);
+            toast.error("Share failed: " + e.message);
         }
     };
 
@@ -46,7 +48,7 @@ export function ShareDialog({ mapId, onClose }) {
             setPublicLink(link);
             setShares([res.data, ...shares]);
         } catch (e) {
-            alert("Failed to generate link: " + e.message);
+            toast.error("Failed to generate link: " + e.message);
         }
     };
 

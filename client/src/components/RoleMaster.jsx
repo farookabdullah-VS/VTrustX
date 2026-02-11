@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useTranslation } from 'react-i18next';
+import { useToast } from './common/Toast';
 
 const DEFAULT_PERMISSIONS = {
     forms: { view: false, create: false, update: false, delete: false },
@@ -16,6 +17,7 @@ const DEFAULT_PERMISSIONS = {
 
 export function RoleMaster() {
     const { t, i18n } = useTranslation();
+    const toast = useToast();
     const [roles, setRoles] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -40,7 +42,7 @@ export function RoleMaster() {
             .catch(err => {
                 console.error("Error loading roles:", err);
                 const msg = err.response?.data?.error || err.message;
-                alert("Error loading roles: " + msg);
+                toast.error("Error loading roles: " + msg);
                 setLoading(false);
             });
     };
@@ -67,10 +69,10 @@ export function RoleMaster() {
             : axios.post('/api/roles', payload);
 
         request.then(() => {
-            alert("Role saved successfully");
+            toast.success("Role saved successfully");
             setIsModalOpen(false);
             loadRoles();
-        }).catch(err => alert("Error saving role"));
+        }).catch(err => toast.error("Error saving role"));
     };
 
     const handleDelete = (id) => {

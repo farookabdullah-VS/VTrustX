@@ -3,9 +3,11 @@ import axios from 'axios';
 import { useTranslation } from 'react-i18next';
 import { Shield, Mic, Bot } from 'lucide-react';
 import { QuotaSettings } from './QuotaSettings';
+import { useToast } from './common/Toast';
 
 export function SettingsView({ form, onBack, onUpdate }) {
     const { t, i18n } = useTranslation();
+    const toast = useToast();
     const isRtl = i18n.language === 'ar';
     const [formData, setFormData] = useState({
         title: form.title,
@@ -64,13 +66,13 @@ export function SettingsView({ form, onBack, onUpdate }) {
             responseLimit: formData.responseLimit ? parseInt(formData.responseLimit) : null
         })
             .then(res => {
-                alert("Settings saved!");
+                toast.success("Settings saved!");
                 if (onUpdate) onUpdate();
                 setSaving(false);
             })
             .catch(err => {
                 console.error(err);
-                alert("Failed to save settings: " + (err.response?.data?.error || err.message));
+                toast.error("Failed to save settings: " + (err.response?.data?.error || err.message));
                 setSaving(false);
             });
     };

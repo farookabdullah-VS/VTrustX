@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { useToast } from './common/Toast';
 
 export function SubscriptionManagement() {
+    const toast = useToast();
     const [info, setInfo] = useState(null);
     const [loading, setLoading] = useState(true);
 
@@ -29,11 +31,11 @@ export function SubscriptionManagement() {
         // Mock API call to update plan
         axios.post('/api/settings/subscription/upgrade', { plan: newPlan })
             .then(res => {
-                alert("Plan updated successfully!");
+                toast.success("Plan updated successfully!");
                 setInfo(prev => ({ ...prev, plan: newPlan, users: { ...prev.users, limit: newPlan === 'pro' ? 5 : 100 } })); // Optimistic update
                 window.location.reload();
             })
-            .catch(err => alert("Upgrade failed: " + err.message));
+            .catch(err => toast.error("Upgrade failed: " + err.message));
     };
 
     return (
@@ -109,13 +111,13 @@ export function SubscriptionManagement() {
                     <button
                         onClick={() => {
                             const key = document.getElementById('licenseKeyInput').value;
-                            if (!key) return alert("Please enter a key");
+                            if (!key) { toast.warning("Please enter a key"); return; }
                             axios.post('/api/settings/subscription/license', { licenseKey: key })
                                 .then(res => {
-                                    alert(res.data.message);
+                                    toast.success(res.data.message);
                                     window.location.reload();
                                 })
-                                .catch(err => alert("Activation failed: " + (err.response?.data?.error || err.message)));
+                                .catch(err => toast.error("Activation failed: " + (err.response?.data?.error || err.message)));
                         }}
                         style={{ padding: '12px 24px', background: '#0f172a', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}
                     >

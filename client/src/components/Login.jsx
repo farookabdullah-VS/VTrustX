@@ -2,8 +2,10 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { login, register } from '../services/authService';
+import { useToast } from './common/Toast';
 
 export function Login({ onLogin }) {
+    const toast = useToast();
     const { t, i18n } = useTranslation();
     // Force English if translation isn't loaded yet
     const title = t('login.title') || "Welcome Back";
@@ -48,7 +50,7 @@ export function Login({ onLogin }) {
         try {
             if (isRegistering) {
                 await register({ username, password });
-                alert("Registered! Please login.");
+                toast.success("Registered! Please login.");
                 setIsRegistering(false);
             } else {
                 const data = await login(username, password);
@@ -102,13 +104,15 @@ export function Login({ onLogin }) {
                     {isRegistering ? t('auth.create_account') : title}
                 </h3>
 
-                {error && <div style={{ color: 'var(--status-error)', marginBottom: '20px', fontSize: '0.9em', textAlign: 'center', background: 'rgba(239, 68, 68, 0.1)', padding: '12px', borderRadius: '8px', border: '1px solid var(--status-error)' }}>{error}</div>}
+                {error && <div role="alert" aria-live="assertive" style={{ color: 'var(--status-error)', marginBottom: '20px', fontSize: '0.9em', textAlign: 'center', background: 'rgba(239, 68, 68, 0.1)', padding: '12px', borderRadius: '8px', border: '1px solid var(--status-error)' }}>{error}</div>}
 
                 <form onSubmit={handleSubmit}>
                     <div style={{ marginBottom: '20px' }}>
                         <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9em', color: 'var(--label-color)', fontWeight: '600', marginLeft: '2px' }}>{t('login.username')}</label>
                         <input
                             required
+                            aria-required="true"
+                            aria-label={t('login.username')}
                             type="text"
                             value={username}
                             onChange={e => setUsername(e.target.value)}
@@ -132,6 +136,8 @@ export function Login({ onLogin }) {
                         <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9em', color: 'var(--label-color)', fontWeight: '600', marginLeft: '2px' }}>{t('login.password')}</label>
                         <input
                             required
+                            aria-required="true"
+                            aria-label={t('login.password')}
                             type="password"
                             value={password}
                             onChange={e => setPassword(e.target.value)}
@@ -168,6 +174,7 @@ export function Login({ onLogin }) {
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                             <button
                                 type="button"
+                                aria-label="Sign in with Google"
                                 onClick={() => window.location.href = '/api/auth/google'}
                                 style={{
                                     width: '100%', padding: '14px', background: 'var(--input-bg)', color: 'var(--text-color)',
@@ -188,6 +195,8 @@ export function Login({ onLogin }) {
                             </button>
 
                             <button
+                                type="button"
+                                aria-label="Sign in with Microsoft"
                                 onClick={() => window.location.href = '/api/auth/microsoft'}
                                 style={{
                                     width: '100%', padding: '14px', background: 'var(--input-bg)', color: 'var(--text-color)',

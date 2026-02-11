@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
+const logger = require('../../infrastructure/logger');
 const { processAndSave, retrieveAndDecrypt } = require('../../core/fileStorage');
 
 // Memory storage to process buffer before saving
@@ -32,7 +33,7 @@ router.post('/upload', upload.single('file'), async (req, res) => {
             type: result.mimetype
         });
     } catch (e) {
-        console.error("Upload failed:", e);
+        logger.error("Upload failed", { error: e.message });
         res.status(500).json({ error: e.message });
     }
 });

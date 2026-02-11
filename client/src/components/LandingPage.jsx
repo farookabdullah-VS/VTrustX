@@ -4,8 +4,10 @@ import { useTranslation } from 'react-i18next';
 import { Globe } from 'lucide-react';
 import { Signup } from './Signup';
 import { Login } from './Login';
+import { useToast } from './common/Toast';
 
 export function LandingPage({ onLogin }) {
+    const toast = useToast();
     const { t, i18n } = useTranslation();
     const [view, setView] = useState('home'); // home, login, signup
     const [plans, setPlans] = useState([]);
@@ -39,7 +41,7 @@ export function LandingPage({ onLogin }) {
                         const res = await axios.post('/api/auth/login', { username: email, password });
                         onLogin(res.data);
                     } catch (e) {
-                        alert("Registration successful! Please login.");
+                        toast.info("Registration successful! Please login.");
                         setView('login');
                     }
                 }}
@@ -52,7 +54,7 @@ export function LandingPage({ onLogin }) {
     return (
         <div style={{ fontFamily: "'Outfit', sans-serif", color: 'var(--text-color)', background: 'var(--deep-bg)' }}>
             {/* Header */}
-            <header style={{
+            <header role="banner" style={{
                 position: 'fixed', top: 0, left: 0, right: 0,
                 background: 'rgba(255, 255, 255, 0.9)', backdropFilter: 'blur(12px)',
                 borderBottom: '1px solid var(--sidebar-border)', zIndex: 1000,
@@ -66,7 +68,7 @@ export function LandingPage({ onLogin }) {
                     </div>
 
                     {/* Desktop Nav */}
-                    <nav style={{ display: 'flex', gap: '30px', alignItems: 'center' }} className="desktop-nav">
+                    <nav aria-label="Main navigation" style={{ display: 'flex', gap: '30px', alignItems: 'center' }} className="desktop-nav">
                         <a href="#features" style={{ textDecoration: 'none', color: '#475569', fontWeight: '500', fontSize: '0.95rem' }}>{t('landing.nav.features')}</a>
                         <a href="#pricing" style={{ textDecoration: 'none', color: '#475569', fontWeight: '500', fontSize: '0.95rem' }}>{t('landing.nav.pricing')}</a>
                         <a href="#resources" style={{ textDecoration: 'none', color: '#475569', fontWeight: '500', fontSize: '0.95rem' }}>{t('landing.nav.resources')}</a>
@@ -74,9 +76,13 @@ export function LandingPage({ onLogin }) {
 
                     <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
                         <div
+                            role="button"
+                            tabIndex={0}
                             onClick={() => i18n.changeLanguage(i18n.language === 'en' ? 'ar' : 'en')}
+                            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); i18n.changeLanguage(i18n.language === 'en' ? 'ar' : 'en'); } }}
                             style={{ cursor: 'pointer', padding: '8px', borderRadius: '50%', background: 'rgba(0,0,0,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                             title={i18n.language === 'en' ? 'Switch to Arabic' : 'Switch to English'}
+                            aria-label={i18n.language === 'en' ? 'Switch to Arabic' : 'Switch to English'}
                         >
                             <Globe size={20} color="#334155" />
                         </div>
@@ -236,7 +242,7 @@ export function LandingPage({ onLogin }) {
             </section>
 
             {/* Footer */}
-            <footer style={{ padding: '80px 24px', background: '#0f172a', color: '#94a3b8' }}>
+            <footer role="contentinfo" style={{ padding: '80px 24px', background: '#0f172a', color: '#94a3b8' }}>
                 <div style={{ maxWidth: '1280px', margin: '0 auto', textAlign: 'center' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', marginBottom: '20px' }}>
                         <span style={{ fontWeight: '800', fontSize: '1.5rem', color: '#ffffff', letterSpacing: '-0.5px' }}>RayiX</span>

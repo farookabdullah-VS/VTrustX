@@ -3,6 +3,7 @@ import { ModernPersonaEditor } from './persona/ModernPersonaEditor';
 import { AIPersonaGenerator } from './persona/AIPersonaGenerator';
 import { Plus, X, File, Layout, Sparkles, User, Calendar, MoreVertical, Trash2, Edit2, Copy, Search, Loader2 } from 'lucide-react';
 import axios from 'axios';
+import { useToast } from './common/Toast';
 
 // Simple time ago helper
 const timeAgo = (dateStr) => {
@@ -24,6 +25,7 @@ const timeAgo = (dateStr) => {
 };
 
 export function CxPersonaBuilder({ onToggleSidebar, onNavigate }) {
+    const toast = useToast();
     const [mode, setMode] = useState('list'); // 'list' | 'editor'
     const [personas, setPersonas] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -74,13 +76,13 @@ export function CxPersonaBuilder({ onToggleSidebar, onNavigate }) {
                 if (onToggleSidebar) onToggleSidebar(true);
 
             } catch (e) {
-                alert("Failed to create persona: " + (e.response?.data?.error || e.message));
+                toast.error("Failed to create persona: " + (e.response?.data?.error || e.message));
             }
         } else if (option === 'template') {
             if (onNavigate) {
                 onNavigate('persona-templates');
             } else {
-                alert("To use a template, please visit the 'Persona Templates' gallery.");
+                toast.info("To use a template, please visit the 'Persona Templates' gallery.");
             }
             setShowCreateModal(false);
         } else if (option === 'ai') {
@@ -102,7 +104,7 @@ export function CxPersonaBuilder({ onToggleSidebar, onNavigate }) {
             await axios.delete(`/api/cx-personas/${id}`);
             loadPersonas(); // Refresh list
         } catch (e) {
-            alert("Failed to delete: " + e.message);
+            toast.error("Failed to delete: " + e.message);
         }
     };
 
@@ -245,7 +247,7 @@ export function CxPersonaBuilder({ onToggleSidebar, onNavigate }) {
                         setMode('editor');
                         if (onToggleSidebar) onToggleSidebar(true);
                     } catch (e) {
-                        alert("Failed to create persona: " + (e.response?.data?.error || e.message));
+                        toast.error("Failed to create persona: " + (e.response?.data?.error || e.message));
                     }
                 }}
             />

@@ -1,13 +1,14 @@
 const express = require('express');
 const router = express.Router();
 const axios = require('axios');
+const logger = require('../../infrastructure/logger');
 
 const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://localhost:3001';
 
 router.all('/*', async (req, res) => {
     try {
         const url = `${AI_SERVICE_URL}${req.originalUrl.replace('/api/ai-service', '')}`;
-        console.log(`[AI Proxy] Forwarding to ${url}`);
+        logger.info(`[AI Proxy] Forwarding to ${url}`);
 
         const response = await axios({
             method: req.method,
@@ -21,7 +22,7 @@ router.all('/*', async (req, res) => {
 
         res.status(response.status).json(response.data);
     } catch (error) {
-        console.error(`[AI Proxy] Error:`, error.message);
+        logger.error("[AI Proxy] Error", { error: error.message });
         if (error.response) {
             res.status(error.response.status).json(error.response.data);
         } else {

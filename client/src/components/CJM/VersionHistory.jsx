@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { X, History, RotateCcw, Eye, EyeOff } from 'lucide-react';
+import { useToast } from '../common/Toast';
 
 export function VersionHistory({ mapId, onRestore, onClose }) {
+    const toast = useToast();
     const [versions, setVersions] = useState([]);
     const [loading, setLoading] = useState(true);
     const [previewId, setPreviewId] = useState(null);
@@ -47,7 +49,7 @@ export function VersionHistory({ mapId, onRestore, onClose }) {
             const restoredData = res.data.data || res.data;
             onRestore(restoredData);
         } catch (e) {
-            alert("Restore failed: " + e.message);
+            toast.error("Restore failed: " + e.message);
         } finally {
             setRestoring(false);
         }

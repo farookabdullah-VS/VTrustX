@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { query } = require('../../infrastructure/database/db');
+const { query, transaction } = require('../../infrastructure/database/db');
 const authenticate = require('../middleware/auth');
 const crypto = require('crypto');
 
@@ -120,11 +120,13 @@ router.put('/:id', authenticate, async (req, res) => {
 router.delete('/:id', authenticate, async (req, res) => {
     try {
         const tenantId = req.user.tenant_id;
-        // Cascade delete related records
-        await query("DELETE FROM cjm_comments WHERE map_id = $1", [req.params.id]);
-        await query("DELETE FROM cjm_shares WHERE map_id = $1", [req.params.id]);
-        await query("DELETE FROM cjm_versions WHERE map_id = $1", [req.params.id]);
-        await query("DELETE FROM cjm_maps WHERE id = $1 AND tenant_id = $2", [req.params.id, tenantId]);
+        // Cascade delete related records in a transaction for atomicity
+        await transaction(async (client) => {
+            await client.query("DELETE FROM cjm_comments WHERE map_id = $1", [req.params.id]);
+            await client.query("DELETE FROM cjm_shares WHERE map_id = $1", [req.params.id]);
+            await client.query("DELETE FROM cjm_versions WHERE map_id = $1", [req.params.id]);
+            await client.query("DELETE FROM cjm_maps WHERE id = $1 AND tenant_id = $2", [req.params.id, tenantId]);
+        });
         res.json({ success: true });
     } catch (e) {
         res.status(500).json({ error: e.message });

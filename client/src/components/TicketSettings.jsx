@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useToast } from './common/Toast';
 
 export function TicketSettings() {
+    const toast = useToast();
     // STATE
     const [slaPolicies, setSlaPolicies] = useState([]);
     const [channels, setChannels] = useState([]);
@@ -63,42 +65,42 @@ export function TicketSettings() {
 
     // --- HANDLERS: Rules ---
     const handleAddRule = () => {
-        if (!newRule.keyword || !newRule.assigned_user_id) return alert("Fill all fields");
+        if (!newRule.keyword || !newRule.assigned_user_id) { toast.warning("Fill all fields"); return; }
         axios.post('/api/settings/assignment-rules', newRule)
             .then(() => {
-                alert("Rule Added");
+                toast.success("Rule Added");
                 setNewRule({ keyword: '', assigned_user_id: '' });
                 loadData();
             })
-            .catch(e => alert(e.message));
+            .catch(e => toast.error(e.message));
     };
 
     const handleDeleteRule = (id) => {
         if (!window.confirm("Sure?")) return;
         axios.delete(`/api/settings/assignment-rules/${id}`)
             .then(loadData)
-            .catch(e => alert(e.message));
+            .catch(e => toast.error(e.message));
     };
 
     // --- HANDLERS: SLA ---
     const handleSaveSLA = () => {
         axios.post('/api/settings/sla', slaPolicies)
-            .then(() => alert("SLA Saved"))
-            .catch(e => alert(e.message));
+            .then(() => toast.success("SLA Saved"))
+            .catch(e => toast.error(e.message));
     };
 
     // --- HANDLERS: Channels ---
     const handleAddChannel = () => {
         axios.post('/api/settings/channels', newChannel)
-            .then(() => { alert("Channel Added"); loadData(); })
-            .catch(e => alert(e.message));
+            .then(() => { toast.success("Channel Added"); loadData(); })
+            .catch(e => toast.error(e.message));
     };
 
     // --- HANDLERS: Templates ---
     const handleSaveTemplate = (tpl) => {
         axios.put(`/api/settings/email-templates/${tpl.id}`, tpl)
-            .then(() => { alert("Template Saved"); setEditingTemplate(null); loadData(); })
-            .catch(e => alert(e.message));
+            .then(() => { toast.success("Template Saved"); setEditingTemplate(null); loadData(); })
+            .catch(e => toast.error(e.message));
     };
 
     return (

@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Zap, Mail, MessageSquare, AlertTriangle, Plus, Play, Clock, CheckCircle, Ticket, Trash2 } from 'lucide-react';
+import { useToast } from './common/Toast';
 
 export function WorkflowView({ form, onBack }) {
+    const toast = useToast();
     const [workflows, setWorkflows] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -33,7 +35,7 @@ export function WorkflowView({ form, onBack }) {
                 await axios.delete(`/api/workflows/${id}`);
                 loadWorkflows();
             } catch (e) {
-                alert('Failed to delete workflow');
+                toast.error('Failed to delete workflow');
             }
         }
     };
@@ -41,10 +43,10 @@ export function WorkflowView({ form, onBack }) {
     const handleRun = async (id) => {
         try {
             await axios.post(`/api/workflows/${id}/run`);
-            alert('Workflow Triggered Successfully!');
+            toast.success('Workflow Triggered Successfully!');
             loadWorkflows(); // Refresh stats
         } catch (e) {
-            alert('Failed to run workflow');
+            toast.error('Failed to run workflow');
         }
     };
 
@@ -66,7 +68,7 @@ export function WorkflowView({ form, onBack }) {
                 actions: [{ type: 'email', target: '', subject: 'New Alert', body: '' }]
             });
         } catch (e) {
-            alert('Error creating workflow');
+            toast.error('Error creating workflow');
         }
     };
 

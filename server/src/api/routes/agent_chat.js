@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const logger = require('../../infrastructure/logger');
 
 const PostgresRepository = require('../../infrastructure/database/PostgresRepository');
 const providerRepo = new PostgresRepository('ai_providers');
@@ -73,7 +74,7 @@ router.post('/start', async (req, res) => {
         res.json({ sessionId, text: introText, stage: 'GREETING' }); // Send stage
 
     } catch (err) {
-        console.error("Start Error:", err);
+        logger.error("Start Error", { error: err.message });
         res.status(500).json({ error: err.message });
     }
 });
@@ -229,7 +230,7 @@ router.post('/chat', async (req, res) => {
         }
 
     } catch (error) {
-        console.error("Agent Chat Error:", error);
+        logger.error("Agent Chat Error", { error: error.message });
         res.status(500).json({ error: error.message });
     }
 });
@@ -356,7 +357,7 @@ router.post('/analyze', async (req, res) => {
         res.json({ text });
 
     } catch (err) {
-        console.error("Analysis Error:", err);
+        logger.error("Analysis Error", { error: err.message });
         res.status(500).json({ error: err.message });
     }
 });
@@ -550,7 +551,7 @@ router.post('/platform-agent', async (req, res) => {
         });
 
     } catch (err) {
-        console.error("Platform Agent Error:", err);
+        logger.error("Platform Agent Error", { error: err.message });
         res.status(500).json({ error: err.message });
     }
 });

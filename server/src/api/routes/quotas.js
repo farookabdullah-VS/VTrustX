@@ -3,6 +3,7 @@ const router = express.Router();
 const db = require('../../infrastructure/database/db');
 const { getPeriodKey, matchesCriteria } = require('../../core/quotaUtils');
 const authenticate = require('../middleware/auth');
+const logger = require('../../infrastructure/logger');
 
 // GET all quotas for a form
 router.get('/', authenticate, async (req, res) => {
@@ -21,28 +22,31 @@ router.get('/', authenticate, async (req, res) => {
 
         let quotas = result.rows;
 
-        // Populate dynamic counts for periodic quotas
-        // We can do this with a single JOIN query, or simple loop since quotas per form are few.
-        // Loop is simpler to maintain given current structure.
-
-        for (let q of quotas) {
-            const pKey = getPeriodKey(q.reset_period);
-            if (pKey) {
-                const countRes = await db.query(
-                    'SELECT count FROM quota_period_counters WHERE quota_id = $1 AND period_key = $2',
-                    [q.id, pKey]
-                );
-                if (countRes.rows.length > 0) {
-                    q.current_count = countRes.rows[0].count;
-                } else {
-                    q.current_count = 0; // New period = 0
+        // Batch-fetch periodic counters to avoid N+1 queries
+        const periodicQuotas = quotas.filter(q => getPeriodKey(q.reset_period));
+        if (periodicQuotas.length > 0) {
+            const quotaIds = periodicQuotas.map(q => q.id);
+            const periodKeys = periodicQuotas.map(q => getPeriodKey(q.reset_period));
+            const countRes = await db.query(
+                `SELECT quota_id, period_key, count FROM quota_period_counters
+                 WHERE quota_id = ANY($1::int[]) AND period_key = ANY($2::text[])`,
+                [quotaIds, periodKeys]
+            );
+            const countMap = {};
+            for (const row of countRes.rows) {
+                countMap[`${row.quota_id}:${row.period_key}`] = row.count;
+            }
+            for (let q of quotas) {
+                const pKey = getPeriodKey(q.reset_period);
+                if (pKey) {
+                    q.current_count = countMap[`${q.id}:${pKey}`] || 0;
                 }
             }
         }
 
         res.json(quotas);
     } catch (err) {
-        console.error(err);
+        logger.error('Failed to fetch quotas', { error: err.message });
         res.status(500).json({ error: 'Failed to fetch quotas' });
     }
 });
@@ -59,7 +63,7 @@ router.post('/', authenticate, async (req, res) => {
         // Use criteria directly if it's an object, PG handles it for JSONB
         const criteriaToStore = (criteria && typeof criteria === 'object') ? criteria : (criteria ? JSON.parse(criteria) : {});
 
-        console.log(`[QUOTA] Creating quota for form ${form_id}:`, { label, limit_count, criteria: criteriaToStore });
+        logger.info('Creating quota', { form_id, label, limit_count, criteria: criteriaToStore });
 
         // Fetch all submissions for this form to calculate count with complex criteria
         const subsRes = await db.query(`
@@ -100,8 +104,8 @@ router.post('/', authenticate, async (req, res) => {
         );
         res.status(201).json(result.rows[0]);
     } catch (err) {
-        console.error("CREATE QUOTA ERROR:", err);
-        res.status(500).json({ error: 'Failed to create quota: ' + err.message });
+        logger.error('Failed to create quota', { error: err.message });
+        res.status(500).json({ error: 'Failed to create quota' });
     }
 });
 
@@ -137,7 +141,7 @@ router.put('/:id', authenticate, async (req, res) => {
 
         const criteriaToStore = (criteria && typeof criteria === 'object') ? criteria : (criteria ? JSON.parse(criteria) : {});
 
-        console.log(`[QUOTA] Updating quota ${id} for form ${targetFormId}:`, { label, limit_count, criteria: criteriaToStore });
+        logger.info('Updating quota', { id, form_id: targetFormId, label, limit_count, criteria: criteriaToStore });
 
         // Re-Calculate Count correctly respecting period
         let newCount = 0;
@@ -183,11 +187,11 @@ router.put('/:id', authenticate, async (req, res) => {
             return res.status(404).json({ error: 'Quota not found' });
         }
 
-        console.log("[QUOTA SUCCESS] Updated:", id);
+        logger.info('Quota updated successfully', { id });
         res.json(result.rows[0]);
     } catch (err) {
-        console.error("[QUOTA PUT ERROR]", err);
-        res.status(500).json({ error: 'Failed to update quota: ' + err.message });
+        logger.error('Failed to update quota', { error: err.message });
+        res.status(500).json({ error: 'Failed to update quota' });
     }
 });
 
@@ -208,7 +212,7 @@ router.delete('/:id', authenticate, async (req, res) => {
         await db.query('DELETE FROM quotas WHERE id = $1', [id]);
         res.json({ message: 'Quota deleted' });
     } catch (err) {
-        console.error(err);
+        logger.error('Failed to delete quota', { error: err.message });
         res.status(500).json({ error: 'Failed to delete quota' });
     }
 });

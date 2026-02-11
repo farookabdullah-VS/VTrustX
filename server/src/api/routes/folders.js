@@ -3,6 +3,7 @@ const router = express.Router();
 const { query } = require('../../infrastructure/database/db');
 const authenticate = require('../middleware/auth');
 const { v4: uuidv4 } = require('uuid');
+const logger = require('../../infrastructure/logger');
 
 /**
  * GET /api/folders
@@ -38,7 +39,7 @@ router.get('/', authenticate, async (req, res) => {
         res.json(result.rows);
 
     } catch (err) {
-        console.error('List folders error:', err);
+        logger.error('List folders error', { error: err.message });
         res.status(500).json({ error: err.message });
     }
 });
@@ -50,7 +51,7 @@ router.get('/', authenticate, async (req, res) => {
 router.post('/', authenticate, async (req, res) => {
     try {
         const { name, type } = req.body; // type: 'private' | 'shared'
-        console.log(`[Folders] Creating folder '${name}' for user ${req.user?.id}`);
+        logger.info(`[Folders] Creating folder '${name}' for user ${req.user?.id}`);
 
         if (!name) return res.status(400).json({ error: 'Name is required' });
 
@@ -59,19 +60,19 @@ router.post('/', authenticate, async (req, res) => {
         const userId = req.user.id;
         const folderType = type || 'private';
 
-        console.log(`[Folders] Generated ID: ${id}, Tenant: ${tenantId}, Type: ${folderType}`);
+        logger.debug(`[Folders] Generated ID: ${id}, Tenant: ${tenantId}, Type: ${folderType}`);
 
         await query(`
             INSERT INTO folders (id, name, tenant_id, user_id, type)
             VALUES ($1, $2, $3, $4, $5)
         `, [id, name, tenantId, userId, folderType]);
 
-        console.log(`[Folders] Insert successful`);
+        logger.debug("[Folders] Insert successful");
 
         res.status(201).json({ id, name, type: folderType });
 
     } catch (err) {
-        console.error('Create folder error:', err);
+        logger.error('Create folder error', { error: err.message });
         res.status(500).json({ error: err.message, stack: err.stack });
     }
 });
@@ -98,7 +99,7 @@ router.put('/:id', authenticate, async (req, res) => {
         res.json({ success: true });
 
     } catch (err) {
-        console.error('Update folder error:', err);
+        logger.error('Update folder error', { error: err.message });
         res.status(500).json({ error: err.message });
     }
 });
@@ -117,7 +118,7 @@ router.delete('/:id', authenticate, async (req, res) => {
         res.json({ success: true });
 
     } catch (err) {
-        console.error('Delete folder error:', err);
+        logger.error('Delete folder error', { error: err.message });
         res.status(500).json({ error: err.message });
     }
 });

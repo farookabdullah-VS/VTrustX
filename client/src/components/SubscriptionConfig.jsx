@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Plus, Edit, Trash2, Tag, CreditCard, Save, X } from 'lucide-react';
+import { useToast } from './common/Toast';
 
 export function SubscriptionConfig() {
     const [activeTab, setActiveTab] = useState('plans'); // plans, discounts
@@ -43,6 +44,7 @@ export function SubscriptionConfig() {
 }
 
 function PlansManager() {
+    const toast = useToast();
     const [plans, setPlans] = useState([]);
     const [isEditing, setIsEditing] = useState(false);
     const [currentPlan, setCurrentPlan] = useState(null);
@@ -66,11 +68,11 @@ function PlansManager() {
         if (plan.id) {
             axios.put(`/api/admin/config/plans/${plan.id}`, payload)
                 .then(() => { setIsEditing(false); fetchPlans(); })
-                .catch(err => alert(err.message));
+                .catch(err => toast.error(err.message));
         } else {
             axios.post('/api/admin/config/plans', payload)
                 .then(() => { setIsEditing(false); fetchPlans(); })
-                .catch(err => alert(err.message));
+                .catch(err => toast.error(err.message));
         }
     };
 
@@ -78,7 +80,7 @@ function PlansManager() {
         if (!confirm("Delete this plan?")) return;
         axios.delete(`/api/admin/config/plans/${id}`)
             .then(fetchPlans)
-            .catch(err => alert(err.message));
+            .catch(err => toast.error(err.message));
     };
 
     return (
@@ -162,6 +164,7 @@ function PlansManager() {
 }
 
 function DiscountsManager() {
+    const toast = useToast();
     const [discounts, setDiscounts] = useState([]);
     const [isEditing, setIsEditing] = useState(false);
     const [current, setCurrent] = useState(null);
@@ -189,11 +192,11 @@ function DiscountsManager() {
         if (item.id) {
             axios.patch(`/api/admin/discounts/${item.id}`, payload)
                 .then(() => { setIsEditing(false); fetchDiscounts(); })
-                .catch(err => alert(err.message));
+                .catch(err => toast.error(err.message));
         } else {
             axios.post('/api/admin/discounts', payload)
                 .then(() => { setIsEditing(false); fetchDiscounts(); })
-                .catch(err => alert(err.message));
+                .catch(err => toast.error(err.message));
         }
     };
 

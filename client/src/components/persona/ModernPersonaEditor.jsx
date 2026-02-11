@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
 import { X, Settings, HelpCircle, Save, PanelLeftClose, PanelLeft, PanelRightClose, PanelRight, Target, Quote, AlertCircle, Zap, Shield, History, MapPin, Map as MapIcon, FileText, MousePointer, Plus, User, Briefcase, GraduationCap, Layout, Layers, Image as ImageIcon, Smartphone, BarChart2, Globe, TrendingUp, Code, Award, File, Camera, Sliders, PieChart, Printer, Download, FileSpreadsheet, Sparkles, MessageCircle, Wand2 } from 'lucide-react';
+import { useToast } from '../common/Toast';
 import html2canvas from 'html2canvas';
 import * as XLSX from 'xlsx';
 import { PersonaHeader } from './PersonaHeader';
@@ -277,6 +278,7 @@ const SECTION_TEMPLATES = {
 };
 
 export function ModernPersonaEditor({ persona, setPersona: setParentPersona, personaId, onClose }) {
+    const toast = useToast();
     const [localPersona, setLocalPersona] = useState({
         name: 'New Persona',
         marketSize: 50,
@@ -339,7 +341,7 @@ export function ModernPersonaEditor({ persona, setPersona: setParentPersona, per
             setLocalPersona({ ...data, type: data.persona_type || data.type || 'Rational', sections });
         } catch (err) {
             console.error(err);
-            alert("Failed to load persona data.");
+            toast.error("Failed to load persona data.");
         }
         setLoading(false);
     };
@@ -356,10 +358,10 @@ export function ModernPersonaEditor({ persona, setPersona: setParentPersona, per
             if (personaId) await axios.put(`/api/cx-personas/${personaId}`, payload);
             else await axios.post('/api/cx-personas', payload);
             isDirtyRef.current = false;
-            alert("Saved successfully!");
+            toast.success("Saved successfully!");
         } catch (err) {
             console.error(err);
-            alert("Error saving: " + (err.response?.data?.error || err.message));
+            toast.error("Error saving: " + (err.response?.data?.error || err.message));
         }
     };
 
@@ -514,7 +516,7 @@ export function ModernPersonaEditor({ persona, setPersona: setParentPersona, per
             link.click();
         } catch (err) {
             console.error("PNG Export Failed", err);
-            alert("Could not export image.");
+            toast.error("Could not export image.");
         } finally {
             element.classList.remove('is-exporting');
         }

@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
 import { Plus, Trash2, Edit2, CheckCircle, XCircle, Filter, Settings2 } from 'lucide-react';
+import { useToast } from './common/Toast';
 
 export function QuotaSettings({ form }) {
+    const toast = useToast();
     const formId = form?.id;
     const [quotas, setQuotas] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -16,7 +18,6 @@ export function QuotaSettings({ form }) {
 
     // flatten questions for the dropdown
     const availableQuestions = useMemo(() => {
-        console.log("QuotaSettings: Form ID:", form?.id, "Has Definition:", !!form?.definition);
         const questions = [];
 
         const extractQuestions = (elements) => {
@@ -40,14 +41,10 @@ export function QuotaSettings({ form }) {
         };
 
         if (form?.definition && form.definition.pages) {
-            console.log("QuotaSettings: Extracting from pages count:", form.definition.pages.length);
             form.definition.pages.forEach(page => {
                 extractQuestions(page.elements);
             });
-        } else {
-            console.warn("QuotaSettings: No pages in definition. Definition keys:", form?.definition ? Object.keys(form.definition) : 'N/A');
         }
-        console.log("QuotaSettings: Questions Found:", questions.length, questions);
         return questions;
     }, [form]);
 
@@ -64,14 +61,13 @@ export function QuotaSettings({ form }) {
                 setLoading(false);
             })
             .catch(err => {
-                console.error(err);
                 setLoading(false);
             });
     };
 
     const handleSave = (item, isNew = false) => {
         if (!formId) {
-            alert("Error: No Form ID found. Please refresh.");
+            toast.error("Error: No Form ID found. Please refresh.");
             return;
         }
         const payload = {
@@ -90,14 +86,14 @@ export function QuotaSettings({ form }) {
                     setQuotas([...quotas, res.data]);
                     setNewQuota(null);
                 })
-                .catch(err => alert("Failed to create quota: " + err.message));
+                .catch(err => toast.error("Failed to create quota: " + err.message));
         } else {
             axios.put(`/api/quotas/${item.id}`, payload)
                 .then(res => {
                     setQuotas(quotas.map(q => q.id === item.id ? res.data : q));
                     setEditingId(null);
                 })
-                .catch(err => alert("Failed to update quota: " + err.message));
+                .catch(err => toast.error("Failed to update quota: " + err.message));
         }
     };
 
@@ -105,7 +101,7 @@ export function QuotaSettings({ form }) {
         if (confirm("Delete this quota?")) {
             axios.delete(`/api/quotas/${id}`)
                 .then(() => setQuotas(quotas.filter(q => q.id !== id)))
-                .catch(err => alert("Delete failed"));
+                .catch(err => toast.error("Delete failed"));
         }
     };
 
@@ -320,6 +316,7 @@ function QuotaRow({ item, isEditing, isNew, onSave, onCancel, onOpenFilter, onEd
 
 // Sub-component: Filter Builder Modal
 function FilterModal({ initialCriteria, questions, onSave, onClose }) {
+    const toast = useToast();
     const [filters, setFilters] = useState(() => {
         return Object.entries(initialCriteria || {}).map(([k, v]) => {
             const valStr = String(v);
@@ -364,7 +361,7 @@ function FilterModal({ initialCriteria, questions, onSave, onClose }) {
         });
 
         if (Object.keys(newCriteria).length === 0 && filters.length > 0) {
-            alert("⚠️ Filter Not Saved! \n\nPlease ensure you have selected a QUESTION and entered a VALUE.");
+            toast.warning("Filter Not Saved! Please ensure you have selected a QUESTION and entered a VALUE.");
             return; // Don't close modal, let them fix it
         }
 

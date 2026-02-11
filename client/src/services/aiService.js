@@ -63,7 +63,6 @@ export async function generatePersonaClient(text) {
 
         return JSON.parse(jsonStr);
     } catch (error) {
-        console.error("Client-side Persona Generation failed:", error);
         throw error;
     }
 }
@@ -107,7 +106,6 @@ export async function enhancePersonaClient(currentPersona, instruction) {
 
         return JSON.parse(jsonStr);
     } catch (error) {
-        console.error("Client-side Persona Enhancement failed:", error);
         throw error;
     }
 }

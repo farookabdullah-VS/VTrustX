@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Eye, Trash2, Download, RefreshCw, AlertCircle } from 'lucide-react';
+import { useToast } from '../common/Toast';
 
 /**
  * PersonaProfileCard - Displays assigned personas on customer profiles
  * Integrates with Customer360 to show persona tags, audit logs, and actions
  */
 export function PersonaProfileCard({ profileId, customerData }) {
+    const toast = useToast();
     const [personas, setPersonas] = useState([]);
     const [auditLogs, setAuditLogs] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -38,9 +40,9 @@ export function PersonaProfileCard({ profileId, customerData }) {
                 consent: true
             });
             await loadPersonaData();
-            alert('Persona recalculated successfully!');
+            toast.success('Persona recalculated successfully!');
         } catch (err) {
-            alert('Failed to recalculate: ' + (err.response?.data?.error || err.message));
+            toast.error('Failed to recalculate: ' + (err.response?.data?.error || err.message));
         }
         setLoading(false);
     };
@@ -54,9 +56,9 @@ export function PersonaProfileCard({ profileId, customerData }) {
                 data: { persona_id: personaId, reason: 'User requested removal' }
             });
             await loadPersonaData();
-            alert('Persona removed and logged.');
+            toast.success('Persona removed and logged.');
         } catch (err) {
-            alert('Failed to remove: ' + (err.response?.data?.error || err.message));
+            toast.error('Failed to remove: ' + (err.response?.data?.error || err.message));
         }
         setRemoving(false);
     };

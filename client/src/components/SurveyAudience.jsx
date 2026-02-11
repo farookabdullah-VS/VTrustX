@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { read, utils } from 'xlsx';
 import { WebCallModal } from './WebCallModal';
+import { useToast } from './common/Toast';
 
 export function SurveyAudience({ form, onBack }) {
+    const toast = useToast();
     const [audience, setAudience] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -48,7 +50,7 @@ export function SurveyAudience({ form, onBack }) {
                 setImportLoading(false);
             })
             .catch(err => {
-                alert("Failed to load global contacts");
+                toast.error("Failed to load global contacts");
                 setImportLoading(false);
             });
     };
@@ -66,12 +68,12 @@ export function SurveyAudience({ form, onBack }) {
 
         axios.post(`/api/form-audience/${form.id}/add`, { contactIds: ids })
             .then(() => {
-                alert(`Imported ${ids.length} contacts!`);
+                toast.success(`Imported ${ids.length} contacts!`);
                 setImportModalOpen(false);
                 setSelectedContacts(new Set());
                 loadAudience();
             })
-            .catch(err => alert("Import failed: " + err.message));
+            .catch(err => toast.error("Import failed: " + err.message));
     };
 
     // --- File Import (CSV/XLS) ---
@@ -144,16 +146,16 @@ export function SurveyAudience({ form, onBack }) {
                 await axios.post(`/api/form-audience/${form.id}/add`, {
                     contactIds: newContactIds
                 });
-                alert(`Successfully imported ${newContactIds.length} contacts! (Failed: ${failCount})`);
+                toast.success(`Successfully imported ${newContactIds.length} contacts! (Failed: ${failCount})`);
                 setFileImportModalOpen(false);
                 setFileData([]);
                 setImportStats(null);
                 loadAudience(); // Refresh list
             } catch (err) {
-                alert("Failed to link contacts: " + err.message);
+                toast.error("Failed to link contacts: " + err.message);
             }
         } else {
-            alert("No valid contacts imported.");
+            toast.warning("No valid contacts imported.");
         }
         setFileProcessing(false);
     };
@@ -163,7 +165,7 @@ export function SurveyAudience({ form, onBack }) {
         if (!confirm("Remove from list?")) return;
         axios.delete(`/api/form-audience/${form.id}/${id}`)
             .then(loadAudience)
-            .catch(err => alert("Failed to remove"));
+            .catch(err => toast.error("Failed to remove"));
     };
 
     const dispatchAgent = (contact) => {
@@ -173,8 +175,8 @@ export function SurveyAudience({ form, onBack }) {
             contactId: contact.contact_id,
             surveyId: form.id
         })
-            .then(() => alert("Call Initiated!"))
-            .catch(err => alert("Failed: " + (err.response?.data?.error || err.message)));
+            .then(() => toast.success("Call Initiated!"))
+            .catch(err => toast.error("Failed: " + (err.response?.data?.error || err.message)));
     };
 
     return (

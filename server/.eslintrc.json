@@ -1,0 +1,21 @@
+{
+  "env": {
+    "node": true,
+    "es2022": true,
+    "jest": true
+  },
+  "parserOptions": {
+    "ecmaVersion": 2022
+  },
+  "extends": ["eslint:recommended"],
+  "rules": {
+    "no-console": "warn",
+    "no-unused-vars": ["warn", { "argsIgnorePattern": "^_", "varsIgnorePattern": "^_" }],
+    "no-undef": "error",
+    "eqeqeq": ["error", "always"],
+    "no-var": "error",
+    "prefer-const": "warn",
+    "no-throw-literal": "error"
+  },
+  "ignorePatterns": ["node_modules/", "coverage/", "uploads/"]
+}

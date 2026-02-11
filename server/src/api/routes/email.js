@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const nodemailer = require('nodemailer');
 const authenticate = require('../middleware/auth');
+const logger = require('../../infrastructure/logger');
 
 // Setup Transporter (Lazy init or per request if settings change)
 const createTransporter = () => {
@@ -34,7 +35,7 @@ router.post('/send', authenticate, async (req, res) => {
     const transporter = createTransporter();
     const results = { success: 0, failed: 0, errors: [] };
 
-    console.log("Starting Email Batch...");
+    logger.info("Starting Email Batch...");
 
     for (const recipient of recipients) {
         try {
@@ -67,20 +68,20 @@ router.post('/send', authenticate, async (req, res) => {
                 results.success++;
             } else {
                 // Mock Send
-                console.log(`[MOCK EMAIL] To: ${recipient.to} | Subject: ${subject}`);
-                console.log(`[Body]: ${recipient.body}`);
+                logger.info(`[MOCK EMAIL] To: ${recipient.to} | Subject: ${subject}`);
+                logger.debug(`[Body]: ${recipient.body}`);
                 results.success++; // We count it as success in mock mode
             }
 
         } catch (error) {
-            console.error(`Failed to send to ${recipient.to}`, error);
+            logger.error(`Failed to send to ${recipient.to}`, { error: error.message });
             results.failed++;
             results.errors.push({ email: recipient.to, error: error.message });
         }
     }
 
     if (!transporter) {
-        console.log("No SMTP Configured. Emails were logged to console only.");
+        logger.info("No SMTP Configured. Emails were logged only.");
     }
 
     res.json({

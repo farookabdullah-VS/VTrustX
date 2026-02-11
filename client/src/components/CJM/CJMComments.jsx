@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { X, Send, CheckCircle, Circle, MessageCircle } from 'lucide-react';
+import { useToast } from '../common/Toast';
 
 export function CJMComments({ mapId, comments, onCommentsChange, onClose }) {
+    const toast = useToast();
     const [newComment, setNewComment] = useState('');
     const [filter, setFilter] = useState('all'); // all, unresolved, resolved
 
@@ -15,7 +17,7 @@ export function CJMComments({ mapId, comments, onCommentsChange, onClose }) {
             onCommentsChange([res.data, ...comments]);
             setNewComment('');
         } catch (e) {
-            alert("Failed to add comment: " + e.message);
+            toast.error("Failed to add comment: " + e.message);
         }
     };
 

@@ -71,6 +71,7 @@ export function AppLayout({ onNavigate, viewTitles }) {
         }}
       >
         <header
+          role="banner"
           className="glass-panel"
           style={{
             padding: '0 24px',
@@ -95,6 +96,7 @@ export function AppLayout({ onNavigate, viewTitles }) {
                   color: 'var(--sidebar-text, #064e3b)',
                 }}
                 title="Show Sidebar"
+                aria-label="Show Sidebar"
               >
                 <Menu size={20} />
               </button>
@@ -108,7 +110,13 @@ export function AppLayout({ onNavigate, viewTitles }) {
             <Notifications />
             <div style={{ position: 'relative' }}>
               <div
+                role="button"
+                tabIndex={0}
+                aria-label="User profile menu"
+                aria-expanded={isProfileMenuOpen}
+                aria-haspopup="true"
                 onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setIsProfileMenuOpen(!isProfileMenuOpen); } }}
                 style={{
                   display: 'flex', alignItems: 'center', gap: '10px', paddingLeft: '20px',
                   borderLeft: '1px solid #e2e8f0', cursor: 'pointer', userSelect: 'none',
@@ -132,13 +140,16 @@ export function AppLayout({ onNavigate, viewTitles }) {
               </div>
 
               {isProfileMenuOpen && (
-                <div style={{
+                <div role="menu" aria-label="Profile options" style={{
                   position: 'absolute', top: '50px', [isRtl ? 'left' : 'right']: '0', width: '260px',
                   background: '#f0fdf4', border: '1px solid #4ade80', borderRadius: '16px',
                   padding: '12px', boxShadow: '0 10px 30px -5px rgba(21, 128, 61, 0.15)', zIndex: 1000,
                 }}>
                   <div
+                    role="menuitem"
+                    tabIndex={0}
                     onClick={() => { onNavigate('profile'); setIsProfileMenuOpen(false); }}
+                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onNavigate('profile'); setIsProfileMenuOpen(false); } }}
                     style={{
                       background: 'white', padding: '12px 16px', borderRadius: '10px', marginBottom: '8px',
                       display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer',
@@ -152,7 +163,10 @@ export function AppLayout({ onNavigate, viewTitles }) {
                   </div>
 
                   <div
+                    role="menuitem"
+                    tabIndex={0}
                     onClick={() => { i18n.changeLanguage(i18n.language === 'en' ? 'ar' : 'en'); setIsProfileMenuOpen(false); }}
+                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); i18n.changeLanguage(i18n.language === 'en' ? 'ar' : 'en'); setIsProfileMenuOpen(false); } }}
                     style={{
                       background: 'white', padding: '12px 16px', borderRadius: '10px', marginBottom: '8px',
                       display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer',
@@ -171,7 +185,10 @@ export function AppLayout({ onNavigate, viewTitles }) {
                   </div>
 
                   <div
+                    role="menuitem"
+                    tabIndex={0}
                     onClick={() => { logout(); setIsProfileMenuOpen(false); }}
+                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); logout(); setIsProfileMenuOpen(false); } }}
                     style={{
                       background: 'white', padding: '12px 16px', borderRadius: '10px',
                       display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer',
@@ -189,7 +206,7 @@ export function AppLayout({ onNavigate, viewTitles }) {
           </div>
         </header>
 
-        <main style={{ padding: currentView === 'cx-ratings' ? 0 : '20px' }}>
+        <main role="main" aria-label="Main content" style={{ padding: currentView === 'cx-ratings' ? 0 : '20px' }}>
           <Outlet context={{
             onNavigate,
             isAIModalOpen, setIsAIModalOpen,

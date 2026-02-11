@@ -3,6 +3,7 @@ import axios from 'axios';
 import { Plus, Search, Grid, List, Copy, Trash2, Edit3, Filter, Clock, MoreVertical, Wand2 } from 'lucide-react';
 import { TemplateGallery } from './TemplateGallery';
 import { AIMapGenerator } from './AIMapGenerator';
+import { useToast } from '../common/Toast';
 import './CJMDashboard.css';
 
 const STATUS_COLORS = {
@@ -72,6 +73,7 @@ function MapListItem({ map, onEdit, onDuplicate, onDelete }) {
 }
 
 export function CJMDashboard({ onSelectMap }) {
+    const toast = useToast();
     const [maps, setMaps] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchText, setSearchText] = useState('');
@@ -101,7 +103,7 @@ export function CJMDashboard({ onSelectMap }) {
         try {
             await axios.post(`/api/cjm/${id}/duplicate`);
             loadMaps();
-        } catch (e) { alert("Duplicate failed: " + e.message); }
+        } catch (e) { toast.error("Duplicate failed: " + e.message); }
     };
 
     const handleDelete = async (id) => {
@@ -109,7 +111,7 @@ export function CJMDashboard({ onSelectMap }) {
         try {
             await axios.delete(`/api/cjm/${id}`);
             loadMaps();
-        } catch (e) { alert("Delete failed: " + e.message); }
+        } catch (e) { toast.error("Delete failed: " + e.message); }
     };
 
     const handleNewFromTemplate = async (templateData) => {
@@ -121,14 +123,14 @@ export function CJMDashboard({ onSelectMap }) {
                 data: templateData.data
             });
             onSelectMap(res.data.id);
-        } catch (e) { alert("Create failed: " + e.message); }
+        } catch (e) { toast.error("Create failed: " + e.message); }
     };
 
     const handleNewBlank = async () => {
         try {
             const res = await axios.post('/api/cjm', { title: 'New Journey Map' });
             onSelectMap(res.data.id);
-        } catch (e) { alert("Create failed: " + e.message); }
+        } catch (e) { toast.error("Create failed: " + e.message); }
     };
 
     const handleAIGenerate = async (generatedData) => {
@@ -139,7 +141,7 @@ export function CJMDashboard({ onSelectMap }) {
                 data: generatedData
             });
             onSelectMap(res.data.id);
-        } catch (e) { alert("Create failed: " + e.message); }
+        } catch (e) { toast.error("Create failed: " + e.message); }
     };
 
     return (

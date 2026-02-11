@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useToast } from './common/Toast';
 
 export function RulesEngine() {
+    const toast = useToast();
     const [rules, setRules] = useState([]);
     const [isCreating, setIsCreating] = useState(false);
     const [formData, setFormData] = useState({
@@ -42,7 +44,7 @@ export function RulesEngine() {
                 loadRules();
                 setFormData({ name: '', trigger_event: 'ticket_created', conditions: [], actions: [] });
             })
-            .catch(e => alert("Failed to save: " + e.message));
+            .catch(e => toast.error("Failed to save: " + e.message));
     };
 
     const handleDelete = (id) => {

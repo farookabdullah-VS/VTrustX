@@ -3,6 +3,8 @@ import { BrowserRouter, Routes, Route, Navigate, useNavigate, useParams, useLoca
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { NotificationProvider } from './contexts/NotificationContext';
+import { ToastProvider } from './components/common/Toast';
+import { ConfirmProvider } from './components/common/ConfirmDialog';
 import { LoadingSpinner } from './components/common/LoadingSpinner';
 import { AppLayout } from './components/layout/AppLayout';
 import { useTranslation } from 'react-i18next';
@@ -182,9 +184,11 @@ function AppRoutes() {
 
   return (
     <ThemeProvider user={user}>
-      <NotificationProvider isAuthenticated={isAuthenticated}>
-        <Suspense fallback={<LoadingSpinner />}>
-          <Routes>
+      <ToastProvider>
+        <ConfirmProvider>
+          <NotificationProvider isAuthenticated={isAuthenticated}>
+            <Suspense fallback={<LoadingSpinner />}>
+              <Routes>
             {/* Public routes */}
             <Route path="/login" element={
               isAuthenticated ? <Navigate to="/" replace /> : <LandingPage onLogin={login} />
@@ -296,9 +300,11 @@ function AppRoutes() {
 
             {/* Catch-all: redirect to dashboard or login */}
             <Route path="*" element={<Navigate to={isAuthenticated ? "/" : "/login"} replace />} />
-          </Routes>
-        </Suspense>
-      </NotificationProvider>
+              </Routes>
+            </Suspense>
+          </NotificationProvider>
+        </ConfirmProvider>
+      </ToastProvider>
     </ThemeProvider>
   );
 }

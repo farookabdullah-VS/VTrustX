@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import axios from 'axios';
 import { useTranslation } from 'react-i18next';
+import { useToast } from '../common/Toast';
 import { DndContext, closestCenter, DragOverlay, useSensor, useSensors, PointerSensor } from '@dnd-kit/core';
 import { arrayMove, SortableContext, verticalListSortingStrategy, horizontalListSortingStrategy } from '@dnd-kit/sortable';
 import { SidebarToolbox } from './SidebarToolbox';
@@ -18,6 +19,7 @@ import './CJMBuilder.css';
 
 export function CJMBuilder({ mapId, onBack }) {
     const { t } = useTranslation();
+    const toast = useToast();
     const [loading, setLoading] = useState(true);
     const [currentMapId, setCurrentMapId] = useState(mapId);
     const [mapData, setMapData] = useState({
@@ -65,7 +67,7 @@ export function CJMBuilder({ mapId, onBack }) {
                 })
                 .catch(err => {
                     console.error(err);
-                    alert("Failed to load map");
+                    toast.error("Failed to load map");
                     setLoading(false);
                 });
 
@@ -139,7 +141,7 @@ export function CJMBuilder({ mapId, onBack }) {
                 setSaveStatus('saved');
                 setTimeout(() => setSaveStatus(null), 2000);
             } catch (e) {
-                alert("Save failed: " + e.message);
+                toast.error("Save failed: " + e.message);
                 setSaveStatus(null);
             }
         } else {
@@ -153,7 +155,7 @@ export function CJMBuilder({ mapId, onBack }) {
                 setSaveStatus('saved');
                 setTimeout(() => setSaveStatus(null), 2000);
             } catch (e) {
-                alert("Save failed: " + e.message);
+                toast.error("Save failed: " + e.message);
                 setSaveStatus(null);
             }
         }

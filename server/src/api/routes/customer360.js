@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { query } = require('../../infrastructure/database/db');
 const authenticate = require('../middleware/auth');
+const logger = require('../../infrastructure/logger');
 
 // Helper: Identity Resolution
 async function resolveIdentity(identities, tenantId) {
@@ -348,7 +349,7 @@ router.get('/:id', authenticate, async (req, res) => {
 
         res.json(responseData);
     } catch (e) {
-        console.error(e);
+        logger.error("Customer360 profile error", { error: e.message });
         res.status(500).json({ error: e.message });
     }
 });
@@ -440,7 +441,7 @@ router.delete('/:id', authenticate, async (req, res) => {
         // Delete (Cascading relies on DB schema, but we can be explicit for safety)
         const tables = ['customer_identities', 'customer_contacts', 'customer_products', 'customer_consents', 'customer_events', 'customer_firmographics', 'customer_preferences', 'customer_financial_profile', 'cx_intelligence_metrics'];
         for (const t of tables) {
-            try { await query(`DELETE FROM ${t} WHERE customer_id = $1`, [customerId]); } catch (e) { console.warn(`Failed cleanup on ${t}: ${e.message}`); }
+            try { await query(`DELETE FROM ${t} WHERE customer_id = $1`, [customerId]); } catch (e) { logger.warn(`Failed cleanup on ${t}`, { detail: e.message }); }
         }
 
         await query('DELETE FROM customers WHERE id = $1', [customerId]);

@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const axios = require('axios');
 const PostgresRepository = require('../../infrastructure/database/PostgresRepository');
+const logger = require('../../infrastructure/logger');
 
 const contactRepo = new PostgresRepository('contacts');
 const formRepo = new PostgresRepository('forms');
@@ -41,7 +42,7 @@ router.post('/initiate', async (req, res) => {
         // We assume AI Service is running locally on 3001 or configured URL
         const aiServiceUrl = process.env.AI_SERVICE_URL || 'http://localhost:3001';
 
-        console.log(`[Call Manager] Initiating call to ${contact.name} (${contact.mobile}) for survey ${survey.title}`);
+        logger.info(`[Call Manager] Initiating call to ${contact.name} (${contact.mobile}) for survey ${survey.title}`);
 
         const response = await axios.post(`${aiServiceUrl}/voice/call`, payload);
 
@@ -52,7 +53,7 @@ router.post('/initiate', async (req, res) => {
         });
 
     } catch (err) {
-        console.error("Initiate Call Logic Error:", err.message);
+        logger.error("Initiate Call Logic Error", { error: err.message });
         const errorMsg = err.response?.data?.error || err.message;
         res.status(500).json({ error: errorMsg });
     }

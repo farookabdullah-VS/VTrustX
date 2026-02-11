@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Star, RefreshCw, MessageCircle, MapPin, ExternalLink, ThumbsUp, ThumbsDown } from 'lucide-react';
+import { useToast } from './common/Toast';
 
 export function ReputationManager() {
+    const toast = useToast();
     const [sources, setSources] = useState([]);
     const [reviews, setReviews] = useState([]);
     const [benchmarks, setBenchmarks] = useState([]);
@@ -38,7 +40,7 @@ export function ReputationManager() {
     const handleSync = async (id) => {
         setSyncing(true);
         await axios.post('/api/reputation/sync', { sourceId: id });
-        alert("Sync started! New reviews will appear shortly.");
+        toast.info("Sync started! New reviews will appear shortly.");
         setSyncing(false);
     };
 
@@ -54,7 +56,7 @@ export function ReputationManager() {
             });
             setGeneratedReply(res.data.reply);
         } catch (e) {
-            alert("AI Failed");
+            toast.error("AI Failed");
         }
         setIsGenerating(false);
     };
@@ -176,7 +178,7 @@ export function ReputationManager() {
                                                     onChange={e => setGeneratedReply(e.target.value)}
                                                     style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #e2e8f0', marginBottom: '10px', minHeight: '80px' }}
                                                 />
-                                                <button onClick={() => { alert("Reply Posted!"); setReplyingTo(null); }} style={{ background: '#3b82f6', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>
+                                                <button onClick={() => { toast.success("Reply Posted!"); setReplyingTo(null); }} style={{ background: '#3b82f6', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}>
                                                     Post Reply
                                                 </button>
                                             </>

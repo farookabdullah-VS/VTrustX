@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useToast } from './common/Toast';
 
 export function AIIntegrations() {
+    const toast = useToast();
     const [providers, setProviders] = useState([]);
     const [loading, setLoading] = useState(true);
     const [form, setForm] = useState({ name: '', provider: 'openai', apiKey: '' });
@@ -14,7 +16,7 @@ export function AIIntegrations() {
         setLoading(true);
         axios.get('/api/ai-providers')
             .then(res => setProviders(res.data))
-            .catch(err => alert("Failed to load providers: " + err.message))
+            .catch(err => toast.error("Failed to load providers: " + err.message))
             .finally(() => setLoading(false));
     };
 
@@ -25,7 +27,7 @@ export function AIIntegrations() {
             setForm({ name: '', provider: 'openai', apiKey: '' });
             loadProviders();
         } catch (err) {
-            alert("Error saving: " + err.message);
+            toast.error("Error saving: " + err.message);
         }
     };
 
@@ -35,7 +37,7 @@ export function AIIntegrations() {
             await axios.delete(`/api/ai-providers/${id}`);
             loadProviders();
         } catch (err) {
-            alert("Error deleting: " + err.message);
+            toast.error("Error deleting: " + err.message);
         }
     };
 
@@ -44,7 +46,7 @@ export function AIIntegrations() {
             await axios.post(`/api/ai-providers/${id}/activate`);
             loadProviders();
         } catch (err) {
-            alert("Error activating: " + err.message);
+            toast.error("Error activating: " + err.message);
         }
     };
 

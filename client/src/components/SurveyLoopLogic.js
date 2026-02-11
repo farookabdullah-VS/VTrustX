@@ -28,8 +28,6 @@ export function initLoopLogic(creator) {
 
                             if (!confirm("Wrap this question in a Loop (Dynamic Panel) for repeated entry?")) return;
 
-                            console.log("Starting Loop/Repeat process for:", q.name);
-
                             // 0. Prompt for Logic Binding
                             const bindSource = prompt("To create a Dependent Loop, enter the SOURCE Question Name (e.g. 'number_of_kids').\nLeave empty for a standard User-Defined loop (Add/Remove buttons).");
 
@@ -47,7 +45,6 @@ export function initLoopLogic(creator) {
                                 panel.minPanelCount = 0; // Usually handled by source, but safe init
                                 panel.allowAddPanel = false; // Disable manual add if bound
                                 panel.allowRemovePanel = false; // Disable manual remove if bound
-                                console.log(`Loop '${panelName}' bound to '${bindSource}'`);
                             } else {
                                 // User-Defined (Do-While)
                                 panel.panelCount = 1;
@@ -78,10 +75,8 @@ export function initLoopLogic(creator) {
 
                             // 5. Focus the new panel
                             sender.selectedElement = panel;
-                            console.log("Loop/Repeat action completed successfully.");
 
                         } catch (err) {
-                            console.error("Loop/Repeat Failed:", err);
                             alert("Failed to create loop: " + err.message);
                         }
                     }

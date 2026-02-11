@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Mail, MessageSquare, Smartphone, QrCode, Plus, Users, Send, CheckCircle } from 'lucide-react';
+import { useToast } from './common/Toast';
 
 export function DistributionsView() {
+    const toast = useToast();
     const [view, setView] = useState('list'); // list | create
     const [campaigns, setCampaigns] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -52,7 +54,7 @@ export function DistributionsView() {
         }).filter(Boolean);
 
         if (contactsList.length === 0) {
-            alert("Please add at least one valid recipient.");
+            toast.warning("Please add at least one valid recipient.");
             return;
         }
 
@@ -61,11 +63,11 @@ export function DistributionsView() {
                 ...formData,
                 contacts: contactsList
             });
-            alert("Campaign Scheduled!");
+            toast.success("Campaign Scheduled!");
             setView('list');
             loadData();
         } catch (e) {
-            alert("Failed to create campaign");
+            toast.error("Failed to create campaign");
         }
     };
 

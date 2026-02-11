@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { query } = require('../../infrastructure/database/db');
 const authenticate = require('../middleware/auth'); // Admin Logic
+const logger = require('../../infrastructure/logger');
 
 // Helper: Audit Logging
 async function logAudit(profileId, action, details, changedBy, reason) {

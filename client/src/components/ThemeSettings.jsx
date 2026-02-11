@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useToast } from './common/Toast';
 
 const DEFAULT_THEME = {
     primaryColor: '#0f172a',
@@ -80,6 +81,7 @@ const THEME_TEMPLATES = [
 ];
 
 export function ThemeSettings() {
+    const toast = useToast();
     const [theme, setTheme] = useState(DEFAULT_THEME);
     const [loading, setLoading] = useState(true);
 
@@ -110,10 +112,10 @@ export function ThemeSettings() {
     const handleSave = () => {
         axios.post('/api/settings/theme', theme)
             .then(() => {
-                alert("Theme saved successfully! Please refresh to see changes.");
+                toast.success("Theme saved successfully! Please refresh to see changes.");
                 // Optionally trigger a global theme update here if we had detailed context
             })
-            .catch(err => alert("Error saving theme: " + err.message));
+            .catch(err => toast.error("Error saving theme: " + err.message));
     };
 
     const ColorInput = ({ label, value, onChange }) => (

@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import VideoAgentInterface from './VideoAgentInterface';
 import axios from 'axios';
 import { Settings, Shield, Globe, Database, Mail, Mic, Cpu, Save } from 'lucide-react';
+import { useToast } from './common/Toast';
 
 export function SystemSettings() {
+    const toast = useToast();
     const [activeTab, setActiveTab] = useState('general');
     const [settings, setSettings] = useState({
         // Tenant Profile
@@ -92,8 +94,8 @@ export function SystemSettings() {
     const handleSave = () => {
         setLoading(true);
         axios.post('/api/settings', settings)
-            .then(() => alert("Settings saved successfully!"))
-            .catch(err => alert("Failed to save settings: " + (err.response?.data?.error || err.message)))
+            .then(() => toast.success("Settings saved successfully!"))
+            .catch(err => toast.error("Failed to save settings: " + (err.response?.data?.error || err.message)))
             .finally(() => setLoading(false));
     };
 
@@ -110,8 +112,8 @@ export function SystemSettings() {
             from: settings.smtp_from,
             to: email
         })
-            .then(res => alert(res.data.message))
-            .catch(err => alert("Test failed: " + (err.response?.data?.error || err.message)))
+            .then(res => toast.info(res.data.message))
+            .catch(err => toast.error("Test failed: " + (err.response?.data?.error || err.message)))
             .finally(() => setTesting(false));
     };
 
@@ -127,10 +129,10 @@ export function SystemSettings() {
         }).then(res => {
             const logoUrl = res.data.url;
             setSettings(prev => ({ ...prev, tenant_logo: logoUrl }));
-            alert("Logo uploaded successfully!");
+            toast.success("Logo uploaded successfully!");
         }).catch(err => {
             console.error(err);
-            alert("Logo upload failed: " + err.message);
+            toast.error("Logo upload failed: " + err.message);
         });
     };
 
@@ -424,7 +426,7 @@ export function SystemSettings() {
 
                         <button
                             onClick={() => {
-                                if (!selectedSurvey) return alert("Select a survey first");
+                                if (!selectedSurvey) { toast.warning("Select a survey first"); return; }
                                 setShowVideoCall(true);
                             }}
                             style={{

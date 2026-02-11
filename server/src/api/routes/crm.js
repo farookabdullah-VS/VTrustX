@@ -94,7 +94,8 @@ router.get('/tickets', authenticate, async (req, res) => {
             }
         });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        logger.error('Failed to list tickets', { error: err.message });
+        res.status(500).json({ error: 'Failed to fetch tickets' });
     }
 });
 
@@ -129,7 +130,8 @@ router.get('/tickets/:id', authenticate, async (req, res) => {
         res.json({ ...ticket, messages: mResult.rows });
 
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        logger.error('Failed to fetch ticket detail', { error: err.message });
+        res.status(500).json({ error: 'Failed to fetch ticket details' });
     }
 });
 
@@ -202,16 +204,18 @@ router.post('/tickets', authenticate, validate(createTicketSchema), async (req, 
         }
 
         // 1. If NOT assigned to User, try Team Defaults (Fallback)
+        // Batch-fetch all teams in one query to avoid N+1
         if (!assignedUserId) {
+            const allTeamsRes = await pool.query("SELECT id, name FROM teams WHERE tenant_id = $1", [tenantId]);
+            const teamsByName = {};
+            for (const t of allTeamsRes.rows) { teamsByName[t.name] = t.id; }
+
             if (text.includes('bill') || text.includes('invoc') || text.includes('payment')) {
-                const teamRes = await pool.query("SELECT id FROM teams WHERE name = 'Billing' LIMIT 1");
-                if (teamRes.rows.length > 0) assignedTeamId = teamRes.rows[0].id;
+                assignedTeamId = teamsByName['Billing'] || null;
             } else if (text.includes('error') || text.includes('bug') || text.includes('fail')) {
-                const teamRes = await pool.query("SELECT id FROM teams WHERE name = 'Technical' LIMIT 1");
-                if (teamRes.rows.length > 0) assignedTeamId = teamRes.rows[0].id;
+                assignedTeamId = teamsByName['Technical'] || null;
             } else {
-                const teamRes = await pool.query("SELECT id FROM teams WHERE name = 'General Support' LIMIT 1");
-                if (teamRes.rows.length > 0) assignedTeamId = teamRes.rows[0].id;
+                assignedTeamId = teamsByName['General Support'] || null;
             }
         }
 
@@ -252,7 +256,8 @@ router.post('/tickets', authenticate, validate(createTicketSchema), async (req, 
 
         res.status(201).json(saved);
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        logger.error('Failed to create ticket', { error: err.message });
+        res.status(500).json({ error: 'Failed to create ticket' });
     }
 });
 
@@ -265,7 +270,10 @@ router.get('/tickets/:id/transitions', authenticate, async (req, res) => {
         if (check.rows.length === 0) return res.status(404).json({ error: 'Ticket not found' });
         const currentStatus = check.rows[0].status;
         res.json({ currentStatus, allowedTransitions: VALID_TRANSITIONS[currentStatus] || [] });
-    } catch (err) { res.status(500).json({ error: err.message }); }
+    } catch (err) {
+        logger.error('Failed to fetch ticket transitions', { error: err.message });
+        res.status(500).json({ error: 'Failed to fetch ticket transitions' });
+    }
 });
 
 // PUT Bulk Update Tickets
@@ -284,11 +292,19 @@ router.put('/tickets/bulk', authenticate, validate(bulkUpdateSchema), async (req
         await client.query('BEGIN');
         const results = { updated: [], errors: [] };
 
-        for (const ticketId of ticketIds) {
-            const check = await client.query('SELECT id, status FROM tickets WHERE id = $1 AND tenant_id = $2', [ticketId, tenantId]);
-            if (check.rows.length === 0) { results.errors.push({ id: ticketId, error: 'Not found' }); continue; }
+        // Batch-verify all tickets in one query
+        const verifyRes = await client.query(
+            'SELECT id, status FROM tickets WHERE id = ANY($1::int[]) AND tenant_id = $2',
+            [ticketIds, tenantId]
+        );
+        const ticketMap = {};
+        for (const row of verifyRes.rows) { ticketMap[row.id] = row.status; }
 
-            const currentStatus = check.rows[0].status;
+        const toUpdate = [];
+        for (const ticketId of ticketIds) {
+            if (!ticketMap[ticketId]) { results.errors.push({ id: ticketId, error: 'Not found' }); continue; }
+
+            const currentStatus = ticketMap[ticketId];
             const applyUpdates = { ...safeUpdates };
 
             // Validate workflow transition if status change
@@ -303,19 +319,36 @@ router.put('/tickets/bulk', authenticate, validate(bulkUpdateSchema), async (req
             if (applyUpdates.status === 'closed') applyUpdates.closed_at = new Date();
             if (applyUpdates.status === 'open' && currentStatus === 'closed') applyUpdates.closed_at = null;
 
+            toUpdate.push({ ticketId, applyUpdates });
+        }
+
+        // Batch update tickets and insert audit logs
+        for (const { ticketId, applyUpdates } of toUpdate) {
             await ticketRepo.update(ticketId, applyUpdates);
-            await client.query(
-                `INSERT INTO audit_logs (entity_type, entity_id, action, details, actor_id) VALUES ($1, $2, $3, $4, $5)`,
-                ['ticket', ticketId, 'bulk_update', JSON.stringify(applyUpdates), req.user.id]
-            );
             results.updated.push(ticketId);
+        }
+
+        // Batch insert audit logs
+        if (toUpdate.length > 0) {
+            const auditValues = toUpdate.map((_, i) => {
+                const base = i * 5;
+                return `($${base + 1}, $${base + 2}, $${base + 3}, $${base + 4}, $${base + 5})`;
+            }).join(', ');
+            const auditParams = toUpdate.flatMap(({ ticketId, applyUpdates }) => [
+                'ticket', ticketId, 'bulk_update', JSON.stringify(applyUpdates), req.user.id
+            ]);
+            await client.query(
+                `INSERT INTO audit_logs (entity_type, entity_id, action, details, actor_id) VALUES ${auditValues}`,
+                auditParams
+            );
         }
 
         await client.query('COMMIT');
         res.json(results);
     } catch (err) {
         await client.query('ROLLBACK');
-        res.status(500).json({ error: err.message });
+        logger.error('Failed to bulk update tickets', { error: err.message });
+        res.status(500).json({ error: 'Failed to bulk update tickets' });
     } finally {
         client.release();
     }
@@ -432,7 +465,8 @@ router.put('/tickets/:id', authenticate, async (req, res) => {
 
         res.json(updated);
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        logger.error('Failed to update ticket', { error: err.message });
+        res.status(500).json({ error: 'Failed to update ticket' });
     }
 });
 
@@ -454,7 +488,10 @@ router.get('/tickets/:id/audit', authenticate, async (req, res) => {
             ORDER BY a.created_at DESC
         `, [id]);
         res.json(result.rows);
-    } catch (err) { res.status(500).json({ error: err.message }); }
+    } catch (err) {
+        logger.error('Failed to fetch audit logs', { error: err.message });
+        res.status(500).json({ error: 'Failed to fetch audit logs' });
+    }
 });
 
 // POST Message
@@ -480,7 +517,8 @@ router.post('/tickets/:id/messages', authenticate, async (req, res) => {
         const saved = await messageRepo.create(msg);
         res.status(201).json(saved);
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        logger.error('Failed to create ticket message', { error: err.message });
+        res.status(500).json({ error: 'Failed to create ticket message' });
     }
 });
 
@@ -492,7 +530,10 @@ router.get('/accounts', authenticate, async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM crm_accounts WHERE tenant_id = $1', [req.user.tenant_id]);
         res.json(result.rows);
-    } catch (e) { res.status(500).json({ error: e.message }); }
+    } catch (e) {
+        logger.error('Failed to fetch accounts', { error: e.message });
+        res.status(500).json({ error: 'Failed to fetch accounts' });
+    }
 });
 
 router.post('/accounts', authenticate, async (req, res) => {
@@ -510,14 +551,20 @@ router.post('/accounts', authenticate, async (req, res) => {
         };
         const saved = await accountRepo.create(account);
         res.status(201).json(saved);
-    } catch (e) { res.status(500).json({ error: e.message }); }
+    } catch (e) {
+        logger.error('Failed to create account', { error: e.message });
+        res.status(500).json({ error: 'Failed to create account' });
+    }
 });
 
 router.get('/contacts', authenticate, async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM crm_contacts WHERE tenant_id = $1', [req.user.tenant_id]);
         res.json(result.rows);
-    } catch (e) { res.status(500).json({ error: e.message }); }
+    } catch (e) {
+        logger.error('Failed to fetch CRM contacts', { error: e.message });
+        res.status(500).json({ error: 'Failed to fetch contacts' });
+    }
 });
 
 router.post('/contacts', authenticate, async (req, res) => {
@@ -534,7 +581,10 @@ router.post('/contacts', authenticate, async (req, res) => {
         };
         const saved = await contactRepo.create(contact);
         res.status(201).json(saved);
-    } catch (e) { res.status(500).json({ error: e.message }); }
+    } catch (e) {
+        logger.error('Failed to create CRM contact', { error: e.message });
+        res.status(500).json({ error: 'Failed to create contact' });
+    }
 });
 
 // --- REPORTING / STATS ---
@@ -581,7 +631,10 @@ router.get('/stats', authenticate, async (req, res) => {
             breaches: parseInt(breachRes.rows[0].count)
         });
 
-    } catch (e) { res.status(500).json({ error: e.message }); }
+    } catch (e) {
+        logger.error('Failed to fetch CRM stats', { error: e.message });
+        res.status(500).json({ error: 'Failed to fetch CRM statistics' });
+    }
 });
 
 // --- WEBHOOKS ---
@@ -667,7 +720,7 @@ router.post('/webhooks/email', async (req, res) => {
 
     } catch (err) {
         logger.error("Webhook Error", { error: err.message });
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ error: 'Failed to process email webhook' });
     }
 });
 
@@ -736,7 +789,8 @@ router.post('/public/tickets', async (req, res) => {
         res.status(201).json(saved);
 
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        logger.error('Failed to create public ticket', { error: err.message });
+        res.status(500).json({ error: 'Failed to submit ticket' });
     }
 });
 

@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import * as XLSX from 'xlsx';
+import { useToast } from './common/Toast';
 
 export function SurveyDistribution({ formId, onBack, onNavigate }) {
+    const toast = useToast();
     const [formMetadata, setFormMetadata] = useState(null);
     const [loading, setLoading] = useState(true);
     const [activeSidebar, setActiveSidebar] = useState('audience'); // audience, link, email
@@ -121,12 +123,12 @@ export function SurveyDistribution({ formId, onBack, onNavigate }) {
                 await axios.post(`/api/form-audience/${formId}/add`, {
                     contactIds: newContactIds
                 });
-                alert(`Successfully added ${newContactIds.length} contacts to the audience list! ` + (failCount > 0 ? `(${failCount} failed)` : ''));
+                toast.success(`Successfully added ${newContactIds.length} contacts to the audience list! ` + (failCount > 0 ? `(${failCount} failed)` : ''));
             } catch (err) {
-                alert("Failed to link contacts to survey: " + err.message);
+                toast.error("Failed to link contacts to survey: " + err.message);
             }
         } else {
-            alert("No valid contacts were processed to add.");
+            toast.warning("No valid contacts were processed to add.");
         }
 
         setLoading(false);
@@ -189,7 +191,7 @@ export function SurveyDistribution({ formId, onBack, onNavigate }) {
                                         <button
                                             onClick={() => {
                                                 navigator.clipboard.writeText(`${window.location.origin}/s/${formMetadata.slug || formMetadata.id}`);
-                                                alert("Link copied!");
+                                                toast.success("Link copied!");
                                             }}
                                             style={{ background: '#3b82f6', color: 'white', border: 'none', padding: '0 20px', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}
                                         >

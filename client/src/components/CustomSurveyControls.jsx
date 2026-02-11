@@ -3,6 +3,7 @@ import { Serializer, QuestionRatingModel } from "survey-core";
 import { ReactQuestionFactory } from "survey-react-ui";
 import axios from 'axios';
 import { AudioRecorder } from './AudioRecorder';
+import { useToast } from './common/Toast';
 
 // Helper for reactivity
 const useQuestionValue = (question) => {
@@ -97,6 +98,7 @@ export const initCustomControls = () => {
 
     // Wrapper Component
     const AudioWrapper = ({ question }) => {
+        const toast = useToast();
         const handleRecordingComplete = (blob) => {
             const formData = new FormData();
             const filename = `audio_${Date.now()}.webm`;
@@ -109,7 +111,7 @@ export const initCustomControls = () => {
                 question.value = url;
             }).catch(err => {
                 console.error("Audio Upload Failed:", err);
-                alert("Failed to upload audio. Please try again.");
+                toast.error("Failed to upload audio. Please try again.");
             });
         };
 

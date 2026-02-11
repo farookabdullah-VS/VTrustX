@@ -1,14 +1,16 @@
 import React from 'react';
 import { Copy, Mic } from 'lucide-react';
+import { useToast } from '../common/Toast';
 
 export function VoiceAgentSettings({ formId, form }) {
+    const toast = useToast();
     const baseUrl = window.location.origin;
     const voiceUrl = `${baseUrl}/s/voice/${formId}`;
     const isEnabled = form?.enableVoiceAgent;
 
     const copyToClipboard = () => {
         navigator.clipboard.writeText(voiceUrl);
-        alert("Voice Agent URL Copied!");
+        toast.success("Voice Agent URL Copied!");
     };
 
     return (

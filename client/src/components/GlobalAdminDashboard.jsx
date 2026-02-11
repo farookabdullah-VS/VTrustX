@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { useToast } from './common/Toast';
 
 export function GlobalAdminDashboard() {
+    const toast = useToast();
     const [activeTab, setActiveTab] = useState('tenants');
 
     // Tenants State
@@ -64,7 +66,7 @@ export function GlobalAdminDashboard() {
     }, []);
 
     const handleAddTenant = () => {
-        if (!newTenant.name) return alert("Organization name required");
+        if (!newTenant.name) { toast.warning("Organization name required"); return; }
         axios.post('/api/admin/tenants', newTenant)
             .then(() => {
                 setShowAddModal(false);
@@ -72,7 +74,7 @@ export function GlobalAdminDashboard() {
                 fetchTenants();
                 fetchStats();
             })
-            .catch(err => alert("Failed to add organization: " + (err.response?.data?.error || err.message)));
+            .catch(err => toast.error("Failed to add organization: " + (err.response?.data?.error || err.message)));
     };
 
     const handleDeleteTenant = (id) => {
@@ -82,7 +84,7 @@ export function GlobalAdminDashboard() {
                 fetchTenants();
                 fetchStats();
             })
-            .catch(err => alert("Failed to delete organization: " + err.message));
+            .catch(err => toast.error("Failed to delete organization: " + err.message));
     };
 
     const handleSavePlan = (planData) => {
@@ -93,7 +95,7 @@ export function GlobalAdminDashboard() {
                     fetchPlans();
                     setIsPlanModalOpen(false);
                 })
-                .catch(err => alert("Failed to update plan: " + err.message));
+                .catch(err => toast.error("Failed to update plan: " + err.message));
         } else {
             // Create
             axios.post('/api/admin/plans', planData)
@@ -101,7 +103,7 @@ export function GlobalAdminDashboard() {
                     fetchPlans();
                     setIsPlanModalOpen(false);
                 })
-                .catch(err => alert("Failed to create plan: " + err.message));
+                .catch(err => toast.error("Failed to create plan: " + err.message));
         }
     };
 

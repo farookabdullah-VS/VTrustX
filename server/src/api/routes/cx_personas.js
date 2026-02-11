@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { query } = require('../../infrastructure/database/db');
 const authenticate = require('../middleware/auth');
+const logger = require('../../infrastructure/logger');
 
 // GET /api/cx-personas - List all
 router.get('/', authenticate, async (req, res) => {
@@ -10,7 +11,7 @@ router.get('/', authenticate, async (req, res) => {
         const result = await query('SELECT id, name, title, photo_url, updated_at FROM cx_personas WHERE tenant_id = $1 ORDER BY updated_at DESC', [req.user.tenant_id]);
         res.json(result.rows);
     } catch (e) {
-        console.error("[CX_PERSONAS_ERROR]", e);
+        logger.error("[CX_PERSONAS_ERROR]", { error: e.message });
         res.status(500).json({ error: e.message });
     }
 });
@@ -23,7 +24,7 @@ router.get('/:id', authenticate, async (req, res) => {
         if (result.rows.length === 0) return res.status(404).json({ error: 'Persona not found' });
         res.json(result.rows[0]);
     } catch (e) {
-        console.error("[CX_PERSONAS_ERROR]", e);
+        logger.error("[CX_PERSONAS_ERROR]", { error: e.message });
         res.status(500).json({ error: e.message });
     }
 });
@@ -42,7 +43,7 @@ async function ensureSchema() {
         await query('ALTER TABLE cx_personas ADD COLUMN IF NOT EXISTS mapping_rules JSONB DEFAULT \'{}\'');
         await query('ALTER TABLE cx_personas ADD COLUMN IF NOT EXISTS live_metrics JSONB DEFAULT \'{"sat": 0, "loyalty": 0, "trust": 0, "effort": 0}\'');
     } catch (e) {
-        console.error("Schema check failed (non-fatal):", e.message);
+        logger.warn("Schema check failed (non-fatal)", { detail: e.message });
     }
 }
 
@@ -80,7 +81,7 @@ router.post('/', authenticate, async (req, res) => {
         );
         res.status(201).json(result.rows[0]);
     } catch (e) {
-        console.error("[CX_PERSONAS_ERROR]", e);
+        logger.error("[CX_PERSONAS_ERROR]", { error: e.message });
         res.status(500).json({ error: e.message });
     }
 });
@@ -155,7 +156,7 @@ router.put('/:id', authenticate, async (req, res) => {
 
         res.json({ success: true });
     } catch (e) {
-        console.error("[CX_PERSONAS_ERROR]", e);
+        logger.error("[CX_PERSONAS_ERROR]", { error: e.message });
         res.status(500).json({ error: e.message });
     }
 });
@@ -166,7 +167,7 @@ router.delete('/:id', authenticate, async (req, res) => {
         await query('DELETE FROM cx_personas WHERE id = $1 AND tenant_id = $2', [req.params.id, req.user.tenant_id]);
         res.status(204).send();
     } catch (e) {
-        console.error("[CX_PERSONAS_ERROR]", e);
+        logger.error("[CX_PERSONAS_ERROR]", { error: e.message });
         res.status(500).json({ error: e.message });
     }
 });

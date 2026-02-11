@@ -18,7 +18,6 @@ class ErrorBoundary extends React.Component {
   }
 
   componentDidCatch(error, errorInfo) {
-    console.error("Uncaught error:", error, errorInfo);
     this.setState({ error, errorInfo });
   }
 
@@ -46,7 +45,7 @@ class ErrorBoundary extends React.Component {
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {
-  console.error('Critical: Root element not found!');
+  document.body.textContent = 'Critical: Root element not found!';
 } else {
   try {
     createRoot(rootElement).render(
@@ -57,7 +56,7 @@ if (!rootElement) {
       </StrictMode>
     );
   } catch (err) {
-    console.error('Failed to mount React app:', err);
+    // Mount failure — render fallback UI
     const errDiv = document.createElement('div');
     errDiv.style.cssText = 'color:red; padding:20px;';
     const h1 = document.createElement('h1');

@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { query } = require('../../infrastructure/database/db');
 const authenticate = require('../middleware/auth');
+const logger = require('../../infrastructure/logger');
 
 // Middleware to check admin role
 const isAdmin = (req, res, next) => {
@@ -56,7 +57,7 @@ router.post('/', authenticate, isAdmin, async (req, res) => {
 
         res.status(201).json(result.rows[0]);
     } catch (e) {
-        console.error("Error creating discount:", e);
+        logger.error("Error creating discount", { error: e.message });
         res.status(500).json({ error: e.message });
     }
 });
@@ -97,7 +98,7 @@ router.patch('/:id', authenticate, isAdmin, async (req, res) => {
         res.json(result.rows[0]);
 
     } catch (e) {
-        console.error("Error updating discount:", e);
+        logger.error("Error updating discount", { error: e.message });
         res.status(500).json({ error: e.message });
     }
 });

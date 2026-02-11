@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { query } = require('../../infrastructure/database/db');
 const authenticate = require('../middleware/auth');
+const logger = require('../../infrastructure/logger');
 const NodeCache = require('node-cache');
 const analyticsCache = new NodeCache({ stdTTL: 600, maxKeys: 500 }); // 10 minutes cache, max 500 entries
 
@@ -253,7 +254,7 @@ router.get('/detailed-responses', authenticate, async (req, res) => {
 
         res.json(flattened);
     } catch (err) {
-        console.error("Detailed Responses Error:", err);
+        logger.error("Detailed Responses Error", { error: err.message });
         res.status(500).json({ error: err.message });
     }
 });
@@ -329,7 +330,7 @@ router.post('/key-drivers', authenticate, async (req, res) => {
         analyticsCache.set(cacheKey, responseData);
         res.json(responseData);
     } catch (err) {
-        console.error("Key Driver Analysis Error:", err);
+        logger.error("Key Driver Analysis Error", { error: err.message });
         res.status(500).json({ error: err.message });
     }
 });
@@ -394,7 +395,7 @@ router.post('/text-analytics', authenticate, async (req, res) => {
         analyticsCache.set(cacheKey, responseData);
         res.json(responseData);
     } catch (err) {
-        console.error("Text Analytics Error:", err);
+        logger.error("Text Analytics Error", { error: err.message });
         res.status(500).json({ error: err.message });
     }
 });
@@ -473,7 +474,7 @@ router.post('/nps-significance', authenticate, async (req, res) => {
         });
 
     } catch (err) {
-        console.error("Stat Test Error:", err);
+        logger.error("Stat Test Error", { error: err.message });
         res.status(500).json({ error: err.message });
     }
 });
@@ -554,7 +555,7 @@ router.post('/cross-tab', authenticate, async (req, res) => {
         });
 
     } catch (err) {
-        console.error("Cross-Tab Error:", err);
+        logger.error("Cross-Tab Error", { error: err.message });
         res.status(500).json({ error: err.message });
     }
 });
@@ -639,7 +640,7 @@ router.post('/anomalies', authenticate, async (req, res) => {
         });
 
     } catch (err) {
-        console.error("Anomaly Error:", err);
+        logger.error("Anomaly Error", { error: err.message });
         res.status(500).json({ error: err.message });
     }
 });

@@ -5,6 +5,7 @@
 const express = require('express');
 const router = express.Router();
 const authenticate = require('../middleware/auth');
+const logger = require('../../infrastructure/logger');
 const ExportService = require('../../services/export/ExportService');
 const path = require('path');
 
@@ -39,7 +40,7 @@ router.post('/raw', authenticate, authenticate.checkPermission('forms', 'view'),
 
         // Process export asynchronously
         exportService.processExport(jobId).catch(err => {
-            console.error('Export processing error:', err);
+            logger.error('Export processing error', { error: err.message });
         });
 
         res.status(202).json({
@@ -49,7 +50,7 @@ router.post('/raw', authenticate, authenticate.checkPermission('forms', 'view'),
         });
 
     } catch (error) {
-        console.error('Raw export error:', error);
+        logger.error('Raw export error', { error: error.message });
         res.status(500).json({ error: error.message });
     }
 });
@@ -88,7 +89,7 @@ router.post('/analytics', authenticate, authenticate.checkPermission('forms', 'v
 
         // Process export asynchronously
         exportService.processExport(jobId).catch(err => {
-            console.error('Export processing error:', err);
+            logger.error('Export processing error', { error: err.message });
         });
 
         res.status(202).json({
@@ -98,7 +99,7 @@ router.post('/analytics', authenticate, authenticate.checkPermission('forms', 'v
         });
 
     } catch (error) {
-        console.error('Analytics export error:', error);
+        logger.error('Analytics export error', { error: error.message });
         res.status(500).json({ error: error.message });
     }
 });
@@ -128,7 +129,7 @@ router.post('/spss', authenticate, authenticate.checkPermission('forms', 'view')
 
         // Process export asynchronously
         exportService.processExport(jobId).catch(err => {
-            console.error('Export processing error:', err);
+            logger.error('Export processing error', { error: err.message });
         });
 
         res.status(202).json({
@@ -138,7 +139,7 @@ router.post('/spss', authenticate, authenticate.checkPermission('forms', 'view')
         });
 
     } catch (error) {
-        console.error('SPSS export error:', error);
+        logger.error('SPSS export error', { error: error.message });
         res.status(500).json({ error: error.message });
     }
 });
@@ -173,7 +174,7 @@ router.post('/sql', authenticate, authenticate.checkPermission('forms', 'view'),
 
         // Process export asynchronously
         exportService.processExport(jobId).catch(err => {
-            console.error('Export processing error:', err);
+            logger.error('Export processing error', { error: err.message });
         });
 
         res.status(202).json({
@@ -183,7 +184,7 @@ router.post('/sql', authenticate, authenticate.checkPermission('forms', 'view'),
         });
 
     } catch (error) {
-        console.error('SQL export error:', error);
+        logger.error('SQL export error', { error: error.message });
         res.status(500).json({ error: error.message });
     }
 });
@@ -203,7 +204,7 @@ router.get('/jobs/:id', authenticate, async (req, res) => {
         res.json(job);
 
     } catch (error) {
-        console.error('Get job status error:', error);
+        logger.error('Get job status error', { error: error.message });
         res.status(404).json({ error: error.message });
     }
 });
@@ -247,7 +248,7 @@ router.get('/download/:jobId', authenticate, async (req, res) => {
         fileStream.pipe(res);
 
     } catch (error) {
-        console.error('Download error:', error);
+        logger.error('Download error', { error: error.message });
         res.status(404).json({ error: error.message });
     }
 });
@@ -279,7 +280,7 @@ router.get('/history', authenticate, async (req, res) => {
         res.json(result.rows);
 
     } catch (error) {
-        console.error('Get export history error:', error);
+        logger.error('Get export history error', { error: error.message });
         res.status(500).json({ error: error.message });
     }
 });
@@ -310,7 +311,7 @@ router.delete('/jobs/:id', authenticate, async (req, res) => {
                 );
                 await fs.unlink(filePath);
             } catch (err) {
-                console.error('Error deleting export file:', err);
+                logger.error('Error deleting export file', { error: err.message });
             }
         }
 
@@ -323,7 +324,7 @@ router.delete('/jobs/:id', authenticate, async (req, res) => {
         res.json({ message: 'Export job deleted' });
 
     } catch (error) {
-        console.error('Delete export job error:', error);
+        logger.error('Delete export job error', { error: error.message });
         res.status(500).json({ error: error.message });
     }
 });
@@ -341,7 +342,7 @@ router.post('/cleanup', authenticate, authenticate.checkPermission('admin', 'man
         res.json({ message: 'Cleanup completed' });
 
     } catch (error) {
-        console.error('Cleanup error:', error);
+        logger.error('Cleanup error', { error: error.message });
         res.status(500).json({ error: error.message });
     }
 });

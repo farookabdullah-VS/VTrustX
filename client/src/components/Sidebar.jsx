@@ -266,7 +266,7 @@ export function Sidebar({ user, view, onViewChange, onLogout, isCollapsed, toggl
     };
 
     return (
-        <div className={`sidebar ${isCollapsed ? 'collapsed' : ''}`} style={!isCollapsed ? { width: `${sidebarWidth}px` } : {}}>
+        <div className={`sidebar ${isCollapsed ? 'collapsed' : ''}`} role="navigation" aria-label="Sidebar navigation" style={!isCollapsed ? { width: `${sidebarWidth}px` } : {}}>
             {!isCollapsed && (
                 <div className={`sidebar-resizer ${isResizing ? 'sidebar-resizer-active' : ''}`} onMouseDown={startResizing}>
                     <div className="resizer-grip" />
@@ -280,10 +280,10 @@ export function Sidebar({ user, view, onViewChange, onLogout, isCollapsed, toggl
                     <h3 className="sidebar-logo-text" title="RAYI X">RX</h3>
                 )}
                 <div className="sidebar-controls">
-                    <button className="toggle-btn" onClick={onHide} title="Hide Sidebar">
+                    <button className="toggle-btn" onClick={onHide} title="Hide Sidebar" aria-label="Hide Sidebar">
                         ✕
                     </button>
-                    <button className="toggle-btn" onClick={toggleSidebar} title={isCollapsed ? "Expand" : "Collapse"}>
+                    <button className="toggle-btn" onClick={toggleSidebar} title={isCollapsed ? "Expand" : "Collapse"} aria-label={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}>
                         {isCollapsed ? '☰' : '⬅'}
                     </button>
                 </div>
@@ -301,7 +301,7 @@ export function Sidebar({ user, view, onViewChange, onLogout, isCollapsed, toggl
                         </div>
                         <ul>
                             {baseGroups.flatMap(g => g.items).filter(i => favorites.includes(i.id)).map(item => (
-                                <li key={item.id} className={view === item.id ? 'active' : ''} onClick={() => onViewChange(item.id)}>
+                                <li key={item.id} className={view === item.id ? 'active' : ''} aria-current={view === item.id ? 'page' : undefined} onClick={() => onViewChange(item.id)}>
                                     <span className="icon">{item.icon}</span>
                                     <span className="label" style={{ flex: 1 }}>{t(item.label)}</span>
                                     <div onClick={(e) => toggleFavorite(e, item.id)} style={{ cursor: 'pointer', opacity: 1 }}>
@@ -342,7 +342,7 @@ export function Sidebar({ user, view, onViewChange, onLogout, isCollapsed, toggl
                                         {t(group.title)}
                                     </h4>
                                 </div>
-                                <span onClick={() => toggleGroup(group.id)} style={{ fontSize: '0.7em', transform: (expandedGroups[group.id]) ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}>▼</span>
+                                <span onClick={() => toggleGroup(group.id)} role="button" tabIndex={0} aria-label={expandedGroups[group.id] ? `Collapse ${t(group.title)}` : `Expand ${t(group.title)}`} aria-expanded={!!expandedGroups[group.id]} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleGroup(group.id); } }} style={{ fontSize: '0.7em', transform: (expandedGroups[group.id]) ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s', cursor: 'pointer' }}>▼</span>
                             </div>
                         )}
 
@@ -351,7 +351,7 @@ export function Sidebar({ user, view, onViewChange, onLogout, isCollapsed, toggl
                                 {group.items.map(item => {
                                     const isFav = favorites.includes(item.id);
                                     return (
-                                        <li key={item.id} title={isCollapsed ? t(item.label) : ''} className={view === item.id ? 'active' : ''} onClick={() => onViewChange(item.id)}
+                                        <li key={item.id} title={isCollapsed ? t(item.label) : ''} className={view === item.id ? 'active' : ''} aria-current={view === item.id ? 'page' : undefined} onClick={() => onViewChange(item.id)}
                                             style={{ position: 'relative', paddingRight: '30px' }} /* Make space for star */
                                         >
                                             <span className="icon">{item.icon}</span>
@@ -361,7 +361,11 @@ export function Sidebar({ user, view, onViewChange, onLogout, isCollapsed, toggl
                                             {!isCollapsed && (
                                                 <div
                                                     className="fav-star"
+                                                    role="button"
+                                                    tabIndex={0}
+                                                    aria-label={isFav ? `Remove ${t(item.label)} from favorites` : `Add ${t(item.label)} to favorites`}
                                                     onClick={(e) => toggleFavorite(e, item.id)}
+                                                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleFavorite(e, item.id); } }}
                                                     style={{
                                                         position: 'absolute', right: '8px',
                                                         opacity: isFav ? 1 : 0.2,

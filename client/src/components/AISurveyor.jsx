@@ -2,8 +2,10 @@ import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { Play, Phone, Square, Mic, Volume2, User, Bot, AlertCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useToast } from './common/Toast';
 
 export function AISurveyor() {
+    const toast = useToast();
     const { t } = useTranslation();
     const [forms, setForms] = useState([]);
     const [selectedFormId, setSelectedFormId] = useState('');
@@ -96,7 +98,7 @@ export function AISurveyor() {
     const [questions, setQuestions] = useState([]);
 
     const startCall = async () => {
-        if (!selectedFormId) return alert("Select a survey first");
+        if (!selectedFormId) { toast.warning("Select a survey first"); return; }
 
         setIsCallActive(true);
         setTranscript([]);

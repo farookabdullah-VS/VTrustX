@@ -19,6 +19,7 @@ import { useTranslation } from 'react-i18next';
 import { FilePlus, LayoutTemplate, Sparkles, Download, Upload, Pencil, Megaphone, Settings, Zap, Share2, BarChart, History as HistoryIcon, Copy, FileSignature, StickyNote, Image as ImageIcon, ChevronLeft, ChevronRight, Grid, List, User, Users, Archive, Folder } from 'lucide-react';
 import { registerCustomTypes, setupSurveyColors, VTrustTheme } from '../survey-config';
 import { initCustomControls } from './CustomSurveyControls';
+import { useToast } from './common/Toast';
 
 const PREMIUM_GRADIENTS = [
     'linear-gradient(135deg, #FF9A9E 0%, #FECFEF 100%)',
@@ -38,6 +39,7 @@ const getGradient = (id) => {
 
 export function FormViewer({ formId, submissionId, onSelectForm, onEditSubmission, onEditForm, onCreate, slug, isPublic, ticketCode, user }) {
     const { t, i18n } = useTranslation();
+    const toast = useToast();
     const isRtl = i18n.language === 'ar';
     const isKiosk = window.location.search.includes('kiosk=true');
     const [resultsViewId, setResultsViewId] = React.useState(null);
@@ -111,7 +113,7 @@ export function FormViewer({ formId, submissionId, onSelectForm, onEditSubmissio
                 })
                 .catch(err => {
                     console.error(err);
-                    alert("Failed to delete form: " + (err.response?.data?.error || err.message || "Unknown error"));
+                    toast.error("Failed to delete form: " + (err.response?.data?.error || err.message || "Unknown error"));
                 });
         }
     };
@@ -128,8 +130,8 @@ export function FormViewer({ formId, submissionId, onSelectForm, onEditSubmissio
             version: 1
         }).then(() => {
             loadForms();
-            alert("Survey duplicated!");
-        }).catch(err => alert("Duplicate failed"));
+            toast.success("Survey duplicated!");
+        }).catch(err => toast.error("Duplicate failed"));
     };
 
     const handleRename = (form) => {
@@ -140,7 +142,7 @@ export function FormViewer({ formId, submissionId, onSelectForm, onEditSubmissio
         axios.put(`/api/forms/${form.id}`, {
             title: newTitle,
             definition: newDef
-        }).then(() => loadForms()).catch(err => alert("Rename failed"));
+        }).then(() => loadForms()).catch(err => toast.error("Rename failed"));
     };
 
     const handleMoveToFolder = (formId, folderId) => {
@@ -164,7 +166,7 @@ export function FormViewer({ formId, submissionId, onSelectForm, onEditSubmissio
         axios.put(`/api/forms/${form.id}`, {
             title: form.title,
             definition: newDef
-        }).then(() => loadForms()).catch(err => alert("Notes update failed"));
+        }).then(() => loadForms()).catch(err => toast.error("Notes update failed"));
     };
 
     const getProcessedForms = () => {
@@ -234,13 +236,13 @@ export function FormViewer({ formId, submissionId, onSelectForm, onEditSubmissio
                 title: form.title,
                 definition: newDef
             }).then(() => {
-                alert("Cover updated!");
+                toast.success("Cover updated!");
                 loadForms();
                 setActionMenuOpenId(null);
             });
         }).catch(err => {
             console.error(err);
-            alert("Upload failed");
+            toast.error("Upload failed");
         });
     };
 
@@ -264,7 +266,7 @@ export function FormViewer({ formId, submissionId, onSelectForm, onEditSubmissio
             const data = XLSX.utils.sheet_to_json(ws, { header: 1 });
 
             if (!data || data.length === 0) {
-                alert("File is empty");
+                toast.error("File is empty");
                 return;
             }
 
@@ -303,7 +305,7 @@ export function FormViewer({ formId, submissionId, onSelectForm, onEditSubmissio
             }
 
             if (elements.length === 0) {
-                alert("No valid questions found. Ensure rows are: Question, Type, Choices");
+                toast.error("No valid questions found. Ensure rows are: Question, Type, Choices");
                 return;
             }
 
@@ -872,10 +874,10 @@ export function FormViewer({ formId, submissionId, onSelectForm, onEditSubmissio
                 // For now, simple kv:
                 const currentData = survey.data || {};
                 survey.data = { ...currentData, audio_response: url };
-                alert("Audio Attached Successfully!");
+                toast.success("Audio Attached Successfully!");
             }).catch(err => {
                 console.error(err);
-                alert("Failed to upload audio.");
+                toast.error("Failed to upload audio.");
             });
         };
 
@@ -885,7 +887,7 @@ export function FormViewer({ formId, submissionId, onSelectForm, onEditSubmissio
             <div style={{ height: 'calc(100vh - 100px)', overflow: 'auto', position: 'relative' }}>
                 {!isPublic && !isKiosk && (
                     <div style={{ padding: '20px 20px 0 20px', position: 'relative', zIndex: 10 }}>
-                        <button onClick={() => { onSelectForm(null) }} style={{ marginBottom: '15px', background: '#64748b', padding: '8px 16px', border: 'none', borderRadius: '4px', color: 'white' }}>
+                        <button onClick={() => { onSelectForm(null) }} aria-label="Back to survey listings" style={{ marginBottom: '15px', background: '#64748b', padding: '8px 16px', border: 'none', borderRadius: '4px', color: 'white' }}>
                             &larr; Back to Listings
                         </button>
                     </div>
@@ -916,7 +918,7 @@ export function FormViewer({ formId, submissionId, onSelectForm, onEditSubmissio
         return (
             <div style={{ maxWidth: '800px', margin: '0 auto', padding: '40px' }}>
                 {isLoading && <div>Loading Survey...</div>}
-                {error && <div style={{ padding: '20px', background: '#fee2e2', color: '#dc2626', borderRadius: '8px', textAlign: 'center' }}>{error}</div>}
+                {error && <div role="alert" style={{ padding: '20px', background: '#fee2e2', color: '#dc2626', borderRadius: '8px', textAlign: 'center' }}>{error}</div>}
             </div>
         );
     }
@@ -978,7 +980,7 @@ export function FormViewer({ formId, submissionId, onSelectForm, onEditSubmissio
 
             {isLoading && <div style={{ textAlign: 'center', padding: '60px', color: '#64748b', fontSize: '1.2em' }}>Loading your surveys...</div>}
 
-            {error && <div style={{ textAlign: 'center', padding: '20px', background: '#fee2e2', color: '#dc2626', borderRadius: '8px' }}>Error: {error}</div>}
+            {error && <div role="alert" style={{ textAlign: 'center', padding: '20px', background: '#fee2e2', color: '#dc2626', borderRadius: '8px' }}>Error: {error}</div>}
 
             {!isLoading && !error && (
                 <div style={{ display: 'flex', height: 'calc(100vh - 100px)', gap: '20px' }}>
@@ -1053,7 +1055,7 @@ export function FormViewer({ formId, submissionId, onSelectForm, onEditSubmissio
                             onClick={() => {
                                 const name = prompt("Enter folder name:");
                                 if (name) {
-                                    axios.post('/api/folders', { name, type: 'private' }).then(loadFolders).catch(e => alert(e.message));
+                                    axios.post('/api/folders', { name, type: 'private' }).then(loadFolders).catch(e => toast.error(e.message));
                                 }
                             }}
                             style={{
@@ -1075,6 +1077,8 @@ export function FormViewer({ formId, submissionId, onSelectForm, onEditSubmissio
                             {/* Toggle Sidebar Button */}
                             <button
                                 onClick={() => setIsSideMenuOpen(!isSideMenuOpen)}
+                                aria-label={isSideMenuOpen ? "Hide folders sidebar" : "Show folders sidebar"}
+                                aria-expanded={isSideMenuOpen}
                                 style={{ padding: '8px', background: 'white', border: '1px solid #e2e8f0', borderRadius: '8px', cursor: 'pointer', color: '#64748b', display: 'flex', alignItems: 'center' }}
                             >
                                 {isSideMenuOpen ? <ChevronLeft size={20} /> : <ChevronRight size={20} />}
@@ -1084,6 +1088,7 @@ export function FormViewer({ formId, submissionId, onSelectForm, onEditSubmissio
                             <div style={{ flex: 1, maxWidth: '400px', position: 'relative' }}>
                                 <input
                                     type="text"
+                                    aria-label="Search surveys"
                                     placeholder={t('surveys.search_placeholder')}
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
@@ -1101,12 +1106,16 @@ export function FormViewer({ formId, submissionId, onSelectForm, onEditSubmissio
                                 <div style={{ background: '#f1f5f9', padding: '4px', borderRadius: '8px', display: 'flex' }}>
                                     <button
                                         onClick={() => setViewMode('grid')}
+                                        aria-label="Grid view"
+                                        aria-pressed={viewMode === 'grid'}
                                         style={{ padding: '6px', background: viewMode === 'grid' ? 'white' : 'transparent', boxShadow: viewMode === 'grid' ? '0 2px 4px rgba(0,0,0,0.05)' : 'none', border: 'none', borderRadius: '6px', cursor: 'pointer' }}
                                     >
                                         <Grid size={18} color={viewMode === 'grid' ? 'var(--primary-color)' : '#64748b'} />
                                     </button>
                                     <button
                                         onClick={() => setViewMode('list')}
+                                        aria-label="List view"
+                                        aria-pressed={viewMode === 'list'}
                                         style={{ padding: '6px', background: viewMode === 'list' ? 'white' : 'transparent', boxShadow: viewMode === 'list' ? '0 2px 4px rgba(0,0,0,0.05)' : 'none', border: 'none', borderRadius: '6px', cursor: 'pointer' }}
                                     >
                                         <List size={18} color={viewMode === 'list' ? 'var(--primary-color)' : '#64748b'} />
@@ -1204,6 +1213,9 @@ export function FormViewer({ formId, submissionId, onSelectForm, onEditSubmissio
                                                     <div style={{ textAlign: 'right' }}>
                                                         <button
                                                             onClick={(e) => { e.stopPropagation(); setActionMenuOpenId(actionMenuOpenId === form.id ? null : form.id); }}
+                                                            aria-label={`Options for ${form.title}`}
+                                                            aria-expanded={actionMenuOpenId === form.id}
+                                                            aria-haspopup="true"
                                                             style={{ padding: '6px 10px', background: 'transparent', border: '1px solid #e2e8f0', cursor: 'pointer', borderRadius: '6px', color: '#64748b' }}
                                                         >
                                                             Options ▼
@@ -1375,12 +1387,16 @@ export function FormViewer({ formId, submissionId, onSelectForm, onEditSubmissio
                                                             onClick={(e) => { e.stopPropagation(); handleDelete(form.id, form.title); }}
                                                             style={{ color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer', padding: '4px' }}
                                                             title="Delete"
+                                                            aria-label={`Delete survey ${form.title}`}
                                                         >
                                                             <div style={{ fontSize: '1.1em' }}>🗑️</div>
                                                         </button>
                                                         <button
                                                             onClick={(e) => { e.stopPropagation(); setActionMenuOpenId(actionMenuOpenId === form.id ? null : form.id); }}
                                                             style={{ color: '#64748b', background: 'none', border: 'none', cursor: 'pointer', padding: '4px' }}
+                                                            aria-label={`More options for ${form.title}`}
+                                                            aria-expanded={actionMenuOpenId === form.id}
+                                                            aria-haspopup="true"
                                                         >
                                                             <div style={{ fontSize: '1.2em' }}>⋮</div>
                                                         </button>
@@ -1484,7 +1500,7 @@ export function FormViewer({ formId, submissionId, onSelectForm, onEditSubmissio
                         <div style={{ background: '#D9F8E5', borderRadius: '16px', padding: '24px', width: '500px', maxHeight: '80vh', overflowY: 'auto', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
                                 <h3 style={{ margin: 0 }}>Version History</h3>
-                                <button onClick={() => setHistoryModalOpenId(null)} style={{ background: 'none', border: 'none', fontSize: '1.5em', cursor: 'pointer', color: '#64748b' }}>×</button>
+                                <button onClick={() => setHistoryModalOpenId(null)} aria-label="Close version history" style={{ background: 'none', border: 'none', fontSize: '1.5em', cursor: 'pointer', color: '#64748b' }}>×</button>
                             </div>
                             {historyList.length === 0 ? <p style={{ color: '#94a3b8' }}>No previous versions found.</p> : (
                                 <ul style={{ listStyle: 'none', padding: 0 }}>

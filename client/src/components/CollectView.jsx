@@ -3,9 +3,11 @@ import { QRCodeSVG } from 'qrcode.react';
 import axios from 'axios';
 import * as XLSX from 'xlsx';
 import { useTranslation } from 'react-i18next';
+import { useToast } from './common/Toast';
 
 export function CollectView({ form, onBack }) {
     const { t, i18n } = useTranslation();
+    const toast = useToast();
     const isRtl = i18n.language === 'ar';
     const [activeTab, setActiveTab] = useState('link');
     const [showLogo, setShowLogo] = useState(true);
@@ -47,7 +49,7 @@ export function CollectView({ form, onBack }) {
 
     const handlePrint = () => {
         // In a real app, this would open a print-optimized version of the survey
-        alert("Preparing PDF for Print... (This would trigger browser print on the survey page)");
+        toast.info("Preparing PDF for Print... (This would trigger browser print on the survey page)");
     };
 
     // Styles
@@ -253,9 +255,9 @@ export function CollectView({ form, onBack }) {
                                         axios.get('/api/contacts').then(res => {
                                             setMasterContacts(res.data);
                                             setLoadingContacts(false);
-                                            alert(`Loaded ${res.data.length} contacts.`);
+                                            toast.success(`Loaded ${res.data.length} contacts.`);
                                         }).catch(err => {
-                                            alert("Failed to load contacts");
+                                            toast.error("Failed to load contacts");
                                             setLoadingContacts(false);
                                         });
                                     }}
@@ -292,7 +294,7 @@ export function CollectView({ form, onBack }) {
 
                                                 const emails = data.map(r => r.Email || r.email).filter(e => e);
                                                 setRecipients(prev => prev ? prev + ', ' + emails.join(', ') : emails.join(', '));
-                                                alert(`Imported ${emails.length} emails.`);
+                                                toast.success(`Imported ${emails.length} emails.`);
                                             };
                                             reader.readAsBinaryString(file);
                                         }
@@ -346,10 +348,10 @@ export function CollectView({ form, onBack }) {
 
                         <button
                             onClick={() => {
-                                if (!recipients) return alert("Please add recipients");
+                                if (!recipients) { toast.warning("Please add recipients"); return; }
 
                                 const recipientList = recipients.split(',').map(e => e.trim()).filter(e => e);
-                                if (recipientList.length === 0) return alert("No valid email addresses found.");
+                                if (recipientList.length === 0) { toast.warning("No valid email addresses found."); return; }
 
                                 const baseUrl = window.location.origin;
                                 const formCode = form.slug || form.id;
@@ -387,10 +389,10 @@ export function CollectView({ form, onBack }) {
                                 }).then(res => {
                                     // Mock Send Confirmation / Final Report
                                     const logMessage = sentLog.map(l => `${l.email} -> ${l.link}`).join('\n');
-                                    alert(`Success! Server Response: ${res.data.message}\n\nLinks Generated:\n${logMessage}`);
+                                    toast.success(`Success! Server Response: ${res.data.message}`);
                                 }).catch(err => {
                                     console.error(err);
-                                    alert("Failed to send emails: " + (err.response?.data?.error || err.message));
+                                    toast.error("Failed to send emails: " + (err.response?.data?.error || err.message));
                                 });
                             }}
                             style={{ width: '100%', padding: '12px', background: 'var(--primary-color, #b91c1c)', color: 'white', border: 'none', borderRadius: '8px', fontWeight: '600', cursor: 'pointer' }}

@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { query } = require('../../infrastructure/database/db');
 const authenticate = require('../middleware/auth');
+const logger = require('../../infrastructure/logger');
 
 // Export CJM as PDF (server-side)
 router.post('/pdf', authenticate, async (req, res) => {
@@ -64,7 +65,7 @@ router.post('/pdf', authenticate, async (req, res) => {
             doc.end();
         } catch (pdfErr) {
             // pdfkit not available - return JSON export as fallback
-            console.warn("[CJM Export] pdfkit not available, returning JSON:", pdfErr.message);
+            logger.warn("[CJM Export] pdfkit not available, returning JSON", { detail: pdfErr.message });
             res.json({ title: map.title, stages, sections, exportedAt: new Date() });
         }
     } catch (e) {
@@ -140,7 +141,7 @@ router.post('/pptx', authenticate, async (req, res) => {
             res.setHeader('Content-Disposition', `attachment; filename="${map.title.replace(/[^a-zA-Z0-9]/g, '_')}.pptx"`);
             res.send(Buffer.from(pptxData));
         } catch (pptxErr) {
-            console.warn("[CJM Export] pptxgenjs not available:", pptxErr.message);
+            logger.warn("[CJM Export] pptxgenjs not available", { detail: pptxErr.message });
             res.status(501).json({ error: 'PowerPoint export not available. Install pptxgenjs.' });
         }
     } catch (e) {

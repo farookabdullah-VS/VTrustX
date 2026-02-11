@@ -14,6 +14,7 @@ import 'reactflow/dist/style.css';
 import axios from 'axios';
 import { JourneyMapView } from './JourneyMapView';
 import { Layout, Map, Activity, Trash2 } from 'lucide-react'; // Icons
+import { useToast } from './common/Toast';
 
 // --- CUSTOM NODES (Existing Flowchart) ---
 const TriggerNode = ({ data }) => {
@@ -63,6 +64,7 @@ const nodeTypes = {
 // --- MAIN COMPONENT ---
 
 export function JourneyBuilder() {
+    const toast = useToast();
     const [view, setView] = useState('list'); // list, builder
     const [builderMode, setBuilderMode] = useState('map'); // 'map' (UXPressia) or 'flow' (ReactFlow)
 
@@ -104,7 +106,7 @@ export function JourneyBuilder() {
         if (confirm('Are you sure you want to delete this journey?')) {
             axios.delete(`/api/journeys/${id}`)
                 .then(() => loadJourneys())
-                .catch(err => alert('Failed to delete journey: ' + err.message));
+                .catch(err => toast.error('Failed to delete journey: ' + err.message));
         }
     };
 
@@ -146,8 +148,8 @@ export function JourneyBuilder() {
             map: mapData
         };
         axios.put(`/api/journeys/${currentJourney.id}/definition`, { definition })
-            .then(() => alert('Journey saved successfully!'))
-            .catch(err => alert('Save failed: ' + err.message));
+            .then(() => toast.success('Journey saved successfully!'))
+            .catch(err => toast.error('Save failed: ' + err.message));
     };
 
     // Drag & Drop Handlers (Simplified: Click to add for now)

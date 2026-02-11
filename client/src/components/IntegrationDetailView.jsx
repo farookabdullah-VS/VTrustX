@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import { useToast } from './common/Toast';
 
 export function IntegrationDetailView({ integration, onBack, onUpdate }) {
+    const toast = useToast();
     const [formState, setFormState] = useState({
         api_key: integration.api_key || '',
         webhook_url: integration.webhook_url || '',
@@ -23,11 +25,11 @@ export function IntegrationDetailView({ integration, onBack, onUpdate }) {
             : axios.post('/api/integrations', payload);
 
         request.then(() => {
-            alert("Integration Saved!");
+            toast.success("Integration Saved!");
             onUpdate(); // Refresh parent list
         }).catch(err => {
             console.error(err);
-            alert("Save failed: " + (err.response?.data?.error || err.message));
+            toast.error("Save failed: " + (err.response?.data?.error || err.message));
         });
     };
 
