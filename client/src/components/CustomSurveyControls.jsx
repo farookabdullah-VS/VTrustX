@@ -82,14 +82,14 @@ export const initCustomControls = () => {
     Serializer.addClass("csat", [], undefined, "rating");
 
     ReactQuestionFactory.Instance.registerQuestion("csat", (props) => {
-        return <CustomRating question={props.question} start={1} end={5} colors={['#ef4444', '#f97316', '#eab308', '#84cc16', '#22c55e']} />;
+        return <CustomRating question={props.question} start={1} end={10} colors={['#ef4444','#f06b2e','#f19118','#f2ae0d','#eab308','#c9cc07','#a3d506','#7ede05','#4de704','#22c55e']} />;
     });
 
     // CES: Green (1) -> Red (5)
     Serializer.addClass("ces", [], undefined, "rating");
 
     ReactQuestionFactory.Instance.registerQuestion("ces", (props) => {
-        return <CustomRating question={props.question} start={1} end={5} colors={['#22c55e', '#84cc16', '#eab308', '#f97316', '#ef4444']} />;
+        return <CustomRating question={props.question} start={1} end={10} colors={['#22c55e','#4de704','#7ede05','#a3d506','#c9cc07','#eab308','#f2ae0d','#f19118','#f06b2e','#ef4444']} />;
     });
 
     // --- AUDIO RECORDER ---

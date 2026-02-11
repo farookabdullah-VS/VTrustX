@@ -612,7 +612,7 @@ export function FormViewer({ formId, submissionId, onSelectForm, onEditSubmissio
                                 if (typeof val === 'number') {
                                     hasRating = true;
                                     totalScore += val;
-                                    maxScore += (q.rateMax || 5);
+                                    maxScore += (q.rateMax || 10);
                                 }
                             }
                         });

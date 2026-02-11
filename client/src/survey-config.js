@@ -10,8 +10,8 @@ export const registerCustomTypes = () => {
             choices: [
                 { value: "none", text: "None" },
                 { value: "nps", text: "NPS (0-10 Red -> Green)" },
-                { value: "csat", text: "CSAT (1-5 Red -> Green)" },
-                { value: "ces", text: "CES (1-5 Green -> Red)" }
+                { value: "csat", text: "CSAT (1-10 Red -> Green)" },
+                { value: "ces", text: "CES (1-10 Green -> Red)" }
             ],
             default: "none"
         });
@@ -19,8 +19,8 @@ export const registerCustomTypes = () => {
 };
 
 // 2. Color Definitions
-const CSAT_COLORS = ['#ef4444', '#f97316', '#eab308', '#84cc16', '#22c55e']; // Red -> Green
-const CES_COLORS = ['#22c55e', '#84cc16', '#eab308', '#f97316', '#ef4444']; // Green -> Red
+const CSAT_COLORS = ['#ef4444','#f06b2e','#f19118','#f2ae0d','#eab308','#c9cc07','#a3d506','#7ede05','#4de704','#22c55e']; // Red -> Green
+const CES_COLORS = ['#22c55e','#4de704','#7ede05','#a3d506','#c9cc07','#eab308','#f2ae0d','#f19118','#f06b2e','#ef4444']; // Green -> Red
 const NPS_COLORS = [
     '#ef4444', // 0
     '#ef5939', // 1

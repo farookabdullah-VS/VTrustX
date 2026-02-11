@@ -102,12 +102,12 @@ const createTemplate = (id, title, category, icon, description, elements) => ({
 });
 
 const cxTemplates = cxTitles.map((t, i) => createTemplate(`cx-${i}`, t, "Customer Experience", "❤️", null, [
-    { type: "rating", name: "satisfaction", title: "How satisfied are you?", rateMax: 5 },
+    { type: "rating", name: "satisfaction", title: "How satisfied are you?", rateMax: 10 },
     { type: "comment", name: "feedback", title: "Any additional feedback?" }
 ]));
 
 const hrTemplates = hrTitles.map((t, i) => createTemplate(`hr-${i}`, t, "Human Resources", "👥", null, [
-    { type: "rating", name: "agreement", title: "I agree with the statement related to " + t, rateMax: 5 },
+    { type: "rating", name: "agreement", title: "I agree with the statement related to " + t, rateMax: 10 },
     { type: "comment", name: "details", title: "Please explain your rating." }
 ]));
 
@@ -122,7 +122,7 @@ const eduTemplates = educationTitles.map((t, i) => createTemplate(`edu-${i}`, t,
 ]));
 
 const eventTemplates = eventTitles.map((t, i) => createTemplate(`evt-${i}`, t, "Events", "🎉", null, [
-    { type: "rating", name: "rating", title: "Overall Rating", rateMax: 5 },
+    { type: "rating", name: "rating", title: "Overall Rating", rateMax: 10 },
     { type: "boolean", name: "recommend", title: "Would you recommend this event?" }
 ]));
 

@@ -54,7 +54,7 @@ router.post('/generate-reply', async (req, res) => {
 
     // Simulate AI Gen (In real app, call OpenAI/Gemini)
     let reply = "";
-    if (rating >= 4) {
+    if (rating >= 8) {
         reply = `Hi ${author}, thank you so much for the ${rating}-star review! We're thrilled to hear you had a great experience. We look forward to seeing you again soon!`;
     } else {
         reply = `Hi ${author}, we're sorry to hear about your experience. We take feedback like this seriously. Could you please reach out to us at support@vtrustx.com so we can make this right?`;

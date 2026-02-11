@@ -116,7 +116,7 @@ export function QuestionChart({ question, submissions, themeColor = '#059669', f
             }];
         } else if (chartType === 'gauge') {
             // Gauge for Average (Rating)
-            const maxVal = question.rateMax || 5; // Default to 5
+            const maxVal = question.rateMax || 10; // Default to 10
             plotData = [{
                 domain: { x: [0, 1], y: [0, 1] },
                 value: average,

@@ -158,7 +158,7 @@ router.get('/csat-stats', authenticate, async (req, res) => {
                 date: r.date.toISOString().split('T')[0],
                 csat: parseFloat(r.avg_csat || 0).toFixed(1),
                 nps: parseFloat(r.avg_nps || 0).toFixed(1),
-                sentiment: r.avg_csat > 4 ? 80 : (r.avg_csat > 3 ? 60 : 40) // Mocked from CSAT
+                sentiment: r.avg_csat > 8 ? 80 : (r.avg_csat > 6 ? 60 : 40) // Mocked from CSAT
             })),
             breakdown: breakdownRes.rows.map(r => ({
                 name: r.name,
