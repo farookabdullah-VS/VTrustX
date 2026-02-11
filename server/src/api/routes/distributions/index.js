@@ -3,6 +3,9 @@ const router = express.Router();
 const { query } = require('../../../infrastructure/database/db');
 const emailService = require('../../../services/emailService');
 const smsService = require('../../../services/smsService');
+const validate = require('../../middleware/validate');
+const { createDistributionSchema } = require('../../schemas/distributions.schemas');
+const logger = require('../../../infrastructure/logger');
 
 // 1. Get Campaign Types
 router.get('/types', (req, res) => {
@@ -14,37 +17,40 @@ router.get('/types', (req, res) => {
     ]);
 });
 
-// 2. Get Campaigns (Mock Schema if tables don't exist yet)
+// 2. Get Campaigns
 router.get('/', async (req, res) => {
     try {
-        // Try selecting from DB, if fail return mock
         const result = await query("SELECT * FROM distributions ORDER BY created_at DESC");
         res.json(result.rows);
     } catch (err) {
-        // Mock Data for MVP until migration runs
-        res.json([
-            { id: 1, name: 'Q1 Customer Pulse', type: 'email', status: 'Sent', sent_count: 154, open_rate: 45, response_rate: 12, created_at: new Date() },
-            { id: 2, name: 'Beta Feedback', type: 'email', status: 'Draft', sent_count: 0, open_rate: 0, response_rate: 0, created_at: new Date() }
-        ]);
+        // If table doesn't exist yet, return empty array instead of mock data
+        if (err.code === '42P01') {
+            logger.warn('distributions table does not exist yet — returning empty array');
+            return res.json([]);
+        }
+        logger.error('Failed to fetch distributions', { error: err.message });
+        res.status(500).json({ error: 'Failed to fetch distributions' });
     }
 });
 
 // 3. Create Campaign
-router.post('/', async (req, res) => {
+router.post('/', validate(createDistributionSchema), async (req, res) => {
     try {
         const { name, surveyId, type, subject, body, contacts } = req.body;
-        // In real app: INSERT INTO distributions ... RETURNING id
-        // For now, simulate success
 
-        // Log simulation
-        console.log(`[Distribution] Creating Campaign: ${name} (${type})`);
-        console.log(`[Distribution] Contacts: ${contacts.length}`);
+        if (!name || !type || !contacts || !Array.isArray(contacts)) {
+            return res.status(400).json({ error: 'name, type, and contacts array are required' });
+        }
+
+        logger.info(`[Distribution] Creating Campaign: ${name} (${type})`);
+        logger.info(`[Distribution] Contacts: ${contacts.length}`);
+
+        const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
 
         if (type === 'email') {
-            // Process in background
-            sendBatch(contacts, subject, body, surveyId, 'email');
+            sendBatch(contacts, subject, body, surveyId, 'email', frontendUrl);
         } else if (type === 'sms') {
-            sendBatch(contacts, subject, body, surveyId, 'sms');
+            sendBatch(contacts, subject, body, surveyId, 'sms', frontendUrl);
         }
 
         res.status(201).json({ id: Date.now(), status: 'Scheduled' });
@@ -53,15 +59,13 @@ router.post('/', async (req, res) => {
     }
 });
 
-async function sendBatch(contacts, subject, body, surveyId, type) {
-    console.log(`Starting ${type.toUpperCase()} Batch Send...`);
+async function sendBatch(contacts, subject, body, surveyId, type, frontendUrl) {
+    logger.info(`Starting ${type.toUpperCase()} Batch Send...`);
     let sent = 0;
     for (const contact of contacts) {
         try {
-            // Personalize Link
-            // MVP: /s/{surveyId}?c={contact.email}
             const contactId = contact.email || contact.phone || 'unknown';
-            const uniqueLink = `http://localhost:5173/s/${surveyId}?u=${encodeURIComponent(contactId)}`;
+            const uniqueLink = `${frontendUrl}/s/${surveyId}?u=${encodeURIComponent(contactId)}`;
 
             const personalizedBody = body
                 .replace('{{name}}', contact.name || 'Valued Customer')
@@ -71,19 +75,19 @@ async function sendBatch(contacts, subject, body, surveyId, type) {
                 await emailService.sendEmail(contact.email, subject, personalizedBody, personalizedBody);
             } else if (type === 'sms') {
                 if (!contact.phone) {
-                    console.log(`Skipping SMS for ${contact.name} - No Phone`);
+                    logger.info(`Skipping SMS for ${contact.name} - No Phone`);
                     continue;
                 }
                 await smsService.sendSMS(contact.phone, personalizedBody);
             }
 
             sent++;
-            console.log(`Sent ${type} to ${contactId}`);
+            logger.info(`Sent ${type} to ${contactId}`);
         } catch (e) {
-            console.error(`Failed to send to ${contact.email || contact.phone}`, e.message);
+            logger.error(`Failed to send to ${contact.email || contact.phone}`, { error: e.message });
         }
     }
-    console.log(`Batch Complete. Sent ${sent}/${contacts.length}`);
+    logger.info(`Batch Complete. Sent ${sent}/${contacts.length}`);
 }
 
 module.exports = router;

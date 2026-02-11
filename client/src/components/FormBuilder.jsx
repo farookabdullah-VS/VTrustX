@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { SurveyCreatorComponent, SurveyCreator } from "survey-creator-react";
 import { Serializer, Action } from "survey-core";
@@ -27,6 +27,7 @@ import { initCustomControls } from './CustomSurveyControls';
 import { initLoopLogic } from './SurveyLoopLogic';
 import { QuotaSettings } from './QuotaSettings';
 import { VoiceAgentSettings } from './settings/VoiceAgentSettings';
+import { useToast } from './common/Toast';
 
 const creatorOptions = {
     showLogicTab: true,
@@ -39,6 +40,7 @@ const creatorOptions = {
 
 export function FormBuilder({ user, formId, initialData, onBack, onNavigate, onFormChange }) {
     const { t, i18n } = useTranslation();
+    const toast = useToast();
     const isRtl = i18n.language === 'ar';
     const [creator, setCreator] = useState(null);
     const [formMetadata, setFormMetadata] = useState(null);
@@ -60,20 +62,24 @@ export function FormBuilder({ user, formId, initialData, onBack, onNavigate, onF
 
     useEffect(() => {
         if (activeNav === 'analytics' && formId) {
-            axios.get(`/api/submissions?formId=${formId}`)
+            const controller = new AbortController();
+            axios.get(`/api/submissions?formId=${formId}`, { signal: controller.signal })
                 .then(res => setSubmissions(res.data))
-                .catch(err => console.error("Failed to load submissions:", err));
+                .catch(err => { if (err.name !== 'CanceledError') console.error("Failed to load submissions:", err); });
+            return () => controller.abort();
         }
     }, [activeNav, formId]);
 
     useEffect(() => {
-        axios.get('/api/settings')
+        const controller = new AbortController();
+        axios.get('/api/settings', { signal: controller.signal })
             .then(res => {
                 if (res.data.enable_workflow === 'true') {
                     setWorkflowEnabled(true);
                 }
             })
-            .catch(err => console.error("Failed to load settings", err));
+            .catch(err => { if (err.name !== 'CanceledError') console.error("Failed to load settings", err); });
+        return () => controller.abort();
     }, []);
 
     useEffect(() => {
@@ -236,7 +242,7 @@ export function FormBuilder({ user, formId, initialData, onBack, onNavigate, onF
                     callback(saveNo, true);
                 }).catch(err => {
                     console.error("Save Error:", err);
-                    alert("Save Error: " + (err.response?.data?.error || err.message));
+                    toast.error("Save Error: " + (err.response?.data?.error || err.message));
                     callback(saveNo, false);
                 });
             } else {
@@ -321,10 +327,10 @@ export function FormBuilder({ user, formId, initialData, onBack, onNavigate, onF
         if (confirm("Submit this survey for approval? You won't be able to edit it while it's pending.")) {
             axios.post(`/api/forms/${id}/request-approval`, { username: user?.user?.username })
                 .then(res => {
-                    alert("Submitted for approval!");
+                    toast.success("Submitted for approval!");
                     setFormMetadata(res.data);
                 })
-                .catch(err => alert(err.message));
+                .catch(err => toast.error(err.message));
         }
     };
 
@@ -334,11 +340,11 @@ export function FormBuilder({ user, formId, initialData, onBack, onNavigate, onF
         if (confirm("Approve and Publish this survey?")) {
             axios.post(`/api/forms/${id}/approve`, { username: user?.user?.username })
                 .then(res => {
-                    alert("Survey Approved and Published!");
+                    toast.success("Survey Approved and Published!");
                     setFormMetadata(res.data);
                     if (creator) creator.readOnly = true;
                 })
-                .catch(err => alert(err.message));
+                .catch(err => toast.error(err.message));
         }
     };
 
@@ -348,10 +354,10 @@ export function FormBuilder({ user, formId, initialData, onBack, onNavigate, onF
         if (confirm("Reject this survey? It will return to draft status.")) {
             axios.post(`/api/forms/${id}/reject`, { username: user?.user?.username })
                 .then(res => {
-                    alert("Survey Rejected.");
+                    toast.info("Survey Rejected.");
                     setFormMetadata(res.data);
                 })
-                .catch(err => alert(err.message));
+                .catch(err => toast.error(err.message));
         }
     };
 
@@ -382,12 +388,12 @@ export function FormBuilder({ user, formId, initialData, onBack, onNavigate, onF
                 // 2. Trigger Publish
                 const res = await axios.post(`/api/forms/${id}/publish`);
 
-                alert("Published successfully!");
+                toast.success("Published successfully!");
                 setFormMetadata(res.data);
                 if (creator) creator.readOnly = true;
             } catch (err) {
                 console.error("Publish Error:", err);
-                alert("Publish Failed: " + (err.response?.data?.error || err.message));
+                toast.error("Publish Failed: " + (err.response?.data?.error || err.message));
             }
         }
     };
@@ -397,7 +403,7 @@ export function FormBuilder({ user, formId, initialData, onBack, onNavigate, onF
         if (!id) return;
         axios.post(`/api/forms/${id}/draft`)
             .then(res => {
-                alert("New draft version created!");
+                toast.success("New draft version created!");
                 if (onFormChange && res.data.id) {
                     // Switch to the new draft immediately
                     onFormChange(res.data.id);
@@ -405,7 +411,7 @@ export function FormBuilder({ user, formId, initialData, onBack, onNavigate, onF
                     onBack();
                 }
             })
-            .catch(err => alert(err.message));
+            .catch(err => toast.error(err.message));
     };
 
     const handleAIGenerate = async () => {
@@ -422,7 +428,7 @@ export function FormBuilder({ user, formId, initialData, onBack, onNavigate, onF
             setAiLoading(false);
         } catch (err) {
             console.error(err);
-            alert("AI Generation Failed: " + (err.response?.data?.error || err.message));
+            toast.error("AI Generation Failed: " + (err.response?.data?.error || err.message));
             setAiLoading(false);
         }
     };
@@ -438,10 +444,10 @@ export function FormBuilder({ user, formId, initialData, onBack, onNavigate, onF
 
         axios.put(`/api/forms/${id}`, payload)
             .then(res => {
-                alert("Settings Saved!");
+                toast.success("Settings Saved!");
                 setFormMetadata(res.data);
             })
-            .catch(err => alert("Error saving settings: " + err.message));
+            .catch(err => toast.error("Error saving settings: " + err.message));
     };
 
     const renderSettings = () => {
@@ -555,7 +561,7 @@ export function FormBuilder({ user, formId, initialData, onBack, onNavigate, onF
 
                     {/* LEFT: Back & Title */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                        {onBack && <button onClick={onBack} style={{ border: 'none', background: 'none', cursor: 'pointer', fontSize: '18px', color: 'var(--text-muted, #64748b)', padding: '5px' }}>←</button>}
+                        {onBack && <button onClick={onBack} aria-label="Go back" style={{ border: 'none', background: 'none', cursor: 'pointer', fontSize: '18px', color: 'var(--text-muted, #64748b)', padding: '5px' }}>←</button>}
                         <div>
                             <div style={{ fontWeight: '700', fontSize: '16px', color: 'var(--text-color, #0f172a)' }}>{formMetadata?.title || 'Survey Editor'}</div>
                             <div style={{ fontSize: '12px', color: '#64748b', display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px' }}>
@@ -590,13 +596,15 @@ export function FormBuilder({ user, formId, initialData, onBack, onNavigate, onF
                         <button
                             onClick={() => creator.setDisplayMode('design')}
                             style={{ padding: '8px 12px', background: creator.activeTab === 'designer' ? '#e2e8f0' : 'white', border: '1px solid #cbd5e1', borderRadius: '8px', cursor: 'pointer', fontSize: '14px' }}
-                            title="Edit Design">
+                            title="Edit Design"
+                            aria-label="Edit Design">
                             ✏️
                         </button>
                         <button
                             onClick={() => creator.setDisplayMode('test')}
                             style={{ padding: '8px 12px', background: creator.activeTab === 'test' ? '#e2e8f0' : 'white', border: '1px solid #cbd5e1', borderRadius: '8px', cursor: 'pointer', fontSize: '14px' }}
-                            title="Preview Survey">
+                            title="Preview Survey"
+                            aria-label="Preview Survey">
                             👁️
                         </button>
                         {!formMetadata?.isPublished && (
@@ -659,16 +667,16 @@ export function FormBuilder({ user, formId, initialData, onBack, onNavigate, onF
                 </div>
 
                 {/* ROW 2: Navigation Tabs */}
-                <div style={{ height: '48px', display: 'flex', alignItems: 'center', padding: '0 30px', gap: '10px' }}>
-                    <div className={`fb-nav-item ${activeNav === 'questionnaire' ? 'active' : ''}`} onClick={() => setActiveNav('questionnaire')}>{t('surveys.action.edit_design')}</div>
-                    <div className={`fb-nav-item ${activeNav === 'audience' ? 'active' : ''}`} onClick={() => setActiveNav('audience')}>{t('surveys.action.audience')}</div>
-                    <div className={`fb-nav-item ${activeNav === 'settings' ? 'active' : ''}`} onClick={() => setActiveNav('settings')}>{t('surveys.action.settings')}</div>
-                    <div className={`fb-nav-item ${activeNav === 'voice-agent' ? 'active' : ''}`} onClick={() => setActiveNav('voice-agent')}>{t('builder.nav.voice_agent') || 'Voice Agent'}</div>
-                    <div className={`fb-nav-item ${activeNav === 'quotas' ? 'active' : ''}`} onClick={() => setActiveNav('quotas')}>{t('surveys.action.quotas')}</div>
-                    <div className={`fb-nav-item ${activeNav === 'automation' ? 'active' : ''}`} onClick={() => setActiveNav('automation')}>{t('surveys.action.automation')}</div>
-                    <div className={`fb-nav-item ${activeNav === 'collect' ? 'active' : ''}`} onClick={() => setActiveNav('collect')}>{t('surveys.action.collect')}</div>
-                    <div className={`fb-nav-item ${activeNav === 'analytics' ? 'active' : ''}`} onClick={() => setActiveNav('analytics')}>{t('surveys.action.results')}</div>
-                    <div className={`fb-nav-item ${activeNav === 'history' ? 'active' : ''}`} onClick={() => setActiveNav('history')}>{t('surveys.action.history')}</div>
+                <div role="tablist" aria-label="Survey builder sections" style={{ height: '48px', display: 'flex', alignItems: 'center', padding: '0 30px', gap: '10px' }}>
+                    <div role="tab" aria-selected={activeNav === 'questionnaire'} tabIndex={activeNav === 'questionnaire' ? 0 : -1} className={`fb-nav-item ${activeNav === 'questionnaire' ? 'active' : ''}`} onClick={() => setActiveNav('questionnaire')} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setActiveNav('questionnaire'); }}>{t('surveys.action.edit_design')}</div>
+                    <div role="tab" aria-selected={activeNav === 'audience'} tabIndex={activeNav === 'audience' ? 0 : -1} className={`fb-nav-item ${activeNav === 'audience' ? 'active' : ''}`} onClick={() => setActiveNav('audience')} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setActiveNav('audience'); }}>{t('surveys.action.audience')}</div>
+                    <div role="tab" aria-selected={activeNav === 'settings'} tabIndex={activeNav === 'settings' ? 0 : -1} className={`fb-nav-item ${activeNav === 'settings' ? 'active' : ''}`} onClick={() => setActiveNav('settings')} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setActiveNav('settings'); }}>{t('surveys.action.settings')}</div>
+                    <div role="tab" aria-selected={activeNav === 'voice-agent'} tabIndex={activeNav === 'voice-agent' ? 0 : -1} className={`fb-nav-item ${activeNav === 'voice-agent' ? 'active' : ''}`} onClick={() => setActiveNav('voice-agent')} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setActiveNav('voice-agent'); }}>{t('builder.nav.voice_agent') || 'Voice Agent'}</div>
+                    <div role="tab" aria-selected={activeNav === 'quotas'} tabIndex={activeNav === 'quotas' ? 0 : -1} className={`fb-nav-item ${activeNav === 'quotas' ? 'active' : ''}`} onClick={() => setActiveNav('quotas')} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setActiveNav('quotas'); }}>{t('surveys.action.quotas')}</div>
+                    <div role="tab" aria-selected={activeNav === 'automation'} tabIndex={activeNav === 'automation' ? 0 : -1} className={`fb-nav-item ${activeNav === 'automation' ? 'active' : ''}`} onClick={() => setActiveNav('automation')} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setActiveNav('automation'); }}>{t('surveys.action.automation')}</div>
+                    <div role="tab" aria-selected={activeNav === 'collect'} tabIndex={activeNav === 'collect' ? 0 : -1} className={`fb-nav-item ${activeNav === 'collect' ? 'active' : ''}`} onClick={() => setActiveNav('collect')} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setActiveNav('collect'); }}>{t('surveys.action.collect')}</div>
+                    <div role="tab" aria-selected={activeNav === 'analytics'} tabIndex={activeNav === 'analytics' ? 0 : -1} className={`fb-nav-item ${activeNav === 'analytics' ? 'active' : ''}`} onClick={() => setActiveNav('analytics')} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setActiveNav('analytics'); }}>{t('surveys.action.results')}</div>
+                    <div role="tab" aria-selected={activeNav === 'history'} tabIndex={activeNav === 'history' ? 0 : -1} className={`fb-nav-item ${activeNav === 'history' ? 'active' : ''}`} onClick={() => setActiveNav('history')} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setActiveNav('history'); }}>{t('surveys.action.history')}</div>
                 </div>
             </div>
 
@@ -683,7 +691,7 @@ export function FormBuilder({ user, formId, initialData, onBack, onNavigate, onF
                             <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '10px', fontSize: '1.25em', color: '#1e293b' }}>
                                 <span style={{ fontSize: '1.2em' }}>✨</span> {t('builder.ai_modal.title')}
                             </h3>
-                            <button onClick={() => setShowAIModal(false)} style={{ border: 'none', background: 'none', cursor: 'pointer', fontSize: '1.5em', color: '#94a3b8', padding: 0, lineHeight: 1 }}>×</button>
+                            <button onClick={() => setShowAIModal(false)} aria-label="Close AI assistant modal" style={{ border: 'none', background: 'none', cursor: 'pointer', fontSize: '1.5em', color: '#94a3b8', padding: 0, lineHeight: 1 }}>×</button>
                         </div>
                         <p style={{ color: '#64748b', fontSize: '0.95em', lineHeight: '1.6', marginBottom: '20px' }}>
                             {t('builder.ai_modal.desc')}
@@ -692,6 +700,7 @@ export function FormBuilder({ user, formId, initialData, onBack, onNavigate, onF
                         <div style={{ marginBottom: '24px' }}>
                             <textarea
                                 className="form-textarea"
+                                aria-label="Describe the survey you want to generate"
                                 style={{ width: '100%', minHeight: '140px', padding: '16px', borderRadius: '12px', border: '1px solid #cbd5e1', fontFamily: 'inherit', fontSize: '0.95em', resize: 'vertical', outline: 'none', transition: 'border-color 0.2s', background: '#f8fafc' }}
                                 placeholder={t('builder.ai_modal.placeholder')}
                                 value={aiPrompt}

@@ -1,10 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import * as XLSX from 'xlsx';
 import { useTranslation } from 'react-i18next';
+import { useToast } from './common/Toast';
 
 export function ContactMaster() {
     const { t } = useTranslation();
+    const toast = useToast();
     const [contacts, setContacts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -29,10 +31,23 @@ export function ContactMaster() {
     const [importStats, setImportStats] = useState(null);
 
     useEffect(() => {
-        loadContacts();
+        const controller = new AbortController();
+        setLoading(true);
+        axios.get('/api/contacts', { signal: controller.signal })
+            .then(res => {
+                setContacts(res.data);
+                setLoading(false);
+            })
+            .catch(err => {
+                if (err.name !== 'CanceledError') {
+                    setError("Failed to load contacts: " + (err.response?.data?.error || err.message));
+                    setLoading(false);
+                }
+            });
+        return () => controller.abort();
     }, []);
 
-    const loadContacts = () => {
+    const loadContacts = useCallback(() => {
         setLoading(true);
         axios.get('/api/contacts')
             .then(res => {
@@ -43,10 +58,10 @@ export function ContactMaster() {
                 setError("Failed to load contacts: " + (err.response?.data?.error || err.message));
                 setLoading(false);
             });
-    };
+    }, []);
 
-    const handleSave = () => {
-        if (!formData.name) return alert("Name is required");
+    const handleSave = useCallback(() => {
+        if (!formData.name) { toast.warning("Name is required"); return; }
 
         const promise = editingId
             ? axios.put(`/api/contacts/${editingId}`, formData)
@@ -54,22 +69,22 @@ export function ContactMaster() {
 
         promise
             .then(() => {
-                alert(editingId ? "Contact Updated" : "Contact Created");
+                toast.success(editingId ? "Contact Updated" : "Contact Created");
                 setIsModalOpen(false);
                 setFormData({ name: '', email: '', mobile: '', address: '', designation: '', department: '' });
                 setEditingId(null);
                 loadContacts();
             })
-            .catch(err => alert("Operation failed: " + (err.response?.data?.error || err.message)));
-    };
+            .catch(err => toast.error("Operation failed: " + (err.response?.data?.error || err.message)));
+    }, [formData, editingId, loadContacts, toast]);
 
-    const handleDelete = (id) => {
+    const handleDelete = useCallback((id) => {
         if (confirm("Delete contact?")) {
             axios.delete(`/api/contacts/${id}`)
                 .then(loadContacts)
-                .catch(err => alert("Failed to delete"));
+                .catch(err => toast.error("Failed to delete"));
         }
-    };
+    }, [loadContacts, toast]);
 
     const handleEdit = (c) => {
         setFormData({
@@ -90,7 +105,7 @@ export function ContactMaster() {
     };
 
     const handleInitiateCall = () => {
-        if (!selectedSurveyId) return alert("Please select a survey");
+        if (!selectedSurveyId) { toast.warning("Please select a survey"); return; }
         setCallLoading(true);
 
         axios.post('/api/calls/initiate', {
@@ -98,12 +113,12 @@ export function ContactMaster() {
             surveyId: selectedSurveyId
         })
             .then(res => {
-                alert("Agent Dispatched! The call should start shortly.");
+                toast.success("Agent Dispatched! The call should start shortly.");
                 setCallModalOpen(false);
                 setCallLoading(false);
             })
             .catch(err => {
-                alert("Failed to initiate call: " + (err.response?.data?.error || err.message));
+                toast.error("Failed to initiate call: " + (err.response?.data?.error || err.message));
                 setCallLoading(false);
             });
     };
@@ -154,7 +169,7 @@ export function ContactMaster() {
             }
         }
 
-        alert(`Import Complete!\nSuccess: ${successCount}\nFailed: ${failCount}`);
+        toast.success(`Import Complete! Success: ${successCount}, Failed: ${failCount}`);
         setLoading(false);
         setIsImportModalOpen(false);
         setImportData([]);

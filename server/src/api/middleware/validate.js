@@ -3,8 +3,8 @@ const validate = (schema, source = 'body') => {
     const data = source === 'query' ? req.query : req.body;
     const { error, value } = schema.validate(data, {
       abortEarly: false,
-      stripUnknown: false,
-      allowUnknown: true,
+      stripUnknown: true,
+      allowUnknown: false,
     });
 
     if (error) {
@@ -22,11 +22,11 @@ const validate = (schema, source = 'body') => {
       });
     }
 
-    // Replace with validated values
+    // Replace with validated/stripped values only (no merge with raw body)
     if (source === 'query') {
-      req.query = { ...req.query, ...value };
+      req.query = value;
     } else {
-      req.body = { ...req.body, ...value };
+      req.body = value;
     }
 
     next();

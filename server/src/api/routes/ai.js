@@ -4,6 +4,9 @@ const AiService = require('../../services/AiService');
 const { query } = require('../../infrastructure/database/db');
 const { decrypt } = require('../../infrastructure/security/encryption');
 const authenticate = require('../middleware/auth');
+const validate = require('../middleware/validate');
+const { generateSchema, agentInteractSchema, analyzeSurveySchema } = require('../schemas/ai.schemas');
+const logger = require('../../infrastructure/logger');
 
 // Helper to get settings from DB
 // Helper to get settings from DB
@@ -43,7 +46,7 @@ async function getAiSettings() {
         return config;
 
     } catch (e) {
-        console.error("Error fetching AI settings:", e);
+        logger.error("Error fetching AI settings", { error: e.message });
         // Fallback to Env
         return {
             provider: 'gemini',
@@ -59,9 +62,36 @@ async function getAiSettings() {
 }
 
 const multer = require('multer');
-const upload = multer({ storage: multer.memoryStorage() });
 
-router.post('/generate', authenticate, async (req, res) => {
+const AUDIO_MIMES = ['audio/webm', 'audio/wav', 'audio/mpeg', 'audio/mp4', 'audio/ogg', 'audio/flac'];
+const VIDEO_MIMES = ['video/webm', 'video/mp4', 'video/quicktime', 'video/x-msvideo'];
+const ALLOWED_MEDIA_MIMES = [...AUDIO_MIMES, ...VIDEO_MIMES];
+
+const uploadAudio = multer({
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 25 * 1024 * 1024 }, // 25MB for audio
+    fileFilter: (req, file, cb) => {
+        if (AUDIO_MIMES.includes(file.mimetype)) {
+            cb(null, true);
+        } else {
+            cb(new Error('Audio file type not allowed. Accepted: webm, wav, mp3, mp4, ogg, flac'), false);
+        }
+    }
+});
+
+const uploadVideo = multer({
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 100 * 1024 * 1024 }, // 100MB for video
+    fileFilter: (req, file, cb) => {
+        if (VIDEO_MIMES.includes(file.mimetype)) {
+            cb(null, true);
+        } else {
+            cb(new Error('Video file type not allowed. Accepted: webm, mp4, mov, avi'), false);
+        }
+    }
+});
+
+router.post('/generate', authenticate, validate(generateSchema), async (req, res) => {
     try {
         const { prompt } = req.body;
         const axios = require('axios');
@@ -74,7 +104,7 @@ router.post('/generate', authenticate, async (req, res) => {
         const isSurveyRequest = prompt.toLowerCase().includes('survey') || prompt.toLowerCase().includes('form') || prompt.toLowerCase().includes('question');
         const endpoint = isSurveyRequest ? '/generate' : '/completion';
 
-        console.log(`[Main Server] Forwarding to AI Service ${endpoint} (Provider: ${provider}): ${prompt.substring(0, 50)}...`);
+        logger.info(`[Main Server] Forwarding to AI Service ${endpoint} (Provider: ${provider}): ${prompt.substring(0, 50)}...`);
 
         const response = await axios.post(`${aiServiceUrl}${endpoint}`, {
             prompt: prompt,
@@ -87,31 +117,31 @@ router.post('/generate', authenticate, async (req, res) => {
             res.json({ text: response.data.text, definition: response.data.text });
         }
     } catch (err) {
-        console.error("AI Forwarding Error:", err.message);
+        logger.error("AI Forwarding Error", { error: err.message });
         res.status(500).json({ error: "AI Service Error: " + (err.response?.data?.error || err.message) });
     }
 
 });
 
-router.post('/agent-interact', authenticate, async (req, res) => {
+router.post('/agent-interact', authenticate, validate(agentInteractSchema), async (req, res) => {
     try {
         const { prompt, systemContext } = req.body;
         const axios = require('axios');
         const aiServiceUrl = process.env.AI_SERVICE_URL || 'http://localhost:3001';
 
-        console.log(`[Main Server] Forwarding to AI Service /agent-interact`);
+        logger.info("[Main Server] Forwarding to AI Service /agent-interact");
         const response = await axios.post(`${aiServiceUrl}/agent-interact`, {
             prompt, systemContext
         });
 
         res.json(response.data);
     } catch (err) {
-        console.error("Agent Interact Proxy Error:", err.message);
+        logger.error("Agent Interact Proxy Error", { error: err.message });
         res.status(500).json({ error: err.message });
     }
 });
 
-router.post('/transcribe', authenticate, upload.single('audio'), async (req, res) => {
+router.post('/transcribe', authenticate, uploadAudio.single('audio'), async (req, res) => {
     try {
         const fileData = req.file;
         if (!fileData) return res.status(400).json({ error: 'No audio file provided' });
@@ -123,7 +153,7 @@ router.post('/transcribe', authenticate, upload.single('audio'), async (req, res
         const form = new FormData();
         form.append('audio', fileData.buffer, { filename: fileData.originalname, contentType: fileData.mimetype });
 
-        console.log(`[Main Server] Forwarding transcription to AI Service`);
+        logger.info("[Main Server] Forwarding transcription to AI Service");
 
         const response = await axios.post(`${aiServiceUrl}/transcribe`, form, {
             headers: form.getHeaders()
@@ -131,12 +161,12 @@ router.post('/transcribe', authenticate, upload.single('audio'), async (req, res
 
         res.json({ text: response.data.text });
     } catch (err) {
-        console.error("Transcription Forwarding Error:", err.message);
+        logger.error("Transcription Forwarding Error", { error: err.message });
         res.status(500).json({ error: "Transcription Error: " + (err.response?.data?.error || err.message) });
     }
 });
 
-router.post('/upload-video', authenticate, upload.single('video'), async (req, res) => {
+router.post('/upload-video', authenticate, uploadVideo.single('video'), async (req, res) => {
     try {
         const file = req.file;
         if (!file) return res.status(400).json({ error: 'No video file provided' });
@@ -148,7 +178,7 @@ router.post('/upload-video', authenticate, upload.single('video'), async (req, r
             const settings = { ...(await getAiSettings()) };
             transcript = await AiService.transcribe(file.buffer, file.mimetype, settings);
         } catch (e) {
-            console.error("Video Transcript Error: ", e);
+            logger.error("Video Transcript Error", { error: e.message });
             transcript = "[Transcription Failed]";
         }
 
@@ -194,12 +224,12 @@ router.post('/upload-video', authenticate, upload.single('video'), async (req, r
             data: saved.rows[0]
         });
     } catch (err) {
-        console.error(err);
+        logger.error("Upload video error", { error: err.message });
         res.status(500).json({ error: err.message });
     }
 });
 
-router.post('/analyze-survey', authenticate, async (req, res) => {
+router.post('/analyze-survey', authenticate, validate(analyzeSurveySchema), async (req, res) => {
     try {
         const { formId, surveyTitle, questions, submissions } = req.body;
 
@@ -242,7 +272,7 @@ router.post('/analyze-survey', authenticate, async (req, res) => {
             const cleanText = resultText.replace(/```json/g, '').replace(/```/g, '').trim();
             analysisData = JSON.parse(cleanText);
         } catch (e) {
-            console.error("AI JSON Parse Error:", e, resultText);
+            logger.error("AI JSON Parse Error", { error: e.message, resultText });
             // Fallback
             analysisData = {
                 sentiment: "Neutral",
@@ -262,7 +292,7 @@ router.post('/analyze-survey', authenticate, async (req, res) => {
         res.json(analysisData);
 
     } catch (err) {
-        console.error("Analyze Survey Error:", err);
+        logger.error("Analyze Survey Error", { error: err.message });
         res.status(500).json({ error: err.message });
     }
 });

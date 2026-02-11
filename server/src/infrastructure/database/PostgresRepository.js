@@ -1,17 +1,31 @@
 const { query } = require('./db');
 
 class PostgresRepository {
-    constructor(tableName) {
+    constructor(tableName, client = null) {
         this.tableName = tableName;
+        this._client = client;
+    }
+
+    /**
+     * Create a scoped repository that uses a specific client (for transactions).
+     * Usage: const scopedRepo = repo.withClient(client);
+     */
+    withClient(client) {
+        return new PostgresRepository(this.tableName, client);
+    }
+
+    _query(text, params) {
+        if (this._client) return this._client.query(text, params);
+        return query(text, params);
     }
 
     async findAll() {
-        const res = await query(`SELECT * FROM ${this.tableName}`);
+        const res = await this._query(`SELECT * FROM ${this.tableName}`);
         return res.rows;
     }
 
     async findById(id) {
-        const res = await query(`SELECT * FROM ${this.tableName} WHERE id = $1`, [id]);
+        const res = await this._query(`SELECT * FROM ${this.tableName} WHERE id = $1`, [id]);
         return res.rows[0];
     }
 
@@ -24,7 +38,7 @@ class PostgresRepository {
 
     async findBy(column, value) {
         this.validateKey(column);
-        const res = await query(`SELECT * FROM ${this.tableName} WHERE ${column} = $1`, [value]);
+        const res = await this._query(`SELECT * FROM ${this.tableName} WHERE ${column} = $1`, [value]);
         return res.rows[0];
     }
 
@@ -32,12 +46,11 @@ class PostgresRepository {
         this.validateKey(column);
         let sql = `SELECT * FROM ${this.tableName} WHERE ${column} = $1`;
         if (orderBy) {
-            // orderBy is a bit more complex, we should at least check parts
             const parts = orderBy.split(' ');
             parts.forEach(p => this.validateKey(p));
             sql += ` ORDER BY ${orderBy}`;
         }
-        const res = await query(sql, [value]);
+        const res = await this._query(sql, [value]);
         return res.rows;
     }
 
@@ -49,7 +62,7 @@ class PostgresRepository {
         const sql = `INSERT INTO ${this.tableName} (${keys.join(', ')}) VALUES (${placeholders}) RETURNING *`;
 
         try {
-            const res = await query(sql, values);
+            const res = await this._query(sql, values);
             return res.rows[0];
         } catch (err) {
             console.error(`Error creating in ${this.tableName}:`, err);
@@ -71,12 +84,12 @@ class PostgresRepository {
         values.push(id);
         const sql = `UPDATE ${this.tableName} SET ${setClause} WHERE id = $${values.length} RETURNING *`;
 
-        const res = await query(sql, values);
+        const res = await this._query(sql, values);
         return res.rows[0];
     }
 
     async delete(id) {
-        await query(`DELETE FROM ${this.tableName} WHERE id = $1`, [id]);
+        await this._query(`DELETE FROM ${this.tableName} WHERE id = $1`, [id]);
         return true;
     }
 }

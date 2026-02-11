@@ -44,6 +44,7 @@ const authCache = new CacheService({ ttl: 60, maxKeys: 2000 });
 const tenantCache = new CacheService({ ttl: 300, maxKeys: 500 });
 const sessionCache = new CacheService({ ttl: 1800, maxKeys: 1000 });
 const rateLimitCache = new CacheService({ ttl: 60, maxKeys: 10000 });
+const loginAttemptCache = new CacheService({ ttl: 900, maxKeys: 10000 }); // 15min TTL for lockout
 
 module.exports = {
   CacheService,
@@ -51,4 +52,5 @@ module.exports = {
   tenantCache,
   sessionCache,
   rateLimitCache,
+  loginAttemptCache,
 };

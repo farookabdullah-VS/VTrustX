@@ -24,6 +24,7 @@ const ResponsiveGridLayout = WidthProvider(Responsive);
 import { getForms, getSubmissionsForForm } from '../../services/formService';
 import { getReports, saveReport, deleteReport } from '../../services/reportService';
 import { SurveyAnalystChat } from './SurveyAnalystChat';
+import { useToast } from '../common/Toast';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'];
 
@@ -70,16 +71,16 @@ const extractFieldsFromDefinition = (definition) => {
 
 // --- Visual Components ---
 
-const KPICard = ({ title, value, target, trend }) => (
+const KPICard = React.memo(({ title, value, target, trend }) => (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', padding: '10px' }}>
         <div style={{ fontSize: '0.9rem', color: '#64748b', marginBottom: '5px' }}>{title || 'KPI Title'}</div>
         <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: '#1e293b' }}>{value || '0'}</div>
         {target && <div style={{ fontSize: '0.8rem', color: '#64748b' }}>Target: {target}</div>}
         {trend && <div style={{ fontSize: '0.8rem', color: trend > 0 ? '#10b981' : '#ef4444' }}>{trend > 0 ? '▲' : '▼'} {Math.abs(trend)}%</div>}
     </div>
-);
+));
 
-const TableVisual = ({ data }) => (
+const TableVisual = React.memo(({ data }) => (
     <div style={{ height: '100%', overflow: 'auto' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
             <thead>
@@ -96,7 +97,7 @@ const TableVisual = ({ data }) => (
             </tbody>
         </table>
     </div>
-);
+));
 
 const KeyDriverVisual = ({ surveyId, targetMetric }) => {
     const [drivers, setDrivers] = useState([]);
@@ -1063,6 +1064,7 @@ const ChartRenderer = ({ type, data, title, config = {}, filters = {}, onFilterC
 // --- Application Components ---
 
 const ReportList = ({ onOpenReport, onCreateReport }) => {
+    const toast = useToast();
     const [reports, setReports] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -1085,7 +1087,7 @@ const ReportList = ({ onOpenReport, onCreateReport }) => {
                 await deleteReport(id);
                 loadReports();
             } catch (err) {
-                alert('Failed to delete report');
+                toast.error('Failed to delete report');
             }
         }
     };
@@ -1139,6 +1141,7 @@ const ReportList = ({ onOpenReport, onCreateReport }) => {
 };
 
 function ReportCard({ r, onOpen, onDelete, isPublic }) {
+    const toast = useToast();
     return (
         <div onClick={() => onOpen(r)} style={{ background: 'white', border: isPublic ? '1px solid #10b981' : '1px solid #e2e8f0', borderRadius: '12px', overflow: 'hidden', cursor: 'pointer', transition: 'transform 0.2s', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)', position: 'relative' }}
             onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-4px)'} onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}>
@@ -1160,7 +1163,7 @@ function ReportCard({ r, onOpen, onDelete, isPublic }) {
                                     e.stopPropagation();
                                     const url = `${window.location.origin}/report/${r.public_token}`;
                                     navigator.clipboard.writeText(url);
-                                    alert("Public link copied!");
+                                    toast.success("Public link copied!");
                                 }}
                                 style={{ background: 'transparent', border: 'none', color: '#10b981', cursor: 'pointer', padding: '4px' }}
                                 title="Copy Public Link"
@@ -2142,6 +2145,7 @@ const ClosedLoopPane = ({ detractors, onCreateTicket, stats }) => {
 };
 
 const ReportDesigner = ({ report: initialReport, onBack }) => {
+    const toast = useToast();
     const [report, setReport] = useState(initialReport);
     const [activeSidePane, setActiveSidePane] = useState('data'); // 'split', 'data', 'gallery', 'properties'
     const [activeRibbonTab, setActiveRibbonTab] = useState('Home');
@@ -2300,12 +2304,12 @@ const ReportDesigner = ({ report: initialReport, onBack }) => {
                 setReport(prev => ({ ...prev, id: savedReport.id }));
             }
 
-            alert('Report Saved to Database Successfully!');
+            toast.success('Report Saved to Database Successfully!');
             return savedReport;
         } catch (e) {
             console.error("Save Error:", e);
             const msg = e.response?.data?.error || e.message;
-            alert('Failed to save report: ' + msg);
+            toast.error('Failed to save report: ' + msg);
             throw e;
         }
     };
@@ -2343,14 +2347,14 @@ const ReportDesigner = ({ report: initialReport, onBack }) => {
             setShareUrl(url);
             setReport(prev => ({ ...prev, slug: res.data.slug, is_published: true }));
 
-            alert(`Report Published Successfully!\nPublic URL: ${url}`);
+            toast.success(`Report Published Successfully! Public URL: ${url}`);
             if (navigator.clipboard) {
                 navigator.clipboard.writeText(url);
-                alert("URL copied to clipboard!");
+                toast.success("URL copied to clipboard!");
             }
         } catch (err) {
             console.error("Publish Error:", err);
-            alert("Failed to publish: " + (err.response?.data?.error || err.message));
+            toast.error("Failed to publish: " + (err.response?.data?.error || err.message));
         } finally {
             setIsPublishing(false);
         }
@@ -2364,7 +2368,7 @@ const ReportDesigner = ({ report: initialReport, onBack }) => {
                 d.respondent === detractor.respondent ? { ...d, ticketId: 'new', ticketCode } : d
             ));
             setClosedLoopStats(prev => ({ ...prev, openTasks: prev.openTasks + 1 }));
-            alert(`Ticket ${ticketCode} created and assigned to the support team.`);
+            toast.success(`Ticket ${ticketCode} created and assigned to the support team.`);
         }
     };
 

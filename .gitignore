@@ -1,8 +1,43 @@
 node_modules/
 .env
+.env.local
+.env.*.local
 .firebase/
 .claude/
 dist/
 build/
 *.log
 cloud_sql_proxy.exe
+
+# OS files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# IDE files
+.idea/
+.vscode/settings.json
+.vscode/launch.json
+*.swp
+*.swo
+*~
+*.bak
+
+# Test coverage
+coverage/
+server/coverage/
+client/coverage/
+
+# Debug & build artifacts
+debug_api.log
+nul
+columns.json
+tables.json
+fk_refs.json
+constraints.json
+build_log.txt
+build_output.txt
+
+# Temp files
+*.tmp
+*.temp

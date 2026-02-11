@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { PersonaProfileCard } from './PersonaEngine/PersonaProfileCard';
+import { useToast } from './common/Toast';
 
 export function Customer360() {
+    const toast = useToast();
     const [customers, setCustomers] = useState([]);
     const [selectedCustomerId, setSelectedCustomerId] = useState(null);
     const [customerData, setCustomerData] = useState(null);
@@ -21,19 +23,23 @@ export function Customer360() {
     const [relResults, setRelResults] = useState([]);
 
     useEffect(() => {
-        loadInitialCustomers();
-        // Load Masters
-        axios.get('/api/master/countries').then(res => setCountries(res.data)).catch(console.error);
-        axios.get('/api/master/cities').then(res => setCities(res.data)).catch(console.error);
+        const controller = new AbortController();
+        const signal = controller.signal;
+
+        axios.get('/api/customer360', { signal }).then(res => setCustomers(res.data)).catch(e => { if (e.name !== 'CanceledError') console.error(e); });
+        axios.get('/api/master/countries', { signal }).then(res => setCountries(res.data)).catch(e => { if (e.name !== 'CanceledError') console.error(e); });
+        axios.get('/api/master/cities', { signal }).then(res => setCities(res.data)).catch(e => { if (e.name !== 'CanceledError') console.error(e); });
+
+        return () => controller.abort();
     }, []);
 
-    const loadInitialCustomers = () => {
+    const loadInitialCustomers = useCallback(() => {
         axios.get('/api/customer360')
             .then(res => setCustomers(res.data))
             .catch(console.error);
-    };
+    }, []);
 
-    const handleSearch = (val) => {
+    const handleSearch = useCallback((val) => {
         setSearch(val);
         if (val.length > 2) {
             axios.get(`/api/customer360/search?q=${val}&match_type=${searchMode}`)
@@ -42,9 +48,9 @@ export function Customer360() {
         } else if (val.length === 0) {
             loadInitialCustomers();
         }
-    };
+    }, [searchMode, loadInitialCustomers]);
 
-    const loadProfile = (id) => {
+    const loadProfile = useCallback((id) => {
         setLoading(true);
         setSelectedCustomerId(id);
         setActiveTab('overview');
@@ -54,10 +60,10 @@ export function Customer360() {
                 setLoading(false);
             })
             .catch(err => {
-                alert('Error loading profile: ' + err.message);
+                toast.error('Error loading profile: ' + err.message);
                 setLoading(false);
             });
-    };
+    }, [toast]);
 
     const getInitials = (name) => name ? name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : 'CX';
 
@@ -76,18 +82,18 @@ export function Customer360() {
             to_id: targetId,
             type: type
         }).then(() => {
-            alert('Linked!');
+            toast.success('Linked!');
             loadProfile(selectedCustomerId);
             setRelSearch('');
             setRelResults([]);
-        }).catch(err => alert("Link failed: " + err.message));
+        }).catch(err => toast.error("Link failed: " + err.message));
     };
 
     const handleDelRel = (id) => {
         if (confirm("Remove this relationship?")) {
             axios.delete(`/api/customer360/relationships/${id}`)
                 .then(() => loadProfile(selectedCustomerId))
-                .catch(err => alert("Failed needed: " + err.message));
+                .catch(err => toast.error("Failed needed: " + err.message));
         }
     };
 
@@ -107,23 +113,23 @@ export function Customer360() {
 
         axios.post('/api/customer360/profile', payload)
             .then(res => {
-                alert('Profile Created/Updated Successfully!');
+                toast.success('Profile Created/Updated Successfully!');
                 setIsCreateModalOpen(false);
                 loadProfile(res.data.customer_id);
             })
-            .catch(err => alert('Error creating profile: ' + err.message));
+            .catch(err => toast.error('Error creating profile: ' + err.message));
     };
 
     const handleRecalculatePersona = () => {
         setIsRecalculating(true);
         axios.post(`/api/persona/profiles/${selectedCustomerId}/assign-personas`)
             .then(res => {
-                alert(`Persona updated to: ${res.data.assigned_persona.name}`);
+                toast.success(`Persona updated to: ${res.data.assigned_persona.name}`);
                 loadProfile(selectedCustomerId);
                 setIsRecalculating(false);
             })
             .catch(err => {
-                alert('Error calculating persona: ' + err.message);
+                toast.error('Error calculating persona: ' + err.message);
                 setIsRecalculating(false);
             });
     };
@@ -135,11 +141,11 @@ export function Customer360() {
             timestamp: new Date().toISOString()
         })
             .then(res => {
-                alert('Event Logged Successfully!');
+                toast.success('Event Logged Successfully!');
                 setIsEventModalOpen(false);
                 loadProfile(selectedCustomerId);
             })
-            .catch(err => alert('Error logging event: ' + err.message));
+            .catch(err => toast.error('Error logging event: ' + err.message));
     };
 
     if (!selectedCustomerId || !customerData) {
@@ -354,12 +360,12 @@ export function Customer360() {
         if (confirm("Are you sure you want to permanently delete this customer profile? All data (events, products, history) will be wiped.")) {
             axios.delete(`/api/customer360/${selectedCustomerId}`)
                 .then(() => {
-                    alert("Profile deleted.");
+                    toast.success("Profile deleted.");
                     setSelectedCustomerId(null);
                     setCustomerData(null);
                     loadInitialCustomers();
                 })
-                .catch(err => alert("Deletion failed: " + err.message));
+                .catch(err => toast.error("Deletion failed: " + err.message));
         }
     };
 
@@ -370,7 +376,7 @@ export function Customer360() {
             status: newStatus
         }).then(() => {
             loadProfile(selectedCustomerId); // Reload to reflect changes
-        }).catch(err => alert("Consent update failed"));
+        }).catch(err => toast.error("Consent update failed"));
     };
 
     const { profile, identities, contacts, products, consents, history, relationships = [] } = customerData;
@@ -782,7 +788,7 @@ export function Customer360() {
                                         delete data.payload_json;
                                     }
                                 } catch (err) {
-                                    alert('Invalid JSON Payload');
+                                    toast.error('Invalid JSON Payload');
                                     return;
                                 }
                                 handleCreateEvent(data);

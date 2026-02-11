@@ -1,14 +1,89 @@
 const express = require('express');
 const router = express.Router();
+const crypto = require('crypto');
 const passport = require('passport');
+const logger = require('../../infrastructure/logger');
 const User = require('../../core/entities/User');
 const PostgresRepository = require('../../infrastructure/database/PostgresRepository');
+const { query } = require('../../infrastructure/database/db');
 const validate = require('../middleware/validate');
 const { registerSchema, loginSchema, changePasswordSchema } = require('../schemas/auth.schemas');
+const { loginAttemptCache } = require('../../infrastructure/cache');
+
+const MAX_LOGIN_ATTEMPTS = 5;
+const ACCESS_TOKEN_EXPIRY = '15m';
+const REFRESH_TOKEN_EXPIRY_DAYS = 7;
 
 // Separate repo for users
 const userRepo = new PostgresRepository('users');
 const tenantRepo = new PostgresRepository('tenants');
+
+// Helper to sign short-lived access JWT
+const signAccessToken = (user) => {
+    const jwt = require('jsonwebtoken');
+    const secret = process.env.JWT_SECRET;
+    if (!secret) {
+        throw new Error('JWT_SECRET environment variable is required.');
+    }
+    return jwt.sign(
+        {
+            id: user.id,
+            username: user.username,
+            role: user.role,
+            tenant_id: user.tenant_id
+        },
+        secret,
+        { expiresIn: ACCESS_TOKEN_EXPIRY }
+    );
+};
+
+// Generate a secure random refresh token and store its hash in DB
+async function createRefreshToken(userId) {
+    const token = crypto.randomBytes(48).toString('base64url');
+    const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+    const expiresAt = new Date(Date.now() + REFRESH_TOKEN_EXPIRY_DAYS * 24 * 60 * 60 * 1000);
+
+    await query(
+        `INSERT INTO refresh_tokens (user_id, token_hash, expires_at) VALUES ($1, $2, $3)`,
+        [userId, tokenHash, expiresAt]
+    );
+
+    return token;
+}
+
+// Cookie options helpers
+const getAccessCookieOptions = () => ({
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    maxAge: 15 * 60 * 1000, // 15min
+    path: '/',
+});
+
+const getRefreshCookieOptions = () => ({
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    maxAge: REFRESH_TOKEN_EXPIRY_DAYS * 24 * 60 * 60 * 1000,
+    path: '/api/auth', // Only sent to auth endpoints
+});
+
+// Issue both tokens as cookies
+async function issueTokens(res, user) {
+    const accessToken = signAccessToken(user);
+    let refreshToken;
+    try {
+        refreshToken = await createRefreshToken(user.id);
+    } catch (e) {
+        // refresh_tokens table may not exist yet — log and continue without refresh
+        logger.warn('Could not create refresh token (table may not exist)', { error: e.message });
+    }
+
+    res.cookie('access_token', accessToken, getAccessCookieOptions());
+    if (refreshToken) {
+        res.cookie('refresh_token', refreshToken, getRefreshCookieOptions());
+    }
+}
 
 // Register
 router.post('/register', validate(registerSchema), async (req, res) => {
@@ -39,7 +114,7 @@ router.post('/register', validate(registerSchema), async (req, res) => {
         const newUser = {
             username,
             password: passwordHash,
-            role: 'admin', // Always default to Admin for first user
+            role: 'admin',
             tenant_id: newTenant.id,
             created_at: new Date()
         };
@@ -51,37 +126,29 @@ router.post('/register', validate(registerSchema), async (req, res) => {
         res.status(201).json(safeUser);
 
     } catch (error) {
-        console.error("Register Error:", error);
+        logger.error("Register Error", { error: error.message });
         res.status(500).json({ error: error.message });
     }
 });
 
-// Helper to sign JWT
-const signToken = (user) => {
-    const jwt = require('jsonwebtoken');
-    const secret = process.env.JWT_SECRET;
-    if (!secret) {
-        throw new Error('JWT_SECRET environment variable is required.');
-    }
-    return jwt.sign(
-        {
-            id: user.id,
-            username: user.username,
-            role: user.role,
-            tenant_id: user.tenant_id
-        },
-        secret,
-        { expiresIn: '24h' }
-    );
-};
-
-// Login
+// Login — sets httpOnly cookies, implements account lockout
 router.post('/login', validate(loginSchema), async (req, res) => {
     try {
         const { username, password } = req.body;
+
+        // Account lockout check
+        const lockoutKey = `login_attempts:${username}`;
+        const attempts = loginAttemptCache.get(lockoutKey) || 0;
+        if (attempts >= MAX_LOGIN_ATTEMPTS) {
+            return res.status(429).json({
+                error: 'Account temporarily locked due to too many failed login attempts. Try again in 15 minutes.'
+            });
+        }
+
         const user = await userRepo.findBy('username', username);
 
         if (!user) {
+            loginAttemptCache.set(lockoutKey, attempts + 1, 900);
             return res.status(401).json({ error: 'Invalid credentials' });
         }
 
@@ -92,7 +159,6 @@ router.post('/login', validate(loginSchema), async (req, res) => {
         if (user.password.startsWith('$2a$') || user.password.startsWith('$2b$')) {
             isMatch = await bcrypt.compare(password, user.password);
         } else {
-            // Force password reset for legacy plaintext passwords
             return res.status(401).json({
                 error: 'Password requires reset. Please use the password reset flow.',
                 requiresReset: true
@@ -100,24 +166,96 @@ router.post('/login', validate(loginSchema), async (req, res) => {
         }
 
         if (!isMatch) {
+            loginAttemptCache.set(lockoutKey, attempts + 1, 900);
             return res.status(401).json({ error: 'Invalid credentials' });
         }
+
+        // Reset lockout counter on successful login
+        loginAttemptCache.del(lockoutKey);
 
         // Update last login timestamp
         await userRepo.update(user.id, { last_login_at: new Date() });
 
-        const token = signToken(user);
         const { password: _, ...safeUser } = user;
 
-        res.json({
-            user: safeUser,
-            token: token
-        });
+        // Issue access + refresh token cookies
+        await issueTokens(res, user);
+
+        res.json({ user: safeUser });
 
     } catch (error) {
-        console.error("Login Error:", error);
+        logger.error("Login Error", { error: error.message });
         res.status(500).json({ error: error.message });
     }
+});
+
+// Refresh — rotates refresh token, issues new access token
+router.post('/refresh', async (req, res) => {
+    try {
+        const refreshToken = req.cookies?.refresh_token;
+        if (!refreshToken) {
+            return res.status(401).json({ error: 'No refresh token' });
+        }
+
+        const tokenHash = crypto.createHash('sha256').update(refreshToken).digest('hex');
+
+        // Find the token in DB
+        const result = await query(
+            `SELECT * FROM refresh_tokens WHERE token_hash = $1 AND revoked_at IS NULL AND expires_at > NOW()`,
+            [tokenHash]
+        );
+
+        if (result.rows.length === 0) {
+            // Potential token reuse attack — revoke all tokens for this family
+            res.clearCookie('access_token', { path: '/' });
+            res.clearCookie('refresh_token', { path: '/api/auth' });
+            return res.status(401).json({ error: 'Invalid or expired refresh token' });
+        }
+
+        const storedToken = result.rows[0];
+
+        // Revoke old refresh token (rotation)
+        await query(
+            `UPDATE refresh_tokens SET revoked_at = NOW() WHERE id = $1`,
+            [storedToken.id]
+        );
+
+        // Look up user
+        const user = await userRepo.findById(storedToken.user_id);
+        if (!user) {
+            return res.status(401).json({ error: 'User not found' });
+        }
+
+        const { password: _, ...safeUser } = user;
+
+        // Issue new token pair
+        await issueTokens(res, user);
+
+        res.json({ user: safeUser });
+    } catch (error) {
+        logger.error("Refresh Error", { error: error.message });
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Logout — clears cookies, revokes refresh token
+router.post('/logout', async (req, res) => {
+    try {
+        const refreshToken = req.cookies?.refresh_token;
+        if (refreshToken) {
+            const tokenHash = crypto.createHash('sha256').update(refreshToken).digest('hex');
+            await query(
+                `UPDATE refresh_tokens SET revoked_at = NOW() WHERE token_hash = $1`,
+                [tokenHash]
+            ).catch(() => {}); // Best-effort revocation
+        }
+    } catch (e) {
+        // Best effort
+    }
+
+    res.clearCookie('access_token', { path: '/' });
+    res.clearCookie('refresh_token', { path: '/api/auth' });
+    res.json({ success: true, message: 'Logged out successfully' });
 });
 
 // OAUTH ROUTES
@@ -125,17 +263,9 @@ router.get('/google', passport.authenticate('google', { scope: ['profile', 'emai
 
 router.get('/google/callback',
     passport.authenticate('google', { session: false, failureRedirect: '/login?error=auth_failed' }),
-    function (req, res) {
+    async function (req, res) {
         const user = req.user;
-        const token = signToken(user); // REAL JWT
-
-        // Set token in a secure httpOnly cookie instead of URL query params
-        res.cookie('auth_token', token, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'lax',
-            maxAge: 24 * 60 * 60 * 1000 // 24h
-        });
+        await issueTokens(res, user);
         res.redirect(`/login?oauth=success`);
     }
 );
@@ -143,28 +273,19 @@ router.get('/google/callback',
 router.get('/microsoft', passport.authenticate('microsoft', { session: false }));
 router.get('/microsoft/callback',
     passport.authenticate('microsoft', { session: false, failureRedirect: '/login?error=auth_failed_ms' }),
-    function (req, res) {
+    async function (req, res) {
         const user = req.user;
-        const token = signToken(user); // REAL JWT
-        res.cookie('auth_token', token, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'lax',
-            maxAge: 24 * 60 * 60 * 1000
-        });
+        await issueTokens(res, user);
         res.redirect(`/login?oauth=success`);
     }
 );
 
 const authenticate = require('../middleware/auth');
 
-// OAuth cookie-based auth: returns current user from httpOnly cookie
+// /me — reads from httpOnly cookie, returns user info
 router.get('/me', async (req, res) => {
     try {
-        // Parse cookie manually to avoid cookie-parser dependency
-        const cookieHeader = req.headers.cookie || '';
-        const cookies = Object.fromEntries(cookieHeader.split(';').map(c => c.trim().split('=').map(s => s.trim())));
-        const token = cookies.auth_token;
+        const token = req.cookies?.access_token;
         if (!token) return res.status(401).json({ error: 'No auth cookie' });
 
         const jwt = require('jsonwebtoken');
@@ -176,9 +297,7 @@ router.get('/me', async (req, res) => {
         if (!user) return res.status(401).json({ error: 'User not found' });
 
         const { password: _, ...safeUser } = user;
-        // Clear the cookie after reading (token handed off to client localStorage via response)
-        res.clearCookie('auth_token');
-        res.json({ user: safeUser, token });
+        res.json({ user: safeUser });
     } catch (e) {
         res.status(401).json({ error: 'Invalid or expired auth cookie' });
     }
@@ -188,7 +307,6 @@ router.post('/change-password', authenticate, validate(changePasswordSchema), as
     try {
         const { currentPassword, newPassword } = req.body;
 
-        // Use authenticated user's ID, not username from body
         const user = await userRepo.findById(req.user.id);
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
@@ -200,7 +318,6 @@ router.post('/change-password', authenticate, validate(changePasswordSchema), as
         if (user.password.startsWith('$2a$') || user.password.startsWith('$2b$')) {
             isMatch = await bcrypt.compare(currentPassword, user.password);
         } else {
-            // Legacy plaintext: still allow change-password to upgrade
             isMatch = (user.password === currentPassword);
         }
 
@@ -217,7 +334,7 @@ router.post('/change-password', authenticate, validate(changePasswordSchema), as
         res.json({ success: true, message: 'Password updated successfully' });
 
     } catch (error) {
-        console.error("Change Password Error:", error);
+        logger.error("Change Password Error", { error: error.message });
         res.status(500).json({ error: error.message });
     }
 });

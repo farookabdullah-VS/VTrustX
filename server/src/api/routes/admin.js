@@ -1,16 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const { query } = require('../../infrastructure/database/db');
+const logger = require('../../infrastructure/logger');
 const authenticate = require('../middleware/auth');
 
-// Middleware to check if user is a global admin
-const checkGlobalAdmin = (req, res, next) => {
-    if (req.user && (req.user.role === 'global_admin' || req.user.role === 'admin' || req.user.username === 'admin')) {
-        next();
-    } else {
-        res.status(403).json({ error: 'Access denied. Global Admin role required.' });
-    }
-};
+const { requireRole } = require('../middleware/authorize');
+const checkGlobalAdmin = requireRole('global_admin');
 
 // GET /api/admin/stats - Global usage statistics
 router.get('/stats', authenticate, checkGlobalAdmin, async (req, res) => {
@@ -59,7 +54,7 @@ router.get('/plans', authenticate, checkGlobalAdmin, async (req, res) => {
         const result = await query('SELECT * FROM pricing_plans');
         res.json(result.rows);
     } catch (e) {
-        console.error("ADMIN PLANS ERROR:", e);
+        logger.error("ADMIN PLANS ERROR", { error: e.message });
         res.status(500).json({ error: e.message });
     }
 });

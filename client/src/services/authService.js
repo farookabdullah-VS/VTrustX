@@ -1,60 +1,91 @@
 import axios from 'axios';
 
-// Login user and store response
+// Login user — server sets httpOnly cookies
 export const login = async (username, password) => {
-    try {
-        const response = await axios.post('/api/auth/login', { username, password });
-        if (response.data.token) {
-            localStorage.setItem('vtrustx_user', JSON.stringify(response.data));
-            axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
-        }
-        return response.data;
-    } catch (error) {
-        throw error;
-    }
+    const response = await axios.post('/api/auth/login', { username, password });
+    return response.data;
 };
 
-// Logout user
-export const logout = () => {
-    localStorage.removeItem('vtrustx_user');
-    delete axios.defaults.headers.common['Authorization'];
+// Logout user — server clears cookies and revokes refresh token
+export const logout = async () => {
+    try {
+        await axios.post('/api/auth/logout');
+    } catch (e) {
+        // Best-effort — cookie may already be expired
+    }
 };
 
 // Register new user
 export const register = async (userData) => {
+    const response = await axios.post('/api/auth/register', userData);
+    return response.data;
+};
+
+// Get current user from server (cookie-based)
+export const getCurrentUser = async () => {
     try {
-        const response = await axios.post('/api/auth/register', userData);
+        const response = await axios.get('/api/auth/me');
         return response.data;
-    } catch (error) {
-        throw error;
-    }
-};
-
-// Get current user from storage
-export const getCurrentUser = () => {
-    try {
-        const userStr = localStorage.getItem('vtrustx_user');
-        if (userStr) return JSON.parse(userStr);
     } catch (e) {
-        console.error("Auth storage corruption:", e);
-        localStorage.removeItem('vtrustx_user');
+        return null;
     }
-    return null;
 };
 
-// Setup Axios Interceptor for Session Expiry
+// Refresh access token using refresh token cookie
+export const refreshAccessToken = async () => {
+    const response = await axios.post('/api/auth/refresh');
+    return response.data;
+};
+
+// Auto-refresh on 401 (access token expired) — retry original request once
+let isRefreshing = false;
+let refreshQueue = [];
+
 axios.interceptors.response.use(
     response => response,
-    error => {
-        if (error.response && error.response.status === 401) {
-            // Token expired or invalid
-            const currentUser = getCurrentUser();
-            if (currentUser && currentUser.token) {
-                console.warn("Session expired. Logging out.");
-                logout();
-                window.location.href = '/'; // Force reload/redirect to login
+    async (error) => {
+        const originalRequest = error.config;
+
+        // Don't retry refresh/login/register endpoints
+        const skipPaths = ['/api/auth/login', '/api/auth/register', '/api/auth/refresh', '/api/auth/logout'];
+        if (skipPaths.some(p => originalRequest.url?.includes(p))) {
+            return Promise.reject(error);
+        }
+
+        if (error.response?.status === 401 && !originalRequest._authRetry) {
+            originalRequest._authRetry = true;
+
+            if (isRefreshing) {
+                // Queue concurrent requests while refresh is in progress
+                return new Promise((resolve, reject) => {
+                    refreshQueue.push({ resolve, reject, config: originalRequest });
+                });
+            }
+
+            isRefreshing = true;
+
+            try {
+                await refreshAccessToken();
+
+                // Retry all queued requests
+                refreshQueue.forEach(({ resolve, config }) => resolve(axios(config)));
+                refreshQueue = [];
+
+                return axios(originalRequest);
+            } catch (refreshError) {
+                // Refresh failed — redirect to login
+                refreshQueue.forEach(({ reject }) => reject(refreshError));
+                refreshQueue = [];
+
+                if (window.location.pathname !== '/' && !window.location.pathname.startsWith('/s/') && !window.location.pathname.startsWith('/login')) {
+                    window.location.href = '/';
+                }
+                return Promise.reject(refreshError);
+            } finally {
+                isRefreshing = false;
             }
         }
+
         return Promise.reject(error);
     }
 );

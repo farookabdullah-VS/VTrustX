@@ -1,10 +1,12 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import axios from 'axios';
 import * as XLSX from 'xlsx';
 import { AnalyticsView } from './AnalyticsView';
 import { ResultsGrid } from './ResultsGrid';
+import { useToast } from './common/Toast';
 
-const ShareModal = ({ isOpen, onClose, shareUrl }) => {
+const ShareModal = React.memo(({ isOpen, onClose, shareUrl }) => {
+    const toast = useToast();
     if (!isOpen) return null;
     return (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
@@ -14,7 +16,7 @@ const ShareModal = ({ isOpen, onClose, shareUrl }) => {
 
                 <div style={{ display: 'flex', gap: '10px', marginTop: '15px' }}>
                     <input type="text" readOnly value={shareUrl} style={{ flex: 1, padding: '8px', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '0.9em' }} />
-                    <button onClick={() => { navigator.clipboard.writeText(shareUrl); alert('Copied!'); }} style={{ padding: '8px 12px', background: '#3b82f6', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer' }}>Copy</button>
+                    <button onClick={() => { navigator.clipboard.writeText(shareUrl); toast.success('Copied!'); }} style={{ padding: '8px 12px', background: '#3b82f6', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer' }}>Copy</button>
                 </div>
 
                 <div style={{ marginTop: '20px', textAlign: 'right' }}>
@@ -23,9 +25,10 @@ const ShareModal = ({ isOpen, onClose, shareUrl }) => {
             </div>
         </div>
     );
-};
+});
 
 export function ResultsViewer({ formId, onBack, onEditSubmission, initialView, onNavigate, publicToken, isPublic }) {
+    const toast = useToast();
     const [rawSubmissions, setRawSubmissions] = useState([]);
     const [formMetadata, setFormMetadata] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -48,11 +51,12 @@ export function ResultsViewer({ formId, onBack, onEditSubmission, initialView, o
     });
 
     useEffect(() => {
+        const controller = new AbortController();
         const fetchData = async () => {
             setLoading(true);
             try {
                 if (publicToken) {
-                    const res = await axios.get(`/api/shared/${publicToken}/view`);
+                    const res = await axios.get(`/api/shared/${publicToken}/view`, { signal: controller.signal });
                     const form = res.data.form;
                     setFormMetadata(form);
                     setRawSubmissions(res.data.submissions);
@@ -89,6 +93,7 @@ export function ResultsViewer({ formId, onBack, onEditSubmission, initialView, o
             }
         };
         fetchData();
+        return () => controller.abort();
     }, [formId, publicToken]);
 
     const handleShare = async () => {
@@ -102,7 +107,7 @@ export function ResultsViewer({ formId, onBack, onEditSubmission, initialView, o
             setShareUrl(url);
             setIsShareModalOpen(true);
         } catch (err) {
-            alert('Failed to generate share link: ' + err.message);
+            toast.error('Failed to generate share link: ' + err.message);
         }
     };
 
@@ -192,7 +197,7 @@ export function ResultsViewer({ formId, onBack, onEditSubmission, initialView, o
 
     // --- AI HANDLER ---
     const handleGenerateInsight = async () => {
-        if (isPublic) return alert("AI generation is available to dashboard owners only.");
+        if (isPublic) { toast.warning("AI generation is available to dashboard owners only."); return; }
 
         setIsGeneratingAI(true);
         try {
@@ -208,7 +213,7 @@ export function ResultsViewer({ formId, onBack, onEditSubmission, initialView, o
             // setFormMetadata(prev => ({...prev, ai: response.data})); 
         } catch (error) {
             console.error("AI Error:", error);
-            alert("Failed to generate insights: " + (error.response?.data?.error || error.message));
+            toast.error("Failed to generate insights: " + (error.response?.data?.error || error.message));
         } finally {
             setIsGeneratingAI(false);
         }
@@ -216,7 +221,7 @@ export function ResultsViewer({ formId, onBack, onEditSubmission, initialView, o
 
     // --- EXPORTS ---
     const handleExportExcel = () => {
-        if (!submissions.length) return alert("No data to export.");
+        if (!submissions.length) { toast.warning("No data to export."); return; }
         const questions = getQuestions();
         const data = submissions.map(sub => {
             const row = { ID: sub.id, Date: new Date(sub.createdAt || sub.created_at).toLocaleString() };
@@ -416,7 +421,7 @@ export function ResultsViewer({ formId, onBack, onEditSubmission, initialView, o
             setRawSubmissions(prev => prev.filter(s => s.id !== id));
         } catch (err) {
             console.error("Delete failed", err);
-            alert("Failed to delete submission: " + (err.response?.data?.error || err.message));
+            toast.error("Failed to delete submission: " + (err.response?.data?.error || err.message));
         }
     };
 

@@ -1,7 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const PostgresRepository = require('../../infrastructure/database/PostgresRepository');
-const pool = require('../../infrastructure/database/db'); // Direct pool access for complex queries
+const pool = require('../../infrastructure/database/db');
+const logger = require('../../infrastructure/logger'); // Direct pool access for complex queries
 
 const authenticate = require('../middleware/auth');
 const validate = require('../middleware/validate');
@@ -235,7 +236,7 @@ router.post('/tickets', authenticate, validate(createTicketSchema), async (req, 
 
         // Trigger Workflows
         workflowEngine.evaluate('ticket', saved, 'ticket_created')
-            .catch(err => console.error("Workflow Create Error:", err));
+            .catch(err => logger.error("Workflow Create Error", { error: err.message }));
 
         // --- NOTIFICATION: Creation ---
         if (contact_id) {
@@ -384,7 +385,7 @@ router.put('/tickets/:id', authenticate, async (req, res) => {
         // Trigger Workflows
         // Trigger Workflows
         workflowEngine.evaluate('ticket', { ...safeUpdates, id: id, tenant_id: tenantId }, 'ticket_updated')
-            .catch(err => console.error("Workflow Update Error:", err));
+            .catch(err => logger.error("Workflow Update Error", { error: err.message }));
 
         // --- NOTIFICATIONS: Lifecycle Hooks ---
         // Fetch fresh ticket data with contact info
@@ -423,7 +424,7 @@ router.put('/tickets/:id', authenticate, async (req, res) => {
                 if (safeUpdates.status === 'closed') {
                     emailService.sendTemplate(recipient, 'closure', {
                         ...baseContext,
-                        survey_link: `http://localhost:5173/feedback/${ticket.ticket_code}`
+                        survey_link: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/feedback/${ticket.ticket_code}`
                     });
                 }
             }
@@ -592,7 +593,7 @@ router.post('/webhooks/email', async (req, res) => {
         }
 
         const { from, subject, body, tenant_id } = req.body;
-        console.log("Receiving Email Webhook:", req.body);
+        logger.info("Receiving Email Webhook", { body: req.body });
 
         if (!tenant_id || !from || !subject) {
             return res.status(400).json({ error: 'Missing fields: from, subject, tenant_id' });
@@ -648,7 +649,7 @@ router.post('/webhooks/email', async (req, res) => {
 
         // Trigger Workflows
         workflowEngine.evaluate('ticket', saved, 'ticket_created')
-            .catch(err => console.error("Workflow Webhook Error:", err));
+            .catch(err => logger.error("Workflow Webhook Error", { error: err.message }));
 
         // --- NOTIFICATION HOOK: Creation ---
         // Fetch full contact details for name/email
@@ -665,7 +666,7 @@ router.post('/webhooks/email', async (req, res) => {
         res.status(200).json({ status: 'ok', ticket: saved });
 
     } catch (err) {
-        console.error("Webhook Error:", err);
+        logger.error("Webhook Error", { error: err.message });
         res.status(500).json({ error: err.message });
     }
 });

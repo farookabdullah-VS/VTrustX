@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo, useCallback } from 'react';
 import './Dashboard.css';
 import axios from 'axios';
 import { useTranslation } from 'react-i18next';
@@ -33,11 +33,12 @@ export function Dashboard({ onNavigate, onEdit, onEditSubmission }) {
 
 
     React.useEffect(() => {
+        const controller = new AbortController();
         const fetchData = async () => {
             setLoading(true);
             try {
-                const formsRes = await axios.get('/api/forms');
-                const subsRes = await axios.get('/api/submissions');
+                const formsRes = await axios.get('/api/forms', { signal: controller.signal });
+                const subsRes = await axios.get('/api/submissions', { signal: controller.signal });
 
                 const forms = formsRes.data;
                 const allSubmissions = subsRes.data;
@@ -152,6 +153,7 @@ export function Dashboard({ onNavigate, onEdit, onEditSubmission }) {
         };
 
         fetchData();
+        return () => controller.abort();
     }, [dateRange]);
 
     const calculateDailyTrend = (subs, range) => {
@@ -209,6 +211,7 @@ export function Dashboard({ onNavigate, onEdit, onEditSubmission }) {
                         <span style={{ fontSize: '1.2em' }}>📅</span>
                         <input
                             type="date"
+                            aria-label="Start date"
                             value={dateRange.start}
                             onChange={(e) => handleDateChange('start', e.target.value)}
                             style={{ border: 'none', color: 'var(--text-color)', background: 'transparent', fontWeight: '500', outline: 'none', fontFamily: 'inherit', colorScheme: 'light', cursor: 'pointer' }}
@@ -216,6 +219,7 @@ export function Dashboard({ onNavigate, onEdit, onEditSubmission }) {
                         <span style={{ color: 'var(--text-muted)' }}>-</span>
                         <input
                             type="date"
+                            aria-label="End date"
                             value={dateRange.end}
                             onChange={(e) => handleDateChange('end', e.target.value)}
                             style={{ border: 'none', color: 'var(--text-color)', background: 'transparent', fontWeight: '500', outline: 'none', fontFamily: 'inherit', colorScheme: 'light', cursor: 'pointer' }}
@@ -226,7 +230,7 @@ export function Dashboard({ onNavigate, onEdit, onEditSubmission }) {
                 </div>
             </div>
 
-            {loading ? <div>Loading...</div> : (
+            {loading ? <div aria-live="polite" role="status">Loading...</div> : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
 
                     {/* Metrics Row */}
@@ -328,7 +332,7 @@ export function Dashboard({ onNavigate, onEdit, onEditSubmission }) {
                         {/* CHART */}
                         <div style={{ flex: '2 1 600px', minWidth: '300px' }}>
                             <div style={cardStyle}>
-                                <h3 style={{ margin: '0 0 20px 0', fontSize: '1.1em', color: 'var(--text-color)' }}>{t('dashboard.metrics.response_trends')}</h3>
+                                <h2 style={{ margin: '0 0 20px 0', fontSize: '1.1em', color: 'var(--text-color)' }}>{t('dashboard.metrics.response_trends')}</h2>
                                 <div style={{ flex: 1, display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', paddingBottom: '20px', gap: '10px', minHeight: '300px' }}>
                                     {stats.dailyTrend && stats.dailyTrend.map((day, i) => {
                                         const max = Math.max(...stats.dailyTrend.map(d => d.count), 5);
@@ -366,7 +370,7 @@ export function Dashboard({ onNavigate, onEdit, onEditSubmission }) {
                         {/* LIST */}
                         <div style={{ flex: '1 1 350px', minWidth: '300px' }}>
                             <div style={cardStyle}>
-                                <h3 style={{ margin: '0 0 20px 0', fontSize: '1.1em', color: 'var(--text-color)' }}>{t('dashboard.metrics.top_performing')}</h3>
+                                <h2 style={{ margin: '0 0 20px 0', fontSize: '1.1em', color: 'var(--text-color)' }}>{t('dashboard.metrics.top_performing')}</h2>
                                 {stats.topSurveys.length === 0 ? <p style={{ color: 'var(--text-muted)' }}>No data yet.</p> : (
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                                         {stats.topSurveys.map((s, i) => (
@@ -393,7 +397,7 @@ export function Dashboard({ onNavigate, onEdit, onEditSubmission }) {
                     <div style={{ display: 'flex' }}>
                         <div style={{ flex: 1 }}>
                             <div style={cardStyle}>
-                                <h3 style={{ margin: '0 0 20px 0', fontSize: '1.1em', color: 'var(--text-color)' }}>{t('dashboard.my_surveys')}</h3>
+                                <h2 style={{ margin: '0 0 20px 0', fontSize: '1.1em', color: 'var(--text-color)' }}>{t('dashboard.my_surveys')}</h2>
                                 <div style={{ overflowX: 'auto' }}>
                                     <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: isRtl ? 'right' : 'left' }}>
                                         <thead>
@@ -430,6 +434,9 @@ export function Dashboard({ onNavigate, onEdit, onEditSubmission }) {
                                                             </button>
                                                             <button
                                                                 onClick={() => setActiveMenuId(activeMenuId === form.id ? null : form.id)}
+                                                                aria-label={`More actions for ${form.title}`}
+                                                                aria-expanded={activeMenuId === form.id}
+                                                                aria-haspopup="true"
                                                                 style={{ padding: '6px', border: 'none', background: 'transparent', cursor: 'pointer', fontSize: '1.2em', color: 'var(--text-muted)' }}>
                                                                 ⋮
                                                             </button>

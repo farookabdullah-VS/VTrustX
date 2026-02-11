@@ -7,13 +7,25 @@ const { authCache, tenantCache } = require('../../infrastructure/cache');
 const jwt = require('jsonwebtoken');
 
 // Real JWT Authentication with caching
+// Reads token from httpOnly cookie first, falls back to Authorization header (for mobile/Capacitor)
 const authenticate = async (req, res, next) => {
     try {
-        const authHeader = req.headers.authorization;
-        if (!authHeader) return res.status(401).json({ error: 'No token provided' });
+        let token = null;
 
-        const token = authHeader.split(' ')[1];
-        if (!token) return res.status(401).json({ error: 'Invalid token format' });
+        // 1. Try httpOnly cookie first
+        if (req.cookies?.access_token) {
+            token = req.cookies.access_token;
+        }
+
+        // 2. Fall back to Authorization header (mobile/Capacitor)
+        if (!token) {
+            const authHeader = req.headers.authorization;
+            if (authHeader) {
+                token = authHeader.split(' ')[1];
+            }
+        }
+
+        if (!token) return res.status(401).json({ error: 'No token provided' });
 
         const secret = process.env.JWT_SECRET;
         if (!secret) {

@@ -3,9 +3,22 @@ const router = express.Router();
 const PostgresRepository = require('../../infrastructure/database/PostgresRepository');
 const authenticate = require('../middleware/auth');
 const { query } = require('../../infrastructure/database/db');
+const logger = require('../../infrastructure/logger');
+const { rateLimitCache } = require('../../infrastructure/cache');
 
 // Initialize Repository
 const formRepo = new PostgresRepository('forms');
+
+// Rate limiter for password check (5 req/min/IP)
+const passwordCheckLimiter = (req, res, next) => {
+    const key = `form_pw:${req.ip}`;
+    const current = rateLimitCache.get(key) || 0;
+    if (current >= 5) {
+        return res.status(429).json({ error: 'Too many password attempts. Try again later.' });
+    }
+    rateLimitCache.set(key, current + 1, 60);
+    next();
+};
 
 // Helper to map DB to Entity
 const toEntity = (row) => {
@@ -26,13 +39,14 @@ const toEntity = (row) => {
         responseLimit: row.response_limit,
         redirectUrl: row.redirect_url,
         // password: row.password, // REMOVED: Never send password to client
+        hasPassword: !!row.password,
         allowAudio: row.allow_audio,
         allowCamera: row.allow_camera,
         allowLocation: row.allow_location,
-        aiEnabled: row.ai_enabled, // Added AI Enabled
-        ai: row.ai || {}, // Added AI Config
+        aiEnabled: row.ai_enabled,
+        ai: row.ai || {},
         enableVoiceAgent: row.enable_voice_agent,
-        allowedIps: row.allowed_ips, // Added IP Whitelist
+        allowedIps: row.allowed_ips,
         createdAt: row.created_at,
         updatedAt: row.updated_at,
         createdBy: row.created_by,
@@ -71,7 +85,7 @@ router.get('/', authenticate, authenticate.checkPermission('forms', 'view'), asy
         res.json(forms);
     } catch (error) {
         debugLog(`GET /api/forms - ERROR: ${error.message} - Stack: ${error.stack}`);
-        console.error("GET /api/forms Error:", error);
+        logger.error("GET /api/forms Error", { error: error.message });
         res.status(500).json({ error: error.message });
     }
 });
@@ -112,7 +126,7 @@ router.get('/slug/:slug', async (req, res) => {
     try {
         const slug = req.params.slug;
         const result = await query(`
-            SELECT f.*, t.theme as tenant_theme 
+            SELECT f.*, t.theme as tenant_theme
             FROM forms f
             JOIN tenants t ON f.tenant_id = t.id
             WHERE f.slug = $1 OR (f.id::text = $1 AND f.slug IS NULL)
@@ -154,14 +168,25 @@ router.get('/:id', authenticate, authenticate.checkPermission('forms', 'view'), 
     }
 });
 
+// Helper: hash form password if provided
+async function hashFormPassword(password) {
+    if (!password) return null;
+    const bcrypt = require('bcryptjs');
+    const salt = await bcrypt.genSalt(10);
+    return bcrypt.hash(password, salt);
+}
+
 // Create new form
 router.post('/', authenticate, authenticate.checkPermission('forms', 'create'), async (req, res) => {
     try {
-        console.log("POST /api/forms - Creating Form. User:", req.user);
+        logger.info("POST /api/forms - Creating Form", { user: req.user?.username });
 
         // Generate Slug
         const crypto = require('crypto');
         const generateSlug = () => crypto.randomBytes(4).toString('hex').toUpperCase();
+
+        // Hash form password if provided
+        const hashedPassword = await hashFormPassword(req.body.password);
 
         // Map to DB columns
         const newForm = {
@@ -170,10 +195,11 @@ router.post('/', authenticate, authenticate.checkPermission('forms', 'create'), 
             slug: generateSlug(),
             definition: req.body.definition || {},
             is_published: req.body.isPublished || false,
-            ai: req.body.ai || {}, // Default AI Config
+            ai: req.body.ai || {},
             enable_voice_agent: req.body.enableVoiceAgent || false,
             allowed_ips: req.body.allowedIps || null,
-            status: 'draft', // Default status
+            password: hashedPassword,
+            status: 'draft',
             version: 1,
             created_at: new Date(),
             updated_at: new Date(),
@@ -182,10 +208,10 @@ router.post('/', authenticate, authenticate.checkPermission('forms', 'create'), 
         };
 
         const savedRow = await formRepo.create(newForm);
-        console.log("Form created successfully:", savedRow.id);
+        logger.info("Form created successfully", { formId: savedRow.id });
         res.status(201).json(toEntity(savedRow));
     } catch (error) {
-        console.error("Create Form Error:", error);
+        logger.error("Create Form Error", { error: error.message });
         res.status(500).json({ error: error.message });
     }
 });
@@ -196,9 +222,15 @@ router.put('/:id', authenticate, authenticate.checkPermission('forms', 'update')
         const existing = await formRepo.findById(req.params.id);
         if (!existing || existing.tenant_id !== req.user.tenant_id) return res.status(404).json({ error: 'Form not found' });
 
+        // Hash password if being updated
+        let passwordValue = existing.password;
+        if (req.body.password !== undefined) {
+            passwordValue = req.body.password ? await hashFormPassword(req.body.password) : null;
+        }
+
         const updatedData = {
             title: req.body.title || existing.title,
-            slug: req.body.slug || existing.slug, // Allow updating slug
+            slug: req.body.slug || existing.slug,
             definition: req.body.definition || existing.definition,
             is_published: req.body.isPublished !== undefined ? req.body.isPublished : existing.is_published,
             is_active: req.body.isActive !== undefined ? req.body.isActive : existing.is_active,
@@ -207,13 +239,13 @@ router.put('/:id', authenticate, authenticate.checkPermission('forms', 'update')
             end_date: req.body.endDate !== undefined ? req.body.endDate : existing.end_date,
             response_limit: req.body.responseLimit !== undefined ? req.body.responseLimit : existing.response_limit,
             redirect_url: req.body.redirectUrl !== undefined ? (req.body.redirectUrl && /^https?:\/\//.test(req.body.redirectUrl) ? req.body.redirectUrl : null) : existing.redirect_url,
-            password: req.body.password !== undefined ? req.body.password : existing.password,
+            password: passwordValue,
 
             allow_audio: req.body.allowAudio !== undefined ? req.body.allowAudio : existing.allow_audio,
             allow_camera: req.body.allowCamera !== undefined ? req.body.allowCamera : existing.allow_camera,
             allow_location: req.body.allowLocation !== undefined ? req.body.allowLocation : existing.allow_location,
-            ai_enabled: req.body.aiEnabled !== undefined ? req.body.aiEnabled : existing.ai_enabled, // Added Mapping
-            ai: req.body.ai !== undefined ? req.body.ai : existing.ai, // Added AI Config Update
+            ai_enabled: req.body.aiEnabled !== undefined ? req.body.aiEnabled : existing.ai_enabled,
+            ai: req.body.ai !== undefined ? req.body.ai : existing.ai,
             enable_voice_agent: req.body.enableVoiceAgent !== undefined ? req.body.enableVoiceAgent : existing.enable_voice_agent,
             allowed_ips: req.body.allowedIps !== undefined ? req.body.allowedIps : existing.allowed_ips,
             folder_id: req.body.folderId !== undefined ? req.body.folderId : existing.folder_id,
@@ -328,16 +360,29 @@ router.post('/:id/draft', authenticate, async (req, res) => {
     }
 });
 
-// Secure Password Check
-router.post('/:id/check-password', async (req, res) => {
+// Secure Password Check — rate limited, bcrypt compare
+router.post('/:id/check-password', passwordCheckLimiter, async (req, res) => {
     try {
         const { password } = req.body;
         const form = await formRepo.findById(req.params.id);
         if (!form) return res.status(404).json({ error: 'Form not found' });
 
-        if (!form.password || form.password === password) {
+        // No password set — allow access
+        if (!form.password) {
             return res.json({ success: true });
         }
+
+        const bcrypt = require('bcryptjs');
+
+        // Check if stored password is bcrypt-hashed
+        if (form.password.startsWith('$2a$') || form.password.startsWith('$2b$')) {
+            const isMatch = await bcrypt.compare(password, form.password);
+            if (isMatch) return res.json({ success: true });
+        } else {
+            // Legacy plaintext comparison (for un-migrated passwords)
+            if (form.password === password) return res.json({ success: true });
+        }
+
         res.status(401).json({ error: 'Incorrect password' });
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -360,7 +405,7 @@ router.delete('/:id', authenticate, authenticate.checkPermission('forms', 'delet
 
         res.status(204).send();
     } catch (error) {
-        console.error("Delete Error:", error);
+        logger.error("Delete Error", { error: error.message });
         res.status(500).json({ error: error.message });
     }
 });

@@ -1,37 +1,39 @@
 import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
 import axios from 'axios';
+import { getCurrentUser, logout as logoutService } from '../services/authService';
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(() => {
-    try {
-      const saved = localStorage.getItem('vtrustx_user');
-      if (!saved) return null;
-      const parsed = JSON.parse(saved);
-      return (parsed && parsed.token) ? parsed : null;
-    } catch { return null; }
-  });
-
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [idleTimeout, setIdleTimeout] = useState(0);
   const lastActivity = useRef(Date.now());
 
-  // Configure Axios Auth Header whenever user changes
+  // On mount, check if user is authenticated via httpOnly cookie
   useEffect(() => {
-    if (user && user.token) {
-      axios.defaults.headers.common['Authorization'] = `Bearer ${user.token}`;
-      localStorage.setItem('vtrustx_user', JSON.stringify(user));
-    } else {
-      delete axios.defaults.headers.common['Authorization'];
-      localStorage.removeItem('vtrustx_user');
-    }
-  }, [user]);
+    let cancelled = false;
+    (async () => {
+      try {
+        const data = await getCurrentUser();
+        if (!cancelled && data?.user) {
+          setUser(data);
+        }
+      } catch {
+        // Not authenticated
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
   const login = useCallback((userData) => {
     setUser(userData);
   }, []);
 
-  const logout = useCallback(() => {
+  const logout = useCallback(async () => {
+    await logoutService();
     setUser(null);
   }, []);
 
@@ -69,6 +71,7 @@ export function AuthProvider({ children }) {
     const checkInterval = setInterval(() => {
       const limit = idleTimeout * 60 * 1000;
       if (Date.now() - lastActivity.current > limit) {
+        logoutService();
         setUser(null);
         alert("Session expired due to inactivity.");
       }
@@ -76,10 +79,10 @@ export function AuthProvider({ children }) {
     return () => clearInterval(checkInterval);
   }, [user, idleTimeout]);
 
-  const isAuthenticated = !!(user && user.token);
+  const isAuthenticated = !!user;
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, isAuthenticated, setUser }}>
+    <AuthContext.Provider value={{ user, login, logout, isAuthenticated, setUser, loading }}>
       {children}
     </AuthContext.Provider>
   );

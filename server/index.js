@@ -6,6 +6,7 @@ try {
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const cookieParser = require('cookie-parser');
 const logger = require('./src/infrastructure/logger');
 const requestLogger = require('./src/api/middleware/requestLogger');
 const { errorHandler } = require('./src/api/middleware/errorHandler');
@@ -45,7 +46,19 @@ app.use('/api/exports', createRateLimiter(10));
 
 app.set('trust proxy', 1);
 app.use(helmet({
-    contentSecurityPolicy: false,
+    contentSecurityPolicy: {
+        directives: {
+            defaultSrc: ["'self'"],
+            scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://www.gstatic.com"],
+            styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+            fontSrc: ["'self'", "https://fonts.gstatic.com", "data:"],
+            imgSrc: ["'self'", "data:", "blob:", "https:"],
+            connectSrc: ["'self'", "https://generativelanguage.googleapis.com", "https://*.firebaseio.com", "https://*.googleapis.com"],
+            frameSrc: ["'self'"],
+            objectSrc: ["'none'"],
+            upgradeInsecureRequests: [],
+        },
+    },
     crossOriginEmbedderPolicy: false,
 }));
 
@@ -60,6 +73,54 @@ app.use(cors(corsOptions));
 
 app.use(express.json({ limit: '2mb' }));
 app.use(express.urlencoded({ limit: '2mb', extended: true }));
+app.use(cookieParser());
+
+// --- CSRF Protection (double-submit cookie pattern) ---
+const { doubleCsrf } = require('csrf-csrf');
+
+const csrfSecret = process.env.CSRF_SECRET || process.env.JWT_SECRET || 'vtrustx-csrf-fallback';
+const { generateToken, doubleCsrfProtection } = doubleCsrf({
+    getSecret: () => csrfSecret,
+    cookieName: '__csrf',
+    cookieOptions: {
+        httpOnly: true,
+        sameSite: 'lax',
+        secure: process.env.NODE_ENV === 'production',
+        path: '/',
+    },
+    getTokenFromRequest: (req) => req.headers['x-csrf-token'],
+});
+
+// CSRF token endpoint (must be before CSRF protection middleware)
+app.get('/api/auth/csrf-token', (req, res) => {
+    const token = generateToken(req, res);
+    res.json({ csrfToken: token });
+});
+
+// Apply CSRF protection to all state-changing requests, exclude safe methods and public endpoints
+app.use((req, res, next) => {
+    // Skip CSRF for safe methods
+    if (['GET', 'HEAD', 'OPTIONS'].includes(req.method)) return next();
+    // Skip CSRF for public endpoints that don't need it
+    const publicPaths = [
+        '/api/auth/login',
+        '/api/auth/register',
+        '/api/auth/google',
+        '/api/auth/google/callback',
+        '/api/auth/microsoft',
+        '/api/auth/microsoft/callback',
+        '/api/submissions',  // Public form submissions
+        '/api/crm/webhooks/',
+        '/api/crm/public/',
+        '/health',
+        '/ready',
+    ];
+    if (publicPaths.some(p => req.path.startsWith(p))) return next();
+    // Skip CSRF for form password check (public endpoint)
+    if (req.path.match(/^\/api\/forms\/[^/]+\/check-password$/)) return next();
+
+    doubleCsrfProtection(req, res, next);
+});
 
 // Request ID + structured HTTP logging (replaces console.log request logger)
 app.use(requestLogger);
@@ -99,8 +160,7 @@ app.use('/api/workflows', require('./src/api/routes/workflows'));
 app.use('/api/insights', require('./src/api/routes/insights'));
 app.use('/api/ai-providers', require('./src/api/routes/ai-providers'));
 const authenticate = require('./src/api/middleware/auth');
-app.use('/api/debug', authenticate, require('./src/api/routes/debug'));
-app.use('/api/debug-db', authenticate, require('./src/api/routes/debug_db'));
+// Debug routes removed for security — arbitrary SQL execution is not safe in production
 app.use('/api/auth', require('./src/api/routes/auth'));
 app.use('/api/plans', require('./src/api/routes/plans'));
 app.use('/api/subscriptions', require('./src/api/routes/subscriptions'));
@@ -172,6 +232,7 @@ async function runMigrations() {
         { name: 'quotas', fn: require('./src/scripts/ensure_quotas_table') },
         { name: 'cjm', fn: require('./src/scripts/ensure_cjm_tables') },
         { name: 'indexes', fn: require('./src/scripts/ensure_indexes') },
+        { name: 'refresh_tokens', fn: require('./src/scripts/ensure_refresh_tokens_table') },
     ];
 
     for (const script of scripts) {
