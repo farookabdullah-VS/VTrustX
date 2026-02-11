@@ -3,6 +3,7 @@ import axios from 'axios';
 import { read, utils } from 'xlsx';
 import { WebCallModal } from './WebCallModal';
 import { useToast } from './common/Toast';
+import { Skeleton } from './common/Skeleton';
 
 export function SurveyAudience({ form, onBack }) {
     const toast = useToast();
@@ -216,9 +217,24 @@ export function SurveyAudience({ form, onBack }) {
                         </tr>
                     </thead>
                     <tbody>
-                        {loading ? <tr><td colSpan="4" style={{ padding: '30px', textAlign: 'center' }}>Loading...</td></tr> :
-                            audience.length === 0 ? <tr><td colSpan="4" style={{ padding: '40px', textAlign: 'center', color: '#94a3b8' }}>No contacts in this list. Import some!</td></tr> :
-                                audience.map(row => (
+                        {loading ? (
+                            <>
+                                {Array.from({ length: 5 }).map((_, i) => (
+                                    <tr key={i}>
+                                        <td style={{ padding: '15px' }}><Skeleton width="120px" height="16px" /></td>
+                                        <td style={{ padding: '15px' }}>
+                                            <Skeleton width="180px" height="14px" style={{ marginBottom: '6px' }} />
+                                            <Skeleton width="140px" height="12px" />
+                                        </td>
+                                        <td style={{ padding: '15px' }}><Skeleton width="80px" height="24px" borderRadius="20px" /></td>
+                                        <td style={{ padding: '15px', textAlign: 'right' }}><Skeleton width="60px" height="20px" /></td>
+                                    </tr>
+                                ))}
+                            </>
+                        ) : audience.length === 0 ? (
+                            <tr><td colSpan="4" style={{ padding: '40px', textAlign: 'center', color: '#94a3b8' }}>No contacts in this list. Import some!</td></tr>
+                        ) : (
+                            audience.map(row => (
                                     <tr key={row.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
                                         <td style={{ padding: '15px', fontWeight: '500' }}>{row.name}</td>
                                         <td style={{ padding: '15px', color: '#64748b' }}>
@@ -239,7 +255,8 @@ export function SurveyAudience({ form, onBack }) {
                                             <button onClick={() => removeContact(row.contact_id)} title="Remove" style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.2em', color: '#ef4444' }}>🗑️</button>
                                         </td>
                                     </tr>
-                                ))}
+                                ))
+                        )}
                     </tbody>
                 </table>
             </div>

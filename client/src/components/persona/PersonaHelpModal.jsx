@@ -97,7 +97,7 @@ export function PersonaHelpModal({ onClose }) {
                 background: 'white', width: '1000px', maxWidth: '95%', height: '80vh',
                 borderRadius: '12px', display: 'flex', flexDirection: 'column',
                 boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
-                overflow: 'hidden', fontFamily: "'Inter', sans-serif"
+                overflow: 'hidden', fontFamily: "'Outfit', sans-serif"
             }}>
                 {/* HEADER */}
                 <div style={{ padding: '24px 32px', borderBottom: '1px solid #e5e7eb', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', background: '#ffffff' }}>

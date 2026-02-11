@@ -81,7 +81,7 @@ function EmptyState({ icon: Icon, title, subtitle }) {
             <h3 style={{
                 color: 'var(--text-color)', fontWeight: 700, fontSize: 16,
                 margin: '0 0 6px',
-                fontFamily: 'var(--font-family, "Outfit", "Google Sans", "Inter", system-ui, sans-serif)',
+                fontFamily: 'var(--font-family, "Outfit", "Google Sans", system-ui, sans-serif)',
             }}>
                 {title}
             </h3>
@@ -97,7 +97,7 @@ function EmptyState({ icon: Icon, title, subtitle }) {
 // ---------------------------------------------------------------------------
 // Shared style constants
 // ---------------------------------------------------------------------------
-const FONT = 'var(--font-family, "Outfit", "Google Sans", "Inter", system-ui, sans-serif)';
+const FONT = 'var(--font-family, "Outfit", "Google Sans", system-ui, sans-serif)';
 const RADIUS = 'var(--border-radius, 24px)';
 const TRANSITION = 'var(--transition-fast, 0.2s cubic-bezier(0.2, 0, 0, 1))';
 

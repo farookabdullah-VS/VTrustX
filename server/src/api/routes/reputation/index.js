@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { query } = require('../../../infrastructure/database/db');
+const logger = require('../../../infrastructure/logger');
 // We would typically use a dedicated scraper service or 3rd party API here.
 // For MVP, we will simulate the scraping/API connection.
 
@@ -13,7 +14,8 @@ router.get('/sources', async (req, res) => {
             { id: 2, platform: 'Trustpilot', name: 'VTrustX Corporate', last_sync: new Date(), review_count: 450, avg_rating: 3.8 }
         ]);
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        logger.error('Failed to fetch reputation sources', { error: err.message });
+        res.status(500).json({ error: 'Failed to fetch reputation sources' });
     }
 });
 
@@ -44,7 +46,8 @@ router.get('/reviews', async (req, res) => {
         ];
         res.json(mockReviews);
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        logger.error('Failed to fetch reviews', { error: err.message });
+        res.status(500).json({ error: 'Failed to fetch reviews' });
     }
 });
 
@@ -80,11 +83,11 @@ router.get('/benchmarks', async (req, res) => {
 router.post('/sync', async (req, res) => {
     // Determine source
     const { sourceId } = req.body;
-    console.log(`[Reputation] Syncing source ${sourceId}...`);
+    logger.info('Syncing reputation source', { sourceId });
 
     // Simulation delay
     setTimeout(async () => {
-        console.log(`[Reputation] Sync complete for ${sourceId}.`);
+        logger.info('Reputation sync complete', { sourceId });
 
         // SIMULATE NEW NEGATIVE REVIEW
         const newReview = { rating: 1, content: "Terrible service today!", source: 'Google' };
@@ -97,9 +100,9 @@ router.post('/sync', async (req, res) => {
                 await query(`INSERT INTO tickets (ticket_code, subject, description, priority, status, channel, created_at, tenant_id)
                               VALUES ($1, $2, $3, 'high', 'new', 'review', NOW(), 'default')`,
                     [code, `Negative Review Alert: ${newReview.source}`, newReview.content]);
-                console.log(`[Reputation] 🚨 Auto-Ticket Created for 1-Star Review: ${code}`);
+                logger.info('Auto-ticket created for negative review', { ticketCode: code });
             } catch (e) {
-                console.error("Failed to crate auto ticket", e);
+                logger.error('Failed to create auto ticket', { error: e.message });
             }
         }
 

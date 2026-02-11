@@ -551,7 +551,7 @@ export function ModernPersonaEditor({ persona, setPersona: setParentPersona, per
     };
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: '#f8fafc', fontFamily: "'Inter', sans-serif" }}>
+        <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: '#f8fafc', fontFamily: "'Outfit', sans-serif" }}>
             <div className="no-print" style={{ height: '50px', background: 'var(--primary-color, #0f172a)', borderBottom: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 20px', color: 'white' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                     <div style={{ fontWeight: 'bold' }}>Persona Studio</div>

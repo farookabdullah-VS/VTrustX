@@ -5,7 +5,7 @@ const passport = require('passport');
 const logger = require('../../infrastructure/logger');
 const User = require('../../core/entities/User');
 const PostgresRepository = require('../../infrastructure/database/PostgresRepository');
-const { query } = require('../../infrastructure/database/db');
+const { query, transaction } = require('../../infrastructure/database/db');
 const validate = require('../middleware/validate');
 const { registerSchema, loginSchema, changePasswordSchema } = require('../schemas/auth.schemas');
 const { loginAttemptCache } = require('../../infrastructure/cache');
@@ -85,7 +85,47 @@ async function issueTokens(res, user) {
     }
 }
 
-// Register
+/**
+ * @swagger
+ * /api/auth/register:
+ *   post:
+ *     tags: [Auth]
+ *     summary: Register a new user
+ *     description: Creates a new tenant and admin user. The tenant and user are created atomically within a database transaction.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [username, password]
+ *             properties:
+ *               username:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *                 format: password
+ *     responses:
+ *       201:
+ *         description: User registered successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: integer
+ *                 username:
+ *                   type: string
+ *                 role:
+ *                   type: string
+ *                 tenant_id:
+ *                   type: integer
+ *       409:
+ *         description: Username already exists
+ *       500:
+ *         description: Server error
+ */
 router.post('/register', validate(registerSchema), async (req, res) => {
     try {
         const { username, password } = req.body;
@@ -101,25 +141,29 @@ router.post('/register', validate(registerSchema), async (req, res) => {
         const salt = await bcrypt.genSalt(10);
         const passwordHash = await bcrypt.hash(password, salt);
 
-        // Create Tenant
-        const tenantName = `${username}'s Organization`;
-        const newTenant = await tenantRepo.create({
-            name: tenantName,
-            plan: 'free',
-            subscription_status: 'active',
-            created_at: new Date()
+        // Create Tenant + User atomically in a transaction
+        const saved = await transaction(async (client) => {
+            const txTenantRepo = tenantRepo.withClient(client);
+            const txUserRepo = userRepo.withClient(client);
+
+            const tenantName = `${username}'s Organization`;
+            const newTenant = await txTenantRepo.create({
+                name: tenantName,
+                plan: 'free',
+                subscription_status: 'active',
+                created_at: new Date()
+            });
+
+            const newUser = {
+                username,
+                password: passwordHash,
+                role: 'admin',
+                tenant_id: newTenant.id,
+                created_at: new Date()
+            };
+
+            return await txUserRepo.create(newUser);
         });
-
-        // Create User
-        const newUser = {
-            username,
-            password: passwordHash,
-            role: 'admin',
-            tenant_id: newTenant.id,
-            created_at: new Date()
-        };
-
-        const saved = await userRepo.create(newUser);
 
         // Return without password
         const { password: _, ...safeUser } = saved;
@@ -131,7 +175,52 @@ router.post('/register', validate(registerSchema), async (req, res) => {
     }
 });
 
-// Login — sets httpOnly cookies, implements account lockout
+/**
+ * @swagger
+ * /api/auth/login:
+ *   post:
+ *     tags: [Auth]
+ *     summary: Login
+ *     description: Authenticates a user with username and password. Sets httpOnly cookies for access and refresh tokens. Implements account lockout after 5 failed attempts.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [username, password]
+ *             properties:
+ *               username:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *                 format: password
+ *     responses:
+ *       200:
+ *         description: Login successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 user:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: integer
+ *                     username:
+ *                       type: string
+ *                     role:
+ *                       type: string
+ *                     tenant_id:
+ *                       type: integer
+ *       401:
+ *         description: Invalid credentials
+ *       429:
+ *         description: Account temporarily locked due to too many failed attempts
+ *       500:
+ *         description: Server error
+ */
 router.post('/login', validate(loginSchema), async (req, res) => {
     try {
         const { username, password } = req.body;
@@ -189,7 +278,37 @@ router.post('/login', validate(loginSchema), async (req, res) => {
     }
 });
 
-// Refresh — rotates refresh token, issues new access token
+/**
+ * @swagger
+ * /api/auth/refresh:
+ *   post:
+ *     tags: [Auth]
+ *     summary: Refresh access token
+ *     description: Rotates the refresh token and issues a new access token. The old refresh token is revoked. Requires a valid refresh_token cookie.
+ *     responses:
+ *       200:
+ *         description: Token refreshed successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 user:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: integer
+ *                     username:
+ *                       type: string
+ *                     role:
+ *                       type: string
+ *                     tenant_id:
+ *                       type: integer
+ *       401:
+ *         description: No refresh token, or token is invalid/expired
+ *       500:
+ *         description: Server error
+ */
 router.post('/refresh', async (req, res) => {
     try {
         const refreshToken = req.cookies?.refresh_token;
@@ -238,7 +357,26 @@ router.post('/refresh', async (req, res) => {
     }
 });
 
-// Logout — clears cookies, revokes refresh token
+/**
+ * @swagger
+ * /api/auth/logout:
+ *   post:
+ *     tags: [Auth]
+ *     summary: Logout
+ *     description: Clears access and refresh token cookies. Revokes the refresh token in the database on a best-effort basis.
+ *     responses:
+ *       200:
+ *         description: Logged out successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ */
 router.post('/logout', async (req, res) => {
     try {
         const refreshToken = req.cookies?.refresh_token;
@@ -259,8 +397,37 @@ router.post('/logout', async (req, res) => {
 });
 
 // OAUTH ROUTES
+
+/**
+ * @swagger
+ * /api/auth/google:
+ *   get:
+ *     tags: [Auth]
+ *     summary: Google OAuth redirect
+ *     description: Initiates Google OAuth2 flow. Redirects the user to Google's consent screen requesting profile and email scopes.
+ *     responses:
+ *       302:
+ *         description: Redirects to Google OAuth consent screen
+ */
 router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'], session: false }));
 
+/**
+ * @swagger
+ * /api/auth/google/callback:
+ *   get:
+ *     tags: [Auth]
+ *     summary: Google OAuth callback
+ *     description: Handles the callback from Google OAuth. On success, issues access and refresh token cookies and redirects to the app. On failure, redirects to login with an error.
+ *     parameters:
+ *       - in: query
+ *         name: code
+ *         schema:
+ *           type: string
+ *         description: Authorization code from Google
+ *     responses:
+ *       302:
+ *         description: Redirects to /login?oauth=success on success, or /login?error=auth_failed on failure
+ */
 router.get('/google/callback',
     passport.authenticate('google', { session: false, failureRedirect: '/login?error=auth_failed' }),
     async function (req, res) {
@@ -270,7 +437,36 @@ router.get('/google/callback',
     }
 );
 
+/**
+ * @swagger
+ * /api/auth/microsoft:
+ *   get:
+ *     tags: [Auth]
+ *     summary: Microsoft OAuth redirect
+ *     description: Initiates Microsoft OAuth2 flow. Redirects the user to Microsoft's consent screen.
+ *     responses:
+ *       302:
+ *         description: Redirects to Microsoft OAuth consent screen
+ */
 router.get('/microsoft', passport.authenticate('microsoft', { session: false }));
+
+/**
+ * @swagger
+ * /api/auth/microsoft/callback:
+ *   get:
+ *     tags: [Auth]
+ *     summary: Microsoft OAuth callback
+ *     description: Handles the callback from Microsoft OAuth. On success, issues access and refresh token cookies and redirects to the app. On failure, redirects to login with an error.
+ *     parameters:
+ *       - in: query
+ *         name: code
+ *         schema:
+ *           type: string
+ *         description: Authorization code from Microsoft
+ *     responses:
+ *       302:
+ *         description: Redirects to /login?oauth=success on success, or /login?error=auth_failed_ms on failure
+ */
 router.get('/microsoft/callback',
     passport.authenticate('microsoft', { session: false, failureRedirect: '/login?error=auth_failed_ms' }),
     async function (req, res) {
@@ -282,7 +478,37 @@ router.get('/microsoft/callback',
 
 const authenticate = require('../middleware/auth');
 
-// /me — reads from httpOnly cookie, returns user info
+/**
+ * @swagger
+ * /api/auth/me:
+ *   get:
+ *     tags: [Auth]
+ *     summary: Get current user
+ *     description: Returns the currently authenticated user's profile by reading the httpOnly access_token cookie and verifying the JWT.
+ *     responses:
+ *       200:
+ *         description: Current user info
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 user:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: integer
+ *                     username:
+ *                       type: string
+ *                     role:
+ *                       type: string
+ *                     tenant_id:
+ *                       type: integer
+ *       401:
+ *         description: No auth cookie, user not found, or invalid/expired token
+ *       500:
+ *         description: JWT_SECRET not configured
+ */
 router.get('/me', async (req, res) => {
     try {
         const token = req.cookies?.access_token;
@@ -303,6 +529,48 @@ router.get('/me', async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ * /api/auth/change-password:
+ *   post:
+ *     tags: [Auth]
+ *     summary: Change password
+ *     description: Changes the authenticated user's password. Requires the current password for verification. The new password is bcrypt-hashed before storage.
+ *     security:
+ *       - cookieAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [currentPassword, newPassword]
+ *             properties:
+ *               currentPassword:
+ *                 type: string
+ *                 format: password
+ *               newPassword:
+ *                 type: string
+ *                 format: password
+ *     responses:
+ *       200:
+ *         description: Password updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *       401:
+ *         description: Incorrect current password or not authenticated
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Server error
+ */
 router.post('/change-password', authenticate, validate(changePasswordSchema), async (req, res) => {
     try {
         const { currentPassword, newPassword } = req.body;

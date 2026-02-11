@@ -129,7 +129,7 @@ export function AISurveyor() {
             }, 1500);
 
         } catch (e) {
-            alert("Failed to start: " + e.message);
+            toast.error("Failed to start: " + e.message);
             setIsCallActive(false);
         }
     };
@@ -154,7 +154,7 @@ export function AISurveyor() {
                     agent: 'AISurveyor',
                     duration: 'unknown'
                 }
-            }).then(() => alert("Call ended. Transcript saved to Submissions."))
+            }).then(() => toast.success("Call ended. Transcript saved to Submissions."))
                 .catch(err => console.error("Failed to save transcript", err));
         }
     };

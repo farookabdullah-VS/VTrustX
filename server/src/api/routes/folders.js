@@ -2,12 +2,38 @@ const express = require('express');
 const router = express.Router();
 const { query } = require('../../infrastructure/database/db');
 const authenticate = require('../middleware/auth');
+const validate = require('../middleware/validate');
+const { createFolderSchema, updateFolderSchema } = require('../schemas/folders.schemas');
 const { v4: uuidv4 } = require('uuid');
 const logger = require('../../infrastructure/logger');
 
 /**
- * GET /api/folders
- * List all folders for the current tenant/user
+ * @swagger
+ * /api/folders:
+ *   get:
+ *     summary: List folders
+ *     description: Retrieve all folders for the current tenant/user. Optionally filter by type (private or shared).
+ *     tags: [Folders]
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: type
+ *         schema:
+ *           type: string
+ *           enum: [private, shared]
+ *         description: Filter by folder type
+ *     responses:
+ *       200:
+ *         description: Array of folders
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Folder'
+ *       500:
+ *         description: Internal server error
  */
 router.get('/', authenticate, async (req, res) => {
     try {
@@ -40,15 +66,51 @@ router.get('/', authenticate, async (req, res) => {
 
     } catch (err) {
         logger.error('List folders error', { error: err.message });
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ error: 'Failed to retrieve folders' });
     }
 });
 
 /**
- * POST /api/folders
- * Create a new folder
+ * @swagger
+ * /api/folders:
+ *   post:
+ *     summary: Create folder
+ *     description: Create a new folder for the authenticated user within their tenant.
+ *     tags: [Folders]
+ *     security:
+ *       - cookieAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 minLength: 1
+ *                 maxLength: 255
+ *                 description: Folder name
+ *               type:
+ *                 type: string
+ *                 enum: [private, shared]
+ *                 default: private
+ *                 description: Folder visibility type
+ *     responses:
+ *       201:
+ *         description: Folder created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Folder'
+ *       400:
+ *         description: Validation error
+ *       500:
+ *         description: Internal server error
  */
-router.post('/', authenticate, async (req, res) => {
+router.post('/', authenticate, validate(createFolderSchema), async (req, res) => {
     try {
         const { name, type } = req.body; // type: 'private' | 'shared'
         logger.info(`[Folders] Creating folder '${name}' for user ${req.user?.id}`);
@@ -73,15 +135,50 @@ router.post('/', authenticate, async (req, res) => {
 
     } catch (err) {
         logger.error('Create folder error', { error: err.message });
-        res.status(500).json({ error: err.message, stack: err.stack });
+        res.status(500).json({ error: 'Failed to create folder' });
     }
 });
 
 /**
- * PUT /api/folders/:id
- * Rename folder
+ * @swagger
+ * /api/folders/{id}:
+ *   put:
+ *     summary: Update folder
+ *     description: Rename an existing folder. The user must be the folder creator or belong to the same tenant.
+ *     tags: [Folders]
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Folder ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 minLength: 1
+ *                 maxLength: 255
+ *                 description: New folder name
+ *     responses:
+ *       200:
+ *         description: Folder updated successfully
+ *       400:
+ *         description: Validation error
+ *       500:
+ *         description: Internal server error
  */
-router.put('/:id', authenticate, async (req, res) => {
+router.put('/:id', authenticate, validate(updateFolderSchema), async (req, res) => {
     try {
         const { name } = req.body;
         if (!name) return res.status(400).json({ error: 'Name is required' });
@@ -100,13 +197,32 @@ router.put('/:id', authenticate, async (req, res) => {
 
     } catch (err) {
         logger.error('Update folder error', { error: err.message });
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ error: 'Failed to update folder' });
     }
 });
 
 /**
- * DELETE /api/folders/:id
- * Delete folder
+ * @swagger
+ * /api/folders/{id}:
+ *   delete:
+ *     summary: Delete folder
+ *     description: Delete a folder. The user must be the folder creator or belong to the same tenant.
+ *     tags: [Folders]
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Folder ID
+ *     responses:
+ *       200:
+ *         description: Folder deleted successfully
+ *       500:
+ *         description: Internal server error
  */
 router.delete('/:id', authenticate, async (req, res) => {
     try {
@@ -119,7 +235,7 @@ router.delete('/:id', authenticate, async (req, res) => {
 
     } catch (err) {
         logger.error('Delete folder error', { error: err.message });
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ error: 'Failed to delete folder' });
     }
 });
 

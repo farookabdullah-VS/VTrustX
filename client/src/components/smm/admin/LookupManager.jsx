@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Settings, Plus, Save, Edit2, Trash2 } from 'lucide-react';
+import { toast } from '../../common/Toast';
 
 /**
  * 9.5 Lookups Manager (Admin)
@@ -58,7 +59,7 @@ export function LookupManager() {
             });
             fetchValues(selectedMaster.lookup_code);
         } catch (err) {
-            alert("Failed to create value");
+            toast.error("Failed to create value");
         }
     };
 

@@ -5,6 +5,7 @@ const PostgresRepository = require('../../infrastructure/database/PostgresReposi
 const providerRepo = new PostgresRepository('ai_providers');
 const authenticate = require('../middleware/auth');
 const { encrypt } = require('../../infrastructure/security/encryption');
+const logger = require('../../infrastructure/logger');
 
 // Get all providers
 router.get('/', authenticate, async (req, res) => {
@@ -21,7 +22,8 @@ router.get('/', authenticate, async (req, res) => {
         }));
         res.json(safeProviders);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        logger.error('Failed to fetch AI providers', { error: error.message });
+        res.status(500).json({ error: 'Failed to fetch AI providers' });
     }
 });
 
@@ -41,7 +43,8 @@ router.get('/active', authenticate, async (req, res) => {
             createdAt: active.created_at
         });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        logger.error('Failed to fetch active AI provider', { error: error.message });
+        res.status(500).json({ error: 'Failed to fetch active AI provider' });
     }
 });
 
@@ -64,7 +67,8 @@ router.post('/', authenticate, async (req, res) => {
         const saved = await providerRepo.create(newConfig);
         res.status(201).json(saved);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        logger.error('Failed to create AI provider', { error: error.message });
+        res.status(500).json({ error: 'Failed to create AI provider' });
     }
 });
 
@@ -74,7 +78,8 @@ router.delete('/:id', authenticate, async (req, res) => {
         await providerRepo.delete(req.params.id);
         res.json({ success: true });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        logger.error('Failed to delete AI provider', { error: error.message });
+        res.status(500).json({ error: 'Failed to delete AI provider' });
     }
 });
 
@@ -102,7 +107,8 @@ router.post('/:id/activate', authenticate, async (req, res) => {
 
         res.json(updated);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        logger.error('Failed to activate AI provider', { error: error.message });
+        res.status(500).json({ error: 'Failed to activate AI provider' });
     }
 });
 

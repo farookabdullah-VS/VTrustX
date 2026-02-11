@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import VideoAgentInterface from './VideoAgentInterface';
 import { Video, Play } from 'lucide-react';
+import { useToast } from './common/Toast';
 
 export function AIVideoAgentPage() {
+    const toast = useToast();
     const [forms, setForms] = useState([]);
     const [selectedFormId, setSelectedFormId] = useState('');
     const [isSessionActive, setIsSessionActive] = useState(false);
@@ -13,7 +15,10 @@ export function AIVideoAgentPage() {
     }, []);
 
     const startSession = () => {
-        if (!selectedFormId) return alert("Please select a survey.");
+        if (!selectedFormId) {
+            toast.warning("Please select a survey.");
+            return;
+        }
         setIsSessionActive(true);
     };
 

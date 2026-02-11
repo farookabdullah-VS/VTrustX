@@ -284,3 +284,10 @@
 .sidebar-resizer-active .resizer-grip {
     opacity: 1;
 }
+
+/* Mobile: hide sidebar completely */
+@media (max-width: 768px) {
+    .sidebar {
+        display: none !important;
+    }
+}

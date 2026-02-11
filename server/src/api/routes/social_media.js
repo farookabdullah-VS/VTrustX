@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { query } = require('../../infrastructure/database/db');
 const authenticate = require('../middleware/auth');
+const logger = require('../../infrastructure/logger');
 
 // ==================== CAMPAIGNS ====================
 
@@ -32,7 +33,7 @@ router.get('/campaigns', authenticate, async (req, res) => {
 
         res.json(result.rows);
     } catch (err) {
-        console.error('[SOCIAL_MEDIA] Get Campaigns Error:', err);
+        logger.error('Failed to get campaigns', { error: err.message });
         res.status(500).json({ error: err.message });
     }
 });
@@ -52,7 +53,7 @@ router.get('/campaigns/:id', authenticate, async (req, res) => {
 
         res.json(result.rows[0]);
     } catch (err) {
-        console.error('[SOCIAL_MEDIA] Get Campaign Error:', err);
+        logger.error('Failed to get campaign', { error: err.message });
         res.status(500).json({ error: err.message });
     }
 });
@@ -109,7 +110,7 @@ router.post('/campaigns', authenticate, async (req, res) => {
 
         res.status(201).json(result.rows[0]);
     } catch (err) {
-        console.error('[SOCIAL_MEDIA] Create Campaign Error:', err);
+        logger.error('Failed to create campaign', { error: err.message });
         res.status(500).json({ error: err.message });
     }
 });
@@ -187,7 +188,7 @@ router.put('/campaigns/:id', authenticate, async (req, res) => {
 
         res.json(result.rows[0]);
     } catch (err) {
-        console.error('[SOCIAL_MEDIA] Update Campaign Error:', err);
+        logger.error('Failed to update campaign', { error: err.message });
         res.status(500).json({ error: err.message });
     }
 });
@@ -209,7 +210,7 @@ router.delete('/campaigns/:id', authenticate, async (req, res) => {
 
         res.status(204).send();
     } catch (err) {
-        console.error('[SOCIAL_MEDIA] Delete Campaign Error:', err);
+        logger.error('Failed to delete campaign', { error: err.message });
         res.status(500).json({ error: err.message });
     }
 });
@@ -234,7 +235,7 @@ router.get('/campaigns/:campaignId/posts', authenticate, async (req, res) => {
 
         res.json(result.rows);
     } catch (err) {
-        console.error('[SOCIAL_MEDIA] Get Posts Error:', err);
+        logger.error('Failed to get posts', { error: err.message });
         res.status(500).json({ error: err.message });
     }
 });
@@ -281,7 +282,7 @@ router.post('/posts', authenticate, async (req, res) => {
 
         res.status(201).json(result.rows[0]);
     } catch (err) {
-        console.error('[SOCIAL_MEDIA] Create Post Error:', err);
+        logger.error('Failed to create post', { error: err.message });
         res.status(500).json({ error: err.message });
     }
 });
@@ -309,7 +310,7 @@ router.get('/analytics/overview', authenticate, async (req, res) => {
 
         res.json(result.rows[0]);
     } catch (err) {
-        console.error('[SOCIAL_MEDIA] Analytics Error:', err);
+        logger.error('Failed to get analytics overview', { error: err.message });
         res.status(500).json({ error: err.message });
     }
 });
@@ -337,7 +338,7 @@ router.get('/analytics/campaigns/:id', authenticate, async (req, res) => {
 
         res.json(result.rows[0]);
     } catch (err) {
-        console.error('[SOCIAL_MEDIA] Campaign Analytics Error:', err);
+        logger.error('Failed to get campaign analytics', { error: err.message });
         res.status(500).json({ error: err.message });
     }
 });

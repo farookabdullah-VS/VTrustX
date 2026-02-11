@@ -124,14 +124,14 @@ describe('CJM Routes', () => {
 
     describe('PUT /:id (update map)', () => {
         it('should auto-create version on update', async () => {
-            // Current data for versioning
-            mockQuery.mockResolvedValueOnce({ rows: [{ data: { stages: [] } }] });
-            // Version count
-            mockQuery.mockResolvedValueOnce({ rows: [{ max_ver: 2 }] });
-            // Insert version
-            mockQuery.mockResolvedValueOnce({ rows: [] });
-            // Update map
-            mockQuery.mockResolvedValueOnce({ rows: [] });
+            const mockClient = {
+                query: jest.fn()
+                    .mockResolvedValueOnce({ rows: [{ data: { stages: [] } }] }) // current data
+                    .mockResolvedValueOnce({ rows: [{ max_ver: 2 }] }) // version count
+                    .mockResolvedValueOnce({ rows: [] }) // insert version
+                    .mockResolvedValueOnce({ rows: [] }), // update map
+            };
+            mockTransaction.mockImplementation(async (cb) => cb(mockClient));
 
             const res = await request(app)
                 .put('/api/cjm/uuid-1')
@@ -139,8 +139,9 @@ describe('CJM Routes', () => {
                 .send({ title: 'Updated', data: { stages: [{ id: 's1' }] } });
 
             expect(res.status).toBe(200);
+            expect(mockTransaction).toHaveBeenCalled();
             // Should have inserted a version with version_number 3
-            expect(mockQuery.mock.calls[2][1]).toContain(3);
+            expect(mockClient.query.mock.calls[2][1]).toContain(3);
         });
     });
 

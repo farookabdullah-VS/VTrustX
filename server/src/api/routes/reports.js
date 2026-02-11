@@ -2,7 +2,51 @@ const express = require('express');
 const router = express.Router();
 const { query } = require('../../infrastructure/database/db');
 const authenticate = require('../middleware/auth');
+const logger = require('../../infrastructure/logger');
 
+/**
+ * @swagger
+ * /api/reports/crm-stats:
+ *   get:
+ *     summary: Get CRM dashboard statistics
+ *     tags: [Reports]
+ *     security:
+ *       - cookieAuth: []
+ *     responses:
+ *       200:
+ *         description: CRM statistics including status counts, performance, priority, channel, and SLA data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 stats:
+ *                   type: object
+ *                   description: Ticket counts by status
+ *                 performance:
+ *                   type: object
+ *                   properties:
+ *                     avgResolutionUrl:
+ *                       type: number
+ *                       description: Average resolution time in hours
+ *                 byPriority:
+ *                   type: object
+ *                   description: Ticket counts by priority
+ *                 byChannel:
+ *                   type: object
+ *                   description: Ticket counts by channel
+ *                 sla:
+ *                   type: object
+ *                   properties:
+ *                     breached:
+ *                       type: integer
+ *                     complianceRate:
+ *                       type: integer
+ *       401:
+ *         description: Not authenticated
+ *       500:
+ *         description: Server error
+ */
 // CRM DASHBOARD STATS (Enhanced)
 router.get('/crm-stats', authenticate, async (req, res) => {
     try {
@@ -63,6 +107,43 @@ router.get('/crm-stats', authenticate, async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ * /api/reports/agent-performance:
+ *   get:
+ *     summary: Get agent performance metrics
+ *     tags: [Reports]
+ *     security:
+ *       - cookieAuth: []
+ *     responses:
+ *       200:
+ *         description: List of agents with performance metrics
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   user_id:
+ *                     type: integer
+ *                   username:
+ *                     type: string
+ *                   total_tickets:
+ *                     type: integer
+ *                   resolved:
+ *                     type: integer
+ *                   sla_breaches:
+ *                     type: integer
+ *                   avg_resolution_hours:
+ *                     type: number
+ *                   tickets_this_week:
+ *                     type: integer
+ *       401:
+ *         description: Not authenticated
+ *       500:
+ *         description: Server error
+ */
 // AGENT PERFORMANCE
 router.get('/agent-performance', authenticate, async (req, res) => {
     try {
@@ -91,6 +172,69 @@ router.get('/agent-performance', authenticate, async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ * /api/reports/sla-compliance:
+ *   get:
+ *     summary: Get SLA compliance report
+ *     tags: [Reports]
+ *     security:
+ *       - cookieAuth: []
+ *     responses:
+ *       200:
+ *         description: SLA compliance data with overall, weekly, and priority breakdowns
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 overall:
+ *                   type: object
+ *                   properties:
+ *                     total:
+ *                       type: integer
+ *                     metSla:
+ *                       type: integer
+ *                     breached:
+ *                       type: integer
+ *                     complianceRate:
+ *                       type: integer
+ *                 byWeek:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       week:
+ *                         type: string
+ *                         format: date-time
+ *                       total:
+ *                         type: integer
+ *                       breached:
+ *                         type: integer
+ *                       met:
+ *                         type: integer
+ *                       complianceRate:
+ *                         type: integer
+ *                 byPriority:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       priority:
+ *                         type: string
+ *                       total:
+ *                         type: integer
+ *                       breached:
+ *                         type: integer
+ *                       met:
+ *                         type: integer
+ *                       complianceRate:
+ *                         type: integer
+ *       401:
+ *         description: Not authenticated
+ *       500:
+ *         description: Server error
+ */
 // SLA COMPLIANCE
 router.get('/sla-compliance', authenticate, async (req, res) => {
     try {
@@ -156,6 +300,34 @@ router.get('/sla-compliance', authenticate, async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ * /api/reports/crm-trends:
+ *   get:
+ *     summary: Get CRM ticket volume trends over time
+ *     tags: [Reports]
+ *     security:
+ *       - cookieAuth: []
+ *     responses:
+ *       200:
+ *         description: Daily ticket counts for the last 30 days
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   date:
+ *                     type: string
+ *                     format: date-time
+ *                   count:
+ *                     type: integer
+ *       401:
+ *         description: Not authenticated
+ *       500:
+ *         description: Server error
+ */
 // CRM TRENDS (Volume over time)
 router.get('/crm-trends', authenticate, async (req, res) => {
     try {
@@ -180,6 +352,44 @@ router.get('/crm-trends', authenticate, async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ * /api/reports/powerbi:
+ *   get:
+ *     summary: Get Power BI data feed
+ *     tags: [Reports]
+ *     parameters:
+ *       - in: query
+ *         name: secret
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Power BI integration API key
+ *     responses:
+ *       200:
+ *         description: Flattened survey response data for Power BI consumption
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   Survey:
+ *                     type: string
+ *                   Timestamp:
+ *                     type: string
+ *                     format: date-time
+ *                   Location:
+ *                     type: string
+ *                     nullable: true
+ *       401:
+ *         description: Missing secret key
+ *       403:
+ *         description: Invalid or inactive access key
+ *       500:
+ *         description: Server error
+ */
 // Power BI OData-like Feed or Simple JSON
 router.get('/powerbi', async (req, res) => {
     try {
@@ -286,6 +496,36 @@ function sanitizeSpssName(name, usedNames) {
     return finalName;
 }
 
+/**
+ * @swagger
+ * /api/reports/export/spss/{formId}:
+ *   get:
+ *     summary: Export form submissions in SPSS (.sav) format
+ *     tags: [Reports]
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: formId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID of the form to export
+ *     responses:
+ *       200:
+ *         description: SPSS binary file download
+ *         content:
+ *           application/octet-stream:
+ *             schema:
+ *               type: string
+ *               format: binary
+ *       401:
+ *         description: Not authenticated
+ *       404:
+ *         description: Form not found
+ *       500:
+ *         description: SPSS generation failed
+ */
 // SPSS EXPORT (.sav)
 router.get('/export/spss/:formId', authenticate, async (req, res) => {
     try {
@@ -417,7 +657,7 @@ router.get('/export/spss/:formId', authenticate, async (req, res) => {
         res.end(Buffer.from(buffer));
 
     } catch (e) {
-        console.error("SPSS Export Error:", e.name, e.message);
+        logger.error('SPSS export failed', { error: e.message, name: e.name });
         res.status(500).json({ error: "SPSS Generation Failed: " + e.message });
     }
 });
@@ -426,6 +666,48 @@ const PostgresRepository = require('../../infrastructure/database/PostgresReposi
 const reportRepo = new PostgresRepository('reports');
 const crypto = require('crypto');
 
+/**
+ * @swagger
+ * /api/reports:
+ *   get:
+ *     summary: List all saved reports for the tenant
+ *     tags: [Reports]
+ *     security:
+ *       - cookieAuth: []
+ *     responses:
+ *       200:
+ *         description: Array of saved reports
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: integer
+ *                   title:
+ *                     type: string
+ *                   description:
+ *                     type: string
+ *                   surveyId:
+ *                     type: integer
+ *                   layout:
+ *                     type: string
+ *                   widgets:
+ *                     type: string
+ *                   theme:
+ *                     type: string
+ *                   is_published:
+ *                     type: boolean
+ *                   created_at:
+ *                     type: string
+ *                     format: date-time
+ *       401:
+ *         description: Not authenticated
+ *       500:
+ *         description: Server error
+ */
 // Get all reports for tenant
 router.get('/', authenticate, async (req, res) => {
     try {
@@ -440,6 +722,52 @@ router.get('/', authenticate, async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ * /api/reports/public/{token}:
+ *   get:
+ *     summary: View a published report by token or slug
+ *     tags: [Reports]
+ *     parameters:
+ *       - in: path
+ *         name: token
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Public token or slug of the report
+ *     responses:
+ *       200:
+ *         description: Published report with associated form data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 report:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: integer
+ *                     title:
+ *                       type: string
+ *                     surveyId:
+ *                       type: integer
+ *                     is_published:
+ *                       type: boolean
+ *                 form:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: integer
+ *                     title:
+ *                       type: string
+ *                     definition:
+ *                       type: object
+ *       404:
+ *         description: Report not found or not published
+ *       500:
+ *         description: Server error
+ */
 // Get public report by token or slug
 router.get('/public/:token', async (req, res) => {
     try {
@@ -462,6 +790,58 @@ router.get('/public/:token', async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ * /api/reports/{id}/publish:
+ *   post:
+ *     summary: Publish or unpublish a report
+ *     tags: [Reports]
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Report ID
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               is_published:
+ *                 type: boolean
+ *                 description: Whether to publish or unpublish
+ *               slug:
+ *                 type: string
+ *                 description: Optional custom URL slug
+ *     responses:
+ *       200:
+ *         description: Updated report with public token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: integer
+ *                 public_token:
+ *                   type: string
+ *                 is_published:
+ *                   type: boolean
+ *                 slug:
+ *                   type: string
+ *       400:
+ *         description: Slug already taken
+ *       401:
+ *         description: Not authenticated
+ *       404:
+ *         description: Report not found
+ *       500:
+ *         description: Server error
+ */
 // Publish/Unpublish report
 router.post('/:id/publish', authenticate, async (req, res) => {
     try {
@@ -495,10 +875,75 @@ router.post('/:id/publish', authenticate, async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ * /api/reports:
+ *   post:
+ *     summary: Create a new report
+ *     tags: [Reports]
+ *     security:
+ *       - cookieAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               title:
+ *                 type: string
+ *                 description: Report title
+ *               description:
+ *                 type: string
+ *               surveyId:
+ *                 type: integer
+ *                 description: Associated form/survey ID
+ *               layout:
+ *                 oneOf:
+ *                   - type: string
+ *                   - type: array
+ *               widgets:
+ *                 oneOf:
+ *                   - type: string
+ *                   - type: object
+ *               theme:
+ *                 oneOf:
+ *                   - type: string
+ *                   - type: object
+ *               fields:
+ *                 oneOf:
+ *                   - type: string
+ *                   - type: array
+ *               config:
+ *                 oneOf:
+ *                   - type: string
+ *                   - type: object
+ *               orientation:
+ *                 type: string
+ *                 enum: [landscape, portrait]
+ *     responses:
+ *       201:
+ *         description: Report created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: integer
+ *                 title:
+ *                   type: string
+ *                 surveyId:
+ *                   type: integer
+ *       401:
+ *         description: Not authenticated
+ *       500:
+ *         description: Server error
+ */
 // Create new report
 router.post('/', authenticate, async (req, res) => {
     try {
-        console.log("Creating Report Payload:", JSON.stringify(req.body, null, 2)); // DEBUG
+        logger.debug('Creating report', { payload: req.body });
         const safeStringify = (val, defaultVal) => {
             if (val === undefined || val === null) return defaultVal;
             if (typeof val === 'string') return val; // Already string
@@ -522,16 +967,88 @@ router.post('/', authenticate, async (req, res) => {
         const saved = await reportRepo.create(newReport);
         res.status(201).json({ ...saved, surveyId: saved.form_id });
     } catch (error) {
-        console.log("Create Report Error (Log):", error.message); // STDOUT
-        console.error("Create Report Error:", error);
+        logger.error('Failed to create report', { error: error.message });
         res.status(500).json({ error: error.message });
     }
 });
 
+/**
+ * @swagger
+ * /api/reports/{id}:
+ *   put:
+ *     summary: Update an existing report
+ *     tags: [Reports]
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Report ID
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               title:
+ *                 type: string
+ *               description:
+ *                 type: string
+ *               surveyId:
+ *                 type: integer
+ *               layout:
+ *                 oneOf:
+ *                   - type: string
+ *                   - type: array
+ *               widgets:
+ *                 oneOf:
+ *                   - type: string
+ *                   - type: object
+ *               theme:
+ *                 oneOf:
+ *                   - type: string
+ *                   - type: object
+ *               fields:
+ *                 oneOf:
+ *                   - type: string
+ *                   - type: array
+ *               config:
+ *                 oneOf:
+ *                   - type: string
+ *                   - type: object
+ *               orientation:
+ *                 type: string
+ *                 enum: [landscape, portrait]
+ *               is_published:
+ *                 type: boolean
+ *     responses:
+ *       200:
+ *         description: Report updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: integer
+ *                 title:
+ *                   type: string
+ *                 surveyId:
+ *                   type: integer
+ *       401:
+ *         description: Not authenticated
+ *       404:
+ *         description: Report not found
+ *       500:
+ *         description: Server error
+ */
 // Update report
 router.put('/:id', authenticate, async (req, res) => {
     try {
-        console.log(`Updating Report ${req.params.id} Payload:`, JSON.stringify(req.body, null, 2)); // DEBUG
+        logger.debug('Updating report', { id: req.params.id, payload: req.body });
         const existing = await reportRepo.findById(req.params.id);
         if (!existing || existing.tenant_id !== req.user.tenant_id) return res.status(404).json({ error: 'Report not found' });
 
@@ -558,12 +1075,43 @@ router.put('/:id', authenticate, async (req, res) => {
         const updated = await reportRepo.update(req.params.id, updateData);
         res.json({ ...updated, surveyId: updated.form_id });
     } catch (error) {
-        console.log("Update Report Error (Log):", error.message); // STDOUT
-        console.error("Update Report Error:", error);
+        logger.error('Failed to update report', { error: error.message });
         res.status(500).json({ error: error.message });
     }
 });
 
+/**
+ * @swagger
+ * /api/reports/{id}:
+ *   delete:
+ *     summary: Delete a report
+ *     tags: [Reports]
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Report ID
+ *     responses:
+ *       200:
+ *         description: Report deleted
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *       401:
+ *         description: Not authenticated
+ *       404:
+ *         description: Report not found
+ *       500:
+ *         description: Server error
+ */
 // Delete report
 router.delete('/:id', authenticate, async (req, res) => {
     try {

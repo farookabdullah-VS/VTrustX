@@ -1,4 +1,5 @@
 import { Serializer, ElementFactory } from "survey-core";
+import { toast } from './common/Toast';
 
 export function initLoopLogic(creator) {
     if (!creator) return;
@@ -22,7 +23,7 @@ export function initLoopLogic(creator) {
                         try {
                             const parent = q.parent;
                             if (!parent) {
-                                alert("Cannot add loop here: Parent container not found.");
+                                toast.error("Cannot add loop here: Parent container not found.");
                                 return;
                             }
 
@@ -77,7 +78,7 @@ export function initLoopLogic(creator) {
                             sender.selectedElement = panel;
 
                         } catch (err) {
-                            alert("Failed to create loop: " + err.message);
+                            toast.error("Failed to create loop: " + err.message);
                         }
                     }
                 });

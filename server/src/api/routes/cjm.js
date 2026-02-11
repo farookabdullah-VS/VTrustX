@@ -2,9 +2,54 @@ const express = require('express');
 const router = express.Router();
 const { query, transaction } = require('../../infrastructure/database/db');
 const authenticate = require('../middleware/auth');
+const validate = require('../middleware/validate');
+const { createMapSchema, updateMapSchema, createCommentSchema, shareMapSchema } = require('../schemas/cjm.schemas');
 const crypto = require('crypto');
 
-// LIST Maps - Enhanced with search, status filter, sort
+/**
+ * @swagger
+ * /api/cjm:
+ *   get:
+ *     summary: List journey maps
+ *     description: Retrieve all customer journey maps for the authenticated tenant with optional search, status filter, and sorting.
+ *     tags: [CJM]
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Search by title or description (case-insensitive)
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [draft, published, archived]
+ *         description: Filter by map status
+ *       - in: query
+ *         name: sort
+ *         schema:
+ *           type: string
+ *           enum: [title, created, updated]
+ *         description: Sort order (default updated_at DESC)
+ *       - in: query
+ *         name: createdBy
+ *         schema:
+ *           type: integer
+ *         description: Filter by creator user ID
+ *     responses:
+ *       200:
+ *         description: Array of journey maps
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/CJMMap'
+ *       500:
+ *         description: Internal server error
+ */
 router.get('/', authenticate, async (req, res) => {
     try {
         const tenantId = req.user.tenant_id;
@@ -41,7 +86,34 @@ router.get('/', authenticate, async (req, res) => {
     }
 });
 
-// GET Map
+/**
+ * @swagger
+ * /api/cjm/{id}:
+ *   get:
+ *     summary: Get journey map
+ *     description: Retrieve a single customer journey map by ID for the authenticated tenant.
+ *     tags: [CJM]
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Journey map ID
+ *     responses:
+ *       200:
+ *         description: Journey map object
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/CJMMap'
+ *       404:
+ *         description: Map not found
+ *       500:
+ *         description: Internal server error
+ */
 router.get('/:id', authenticate, async (req, res) => {
     try {
         const tenantId = req.user.tenant_id;
@@ -56,8 +128,59 @@ router.get('/:id', authenticate, async (req, res) => {
     }
 });
 
-// CREATE Map
-router.post('/', authenticate, async (req, res) => {
+/**
+ * @swagger
+ * /api/cjm:
+ *   post:
+ *     summary: Create journey map
+ *     description: Create a new customer journey map for the authenticated tenant.
+ *     tags: [CJM]
+ *     security:
+ *       - cookieAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - title
+ *             properties:
+ *               title:
+ *                 type: string
+ *                 maxLength: 255
+ *               description:
+ *                 type: string
+ *                 maxLength: 2000
+ *               status:
+ *                 type: string
+ *                 enum: [draft, published, archived]
+ *               persona_id:
+ *                 type: string
+ *                 format: uuid
+ *               tags:
+ *                 oneOf:
+ *                   - type: array
+ *                     items:
+ *                       type: string
+ *                   - type: string
+ *               data:
+ *                 type: object
+ *               template_id:
+ *                 type: integer
+ *     responses:
+ *       200:
+ *         description: Created journey map
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/CJMMap'
+ *       400:
+ *         description: Validation error
+ *       500:
+ *         description: Internal server error
+ */
+router.post('/', authenticate, validate(createMapSchema), async (req, res) => {
     try {
         const tenantId = req.user.tenant_id;
         const { title, data, description, status, persona_id, tags } = req.body;
@@ -79,44 +202,134 @@ router.post('/', authenticate, async (req, res) => {
     }
 });
 
-// UPDATE Map (also auto-creates version snapshot)
-router.put('/:id', authenticate, async (req, res) => {
+/**
+ * @swagger
+ * /api/cjm/{id}:
+ *   put:
+ *     summary: Update journey map
+ *     description: Update an existing customer journey map. Automatically creates a version snapshot of the current data before applying changes.
+ *     tags: [CJM]
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Journey map ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             minProperties: 1
+ *             properties:
+ *               title:
+ *                 type: string
+ *                 maxLength: 255
+ *               description:
+ *                 type: string
+ *                 maxLength: 2000
+ *               status:
+ *                 type: string
+ *                 enum: [draft, published, archived]
+ *               persona_id:
+ *                 type: string
+ *                 format: uuid
+ *               tags:
+ *                 oneOf:
+ *                   - type: array
+ *                     items:
+ *                       type: string
+ *                   - type: string
+ *               data:
+ *                 type: object
+ *               thumbnail_data:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Map updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *       400:
+ *         description: Validation error
+ *       500:
+ *         description: Internal server error
+ */
+router.put('/:id', authenticate, validate(updateMapSchema), async (req, res) => {
     try {
         const tenantId = req.user.tenant_id;
         const { title, data, description, status, persona_id, tags, thumbnail_data } = req.body;
 
-        // Get current data for versioning
-        const current = await query("SELECT data FROM cjm_maps WHERE id = $1 AND tenant_id = $2", [req.params.id, tenantId]);
-        if (current.rows.length > 0 && current.rows[0].data) {
-            // Auto-create version
-            const verCount = await query("SELECT COALESCE(MAX(version_number), 0) as max_ver FROM cjm_versions WHERE map_id = $1", [req.params.id]);
-            const nextVer = (verCount.rows[0].max_ver || 0) + 1;
-            await query(
-                "INSERT INTO cjm_versions (map_id, version_number, data, created_by) VALUES ($1, $2, $3, $4)",
-                [req.params.id, nextVer, current.rows[0].data, req.user.id]
-            );
-        }
+        await transaction(async (client) => {
+            // Get current data for versioning
+            const current = await client.query("SELECT data FROM cjm_maps WHERE id = $1 AND tenant_id = $2", [req.params.id, tenantId]);
+            if (current.rows.length > 0 && current.rows[0].data) {
+                // Auto-create version
+                const verCount = await client.query("SELECT COALESCE(MAX(version_number), 0) as max_ver FROM cjm_versions WHERE map_id = $1", [req.params.id]);
+                const nextVer = (verCount.rows[0].max_ver || 0) + 1;
+                await client.query(
+                    "INSERT INTO cjm_versions (map_id, version_number, data, created_by) VALUES ($1, $2, $3, $4)",
+                    [req.params.id, nextVer, current.rows[0].data, req.user.id]
+                );
+            }
 
-        await query(
-            `UPDATE cjm_maps SET
-                title = COALESCE($1, title),
-                data = COALESCE($2, data),
-                description = COALESCE($3, description),
-                status = COALESCE($4, status),
-                persona_id = COALESCE($5, persona_id),
-                tags = COALESCE($6, tags),
-                thumbnail_data = COALESCE($7, thumbnail_data),
-                updated_at = NOW()
-             WHERE id = $8 AND tenant_id = $9`,
-            [title, data, description, status, persona_id, tags, thumbnail_data, req.params.id, tenantId]
-        );
+            await client.query(
+                `UPDATE cjm_maps SET
+                    title = COALESCE($1, title),
+                    data = COALESCE($2, data),
+                    description = COALESCE($3, description),
+                    status = COALESCE($4, status),
+                    persona_id = COALESCE($5, persona_id),
+                    tags = COALESCE($6, tags),
+                    thumbnail_data = COALESCE($7, thumbnail_data),
+                    updated_at = NOW()
+                 WHERE id = $8 AND tenant_id = $9`,
+                [title, data, description, status, persona_id, tags, thumbnail_data, req.params.id, tenantId]
+            );
+        });
         res.json({ success: true });
     } catch (e) {
         res.status(500).json({ error: e.message });
     }
 });
 
-// DELETE Map
+/**
+ * @swagger
+ * /api/cjm/{id}:
+ *   delete:
+ *     summary: Delete journey map
+ *     description: Delete a customer journey map and all related records (comments, shares, versions) in a single transaction.
+ *     tags: [CJM]
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Journey map ID
+ *     responses:
+ *       200:
+ *         description: Map deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *       500:
+ *         description: Internal server error
+ */
 router.delete('/:id', authenticate, async (req, res) => {
     try {
         const tenantId = req.user.tenant_id;
@@ -133,7 +346,34 @@ router.delete('/:id', authenticate, async (req, res) => {
     }
 });
 
-// DUPLICATE Map
+/**
+ * @swagger
+ * /api/cjm/{id}/duplicate:
+ *   post:
+ *     summary: Duplicate journey map
+ *     description: Create a copy of an existing journey map with "(Copy)" appended to the title and status set to draft.
+ *     tags: [CJM]
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Journey map ID to duplicate
+ *     responses:
+ *       200:
+ *         description: Duplicated journey map
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/CJMMap'
+ *       404:
+ *         description: Map not found
+ *       500:
+ *         description: Internal server error
+ */
 router.post('/:id/duplicate', authenticate, async (req, res) => {
     try {
         const tenantId = req.user.tenant_id;
@@ -152,7 +392,47 @@ router.post('/:id/duplicate', authenticate, async (req, res) => {
     }
 });
 
-// SAVE THUMBNAIL
+/**
+ * @swagger
+ * /api/cjm/{id}/thumbnail:
+ *   post:
+ *     summary: Upload thumbnail
+ *     description: Save or update the thumbnail image data for a journey map.
+ *     tags: [CJM]
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Journey map ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - thumbnail_data
+ *             properties:
+ *               thumbnail_data:
+ *                 type: string
+ *                 description: Base64-encoded thumbnail image data
+ *     responses:
+ *       200:
+ *         description: Thumbnail saved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *       500:
+ *         description: Internal server error
+ */
 router.post('/:id/thumbnail', authenticate, async (req, res) => {
     try {
         const tenantId = req.user.tenant_id;
@@ -169,7 +449,44 @@ router.post('/:id/thumbnail', authenticate, async (req, res) => {
 
 // ============ VERSIONS ============
 
-// LIST Versions
+/**
+ * @swagger
+ * /api/cjm/{id}/versions:
+ *   get:
+ *     summary: List versions
+ *     description: Retrieve all version snapshots for a journey map, ordered by version number descending.
+ *     tags: [CJM]
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Journey map ID
+ *     responses:
+ *       200:
+ *         description: Array of version records
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: integer
+ *                   version_number:
+ *                     type: integer
+ *                   created_by:
+ *                     type: integer
+ *                   created_at:
+ *                     type: string
+ *                     format: date-time
+ *       500:
+ *         description: Internal server error
+ */
 router.get('/:id/versions', authenticate, async (req, res) => {
     try {
         const result = await query(
@@ -182,7 +499,40 @@ router.get('/:id/versions', authenticate, async (req, res) => {
     }
 });
 
-// GET Version data
+/**
+ * @swagger
+ * /api/cjm/{id}/versions/{vid}:
+ *   get:
+ *     summary: Get version
+ *     description: Retrieve a specific version snapshot including its full data payload.
+ *     tags: [CJM]
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Journey map ID
+ *       - in: path
+ *         name: vid
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Version ID
+ *     responses:
+ *       200:
+ *         description: Version object with data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/CJMVersion'
+ *       404:
+ *         description: Version not found
+ *       500:
+ *         description: Internal server error
+ */
 router.get('/:id/versions/:vid', authenticate, async (req, res) => {
     try {
         const result = await query(
@@ -196,7 +546,43 @@ router.get('/:id/versions/:vid', authenticate, async (req, res) => {
     }
 });
 
-// RESTORE Version
+/**
+ * @swagger
+ * /api/cjm/{id}/versions/{vid}/restore:
+ *   post:
+ *     summary: Restore version
+ *     description: Restore a journey map to the data from a specific version snapshot.
+ *     tags: [CJM]
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Journey map ID
+ *       - in: path
+ *         name: vid
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Version ID to restore
+ *     responses:
+ *       200:
+ *         description: Version restored successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *       404:
+ *         description: Version not found
+ *       500:
+ *         description: Internal server error
+ */
 router.post('/:id/versions/:vid/restore', authenticate, async (req, res) => {
     try {
         const tenantId = req.user.tenant_id;
@@ -215,7 +601,34 @@ router.post('/:id/versions/:vid/restore', authenticate, async (req, res) => {
 
 // ============ COMMENTS ============
 
-// LIST Comments
+/**
+ * @swagger
+ * /api/cjm/{id}/comments:
+ *   get:
+ *     summary: List comments
+ *     description: Retrieve all comments for a journey map, ordered by creation date descending.
+ *     tags: [CJM]
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Journey map ID
+ *     responses:
+ *       200:
+ *         description: Array of comments
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/CJMComment'
+ *       500:
+ *         description: Internal server error
+ */
 router.get('/:id/comments', authenticate, async (req, res) => {
     try {
         const result = await query(
@@ -228,8 +641,53 @@ router.get('/:id/comments', authenticate, async (req, res) => {
     }
 });
 
-// ADD Comment
-router.post('/:id/comments', authenticate, async (req, res) => {
+/**
+ * @swagger
+ * /api/cjm/{id}/comments:
+ *   post:
+ *     summary: Create comment
+ *     description: Add a new comment to a journey map, optionally anchored to a specific section and stage.
+ *     tags: [CJM]
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Journey map ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - content
+ *             properties:
+ *               content:
+ *                 type: string
+ *                 maxLength: 5000
+ *               section_id:
+ *                 type: string
+ *                 description: Section to anchor the comment to
+ *               stage_id:
+ *                 type: string
+ *                 description: Stage to anchor the comment to
+ *     responses:
+ *       200:
+ *         description: Created comment
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/CJMComment'
+ *       400:
+ *         description: Validation error
+ *       500:
+ *         description: Internal server error
+ */
+router.post('/:id/comments', authenticate, validate(createCommentSchema), async (req, res) => {
     try {
         const { section_id, stage_id, content } = req.body;
         const result = await query(
@@ -243,7 +701,52 @@ router.post('/:id/comments', authenticate, async (req, res) => {
     }
 });
 
-// UPDATE Comment (resolve/unresolve)
+/**
+ * @swagger
+ * /api/cjm/{id}/comments/{cid}:
+ *   put:
+ *     summary: Update comment
+ *     description: Update a comment's content or resolved status.
+ *     tags: [CJM]
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Journey map ID
+ *       - in: path
+ *         name: cid
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Comment ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               resolved:
+ *                 type: boolean
+ *               content:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Comment updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *       500:
+ *         description: Internal server error
+ */
 router.put('/:id/comments/:cid', authenticate, async (req, res) => {
     try {
         const { resolved, content } = req.body;
@@ -257,7 +760,41 @@ router.put('/:id/comments/:cid', authenticate, async (req, res) => {
     }
 });
 
-// DELETE Comment
+/**
+ * @swagger
+ * /api/cjm/{id}/comments/{cid}:
+ *   delete:
+ *     summary: Delete comment
+ *     description: Permanently delete a comment from a journey map.
+ *     tags: [CJM]
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Journey map ID
+ *       - in: path
+ *         name: cid
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Comment ID
+ *     responses:
+ *       200:
+ *         description: Comment deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *       500:
+ *         description: Internal server error
+ */
 router.delete('/:id/comments/:cid', authenticate, async (req, res) => {
     try {
         await query("DELETE FROM cjm_comments WHERE id = $1 AND map_id = $2", [req.params.cid, req.params.id]);
@@ -269,8 +806,56 @@ router.delete('/:id/comments/:cid', authenticate, async (req, res) => {
 
 // ============ SHARES ============
 
-// SHARE Map
-router.post('/:id/share', authenticate, async (req, res) => {
+/**
+ * @swagger
+ * /api/cjm/{id}/share:
+ *   post:
+ *     summary: Share map
+ *     description: Create a share link or share a journey map with a specific user. Generates a unique share token.
+ *     tags: [CJM]
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Journey map ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               user_id:
+ *                 type: integer
+ *                 description: User ID to share with
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 description: Email of user to share with
+ *               permission:
+ *                 type: string
+ *                 enum: [view, edit]
+ *                 default: view
+ *             anyOf:
+ *               - required: [user_id]
+ *               - required: [email]
+ *     responses:
+ *       200:
+ *         description: Share record with token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/CJMShare'
+ *       400:
+ *         description: Validation error
+ *       500:
+ *         description: Internal server error
+ */
+router.post('/:id/share', authenticate, validate(shareMapSchema), async (req, res) => {
     try {
         const { user_id, permission } = req.body;
         const shareToken = crypto.randomBytes(24).toString('hex');
@@ -286,7 +871,34 @@ router.post('/:id/share', authenticate, async (req, res) => {
     }
 });
 
-// LIST Shares
+/**
+ * @swagger
+ * /api/cjm/{id}/shares:
+ *   get:
+ *     summary: List shares
+ *     description: Retrieve all share records for a journey map, ordered by creation date descending.
+ *     tags: [CJM]
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Journey map ID
+ *     responses:
+ *       200:
+ *         description: Array of share records
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/CJMShare'
+ *       500:
+ *         description: Internal server error
+ */
 router.get('/:id/shares', authenticate, async (req, res) => {
     try {
         const result = await query(
@@ -299,7 +911,41 @@ router.get('/:id/shares', authenticate, async (req, res) => {
     }
 });
 
-// DELETE Share
+/**
+ * @swagger
+ * /api/cjm/{id}/shares/{sid}:
+ *   delete:
+ *     summary: Delete share
+ *     description: Revoke a share by deleting the share record, invalidating the share token.
+ *     tags: [CJM]
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Journey map ID
+ *       - in: path
+ *         name: sid
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Share ID
+ *     responses:
+ *       200:
+ *         description: Share deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *       500:
+ *         description: Internal server error
+ */
 router.delete('/:id/shares/:sid', authenticate, async (req, res) => {
     try {
         await query("DELETE FROM cjm_shares WHERE id = $1 AND map_id = $2", [req.params.sid, req.params.id]);
@@ -309,7 +955,46 @@ router.delete('/:id/shares/:sid', authenticate, async (req, res) => {
     }
 });
 
-// PUBLIC shared access (no auth)
+/**
+ * @swagger
+ * /api/cjm/shared/{token}:
+ *   get:
+ *     summary: Access shared map
+ *     description: Access a journey map via a public share token. No authentication required.
+ *     tags: [CJM]
+ *     parameters:
+ *       - in: path
+ *         name: token
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Share token
+ *     responses:
+ *       200:
+ *         description: Shared map data with permission level
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: integer
+ *                 title:
+ *                   type: string
+ *                 description:
+ *                   type: string
+ *                 data:
+ *                   type: object
+ *                 status:
+ *                   type: string
+ *                 permission:
+ *                   type: string
+ *                   enum: [view, edit]
+ *       404:
+ *         description: Share or map not found
+ *       500:
+ *         description: Internal server error
+ */
 router.get('/shared/:token', async (req, res) => {
     try {
         const share = await query("SELECT * FROM cjm_shares WHERE share_token = $1", [req.params.token]);
@@ -326,7 +1011,27 @@ router.get('/shared/:token', async (req, res) => {
 
 // ============ TEMPLATES ============
 
-// LIST Templates
+/**
+ * @swagger
+ * /api/cjm/templates/list:
+ *   get:
+ *     summary: List templates
+ *     description: Retrieve all journey map templates available to the tenant, including system templates.
+ *     tags: [CJM]
+ *     security:
+ *       - cookieAuth: []
+ *     responses:
+ *       200:
+ *         description: Array of templates
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/CJMTemplate'
+ *       500:
+ *         description: Internal server error
+ */
 router.get('/templates/list', authenticate, async (req, res) => {
     try {
         const tenantId = req.user.tenant_id;
@@ -340,7 +1045,43 @@ router.get('/templates/list', authenticate, async (req, res) => {
     }
 });
 
-// CREATE Template (save current map as template)
+/**
+ * @swagger
+ * /api/cjm/templates:
+ *   post:
+ *     summary: Create template
+ *     description: Save a journey map configuration as a reusable template.
+ *     tags: [CJM]
+ *     security:
+ *       - cookieAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - title
+ *               - data
+ *             properties:
+ *               title:
+ *                 type: string
+ *               description:
+ *                 type: string
+ *               category:
+ *                 type: string
+ *               data:
+ *                 type: object
+ *     responses:
+ *       200:
+ *         description: Created template
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/CJMTemplate'
+ *       500:
+ *         description: Internal server error
+ */
 router.post('/templates', authenticate, async (req, res) => {
     try {
         const tenantId = req.user.tenant_id;
@@ -356,7 +1097,34 @@ router.post('/templates', authenticate, async (req, res) => {
     }
 });
 
-// CREATE Map from Template
+/**
+ * @swagger
+ * /api/cjm/from-template/{tid}:
+ *   post:
+ *     summary: Create from template
+ *     description: Create a new journey map pre-populated with data from a template.
+ *     tags: [CJM]
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: tid
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Template ID
+ *     responses:
+ *       200:
+ *         description: Created journey map from template
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/CJMMap'
+ *       404:
+ *         description: Template not found
+ *       500:
+ *         description: Internal server error
+ */
 router.post('/from-template/:tid', authenticate, async (req, res) => {
     try {
         const tenantId = req.user.tenant_id;
@@ -377,7 +1145,60 @@ router.post('/from-template/:tid', authenticate, async (req, res) => {
 
 // ============ ANALYTICS ============
 
-// GET Analytics for a map (computed from JSONB)
+/**
+ * @swagger
+ * /api/cjm/{id}/analytics:
+ *   get:
+ *     summary: Get map analytics
+ *     description: Compute and return analytics for a journey map including stage counts, sentiment averages, touchpoint counts, and cell completeness percentage.
+ *     tags: [CJM]
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Journey map ID
+ *     responses:
+ *       200:
+ *         description: Computed analytics
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 stageCount:
+ *                   type: integer
+ *                 sectionCount:
+ *                   type: integer
+ *                 sentimentByStage:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       stage:
+ *                         type: string
+ *                       avgSentiment:
+ *                         type: number
+ *                 touchpointsByStage:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       stage:
+ *                         type: string
+ *                       count:
+ *                         type: integer
+ *                 cellCompleteness:
+ *                   type: integer
+ *                   description: Percentage of cells that have data (0-100)
+ *       404:
+ *         description: Map not found
+ *       500:
+ *         description: Internal server error
+ */
 router.get('/:id/analytics', authenticate, async (req, res) => {
     try {
         const tenantId = req.user.tenant_id;

@@ -104,7 +104,7 @@ Choose colors that match the ${selectedStyle} style and the persona's role/indus
             <defs><linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:${gradientStart}"/><stop offset="100%" style="stop-color:${gradientEnd}"/></linearGradient></defs>
             <rect width="100" height="100" rx="50" fill="url(#bg)"/>
             ${patternSvg}
-            <text x="50" y="55" text-anchor="middle" dominant-baseline="middle" fill="${textColor}" font-size="32" font-weight="bold" font-family="Inter,system-ui,sans-serif">${initials}</text>
+            <text x="50" y="55" text-anchor="middle" dominant-baseline="middle" fill="${textColor}" font-size="32" font-weight="bold" font-family="Outfit,system-ui,sans-serif">${initials}</text>
         </svg>`;
 
         return `data:image/svg+xml;base64,${btoa(svg)}`;
@@ -122,7 +122,7 @@ Choose colors that match the ${selectedStyle} style and the persona's role/indus
             position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
             background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            zIndex: 10000, fontFamily: "'Inter', sans-serif"
+            zIndex: 10000, fontFamily: "'Outfit', sans-serif"
         }}>
             <div style={{
                 background: 'white', borderRadius: '24px', width: '550px', maxWidth: '95%',

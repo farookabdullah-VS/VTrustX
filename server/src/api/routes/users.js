@@ -8,6 +8,7 @@ const authenticate = require('../middleware/auth');
 const pool = require('../../infrastructure/database/db');
 const validate = require('../middleware/validate');
 const { createUserSchema } = require('../schemas/users.schemas');
+const logger = require('../../infrastructure/logger');
 
 // Helper: resolve plan user limit dynamically
 async function getPlanUserLimit(tenant) {
@@ -23,7 +24,70 @@ async function getPlanUserLimit(tenant) {
     return limits[tenant.plan] || 2;
 }
 
-// GET all users (Filtered by Tenant) - with search & pagination
+/**
+ * @swagger
+ * /api/users:
+ *   get:
+ *     tags: [Users]
+ *     summary: List users with search and pagination
+ *     description: Returns a paginated list of users for the authenticated tenant. Supports filtering by search term, status, and role.
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Search by username, name, or email
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [active, inactive, suspended]
+ *         description: Filter by user status
+ *       - in: query
+ *         name: role
+ *         schema:
+ *           type: string
+ *           enum: [user, admin, viewer, editor]
+ *         description: Filter by user role
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: Page number
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 50
+ *         description: Number of results per page
+ *     responses:
+ *       200:
+ *         description: Paginated list of users
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 users:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                 total:
+ *                   type: integer
+ *                 page:
+ *                   type: integer
+ *                 limit:
+ *                   type: integer
+ *       401:
+ *         description: Not authenticated
+ *       403:
+ *         description: Insufficient permissions
+ *       500:
+ *         description: Server error
+ */
 router.get('/', authenticate, authenticate.checkPermission('users', 'view'), async (req, res) => {
     try {
         const tenantId = req.user.tenant_id;
@@ -71,11 +135,80 @@ router.get('/', authenticate, authenticate.checkPermission('users', 'view'), asy
         });
         res.json({ users: safeUsers, total, page: parseInt(page), limit: parseInt(limit) });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        logger.error('Failed to fetch users', { error: error.message });
+        res.status(500).json({ error: 'Failed to fetch users' });
     }
 });
 
-// POST create user (Check Limits + Hash Password)
+/**
+ * @swagger
+ * /api/users:
+ *   post:
+ *     tags: [Users]
+ *     summary: Create a new user
+ *     description: Creates a new user under the authenticated tenant. Enforces plan-based user limits and hashes the password.
+ *     security:
+ *       - cookieAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - username
+ *               - password
+ *             properties:
+ *               username:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *                 format: password
+ *               role:
+ *                 type: string
+ *                 enum: [user, admin, viewer, editor]
+ *               role_id:
+ *                 type: string
+ *                 format: uuid
+ *               email:
+ *                 type: string
+ *                 format: email
+ *               phone:
+ *                 type: string
+ *               name:
+ *                 type: string
+ *               name_ar:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: User created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: string
+ *                   format: uuid
+ *                 username:
+ *                   type: string
+ *                 role:
+ *                   type: string
+ *                 email:
+ *                   type: string
+ *                 status:
+ *                   type: string
+ *       400:
+ *         description: Validation error
+ *       401:
+ *         description: Not authenticated
+ *       403:
+ *         description: Insufficient permissions or plan limit reached
+ *       409:
+ *         description: Username already exists
+ *       500:
+ *         description: Server error
+ */
 router.post('/', authenticate, authenticate.checkPermission('users', 'create'), validate(createUserSchema), async (req, res) => {
     try {
         const { username, password, role, role_id, email, phone, name, name_ar } = req.body;
@@ -119,11 +252,79 @@ router.post('/', authenticate, authenticate.checkPermission('users', 'create'), 
         const { password: _, ...safeUser } = saved;
         res.status(201).json(safeUser);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        logger.error('Failed to create user', { error: error.message });
+        res.status(500).json({ error: 'Failed to create user' });
     }
 });
 
-// PUT update user
+/**
+ * @swagger
+ * /api/users/{id}:
+ *   put:
+ *     tags: [Users]
+ *     summary: Update an existing user
+ *     description: Updates user fields by ID. Validates email format, enforces unique username, and hashes new password if provided.
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: User ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               username:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *                 format: password
+ *                 minLength: 6
+ *               role:
+ *                 type: string
+ *                 enum: [user, admin, viewer, editor]
+ *               role_id:
+ *                 type: string
+ *                 format: uuid
+ *               email:
+ *                 type: string
+ *                 format: email
+ *               phone:
+ *                 type: string
+ *               name:
+ *                 type: string
+ *               name_ar:
+ *                 type: string
+ *               status:
+ *                 type: string
+ *                 enum: [active, inactive, suspended]
+ *     responses:
+ *       200:
+ *         description: User updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *       400:
+ *         description: Validation error (invalid email, short password, invalid role)
+ *       401:
+ *         description: Not authenticated
+ *       403:
+ *         description: Insufficient permissions
+ *       404:
+ *         description: User not found
+ *       409:
+ *         description: Username already taken
+ *       500:
+ *         description: Server error
+ */
 router.put('/:id', authenticate, authenticate.checkPermission('users', 'update'), async (req, res) => {
     try {
         const { username, password, role, role_id, email, phone, name, name_ar, status } = req.body;
@@ -167,11 +368,58 @@ router.put('/:id', authenticate, authenticate.checkPermission('users', 'update')
         const { password: _, ...safeUser } = updated;
         res.json(safeUser);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        logger.error('Failed to update user', { error: error.message });
+        res.status(500).json({ error: 'Failed to update user' });
     }
 });
 
-// PATCH toggle user status
+/**
+ * @swagger
+ * /api/users/{id}/status:
+ *   patch:
+ *     tags: [Users]
+ *     summary: Update user status
+ *     description: Sets the status of a user to active, inactive, or suspended.
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: User ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - status
+ *             properties:
+ *               status:
+ *                 type: string
+ *                 enum: [active, inactive, suspended]
+ *     responses:
+ *       200:
+ *         description: User status updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *       400:
+ *         description: Invalid status value
+ *       401:
+ *         description: Not authenticated
+ *       403:
+ *         description: Insufficient permissions
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Server error
+ */
 router.patch('/:id/status', authenticate, authenticate.checkPermission('users', 'update'), async (req, res) => {
     try {
         const { status } = req.body;
@@ -189,11 +437,42 @@ router.patch('/:id/status', authenticate, authenticate.checkPermission('users', 
         const { password: _, ...safeUser } = updated;
         res.json(safeUser);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        logger.error('Failed to update user status', { error: error.message });
+        res.status(500).json({ error: 'Failed to update user status' });
     }
 });
 
-// DELETE user
+/**
+ * @swagger
+ * /api/users/{id}:
+ *   delete:
+ *     tags: [Users]
+ *     summary: Delete a user
+ *     description: Permanently deletes a user by ID. Users cannot delete their own account.
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: User ID
+ *     responses:
+ *       204:
+ *         description: User deleted successfully
+ *       400:
+ *         description: Cannot delete your own account
+ *       401:
+ *         description: Not authenticated
+ *       403:
+ *         description: Insufficient permissions
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Server error
+ */
 router.delete('/:id', authenticate, authenticate.checkPermission('users', 'delete'), async (req, res) => {
     try {
         const id = req.params.id;
@@ -208,7 +487,8 @@ router.delete('/:id', authenticate, authenticate.checkPermission('users', 'delet
         await userRepo.delete(id);
         res.status(204).send();
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        logger.error('Failed to delete user', { error: error.message });
+        res.status(500).json({ error: 'Failed to delete user' });
     }
 });
 

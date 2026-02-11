@@ -3,9 +3,42 @@ const router = express.Router();
 const db = require('../../infrastructure/database/db');
 const { getPeriodKey, matchesCriteria } = require('../../core/quotaUtils');
 const authenticate = require('../middleware/auth');
+const validate = require('../middleware/validate');
+const { createQuotaSchema, updateQuotaSchema } = require('../schemas/quotas.schemas');
 const logger = require('../../infrastructure/logger');
 
-// GET all quotas for a form
+/**
+ * @swagger
+ * /api/quotas:
+ *   get:
+ *     summary: List quotas
+ *     description: Retrieve all quotas for a specific form. Includes periodic counter data for quotas with reset periods.
+ *     tags: [Quotas]
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: formId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Form ID to fetch quotas for
+ *     responses:
+ *       200:
+ *         description: Array of quotas with current counts
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Quota'
+ *       400:
+ *         description: Missing formId query parameter
+ *       404:
+ *         description: Form not found or access denied
+ *       500:
+ *         description: Internal server error
+ */
 router.get('/', authenticate, async (req, res) => {
     try {
         const { formId } = req.query;
@@ -51,8 +84,81 @@ router.get('/', authenticate, async (req, res) => {
     }
 });
 
-// POST create a quota
-router.post('/', authenticate, async (req, res) => {
+/**
+ * @swagger
+ * /api/quotas:
+ *   post:
+ *     summary: Create quota
+ *     description: Create a new quota rule for a form. The initial count is calculated from existing submissions matching the criteria and reset period.
+ *     tags: [Quotas]
+ *     security:
+ *       - cookieAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - form_id
+ *               - label
+ *               - limit_count
+ *             properties:
+ *               form_id:
+ *                 type: integer
+ *                 description: ID of the form this quota belongs to
+ *               label:
+ *                 type: string
+ *                 minLength: 1
+ *                 maxLength: 255
+ *                 description: Quota label
+ *               limit_count:
+ *                 type: integer
+ *                 minimum: 0
+ *                 description: Maximum count before quota action triggers
+ *               criteria:
+ *                 oneOf:
+ *                   - type: object
+ *                   - type: array
+ *                 description: Matching criteria for submissions
+ *               action:
+ *                 type: string
+ *                 maxLength: 100
+ *                 description: Action to take when quota is reached
+ *               action_data:
+ *                 type: object
+ *                 description: Additional data for the quota action
+ *               reset_period:
+ *                 type: string
+ *                 enum: [never, daily, weekly, monthly]
+ *                 default: never
+ *                 description: How often the quota counter resets
+ *               is_active:
+ *                 type: boolean
+ *                 default: true
+ *               start_date:
+ *                 type: string
+ *                 format: date-time
+ *                 description: Quota start date
+ *               end_date:
+ *                 type: string
+ *                 format: date-time
+ *                 description: Quota end date
+ *     responses:
+ *       201:
+ *         description: Quota created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Quota'
+ *       400:
+ *         description: Validation error
+ *       404:
+ *         description: Form not found or access denied
+ *       500:
+ *         description: Internal server error
+ */
+router.post('/', authenticate, validate(createQuotaSchema), async (req, res) => {
     try {
         let { form_id, label, limit_count, criteria, action, action_data, reset_period, is_active, start_date, end_date } = req.body;
 
@@ -109,8 +215,74 @@ router.post('/', authenticate, async (req, res) => {
     }
 });
 
-// PUT update a quota
-router.put('/:id', authenticate, async (req, res) => {
+/**
+ * @swagger
+ * /api/quotas/{id}:
+ *   put:
+ *     summary: Update quota
+ *     description: Update an existing quota. Recalculates the current count based on matching submissions and the new criteria/reset period.
+ *     tags: [Quotas]
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Quota ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - limit_count
+ *             properties:
+ *               label:
+ *                 type: string
+ *                 minLength: 1
+ *                 maxLength: 255
+ *               limit_count:
+ *                 type: integer
+ *                 minimum: 0
+ *                 description: Maximum count before quota action triggers
+ *               criteria:
+ *                 oneOf:
+ *                   - type: object
+ *                   - type: array
+ *               action:
+ *                 type: string
+ *                 maxLength: 100
+ *               action_data:
+ *                 type: object
+ *               reset_period:
+ *                 type: string
+ *                 enum: [never, daily, weekly, monthly]
+ *               is_active:
+ *                 type: boolean
+ *               start_date:
+ *                 type: string
+ *                 format: date-time
+ *               end_date:
+ *                 type: string
+ *                 format: date-time
+ *     responses:
+ *       200:
+ *         description: Quota updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Quota'
+ *       400:
+ *         description: Validation error
+ *       404:
+ *         description: Quota not found or access denied
+ *       500:
+ *         description: Internal server error
+ */
+router.put('/:id', authenticate, validate(updateQuotaSchema), async (req, res) => {
     try {
         const { id } = req.params;
         let { label, limit_count, criteria, action, action_data, reset_period, is_active, form_id, start_date, end_date } = req.body;
@@ -195,7 +367,30 @@ router.put('/:id', authenticate, async (req, res) => {
     }
 });
 
-// DELETE a quota
+/**
+ * @swagger
+ * /api/quotas/{id}:
+ *   delete:
+ *     summary: Delete quota
+ *     description: Delete a quota by ID. Verifies that the quota belongs to a form owned by the authenticated tenant before deletion.
+ *     tags: [Quotas]
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Quota ID
+ *     responses:
+ *       200:
+ *         description: Quota deleted successfully
+ *       404:
+ *         description: Quota not found or access denied
+ *       500:
+ *         description: Internal server error
+ */
 router.delete('/:id', authenticate, async (req, res) => {
     try {
         const { id } = req.params;

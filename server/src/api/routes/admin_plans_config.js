@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { query } = require('../../infrastructure/database/db');
 const authenticate = require('../middleware/auth');
+const logger = require('../../infrastructure/logger');
 
 const isAdmin = (req, res, next) => {
     if (req.user && (req.user.role === 'admin' || req.user.role === 'superadmin' || req.user.role === 'global_admin' || req.user.username === 'admin')) {
@@ -11,16 +12,151 @@ const isAdmin = (req, res, next) => {
     }
 };
 
+/**
+ * @swagger
+ * /api/admin/config/plans:
+ *   get:
+ *     summary: List all plan configurations
+ *     tags: [AdminPlans]
+ *     security:
+ *       - cookieAuth: []
+ *     responses:
+ *       200:
+ *         description: Array of plan configurations sorted by sort_order and price
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: integer
+ *                   name:
+ *                     type: string
+ *                   description:
+ *                     type: string
+ *                   interval:
+ *                     type: string
+ *                   base_price:
+ *                     type: number
+ *                   currency:
+ *                     type: string
+ *                   features:
+ *                     type: object
+ *                   pricing_by_region:
+ *                     type: object
+ *                     nullable: true
+ *                   sort_order:
+ *                     type: integer
+ *                   is_active:
+ *                     type: boolean
+ *       401:
+ *         description: Not authenticated
+ *       403:
+ *         description: Admin role required
+ *       500:
+ *         description: Server error
+ */
 // GET /api/admin/config/plans
 router.get('/', authenticate, isAdmin, async (req, res) => {
     try {
         const result = await query('SELECT * FROM plans ORDER BY sort_order ASC, base_price ASC');
         res.json(result.rows);
     } catch (e) {
-        res.status(500).json({ error: e.message });
+        logger.error('Failed to fetch plans config', { error: e.message });
+        res.status(500).json({ error: 'Failed to fetch plans' });
     }
 });
 
+/**
+ * @swagger
+ * /api/admin/config/plans:
+ *   post:
+ *     summary: Create a new plan configuration
+ *     tags: [AdminPlans]
+ *     security:
+ *       - cookieAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *               - interval
+ *               - base_price
+ *               - currency
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: Plan name
+ *               description:
+ *                 type: string
+ *               interval:
+ *                 type: string
+ *                 description: Billing interval (e.g. monthly, yearly)
+ *               base_price:
+ *                 type: number
+ *                 description: Base price amount
+ *               currency:
+ *                 type: string
+ *                 description: Currency code (e.g. USD, EUR)
+ *               features:
+ *                 type: object
+ *                 description: Feature flags and limits
+ *                 properties:
+ *                   max_users:
+ *                     type: integer
+ *                   max_forms:
+ *                     type: integer
+ *                   max_submissions:
+ *                     type: integer
+ *                   max_ai_calls:
+ *                     type: integer
+ *                   voice_agent:
+ *                     type: boolean
+ *                   custom_branding:
+ *                     type: boolean
+ *                   api_access:
+ *                     type: boolean
+ *                   priority_support:
+ *                     type: boolean
+ *               pricing_by_region:
+ *                 type: object
+ *                 nullable: true
+ *                 description: Regional pricing overrides
+ *               sort_order:
+ *                 type: integer
+ *                 default: 0
+ *     responses:
+ *       201:
+ *         description: Plan created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: integer
+ *                 name:
+ *                   type: string
+ *                 interval:
+ *                   type: string
+ *                 base_price:
+ *                   type: number
+ *                 currency:
+ *                   type: string
+ *       400:
+ *         description: Missing required fields
+ *       401:
+ *         description: Not authenticated
+ *       403:
+ *         description: Admin role required
+ *       500:
+ *         description: Server error
+ */
 // POST /api/admin/config/plans
 router.post('/', authenticate, isAdmin, async (req, res) => {
     try {
@@ -43,10 +179,75 @@ router.post('/', authenticate, isAdmin, async (req, res) => {
 
         res.status(201).json(result.rows[0]);
     } catch (e) {
-        res.status(500).json({ error: e.message });
+        logger.error('Failed to create plan config', { error: e.message });
+        res.status(500).json({ error: 'Failed to create plan' });
     }
 });
 
+/**
+ * @swagger
+ * /api/admin/config/plans/{id}:
+ *   put:
+ *     summary: Update an existing plan configuration
+ *     tags: [AdminPlans]
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Plan ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               description:
+ *                 type: string
+ *               interval:
+ *                 type: string
+ *               base_price:
+ *                 type: number
+ *               currency:
+ *                 type: string
+ *               features:
+ *                 type: object
+ *               pricing_by_region:
+ *                 type: object
+ *                 nullable: true
+ *               sort_order:
+ *                 type: integer
+ *               is_active:
+ *                 type: boolean
+ *     responses:
+ *       200:
+ *         description: Plan updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: integer
+ *                 name:
+ *                   type: string
+ *                 is_active:
+ *                   type: boolean
+ *       401:
+ *         description: Not authenticated
+ *       403:
+ *         description: Admin role required
+ *       404:
+ *         description: Plan not found
+ *       500:
+ *         description: Server error
+ */
 // PUT /api/admin/config/plans/:id
 router.put('/:id', authenticate, isAdmin, async (req, res) => {
     try {
@@ -72,10 +273,38 @@ router.put('/:id', authenticate, isAdmin, async (req, res) => {
 
         res.json(result.rows[0]);
     } catch (e) {
-        res.status(500).json({ error: e.message });
+        logger.error('Failed to update plan config', { error: e.message });
+        res.status(500).json({ error: 'Failed to update plan' });
     }
 });
 
+/**
+ * @swagger
+ * /api/admin/config/plans/{id}:
+ *   delete:
+ *     summary: Delete a plan configuration
+ *     tags: [AdminPlans]
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Plan ID
+ *     responses:
+ *       204:
+ *         description: Plan deleted successfully
+ *       400:
+ *         description: Cannot delete plan with active subscriptions
+ *       401:
+ *         description: Not authenticated
+ *       403:
+ *         description: Admin role required
+ *       500:
+ *         description: Server error
+ */
 // DELETE /api/admin/config/plans/:id
 router.delete('/:id', authenticate, isAdmin, async (req, res) => {
     try {
@@ -88,7 +317,8 @@ router.delete('/:id', authenticate, isAdmin, async (req, res) => {
         await query('DELETE FROM plans WHERE id = $1', [id]);
         res.status(204).send();
     } catch (e) {
-        res.status(500).json({ error: e.message });
+        logger.error('Failed to delete plan config', { error: e.message });
+        res.status(500).json({ error: 'Failed to delete plan' });
     }
 });
 

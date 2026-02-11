@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import * as XLSX from 'xlsx';
 import { useToast } from './common/Toast';
+import { WhatsAppShareButton, SharePanel } from './common/WhatsAppShare';
 
 export function SurveyDistribution({ formId, onBack, onNavigate }) {
     const toast = useToast();
@@ -167,6 +168,9 @@ export function SurveyDistribution({ formId, onBack, onNavigate }) {
                     <div style={sidebarItemStyle(activeSidebar === 'email')} onClick={() => setActiveSidebar('email')}>
                         <span>📧</span> Email Campaign
                     </div>
+                    <div style={sidebarItemStyle(activeSidebar === 'whatsapp')} onClick={() => setActiveSidebar('whatsapp')}>
+                        <span style={{ color: '#25D366', fontWeight: 'bold' }}>◉</span> WhatsApp
+                    </div>
                     <div style={sidebarItemStyle(activeSidebar === 'social')} onClick={() => setActiveSidebar('social')}>
                         <span>📱</span> Social Media
                     </div>
@@ -174,6 +178,40 @@ export function SurveyDistribution({ formId, onBack, onNavigate }) {
 
                 {/* MAIN AREA */}
                 <div style={{ flex: 1, padding: '40px' }}>
+                    {/* WhatsApp-dedicated tab */}
+                    {activeSidebar === 'whatsapp' && formMetadata && (
+                        <div>
+                            <h2 style={{ color: '#1e293b', marginBottom: '8px' }}>WhatsApp Distribution</h2>
+                            <p style={{ color: '#64748b', marginBottom: '24px' }}>Share your survey directly via WhatsApp — the most popular messaging app in Saudi Arabia.</p>
+
+                            <SharePanel
+                                url={`${window.location.origin}/s/${formMetadata.slug || formMetadata.id}`}
+                                title={formMetadata.title || 'Survey'}
+                                style={{ marginBottom: '24px' }}
+                            />
+
+                            <div style={{ background: 'white', padding: '30px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+                                <h3 style={{ margin: '0 0 16px', fontSize: '1.05em', color: '#334155' }}>Quick Actions</h3>
+                                <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+                                    <WhatsAppShareButton
+                                        url={`${window.location.origin}/s/${formMetadata.slug || formMetadata.id}`}
+                                        title={formMetadata.title}
+                                        variant="button"
+                                    />
+                                    <WhatsAppShareButton
+                                        url={`${window.location.origin}/s/${formMetadata.slug || formMetadata.id}`}
+                                        title={`📋 ${formMetadata.title}\n\nPlease take a moment to share your feedback!`}
+                                        variant="button"
+                                        style={{ background: '#128C7E' }}
+                                    />
+                                </div>
+                                <p style={{ color: '#94a3b8', fontSize: '0.85em', marginTop: '16px' }}>
+                                    Tip: In Saudi Arabia, WhatsApp has 98%+ penetration. Sharing via WhatsApp typically yields 3-5x higher response rates than email.
+                                </p>
+                            </div>
+                        </div>
+                    )}
+
                     {activeSidebar === 'social' && formMetadata && (
                         <div>
                             <h2 style={{ color: '#1e293b', marginBottom: '20px' }}>Share on Social Media</h2>
@@ -318,10 +356,28 @@ export function SurveyDistribution({ formId, onBack, onNavigate }) {
                             )}
                         </div>
                     )}
-                    {activeSidebar === 'link' && <div style={{ fontSize: '1.2em', color: '#64748b' }}>Web Link Distribution (Coming Soon)</div>}
+                    {activeSidebar === 'link' && formMetadata && (
+                        <div>
+                            <h2 style={{ color: '#1e293b', marginBottom: '20px' }}>Web Link</h2>
+                            <SharePanel
+                                url={`${window.location.origin}/s/${formMetadata.slug || formMetadata.id}`}
+                                title={formMetadata.title || 'Survey'}
+                            />
+                        </div>
+                    )}
+                    {activeSidebar === 'link' && !formMetadata && <div style={{ fontSize: '1.2em', color: '#64748b' }}>Loading...</div>}
                     {activeSidebar === 'email' && <div style={{ fontSize: '1.2em', color: '#64748b' }}>Email Campaign Manager (Coming Soon)</div>}
                 </div>
             </div>
+
+            {/* Floating WhatsApp FAB — always visible */}
+            {formMetadata && (
+                <WhatsAppShareButton
+                    url={`${window.location.origin}/s/${formMetadata.slug || formMetadata.id}`}
+                    title={formMetadata.title}
+                    variant="fab"
+                />
+            )}
         </div>
     );
 }

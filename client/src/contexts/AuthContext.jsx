@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
 import axios from 'axios';
 import { getCurrentUser, logout as logoutService } from '../services/authService';
+import { toast } from '../components/common/Toast';
 
 const AuthContext = createContext(null);
 
@@ -73,7 +74,7 @@ export function AuthProvider({ children }) {
       if (Date.now() - lastActivity.current > limit) {
         logoutService();
         setUser(null);
-        alert("Session expired due to inactivity.");
+        toast.warning("Session expired due to inactivity.");
       }
     }, 10000);
     return () => clearInterval(checkInterval);

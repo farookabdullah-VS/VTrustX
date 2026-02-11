@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { SkeletonCard, SkeletonChart, SkeletonList } from './common/Skeleton';
 
 export function CxDashboard() {
     const [stats, setStats] = useState({
@@ -94,7 +95,7 @@ export function CxDashboard() {
         background: 'transparent',
         color: 'var(--text-color)',
         padding: '40px',
-        fontFamily: "'Inter', sans-serif"
+        fontFamily: "'Outfit', sans-serif"
     };
 
     const cardStyle = {
@@ -116,7 +117,17 @@ export function CxDashboard() {
                 <p style={{ color: 'var(--text-muted)', fontSize: '1.1em', marginTop: '10px' }}>Real-time Customer Experience Analytics</p>
             </div>
 
-            {loading ? <div style={{ color: 'var(--text-muted)' }}>Loading AI Analytics...</div> : (
+            {loading ? (
+                <div role="status" aria-label="Loading analytics" style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '24px' }}>
+                        {[1, 2, 3].map(i => <div key={i} style={{ flex: '1 1 300px' }}><SkeletonCard /></div>)}
+                    </div>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '24px' }}>
+                        <div style={{ flex: '2 1 500px' }}><SkeletonChart height="250px" /></div>
+                        <div style={{ flex: '1 1 300px' }}><SkeletonList rows={4} /></div>
+                    </div>
+                </div>
+            ) : (
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: '30px' }}>
 
                     {/* BIG NPS SCORE */}

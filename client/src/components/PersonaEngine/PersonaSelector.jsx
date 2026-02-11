@@ -60,7 +60,7 @@ export function PersonaSelector({ onPersonaSelect, selectedPersonas = [] }) {
     };
 
     return (
-        <div style={{ fontFamily: 'Inter, sans-serif' }}>
+        <div style={{ fontFamily: 'Outfit, sans-serif' }}>
             <div style={{ marginBottom: '20px' }}>
                 <label style={{ display: 'block', fontSize: '0.9em', fontWeight: '600', color: '#475569', marginBottom: '8px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>

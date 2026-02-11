@@ -54,8 +54,7 @@ router.post('/initiate', async (req, res) => {
 
     } catch (err) {
         logger.error("Initiate Call Logic Error", { error: err.message });
-        const errorMsg = err.response?.data?.error || err.message;
-        res.status(500).json({ error: errorMsg });
+        res.status(500).json({ error: 'Failed to initiate call' });
     }
 });
 

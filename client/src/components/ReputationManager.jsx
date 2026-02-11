@@ -68,7 +68,7 @@ export function ReputationManager() {
     };
 
     return (
-        <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px', fontFamily: "'Inter', sans-serif" }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px', fontFamily: "'Outfit', sans-serif" }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
                 <div>
                     <h1 style={{ fontSize: '2rem', fontWeight: '800', margin: 0 }}>Reputation Management</h1>

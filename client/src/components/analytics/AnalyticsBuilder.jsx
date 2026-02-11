@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Folder, FileText, Plus, Search, MoreVertical, Layout, Grid, PieChart, BarChart } from 'lucide-react';
+import { toast } from '../common/Toast';
 
 const MOCK_FOLDERS = [
     { id: 'predefined', name: 'Predefined Dashboards', type: 'system', locked: true },
@@ -29,7 +30,7 @@ export const AnalyticsBuilder = ({ onNavigate }) => {
         // Map internal types to App.jsx view IDs
         if (dashboard.type === 'survey-activity') onNavigate('survey-activity-dashboard');
         else if (dashboard.type === 'custom') onNavigate('analytics-dashboard'); // The dynamic one we built
-        else alert(`Opening ${dashboard.name}... (Access to this specific predefined dashboard is limited in this demo)`);
+        else toast.info(`Opening ${dashboard.name}... (Access to this specific predefined dashboard is limited in this demo)`);
     };
 
     const currentFolder = folders.find(f => f.id === selectedFolder);

@@ -66,7 +66,7 @@ export function ConfirmProvider({ children }) {
         >
           <div style={{
             background: 'var(--card-bg, #fff)', borderRadius: '16px',
-            padding: '28px', maxWidth: '440px', width: '90%',
+            padding: 'clamp(20px, 4vw, 28px)', maxWidth: 'min(440px, calc(100vw - 32px))', width: '90%',
             boxShadow: '0 20px 60px rgba(0,0,0,0.2)',
           }}>
             {state.title && (

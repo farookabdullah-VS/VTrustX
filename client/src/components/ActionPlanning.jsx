@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Plus, Target, CheckSquare, AlertCircle, ArrowRight, User, Calendar } from 'lucide-react';
+import { InlineHijriDate } from './common/HijriDate';
+import { ValidatedInput, rules, useFormValidation } from './common/FormValidation';
 
 const ActionPlanning = () => {
     const [plans, setPlans] = useState([]);
@@ -22,25 +24,26 @@ const ActionPlanning = () => {
         }
     };
 
-    const handleCreate = async (e) => {
-        e.preventDefault();
-        const formData = new FormData(e.target);
-        const payload = {
-            title: formData.get('title'),
-            metric: formData.get('metric'),
-            target: formData.get('target'),
-            owner: formData.get('owner'),
-            due_date: formData.get('due_date')
-        };
-        await axios.post('/api/actions/plans', payload);
-        setIsCreateModalOpen(false);
-        loadPlans();
-    };
+    const goalForm = useFormValidation({
+        initialValues: { title: '', metric: 'NPS', target: '', owner: '', due_date: '' },
+        validationRules: {
+            title: [rules.required('Goal title is required')],
+            target: [rules.required('Target value is required')],
+            owner: [rules.required('Owner is required')],
+            due_date: [rules.required('Due date is required')],
+        },
+        onSubmit: async (values) => {
+            await axios.post('/api/actions/plans', values);
+            setIsCreateModalOpen(false);
+            goalForm.reset();
+            loadPlans();
+        },
+    });
 
     if (loading) return <div style={{ padding: '40px', color: '#64748b' }}>Loading Strategic Actions...</div>;
 
     return (
-        <div style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto', fontFamily: "'Inter', sans-serif" }}>
+        <div style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto', fontFamily: "'Outfit', sans-serif" }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
                 <div>
                     <h1 style={{ fontSize: '2rem', fontWeight: '800', color: '#0f172a', margin: 0 }}>Action Planning</h1>
@@ -97,7 +100,7 @@ const ActionPlanning = () => {
                                 <User size={16} /> {plan.owner}
                             </div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                <Calendar size={16} /> {new Date(plan.due_date).toLocaleDateString()}
+                                <Calendar size={16} /> <InlineHijriDate date={plan.due_date} />
                             </div>
                         </div>
                     </div>
@@ -111,39 +114,68 @@ const ActionPlanning = () => {
                 }}>
                     <div style={{ background: 'white', padding: '32px', borderRadius: '16px', width: '500px', maxWidth: '90%' }}>
                         <h2 style={{ marginBottom: '24px' }}>Set New Strategic Goal</h2>
-                        <form onSubmit={handleCreate}>
-                            <div style={{ marginBottom: '16px' }}>
-                                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600' }}>Goal Title</label>
-                                <input name="title" required placeholder="e.g. Improve NPS for Enterprise" style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1' }} />
-                            </div>
-                            <div style={{ display: 'flex', gap: '16px', marginBottom: '16px' }}>
-                                <div style={{ flex: 1 }}>
-                                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600' }}>Metric</label>
-                                    <select name="metric" style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1' }}>
-                                        <option>NPS</option>
-                                        <option>CSAT</option>
-                                        <option>Churn Rate</option>
-                                        <option>CES</option>
+                        <form onSubmit={goalForm.handleSubmit}>
+                            <ValidatedInput
+                                name="title"
+                                label="Goal Title"
+                                placeholder="e.g. Improve NPS for Enterprise"
+                                value={goalForm.values.title}
+                                error={goalForm.touched.title && goalForm.errors.title}
+                                onChange={goalForm.handleChange}
+                                onBlur={goalForm.handleBlur}
+                                required
+                            />
+                            <div style={{ display: 'flex', gap: '16px' }}>
+                                <div style={{ flex: 1, marginBottom: '20px' }}>
+                                    <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9em', fontWeight: '600', color: 'var(--label-color, #5f6368)' }}>Metric</label>
+                                    <select name="metric" value={goalForm.values.metric} onChange={goalForm.handleChange} style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid var(--input-border, #cbd5e1)', background: 'var(--input-bg, #f0f2f5)', color: 'var(--input-text, #1a1c1e)', fontSize: '15px', boxSizing: 'border-box' }}>
+                                        <option value="NPS">NPS</option>
+                                        <option value="CSAT">CSAT</option>
+                                        <option value="Churn Rate">Churn Rate</option>
+                                        <option value="CES">CES</option>
                                     </select>
                                 </div>
-                                <div style={{ flex: 1 }}>
-                                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600' }}>Target Value</label>
-                                    <input name="target" type="number" step="0.1" required style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1' }} />
-                                </div>
+                                <ValidatedInput
+                                    name="target"
+                                    label="Target Value"
+                                    type="number"
+                                    value={goalForm.values.target}
+                                    error={goalForm.touched.target && goalForm.errors.target}
+                                    onChange={goalForm.handleChange}
+                                    onBlur={goalForm.handleBlur}
+                                    required
+                                    style={{ flex: 1 }}
+                                />
                             </div>
-                            <div style={{ display: 'flex', gap: '16px', marginBottom: '24px' }}>
-                                <div style={{ flex: 1 }}>
-                                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600' }}>Owner</label>
-                                    <input name="owner" required placeholder="Name" style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1' }} />
-                                </div>
-                                <div style={{ flex: 1 }}>
-                                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600' }}>Due Date</label>
-                                    <input name="due_date" type="date" required style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1' }} />
-                                </div>
+                            <div style={{ display: 'flex', gap: '16px' }}>
+                                <ValidatedInput
+                                    name="owner"
+                                    label="Owner"
+                                    placeholder="Name"
+                                    value={goalForm.values.owner}
+                                    error={goalForm.touched.owner && goalForm.errors.owner}
+                                    onChange={goalForm.handleChange}
+                                    onBlur={goalForm.handleBlur}
+                                    required
+                                    style={{ flex: 1 }}
+                                />
+                                <ValidatedInput
+                                    name="due_date"
+                                    label="Due Date"
+                                    type="date"
+                                    value={goalForm.values.due_date}
+                                    error={goalForm.touched.due_date && goalForm.errors.due_date}
+                                    onChange={goalForm.handleChange}
+                                    onBlur={goalForm.handleBlur}
+                                    required
+                                    style={{ flex: 1 }}
+                                />
                             </div>
                             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
-                                <button type="button" onClick={() => setIsCreateModalOpen(false)} style={{ padding: '12px 24px', background: 'transparent', border: 'none', cursor: 'pointer', color: '#64748b' }}>Cancel</button>
-                                <button type="submit" style={{ padding: '12px 24px', background: '#0f172a', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer' }}>Create Goal</button>
+                                <button type="button" onClick={() => { setIsCreateModalOpen(false); goalForm.reset(); }} style={{ padding: '12px 24px', background: 'transparent', border: 'none', cursor: 'pointer', color: '#64748b' }}>Cancel</button>
+                                <button type="submit" disabled={goalForm.isSubmitting} style={{ padding: '12px 24px', background: '#0f172a', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', opacity: goalForm.isSubmitting ? 0.7 : 1 }}>
+                                    {goalForm.isSubmitting ? 'Creating...' : 'Create Goal'}
+                                </button>
                             </div>
                         </form>
                     </div>

@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useToast } from './common/Toast';
 
 export function CreateSurveyModal({ isOpen, onClose, onCreate }) {
     const { t } = useTranslation();
+    const toast = useToast();
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [category, setCategory] = useState('feedback');
@@ -12,7 +14,7 @@ export function CreateSurveyModal({ isOpen, onClose, onCreate }) {
     const handleSubmit = (e) => {
         e.preventDefault();
         if (!title.trim()) {
-            alert(t('surveys.create_modal.title_label') + " is required");
+            toast.warning(t('surveys.create_modal.title_label') + " is required");
             return;
         }
         onCreate({

@@ -99,7 +99,7 @@ export function PxDashboard() {
         background: 'transparent',
         color: 'var(--text-color)',
         padding: '40px',
-        fontFamily: "'Inter', sans-serif"
+        fontFamily: "'Outfit', sans-serif"
     };
 
     const cardStyle = {

@@ -7,6 +7,30 @@ const validate = require('../../middleware/validate');
 const { createDistributionSchema } = require('../../schemas/distributions.schemas');
 const logger = require('../../../infrastructure/logger');
 
+/**
+ * @swagger
+ * /api/distributions/types:
+ *   get:
+ *     summary: List available distribution campaign types
+ *     tags: [Distributions]
+ *     responses:
+ *       200:
+ *         description: Array of distribution types
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: string
+ *                     enum: [email, sms, whatsapp, qr]
+ *                   name:
+ *                     type: string
+ *                   icon:
+ *                     type: string
+ */
 // 1. Get Campaign Types
 router.get('/types', (req, res) => {
     res.json([
@@ -17,6 +41,34 @@ router.get('/types', (req, res) => {
     ]);
 });
 
+/**
+ * @swagger
+ * /api/distributions:
+ *   get:
+ *     summary: List all distribution campaigns
+ *     tags: [Distributions]
+ *     responses:
+ *       200:
+ *         description: Array of distribution campaigns
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: integer
+ *                   name:
+ *                     type: string
+ *                   type:
+ *                     type: string
+ *                   created_at:
+ *                     type: string
+ *                     format: date-time
+ *       500:
+ *         description: Server error
+ */
 // 2. Get Campaigns
 router.get('/', async (req, res) => {
     try {
@@ -33,6 +85,68 @@ router.get('/', async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ * /api/distributions:
+ *   post:
+ *     summary: Create a new distribution campaign
+ *     tags: [Distributions]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *               - type
+ *               - contacts
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: Campaign name
+ *               surveyId:
+ *                 type: integer
+ *                 description: ID of the survey to distribute
+ *               type:
+ *                 type: string
+ *                 enum: [email, sms, whatsapp, qr]
+ *                 description: Distribution channel type
+ *               subject:
+ *                 type: string
+ *                 description: Email subject line (for email type)
+ *               body:
+ *                 type: string
+ *                 description: Message body with optional {{name}} and {{link}} placeholders
+ *               contacts:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     name:
+ *                       type: string
+ *                     email:
+ *                       type: string
+ *                     phone:
+ *                       type: string
+ *     responses:
+ *       201:
+ *         description: Campaign created and scheduled
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: integer
+ *                 status:
+ *                   type: string
+ *                   example: Scheduled
+ *       400:
+ *         description: Missing required fields
+ *       500:
+ *         description: Server error
+ */
 // 3. Create Campaign
 router.post('/', validate(createDistributionSchema), async (req, res) => {
     try {
@@ -55,7 +169,8 @@ router.post('/', validate(createDistributionSchema), async (req, res) => {
 
         res.status(201).json({ id: Date.now(), status: 'Scheduled' });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        logger.error('Failed to create distribution campaign', { error: err.message });
+        res.status(500).json({ error: 'Failed to create distribution campaign' });
     }
 });
 

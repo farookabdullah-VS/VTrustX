@@ -165,8 +165,9 @@ function AppRoutes() {
       navigate('/builder');
       return;
     }
-    // Default: navigate to the view
-    navigate(`/${id}`);
+    // Map sidebar IDs that don't match route paths
+    const routeMap = { 'form-viewer': 'viewer', 'survey-results': 'survey-reports', 'mobile-app': 'distributions', 'xm-center': 'cx-ratings' };
+    navigate(`/${routeMap[id] || id}`);
   }, [navigate]);
 
   const handleEditForm = useCallback((id, tab = 'questionnaire') => {
@@ -217,6 +218,50 @@ function AppRoutes() {
                 />
               } />
               <Route path="builder/:id" element={<BuilderWithParam handleEditForm={handleEditForm} />} />
+
+              {/* NEW: URL-based survey routes */}
+              <Route path="surveys" element={
+                <FormViewer formId={currentFormId} submissionId={currentSubmissionId}
+                  onSelectForm={(id) => setCurrentFormId(id)}
+                  onEditSubmission={handleEditSubmission}
+                  onEditForm={handleEditForm}
+                  onCreate={(type) => handleNavigate(type)}
+                  user={user}
+                />
+              } />
+              <Route path="surveys/:formId" element={
+                <FormViewer
+                  onEditSubmission={(subId, fId) => navigate(`/surveys/${fId}?submissionId=${subId}`)}
+                  onEditForm={(fId) => navigate(`/surveys/${fId}/edit`)}
+                  onCreate={(type) => handleNavigate(type)}
+                  user={user}
+                />
+              } />
+              <Route path="surveys/:formId/edit" element={
+                <FormBuilder user={user}
+                  onFormChange={(id) => navigate(`/surveys/${id}/edit`)}
+                />
+              } />
+              <Route path="surveys/:formId/results" element={
+                <ResultsViewer
+                  onBack={() => navigate('/surveys')}
+                  onEditSubmission={(subId, fId) => navigate(`/surveys/${fId}?submissionId=${subId}`)}
+                  onNavigate={(target, payload) => {
+                    if (target === 'builder') navigate(`/surveys/${payload}/edit`);
+                    else navigate(`/${target}`);
+                  }}
+                />
+              } />
+              <Route path="surveys/:formId/collect" element={
+                <SurveyDistribution
+                  onBack={() => navigate('/surveys')}
+                  onNavigate={(target, payload) => {
+                    if (target === 'builder') navigate(`/surveys/${payload}/edit`);
+                    else navigate(`/${target}`);
+                  }}
+                />
+              } />
+
               <Route path="results" element={
                 <ResultsViewer formId={currentFormId} initialView={initialData?.view}
                   onBack={() => navigate('/')}
@@ -296,6 +341,9 @@ function AppRoutes() {
                   : <CJMDashboard onSelectMap={(id) => setCurrentCjmMapId(id)} />
               } />
               <Route path="cjm-analytics" element={<CJMAnalyticsDashboard />} />
+
+              {/* Backward Compatibility Redirects */}
+              <Route path="form-viewer" element={<Navigate to="/surveys" replace />} />
             </Route>
 
             {/* Catch-all: redirect to dashboard or login */}
@@ -339,6 +387,9 @@ function BuilderWithParam({ handleEditForm }) {
 
 function PersonaTemplatesRoute({ navigate }) {
   const axios = require('axios').default;
+  const { useToast } = require('./components/common/Toast');
+  const toast = useToast();
+
   return (
     <CxPersonaTemplates
       onSelectTemplate={(tmpl) => {
@@ -349,7 +400,7 @@ function PersonaTemplatesRoute({ navigate }) {
         };
         axios.post('/api/cx-personas', payload)
           .then(() => navigate('/personas'))
-          .catch(err => alert("Failed to create: " + err.message));
+          .catch(err => toast.error("Failed to create: " + err.message));
       }}
     />
   );

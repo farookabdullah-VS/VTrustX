@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { query } = require('../../infrastructure/database/db');
+const { query, transaction } = require('../../infrastructure/database/db');
 const authenticate = require('../middleware/auth'); // Admin Logic
 const logger = require('../../infrastructure/logger');
 
@@ -13,12 +13,76 @@ async function logAudit(profileId, action, details, changedBy, reason) {
             [profileId, action, JSON.stringify(details), changedBy, reason]
         );
     } catch (e) {
-        console.error("Audit Log Error:", e);
+        logger.error('Audit log error', { error: e.message });
     }
 }
 
 // --- FORM 1: PERSONA ASSIGNMENT (M2M / API) ---
-// POST /v1/persona/profiles/:profileId/assign-personas
+
+/**
+ * @swagger
+ * /v1/persona/profiles/{profileId}/assign-personas:
+ *   post:
+ *     summary: Assign personas to profile
+ *     description: Evaluates persona rules against provided profile data and assigns matching personas. Uses a transaction to ensure all persona assignments are atomic.
+ *     tags: [PersonaEngine]
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: profileId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The profile ID to assign personas to
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [data, consent]
+ *             properties:
+ *               data:
+ *                 type: object
+ *                 required: [nationality, age, income]
+ *                 properties:
+ *                   nationality:
+ *                     type: string
+ *                   age:
+ *                     type: integer
+ *                   income:
+ *                     type: number
+ *                   gender:
+ *                     type: string
+ *               consent:
+ *                 type: boolean
+ *     responses:
+ *       200:
+ *         description: Personas assigned successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 profileId:
+ *                   type: string
+ *                 assignedPersonas:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *                 timestamp:
+ *                   type: string
+ *                   format: date-time
+ *       400:
+ *         description: Missing required fields or consent is false
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Server error
+ */
 router.post('/profiles/:profileId/assign-personas', authenticate, async (req, res) => {
     try {
         const { profileId } = req.params;
@@ -72,15 +136,17 @@ router.post('/profiles/:profileId/assign-personas', authenticate, async (req, re
             assignedPersonas.push('GCC_GENERIC_00');
         }
 
-        // 3. Save Assignment
-        for (const pid of assignedPersonas) {
-            await query(`
-                INSERT INTO cx_profile_personas (profile_id, persona_id, assigned_at, method, score)
-                VALUES ($1, $2, NOW(), 'auto', 1.0)
-                ON CONFLICT (profile_id, persona_id) 
-                DO UPDATE SET assigned_at = NOW(), method='auto'
-            `, [profileId, pid]);
-        }
+        // 3. Save Assignment (wrapped in transaction for atomicity)
+        await transaction(async (client) => {
+            for (const pid of assignedPersonas) {
+                await client.query(`
+                    INSERT INTO cx_profile_personas (profile_id, persona_id, assigned_at, method, score)
+                    VALUES ($1, $2, NOW(), 'auto', 1.0)
+                    ON CONFLICT (profile_id, persona_id)
+                    DO UPDATE SET assigned_at = NOW(), method='auto'
+                `, [profileId, pid]);
+            }
+        });
 
         // 4. Audit Log
         await logAudit(profileId, 'ASSIGNED', { assigned: assignedPersonas, input: data }, 'SYSTEM', 'API Evaluation');
@@ -92,15 +158,69 @@ router.post('/profiles/:profileId/assign-personas', authenticate, async (req, re
             timestamp: new Date()
         });
     } catch (e) {
-        console.error(e);
-        res.status(500).json({ error: e.message });
+        logger.error('Failed to assign personas', { error: e.message });
+        res.status(500).json({ error: 'Failed to assign personas' });
     }
 });
 
 
 // --- FORM 2: ADMIN CONFIGURATION UI ---
 
-// GET All Config Data
+/**
+ * @swagger
+ * /v1/persona/configuration:
+ *   get:
+ *     summary: Get persona configuration
+ *     description: Returns all persona engine configuration including parameters, lists, and maps used by the rule engine.
+ *     tags: [PersonaEngine]
+ *     security:
+ *       - cookieAuth: []
+ *     responses:
+ *       200:
+ *         description: Persona configuration data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 parameters:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       key:
+ *                         type: string
+ *                       value:
+ *                         type: string
+ *                       data_type:
+ *                         type: string
+ *                 lists:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       key:
+ *                         type: string
+ *                       values:
+ *                         type: array
+ *                         items:
+ *                           type: string
+ *                 maps:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       map_key:
+ *                         type: string
+ *                       lookup_key:
+ *                         type: string
+ *                       value:
+ *                         type: string
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Server error
+ */
 router.get('/configuration', authenticate, async (req, res) => {
     try {
         const params = await query('SELECT * FROM cx_persona_parameters ORDER BY key');
@@ -112,10 +232,53 @@ router.get('/configuration', authenticate, async (req, res) => {
             lists: lists.rows,
             maps: maps.rows
         });
-    } catch (e) { res.status(500).json({ error: e.message }); }
+    } catch (e) {
+        logger.error('Failed to fetch persona configuration', { error: e.message });
+        res.status(500).json({ error: 'Failed to fetch persona configuration' });
+    }
 });
 
-// Update Parameter
+/**
+ * @swagger
+ * /v1/persona/parameters:
+ *   post:
+ *     summary: Create parameter
+ *     description: Creates or updates a persona engine parameter (upsert by key). Used to configure rule thresholds.
+ *     tags: [PersonaEngine]
+ *     security:
+ *       - cookieAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [key, value]
+ *             properties:
+ *               key:
+ *                 type: string
+ *               value:
+ *                 type: string
+ *               type:
+ *                 type: string
+ *                 default: string
+ *               reason:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Parameter created or updated
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Server error
+ */
 router.post('/parameters', authenticate, async (req, res) => {
     try {
         const { key, value, type, reason } = req.body;
@@ -127,10 +290,52 @@ router.post('/parameters', authenticate, async (req, res) => {
 
         await logAudit('CONFIG', 'UPDATE_PARAM', { key, value }, req.user.username || 'Admin', reason);
         res.json({ success: true });
-    } catch (e) { res.status(500).json({ error: e.message }); }
+    } catch (e) {
+        logger.error('Failed to update persona parameter', { error: e.message });
+        res.status(500).json({ error: 'Failed to update persona parameter' });
+    }
 });
 
-// Update List
+/**
+ * @swagger
+ * /v1/persona/lists:
+ *   post:
+ *     summary: Create list
+ *     description: Creates or updates a persona engine list (upsert by key). Used to configure country/category lists for rules.
+ *     tags: [PersonaEngine]
+ *     security:
+ *       - cookieAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [key, values]
+ *             properties:
+ *               key:
+ *                 type: string
+ *               values:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *               reason:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: List created or updated
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Server error
+ */
 router.post('/lists', authenticate, async (req, res) => {
     try {
         const { key, values, reason } = req.body; // values is array
@@ -142,10 +347,52 @@ router.post('/lists', authenticate, async (req, res) => {
 
         await logAudit('CONFIG', 'UPDATE_LIST', { key, values }, req.user.username || 'Admin', reason);
         res.json({ success: true });
-    } catch (e) { res.status(500).json({ error: e.message }); }
+    } catch (e) {
+        logger.error('Failed to update persona list', { error: e.message });
+        res.status(500).json({ error: 'Failed to update persona list' });
+    }
 });
 
-// Update Map
+/**
+ * @swagger
+ * /v1/persona/maps:
+ *   post:
+ *     summary: Create map
+ *     description: Creates or updates a persona engine map entry (upsert by map_key + lookup_key). Used for country-specific threshold lookups.
+ *     tags: [PersonaEngine]
+ *     security:
+ *       - cookieAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [mapKey, lookupKey, value]
+ *             properties:
+ *               mapKey:
+ *                 type: string
+ *               lookupKey:
+ *                 type: string
+ *               value:
+ *                 type: string
+ *               reason:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Map entry created or updated
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Server error
+ */
 router.post('/maps', authenticate, async (req, res) => {
     try {
         const { mapKey, lookupKey, value, reason } = req.body;
@@ -157,11 +404,66 @@ router.post('/maps', authenticate, async (req, res) => {
 
         await logAudit('CONFIG', 'UPDATE_MAP', { mapKey, lookupKey, value }, req.user.username || 'Admin', reason);
         res.json({ success: true });
-    } catch (e) { res.status(500).json({ error: e.message }); }
+    } catch (e) {
+        logger.error('Failed to update persona map', { error: e.message });
+        res.status(500).json({ error: 'Failed to update persona map' });
+    }
 });
 
 
 // --- FORM 3: CRM PROFILE VIEWER ---
+
+/**
+ * @swagger
+ * /v1/persona/profiles/{profileId}:
+ *   get:
+ *     summary: Get profile personas
+ *     description: Returns all persona assignments and recent audit logs for a given profile.
+ *     tags: [PersonaEngine]
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: profileId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The profile ID to look up
+ *     responses:
+ *       200:
+ *         description: Profile persona data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 profileId:
+ *                   type: string
+ *                 personas:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       profile_id:
+ *                         type: string
+ *                       persona_id:
+ *                         type: string
+ *                       assigned_at:
+ *                         type: string
+ *                         format: date-time
+ *                       method:
+ *                         type: string
+ *                       score:
+ *                         type: number
+ *                 logs:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Server error
+ */
 router.get('/profiles/:profileId', authenticate, async (req, res) => {
     try {
         const { profileId } = req.params;
@@ -176,11 +478,75 @@ router.get('/profiles/:profileId', authenticate, async (req, res) => {
             personas: assignments.rows, // Array of assigned personas
             logs: logs.rows
         });
-    } catch (e) { res.status(500).json({ error: e.message }); }
+    } catch (e) {
+        logger.error('Failed to fetch persona profile', { error: e.message });
+        res.status(500).json({ error: 'Failed to fetch persona profile' });
+    }
 });
 
 
 // --- FORM 5: AUDIT LOG VIEWER ---
+
+/**
+ * @swagger
+ * /v1/persona/audit-logs:
+ *   get:
+ *     summary: Get audit logs
+ *     description: Returns persona engine audit logs with optional filtering by profile, action, and date range. Limited to 100 results.
+ *     tags: [PersonaEngine]
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: profileId
+ *         schema:
+ *           type: string
+ *         description: Filter by profile ID
+ *       - in: query
+ *         name: action
+ *         schema:
+ *           type: string
+ *         description: Filter by action type (e.g. ASSIGNED, RIGHT_TO_OBJECT)
+ *       - in: query
+ *         name: dateStart
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *         description: Filter logs from this date
+ *       - in: query
+ *         name: dateEnd
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *         description: Filter logs until this date
+ *     responses:
+ *       200:
+ *         description: List of audit log entries
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   profile_id:
+ *                     type: string
+ *                   action:
+ *                     type: string
+ *                   details:
+ *                     type: object
+ *                   changed_by:
+ *                     type: string
+ *                   reason:
+ *                     type: string
+ *                   timestamp:
+ *                     type: string
+ *                     format: date-time
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Server error
+ */
 router.get('/audit-logs', authenticate, async (req, res) => {
     try {
         const { profileId, action, dateStart, dateEnd } = req.query;
@@ -197,10 +563,56 @@ router.get('/audit-logs', authenticate, async (req, res) => {
 
         const result = await query(q, params);
         res.json(result.rows);
-    } catch (e) { res.status(500).json({ error: e.message }); }
+    } catch (e) {
+        logger.error('Failed to fetch audit logs', { error: e.message });
+        res.status(500).json({ error: 'Failed to fetch audit logs' });
+    }
 });
 
 // --- FORM 6: RIGHT TO OBJECT ---
+
+/**
+ * @swagger
+ * /v1/persona/profiles/{profileId}/personas:
+ *   delete:
+ *     summary: Remove personas from profile
+ *     description: Removes all persona assignments for a profile (Right to Object / GDPR). Logs the removal in the audit trail.
+ *     tags: [PersonaEngine]
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: profileId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The profile ID to remove personas from
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               reason:
+ *                 type: string
+ *                 description: Reason for removal (defaults to "Customer Request")
+ *     responses:
+ *       200:
+ *         description: Personas removed successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Server error
+ */
 router.delete('/profiles/:profileId/personas', authenticate, async (req, res) => {
     try {
         const { profileId } = req.params;
@@ -211,10 +623,44 @@ router.delete('/profiles/:profileId/personas', authenticate, async (req, res) =>
         await logAudit(profileId, 'RIGHT_TO_OBJECT', {}, req.user.username || 'User', reason || 'Customer Request');
 
         res.json({ success: true, message: "All persona data removed for profile." });
-    } catch (e) { res.status(500).json({ error: e.message }); }
+    } catch (e) {
+        logger.error('Failed to remove persona data', { error: e.message });
+        res.status(500).json({ error: 'Failed to remove persona data' });
+    }
 });
 
 // --- FORM 7: HEALTH MONITORING ---
+
+/**
+ * @swagger
+ * /v1/persona/health:
+ *   get:
+ *     summary: Health check
+ *     description: Returns persona engine health status including uptime, database latency, and total profiles processed.
+ *     tags: [PersonaEngine]
+ *     responses:
+ *       200:
+ *         description: Engine is operational
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 uptime:
+ *                   type: number
+ *                   description: Server uptime in seconds
+ *                 dbLatency:
+ *                   type: number
+ *                   description: Database ping latency in milliseconds
+ *                 profilesProcessed:
+ *                   type: integer
+ *                   description: Total persona assignments count
+ *                 status:
+ *                   type: string
+ *                   enum: [Operational, Degraded]
+ *       500:
+ *         description: Health check failed (degraded status)
+ */
 router.get('/health', async (req, res) => {
     // Determine status
     // Check DB
@@ -233,12 +679,41 @@ router.get('/health', async (req, res) => {
             status: 'Operational'
         });
     } catch (e) {
-        res.status(500).json({ status: 'Degraded', error: e.message });
+        logger.error('Persona engine health check failed', { error: e.message });
+        res.status(500).json({ status: 'Degraded', error: 'Health check failed' });
     }
 });
 
 // --- MARKETING INTEGRATION: Available Personas ---
-// GET /v1/persona/available-personas
+
+/**
+ * @swagger
+ * /v1/persona/available-personas:
+ *   get:
+ *     summary: List available personas
+ *     description: Returns all distinct persona IDs with the count of profiles assigned to each, ordered by popularity.
+ *     tags: [PersonaEngine]
+ *     security:
+ *       - cookieAuth: []
+ *     responses:
+ *       200:
+ *         description: List of personas with profile counts
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: string
+ *                   count:
+ *                     type: integer
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Server error
+ */
 router.get('/available-personas', authenticate, async (req, res) => {
     try {
         const result = await query(`
@@ -251,13 +726,56 @@ router.get('/available-personas', authenticate, async (req, res) => {
         `);
         res.json(result.rows);
     } catch (err) {
-        console.error('[PERSONA_ENGINE] Available Personas Error:', err);
-        res.status(500).json({ error: err.message });
+        logger.error('Failed to fetch available personas', { error: err.message });
+        res.status(500).json({ error: 'Failed to fetch available personas' });
     }
 });
 
 // --- MARKETING INTEGRATION: Audience Stats ---
-// POST /v1/persona/audience-stats
+
+/**
+ * @swagger
+ * /v1/persona/audience-stats:
+ *   post:
+ *     summary: Get audience statistics
+ *     description: Returns audience statistics (total customers, average LTV, engagement rate) for the specified persona IDs.
+ *     tags: [PersonaEngine]
+ *     security:
+ *       - cookieAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [persona_ids]
+ *             properties:
+ *               persona_ids:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 description: Array of persona IDs to get stats for
+ *     responses:
+ *       200:
+ *         description: Audience statistics
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 total_customers:
+ *                   type: integer
+ *                 avg_ltv:
+ *                   type: number
+ *                 engagement_rate:
+ *                   type: number
+ *       400:
+ *         description: persona_ids array required
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Server error
+ */
 router.post('/audience-stats', authenticate, async (req, res) => {
     try {
         const { persona_ids } = req.body;
@@ -284,8 +802,8 @@ router.post('/audience-stats', authenticate, async (req, res) => {
             engagement_rate: 75 // Mock for now - could calculate from customer_events
         });
     } catch (err) {
-        console.error('[PERSONA_ENGINE] Audience Stats Error:', err);
-        res.status(500).json({ error: err.message });
+        logger.error('Failed to fetch audience stats', { error: err.message });
+        res.status(500).json({ error: 'Failed to fetch audience stats' });
     }
 });
 

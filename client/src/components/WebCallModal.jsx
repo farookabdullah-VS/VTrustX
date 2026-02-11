@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
+import { toast } from './common/Toast';
 
 export function WebCallModal({ survey, onClose }) {
     const [sessionId, setSessionId] = useState(null);
@@ -45,7 +46,7 @@ export function WebCallModal({ survey, onClose }) {
 
             recognition.current = r;
         } else {
-            alert("Your browser does not support Speech Recognition (Chrome recommended).");
+            toast.error("Your browser does not support Speech Recognition (Chrome recommended).");
         }
 
         return () => {

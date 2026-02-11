@@ -489,7 +489,7 @@ const styles = {
         borderRadius: '16px',
         border: '1px solid #e2e8f0',
         marginBottom: '20px',
-        fontFamily: "'Inter', 'Outfit', sans-serif",
+        fontFamily: "'Outfit', sans-serif",
         boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)'
     },
     header: {

@@ -39,10 +39,10 @@ const createRateLimiter = (limit = 100, windowSec = 60) => {
     };
 };
 
-app.use(createRateLimiter(200)); // Global limit
-app.use('/api/auth', createRateLimiter(20));
-app.use('/api/ai', createRateLimiter(30));
-app.use('/api/exports', createRateLimiter(10));
+app.use(createRateLimiter(1000)); // Global limit
+app.use('/api/auth', createRateLimiter(100));
+app.use('/api/ai', createRateLimiter(100));
+app.use('/api/exports', createRateLimiter(50));
 
 app.set('trust proxy', 1);
 app.use(helmet({
@@ -79,8 +79,9 @@ app.use(cookieParser());
 const { doubleCsrf } = require('csrf-csrf');
 
 const csrfSecret = process.env.CSRF_SECRET || process.env.JWT_SECRET || 'vtrustx-csrf-fallback';
-const { generateToken, doubleCsrfProtection } = doubleCsrf({
+const { generateCsrfToken: generateToken, doubleCsrfProtection } = doubleCsrf({
     getSecret: () => csrfSecret,
+    getSessionIdentifier: (req) => req.cookies?.access_token || req.ip || 'anonymous',
     cookieName: '__csrf',
     cookieOptions: {
         httpOnly: true,

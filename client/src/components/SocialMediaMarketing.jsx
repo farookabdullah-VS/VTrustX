@@ -54,7 +54,7 @@ function SmmAppShell() {
     };
 
     return (
-        <div style={{ display: 'flex', height: '100vh', background: '#f8fbf9', fontFamily: 'Inter, sans-serif' }}>
+        <div style={{ display: 'flex', height: '100vh', background: '#f8fbf9', fontFamily: 'Outfit, sans-serif' }}>
             {/* 1. LEFT SIDEBAR (Pale Green Theme) */}
             <div style={{ width: '260px', background: '#ecfdf5', color: '#064e3b', display: 'flex', flexDirection: 'column', flexShrink: 0, borderRight: '1px solid #d1fae5' }}>
                 <div style={{ padding: '20px', borderBottom: '1px solid #059669' }}>

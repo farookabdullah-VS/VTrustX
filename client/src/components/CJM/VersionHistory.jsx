@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { X, History, RotateCcw, Eye, EyeOff } from 'lucide-react';
 import { useToast } from '../common/Toast';
+import { formatRelativeTime } from '../common/HijriDate';
 
 export function VersionHistory({ mapId, onRestore, onClose }) {
     const toast = useToast();
@@ -55,19 +56,7 @@ export function VersionHistory({ mapId, onRestore, onClose }) {
         }
     };
 
-    const formatDate = (dateStr) => {
-        const d = new Date(dateStr);
-        const now = new Date();
-        const diffMs = now - d;
-        const diffMins = Math.floor(diffMs / 60000);
-        if (diffMins < 1) return 'Just now';
-        if (diffMins < 60) return `${diffMins}m ago`;
-        const diffHours = Math.floor(diffMins / 60);
-        if (diffHours < 24) return `${diffHours}h ago`;
-        const diffDays = Math.floor(diffHours / 24);
-        if (diffDays < 7) return `${diffDays}d ago`;
-        return d.toLocaleDateString();
-    };
+    const formatDate = formatRelativeTime;
 
     return (
         <div className="cjm-panel" style={{ width: '320px', borderLeft: '1px solid #e2e8f0', background: 'white', display: 'flex', flexDirection: 'column' }}>

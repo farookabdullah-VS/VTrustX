@@ -1,0 +1,338 @@
+{
+  "title": "🔁 Loop Logic Demo Survey",
+  "description": "Interactive demonstration of all three loop patterns in VTrustX",
+  "logoPosition": "right",
+  "pages": [
+    {
+      "name": "intro",
+      "title": "Welcome to Loop Logic Demo",
+      "elements": [
+        {
+          "type": "html",
+          "name": "intro_text",
+          "html": "<div style='background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 24px; border-radius: 12px; margin-bottom: 20px;'><h2 style='margin: 0 0 10px 0;'>🔁 Three Types of Loop Logic</h2><p style='margin: 0; opacity: 0.9;'>This demo will show you how VTrustX handles dynamic, repeating questions using paneldynamic.</p></div>"
+        },
+        {
+          "type": "html",
+          "name": "loop_types",
+          "html": "<div style='display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin: 20px 0;'><div style='background: #f0fdf4; padding: 15px; border-radius: 8px; border-left: 4px solid #22c55e;'><div style='font-weight: 600; margin-bottom: 5px;'>✋ User-Defined</div><div style='font-size: 0.9em; color: #666;'>You control Add/Remove</div></div><div style='background: #fef3c7; padding: 15px; border-radius: 8px; border-left: 4px solid #f59e0b;'><div style='font-weight: 600; margin-bottom: 5px;'>🔢 Hard-Coded</div><div style='font-size: 0.9em; color: #666;'>Fixed count (no buttons)</div></div><div style='background: #dbeafe; padding: 15px; border-radius: 8px; border-left: 4px solid #3b82f6;'><div style='font-weight: 600; margin-bottom: 5px;'>🧠 Logic-Driven</div><div style='font-size: 0.9em; color: #666;'>Bound to your answer</div></div></div>"
+        }
+      ]
+    },
+    {
+      "name": "user_defined_loop",
+      "title": "Type 1: User-Defined Loop (Do-While)",
+      "elements": [
+        {
+          "type": "html",
+          "name": "user_loop_info",
+          "html": "<div style='background: #f0fdf4; padding: 15px; border-radius: 8px; border-left: 4px solid #22c55e; margin-bottom: 20px;'><h3 style='margin: 0 0 8px 0;'>✋ User-Defined Loop</h3><p style='margin: 0; color: #666;'>You control how many items to add. Click <strong>\"Add New\"</strong> to create more entries. Minimum 1, maximum 5.</p></div>"
+        },
+        {
+          "type": "paneldynamic",
+          "name": "favorite_books",
+          "title": "What are your favorite books?",
+          "description": "Add as many books as you'd like (up to 5)",
+          "templateTitle": "Book #{panelIndex + 1}",
+          "panelCount": 1,
+          "minPanelCount": 1,
+          "maxPanelCount": 5,
+          "confirmDelete": true,
+          "confirmDeleteText": "Are you sure you want to remove this book?",
+          "panelAddText": "➕ Add Another Book",
+          "panelRemoveText": "Remove",
+          "renderMode": "list",
+          "templateElements": [
+            {
+              "type": "text",
+              "name": "book_title",
+              "title": "Book Title",
+              "isRequired": true,
+              "placeholder": "e.g., The Great Gatsby"
+            },
+            {
+              "type": "text",
+              "name": "author",
+              "title": "Author",
+              "placeholder": "e.g., F. Scott Fitzgerald"
+            },
+            {
+              "type": "rating",
+              "name": "rating",
+              "title": "Your Rating",
+              "rateMax": 5,
+              "rateMin": 1,
+              "minRateDescription": "Poor",
+              "maxRateDescription": "Excellent"
+            }
+          ]
+        },
+        {
+          "type": "html",
+          "name": "user_loop_data",
+          "html": "<div style='background: #f8fafc; padding: 15px; border-radius: 8px; margin-top: 20px;'><strong>💾 Data Structure:</strong><pre style='background: #1e293b; color: #e2e8f0; padding: 12px; border-radius: 6px; overflow-x: auto; font-size: 0.85em;'>favorite_books: [\n  { book_title: \"...\", author: \"...\", rating: 5 },\n  { book_title: \"...\", author: \"...\", rating: 4 }\n]</pre></div>"
+        }
+      ]
+    },
+    {
+      "name": "hard_coded_loop",
+      "title": "Type 2: Hard-Coded Loop (Fixed)",
+      "elements": [
+        {
+          "type": "html",
+          "name": "fixed_loop_info",
+          "html": "<div style='background: #fef3c7; padding: 15px; border-radius: 8px; border-left: 4px solid #f59e0b; margin-bottom: 20px;'><h3 style='margin: 0 0 8px 0;'>🔢 Hard-Coded Loop</h3><p style='margin: 0; color: #666;'>Exactly <strong>3 emergency contacts</strong> are required. No Add/Remove buttons - the count is fixed.</p></div>"
+        },
+        {
+          "type": "paneldynamic",
+          "name": "emergency_contacts",
+          "title": "Emergency Contacts (Required: 3)",
+          "description": "Please provide exactly 3 emergency contact persons",
+          "templateTitle": "Contact #{panelIndex + 1}",
+          "panelCount": 3,
+          "minPanelCount": 3,
+          "maxPanelCount": 3,
+          "allowAddPanel": false,
+          "allowRemovePanel": false,
+          "renderMode": "list",
+          "templateElements": [
+            {
+              "type": "text",
+              "name": "contact_name",
+              "title": "Full Name",
+              "isRequired": true,
+              "placeholder": "John Doe"
+            },
+            {
+              "type": "text",
+              "name": "relationship",
+              "title": "Relationship",
+              "isRequired": true,
+              "placeholder": "e.g., Spouse, Parent, Sibling"
+            },
+            {
+              "type": "text",
+              "name": "phone",
+              "title": "Phone Number",
+              "isRequired": true,
+              "inputType": "tel",
+              "placeholder": "+1 234 567 8900"
+            }
+          ]
+        },
+        {
+          "type": "html",
+          "name": "fixed_loop_note",
+          "html": "<div style='background: #f8fafc; padding: 15px; border-radius: 8px; margin-top: 20px;'><strong>📝 Use Case:</strong> Forms requiring exact quantities (3 references, 5 KPIs, 2 guarantors)</div>"
+        }
+      ]
+    },
+    {
+      "name": "logic_driven_setup",
+      "title": "Type 3: Logic-Driven Loop (Dependent)",
+      "elements": [
+        {
+          "type": "html",
+          "name": "logic_loop_info",
+          "html": "<div style='background: #dbeafe; padding: 15px; border-radius: 8px; border-left: 4px solid #3b82f6; margin-bottom: 20px;'><h3 style='margin: 0 0 8px 0;'>🧠 Logic-Driven Loop</h3><p style='margin: 0; color: #666;'>The loop count is <strong>bound to your answer</strong> below. The survey automatically creates panels based on your input.</p></div>"
+        },
+        {
+          "type": "text",
+          "name": "number_of_children",
+          "title": "How many children do you have?",
+          "description": "Enter a number (0-10). The next page will loop that many times.",
+          "inputType": "number",
+          "min": 0,
+          "max": 10,
+          "isRequired": true,
+          "defaultValue": "0"
+        },
+        {
+          "type": "html",
+          "name": "logic_binding_visual",
+          "html": "<div style='background: #f8fafc; padding: 15px; border-radius: 8px; margin-top: 20px;'><strong>🔗 Binding Logic:</strong><pre style='background: #1e293b; color: #e2e8f0; padding: 12px; border-radius: 6px; overflow-x: auto; font-size: 0.85em;'>bindings: {\n  panelCount: \"number_of_children\"\n}</pre><p style='margin: 10px 0 0 0; color: #666; font-size: 0.9em;'>The paneldynamic will automatically create N panels where N = your answer above.</p></div>"
+        }
+      ]
+    },
+    {
+      "name": "logic_driven_loop",
+      "title": "Children Details (Dynamic Loop)",
+      "visibleIf": "{number_of_children} > 0",
+      "elements": [
+        {
+          "type": "html",
+          "name": "children_loop_header",
+          "html": "<div style='background: #dbeafe; padding: 15px; border-radius: 8px; margin-bottom: 20px;'><strong>👶 You said you have {number_of_children} child(ren).</strong> Fill out details for each one below.</div>"
+        },
+        {
+          "type": "paneldynamic",
+          "name": "children_details",
+          "title": "Child Information",
+          "templateTitle": "Child #{panelIndex + 1}",
+          "minPanelCount": 0,
+          "panelCount": 0,
+          "allowAddPanel": false,
+          "allowRemovePanel": false,
+          "renderMode": "list",
+          "bindings": {
+            "panelCount": "number_of_children"
+          },
+          "templateElements": [
+            {
+              "type": "html",
+              "name": "child_banner",
+              "html": "<div style='background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px; border-radius: 6px; margin-bottom: 15px;'><strong>Child #{panelIndex + 1}</strong></div>"
+            },
+            {
+              "type": "text",
+              "name": "child_name",
+              "title": "Child's Name",
+              "isRequired": true,
+              "placeholder": "Enter name"
+            },
+            {
+              "type": "text",
+              "name": "child_age",
+              "title": "Age",
+              "inputType": "number",
+              "min": 0,
+              "max": 25,
+              "isRequired": true
+            },
+            {
+              "type": "dropdown",
+              "name": "grade_level",
+              "title": "Current Grade/School Level",
+              "choices": [
+                "Preschool",
+                "Kindergarten",
+                "Grade 1-5 (Primary)",
+                "Grade 6-8 (Middle)",
+                "Grade 9-12 (High School)",
+                "University/College",
+                "Not in School"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "multi_select_loop_setup",
+      "title": "Bonus: Multi-Select Binding",
+      "elements": [
+        {
+          "type": "html",
+          "name": "multiselect_info",
+          "html": "<div style='background: #f3e8ff; padding: 15px; border-radius: 8px; border-left: 4px solid #a855f7; margin-bottom: 20px;'><h3 style='margin: 0 0 8px 0;'>🌟 Advanced: Multi-Select Loop</h3><p style='margin: 0; color: #666;'>Loop based on <strong>checkbox selections</strong>. The survey loops once for each service you select.</p></div>"
+        },
+        {
+          "type": "checkbox",
+          "name": "selected_services",
+          "title": "Which VTrustX modules did you use this week?",
+          "description": "Select all that apply. The next page will ask for feedback on each one.",
+          "isRequired": true,
+          "choices": [
+            { "value": "forms", "text": "📋 Form Builder" },
+            { "value": "analytics", "text": "📊 Analytics Studio" },
+            { "value": "cjm", "text": "🗺️ Customer Journey Maps" },
+            { "value": "workflows", "text": "⚡ Workflow Automation" },
+            { "value": "crm", "text": "👥 CRM Integration" }
+          ],
+          "minSelectedChoices": 1
+        },
+        {
+          "type": "html",
+          "name": "multiselect_binding",
+          "html": "<div style='background: #f8fafc; padding: 15px; border-radius: 8px; margin-top: 20px;'><strong>🔗 Array Length Binding:</strong><pre style='background: #1e293b; color: #e2e8f0; padding: 12px; border-radius: 6px; overflow-x: auto; font-size: 0.85em;'>bindings: {\n  panelCount: \"selected_services.length\"\n}</pre></div>"
+        }
+      ]
+    },
+    {
+      "name": "multi_select_loop",
+      "title": "Module Feedback (Multi-Select Loop)",
+      "visibleIf": "{selected_services.length} > 0",
+      "elements": [
+        {
+          "type": "html",
+          "name": "service_feedback_header",
+          "html": "<div style='background: #f3e8ff; padding: 15px; border-radius: 8px; margin-bottom: 20px;'><strong>✨ You selected {selected_services.length} module(s).</strong> Please rate each one below.</div>"
+        },
+        {
+          "type": "paneldynamic",
+          "name": "service_feedback",
+          "title": "Feedback per Module",
+          "templateTitle": "📦 {selected_services[panelIndex]}",
+          "minPanelCount": 0,
+          "panelCount": 0,
+          "allowAddPanel": false,
+          "allowRemovePanel": false,
+          "renderMode": "list",
+          "bindings": {
+            "panelCount": "selected_services.length"
+          },
+          "templateElements": [
+            {
+              "type": "html",
+              "name": "module_banner",
+              "html": "<div style='background: linear-gradient(135deg, #a855f7 0%, #ec4899 100%); color: white; padding: 12px; border-radius: 6px; margin-bottom: 15px;'><h4 style='margin: 0;'>Module: {selected_services[panelIndex]}</h4></div>"
+            },
+            {
+              "type": "rating",
+              "name": "satisfaction",
+              "title": "Satisfaction Level (1-10)",
+              "rateMax": 10,
+              "rateMin": 1,
+              "minRateDescription": "Very Unsatisfied",
+              "maxRateDescription": "Very Satisfied",
+              "isRequired": true
+            },
+            {
+              "type": "rating",
+              "name": "ease_of_use",
+              "title": "Ease of Use (1-5)",
+              "rateMax": 5,
+              "rateMin": 1,
+              "minRateDescription": "Very Difficult",
+              "maxRateDescription": "Very Easy"
+            },
+            {
+              "type": "comment",
+              "name": "feedback_comment",
+              "title": "What could we improve about {selected_services[panelIndex]}?",
+              "placeholder": "Share your thoughts...",
+              "rows": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "summary",
+      "title": "Summary & Data Structure",
+      "elements": [
+        {
+          "type": "html",
+          "name": "summary_header",
+          "html": "<div style='background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 24px; border-radius: 12px; margin-bottom: 20px;'><h2 style='margin: 0 0 10px 0;'>🎉 Loop Logic Demo Complete!</h2><p style='margin: 0; opacity: 0.9;'>Here's what you experienced:</p></div>"
+        },
+        {
+          "type": "html",
+          "name": "loop_summary",
+          "html": "<div style='display: grid; gap: 15px;'><div style='background: white; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0;'><div style='font-weight: 600; color: #22c55e; margin-bottom: 8px;'>✋ User-Defined</div><div style='color: #64748b;'>Books added: <strong>{favorite_books.length}</strong></div></div><div style='background: white; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0;'><div style='font-weight: 600; color: #f59e0b; margin-bottom: 8px;'>🔢 Hard-Coded</div><div style='color: #64748b;'>Emergency contacts: <strong>3 (fixed)</strong></div></div><div style='background: white; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0;'><div style='font-weight: 600; color: #3b82f6; margin-bottom: 8px;'>🧠 Logic-Driven</div><div style='color: #64748b;'>Children: <strong>{number_of_children}</strong> (bound to answer)</div></div><div style='background: white; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0;'><div style='font-weight: 600; color: #a855f7; margin-bottom: 8px;'>🌟 Multi-Select</div><div style='color: #64748b;'>Modules rated: <strong>{selected_services.length}</strong></div></div></div>"
+        },
+        {
+          "type": "html",
+          "name": "technical_details",
+          "html": "<div style='background: #f8fafc; padding: 20px; border-radius: 8px; margin-top: 20px;'><h3 style='margin: 0 0 15px 0;'>🔧 Technical Implementation</h3><div style='background: #1e293b; color: #e2e8f0; padding: 15px; border-radius: 6px; font-family: monospace; font-size: 0.85em; overflow-x: auto;'>// FormViewer.jsx (Line 442)<br>const model = new Model(formDef.definition);<br><br>// SurveyJS handles loop logic automatically:<br>// ✅ Renders Add/Remove buttons<br>// ✅ Binds panelCount to source questions<br>// ✅ Validates min/max constraints<br>// ✅ Stores data as Array&lt;Object&gt;</div></div>"
+        }
+      ]
+    }
+  ],
+  "showProgressBar": "top",
+  "progressBarType": "pages",
+  "showQuestionNumbers": "off",
+  "completeText": "Submit Demo",
+  "completedHtml": "<div style='text-align: center; padding: 40px;'><div style='font-size: 64px; margin-bottom: 20px;'>🎊</div><h2 style='color: #10b981;'>Thank You!</h2><p style='color: #64748b;'>You've experienced all three loop logic patterns in VTrustX.</p><div style='background: #f0fdf4; padding: 20px; border-radius: 12px; margin-top: 30px; border: 2px solid #22c55e;'><h3 style='margin: 0 0 15px 0;'>📊 Your Submitted Data</h3><p style='margin: 0; color: #666; font-size: 0.9em;'>All loop data was automatically stored as arrays of objects and sent to the server.</p></div></div>",
+  "checkErrorsMode": "onValueChanged"
+}

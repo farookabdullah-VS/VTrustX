@@ -3,11 +3,52 @@ const router = express.Router();
 const { query } = require('../../infrastructure/database/db');
 const { v4: uuidv4 } = require('uuid');
 const authenticate = require('../middleware/auth');
+const logger = require('../../infrastructure/logger');
 
 // --- PROTECTED ROUTES (For creating shares) ---
 
 /**
- * Create or get existing share link for a form
+ * @swagger
+ * /api/shared/create:
+ *   post:
+ *     summary: Create a shared dashboard link for a form
+ *     tags: [SharedDashboards]
+ *     security:
+ *       - cookieAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - formId
+ *             properties:
+ *               formId:
+ *                 type: integer
+ *                 description: ID of the form to share
+ *     responses:
+ *       200:
+ *         description: Share link created or existing link returned
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 token:
+ *                   type: string
+ *                   format: uuid
+ *                 url:
+ *                   type: string
+ *                   example: /shared/abc-123-def
+ *       400:
+ *         description: Form ID is required
+ *       401:
+ *         description: Not authenticated
+ *       403:
+ *         description: Access denied or form not found
+ *       500:
+ *         description: Server error
  */
 router.post('/create', authenticate, async (req, res) => {
     const { formId } = req.body;
@@ -51,7 +92,7 @@ router.post('/create', authenticate, async (req, res) => {
         });
 
     } catch (err) {
-        console.error(err);
+        logger.error('Error creating shared dashboard', { error: err.message });
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });
@@ -60,7 +101,59 @@ router.post('/create', authenticate, async (req, res) => {
 // --- PUBLIC ROUTES (For viewing) ---
 
 /**
- * Get public dashboard data
+ * @swagger
+ * /api/shared/{token}/view:
+ *   get:
+ *     summary: View a shared dashboard by token
+ *     tags: [SharedDashboards]
+ *     parameters:
+ *       - in: path
+ *         name: token
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Share token for the dashboard
+ *     responses:
+ *       200:
+ *         description: Dashboard data with form and submissions
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 form:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: integer
+ *                     title:
+ *                       type: string
+ *                     definition:
+ *                       type: object
+ *                     created_at:
+ *                       type: string
+ *                       format: date-time
+ *                     tenant_theme:
+ *                       type: object
+ *                 submissions:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: integer
+ *                       form_id:
+ *                         type: integer
+ *                       data:
+ *                         type: object
+ *                       created_at:
+ *                         type: string
+ *                         format: date-time
+ *       404:
+ *         description: Dashboard not found or form data unavailable
+ *       500:
+ *         description: Server error
  */
 router.get('/:token/view', async (req, res) => {
     const { token } = req.params;
@@ -109,7 +202,7 @@ router.get('/:token/view', async (req, res) => {
         });
 
     } catch (err) {
-        console.error("Public dashboard error:", err);
+        logger.error('Public dashboard error', { error: err.message });
         res.status(500).json({ error: 'Internal Server Error' });
     }
 });

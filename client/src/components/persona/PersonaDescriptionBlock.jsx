@@ -55,7 +55,7 @@ export function PersonaDescriptionBlock({ persona, setPersona }) {
                                 lineHeight: '1.6',
                                 resize: 'none',
                                 outline: 'none',
-                                fontFamily: "'Inter', sans-serif",
+                                fontFamily: "'Outfit', sans-serif",
                                 transition: 'border-color 0.2s'
                             }}
                             onFocus={e => e.target.style.borderColor = '#0e7490'}
@@ -84,7 +84,7 @@ export function PersonaDescriptionBlock({ persona, setPersona }) {
                                 lineHeight: '1.6',
                                 resize: 'none',
                                 outline: 'none',
-                                fontFamily: "'Inter', sans-serif",
+                                fontFamily: "'Outfit', sans-serif",
                                 transition: 'border-color 0.2s'
                             }}
                             onFocus={e => e.target.style.borderColor = '#0e7490'}
@@ -113,7 +113,7 @@ export function PersonaDescriptionBlock({ persona, setPersona }) {
                                 lineHeight: '1.6',
                                 resize: 'none',
                                 outline: 'none',
-                                fontFamily: "'Inter', sans-serif",
+                                fontFamily: "'Outfit', sans-serif",
                                 transition: 'border-color 0.2s'
                             }}
                             onFocus={e => e.target.style.borderColor = '#0e7490'}

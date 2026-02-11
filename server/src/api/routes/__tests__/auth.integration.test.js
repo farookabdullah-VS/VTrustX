@@ -7,32 +7,37 @@ const mockTenants = new Map();
 
 jest.mock('../../../infrastructure/database/db', () => ({
     query: jest.fn().mockResolvedValue({ rows: [] }),
+    transaction: jest.fn((cb) => cb({ query: jest.fn().mockResolvedValue({ rows: [] }) })),
 }));
 
 jest.mock('../../../infrastructure/database/PostgresRepository', () => {
-    return jest.fn().mockImplementation((tableName) => ({
-        findBy: jest.fn().mockImplementation((col, val) => {
-            if (tableName === 'users') return Promise.resolve(mockUsers.get(val) || null);
-            return Promise.resolve(null);
-        }),
-        findById: jest.fn().mockImplementation((id) => {
-            if (tableName === 'users') {
-                for (const u of mockUsers.values()) { if (u.id === id) return Promise.resolve(u); }
-            }
-            if (tableName === 'tenants') return Promise.resolve(mockTenants.get(id) || null);
-            return Promise.resolve(null);
-        }),
-        create: jest.fn().mockImplementation((item) => {
-            const id = item.id || Date.now();
-            const saved = { ...item, id };
-            if (tableName === 'users') mockUsers.set(item.username, saved);
-            if (tableName === 'tenants') mockTenants.set(id, saved);
-            return Promise.resolve(saved);
-        }),
-        update: jest.fn().mockImplementation((id, data) => {
-            return Promise.resolve({ id, ...data });
-        }),
-    }));
+    return jest.fn().mockImplementation((tableName) => {
+        const repo = {
+            findBy: jest.fn().mockImplementation((col, val) => {
+                if (tableName === 'users') return Promise.resolve(mockUsers.get(val) || null);
+                return Promise.resolve(null);
+            }),
+            findById: jest.fn().mockImplementation((id) => {
+                if (tableName === 'users') {
+                    for (const u of mockUsers.values()) { if (u.id === id) return Promise.resolve(u); }
+                }
+                if (tableName === 'tenants') return Promise.resolve(mockTenants.get(id) || null);
+                return Promise.resolve(null);
+            }),
+            create: jest.fn().mockImplementation((item) => {
+                const id = item.id || Date.now();
+                const saved = { ...item, id };
+                if (tableName === 'users') mockUsers.set(item.username, saved);
+                if (tableName === 'tenants') mockTenants.set(id, saved);
+                return Promise.resolve(saved);
+            }),
+            update: jest.fn().mockImplementation((id, data) => {
+                return Promise.resolve({ id, ...data });
+            }),
+            withClient: jest.fn().mockReturnThis(),
+        };
+        return repo;
+    });
 });
 
 jest.mock('../../../infrastructure/cache', () => ({

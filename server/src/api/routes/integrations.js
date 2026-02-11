@@ -15,7 +15,44 @@ const maskKey = (key) => {
     return '***' + decrypted.slice(-4);
 };
 
-// GET all integrations — returns masked API keys
+/**
+ * @swagger
+ * /api/integrations:
+ *   get:
+ *     tags: [Integrations]
+ *     summary: List all integrations
+ *     description: Returns all integrations with API keys masked (only last 4 characters shown).
+ *     security:
+ *       - cookieAuth: []
+ *     responses:
+ *       200:
+ *         description: List of integrations
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: string
+ *                     format: uuid
+ *                   provider:
+ *                     type: string
+ *                   api_key:
+ *                     type: string
+ *                     description: Masked API key (e.g. ***ab12)
+ *                   webhook_url:
+ *                     type: string
+ *                   is_active:
+ *                     type: boolean
+ *                   config:
+ *                     type: object
+ *       401:
+ *         description: Not authenticated
+ *       500:
+ *         description: Server error
+ */
 router.get('/', authenticate, async (req, res) => {
     try {
         const result = await query('SELECT * FROM integrations ORDER BY provider ASC');
@@ -25,11 +62,59 @@ router.get('/', authenticate, async (req, res) => {
         }));
         res.json(rows);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        logger.error('Failed to fetch integrations', { error: error.message });
+        res.status(500).json({ error: 'Failed to fetch integrations' });
     }
 });
 
-// UPDATE specific integration — encrypts API key
+/**
+ * @swagger
+ * /api/integrations/{id}:
+ *   put:
+ *     tags: [Integrations]
+ *     summary: Update an integration
+ *     description: Updates an existing integration by ID. API keys are encrypted at rest.
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Integration ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               api_key:
+ *                 type: string
+ *                 description: Plain-text API key (will be encrypted at rest)
+ *               webhook_url:
+ *                 type: string
+ *               is_active:
+ *                 type: boolean
+ *               config:
+ *                 type: object
+ *     responses:
+ *       200:
+ *         description: Integration updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *       401:
+ *         description: Not authenticated
+ *       500:
+ *         description: Server error
+ */
 router.put('/:id', authenticate, validate(updateIntegrationSchema), async (req, res) => {
     try {
         const { api_key, webhook_url, is_active, config } = req.body;
@@ -49,11 +134,62 @@ router.put('/:id', authenticate, validate(updateIntegrationSchema), async (req, 
         );
         res.json({ message: 'Updated successfully' });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        logger.error('Failed to update integration', { error: error.message });
+        res.status(500).json({ error: 'Failed to update integration' });
     }
 });
 
-// CREATE new integration — encrypts API key
+/**
+ * @swagger
+ * /api/integrations:
+ *   post:
+ *     tags: [Integrations]
+ *     summary: Create a new integration
+ *     description: Creates a new integration. Returns 409 if the provider already exists. API key is encrypted at rest.
+ *     security:
+ *       - cookieAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - provider
+ *             properties:
+ *               provider:
+ *                 type: string
+ *               api_key:
+ *                 type: string
+ *                 description: Plain-text API key (will be encrypted at rest)
+ *               webhook_url:
+ *                 type: string
+ *               is_active:
+ *                 type: boolean
+ *                 default: false
+ *               config:
+ *                 type: object
+ *                 default: {}
+ *     responses:
+ *       201:
+ *         description: Integration created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: string
+ *                   format: uuid
+ *                 message:
+ *                   type: string
+ *       401:
+ *         description: Not authenticated
+ *       409:
+ *         description: Integration already exists for this provider
+ *       500:
+ *         description: Server error
+ */
 router.post('/', authenticate, validate(createIntegrationSchema), async (req, res) => {
     try {
         const { provider, api_key, webhook_url, is_active, config } = req.body;
@@ -76,7 +212,7 @@ router.post('/', authenticate, validate(createIntegrationSchema), async (req, re
         res.status(201).json({ id: result.rows[0].id, message: 'Created successfully' });
     } catch (error) {
         logger.error("Create Integration Error", { error: error.message });
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ error: 'Failed to create integration' });
     }
 });
 

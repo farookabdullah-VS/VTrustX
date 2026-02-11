@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Serializer } from "survey-core";
 import enterpriseLoopJson from '../templates/enterprise-loop-survey.json';
+import { toast } from './common/Toast';
 
 export function LoopLogicView({ creator }) {
     const [loops, setLoops] = useState([]);
@@ -86,14 +87,14 @@ export function LoopLogicView({ creator }) {
             });
 
             if (errors.length > 0) {
-                alert("Validation Error:\n" + errors.join("\n"));
+                toast.error("Validation Error:\n" + errors.join("\n"));
                 return;
             }
 
             // Save to Survey Model
             creator.survey.loopConfigs = validLoops;
 
-            alert("Loop Logic Configuration Saved!");
+            toast.success("Loop Logic Configuration Saved!");
         }
     };
 

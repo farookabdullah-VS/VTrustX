@@ -16,10 +16,14 @@ import { SurveyAudience } from './SurveyAudience';
 import ExportModal from './ExportModal';
 
 import { useTranslation } from 'react-i18next';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { FilePlus, LayoutTemplate, Sparkles, Download, Upload, Pencil, Megaphone, Settings, Zap, Share2, BarChart, History as HistoryIcon, Copy, FileSignature, StickyNote, Image as ImageIcon, ChevronLeft, ChevronRight, Grid, List, User, Users, Archive, Folder } from 'lucide-react';
 import { registerCustomTypes, setupSurveyColors, VTrustTheme } from '../survey-config';
 import { initCustomControls } from './CustomSurveyControls';
 import { useToast } from './common/Toast';
+import { SkeletonCard } from './common/Skeleton';
+import { InlineHijriDate } from './common/HijriDate';
+import { WhatsAppShareButton } from './common/WhatsAppShare';
 
 const PREMIUM_GRADIENTS = [
     'linear-gradient(135deg, #FF9A9E 0%, #FECFEF 100%)',
@@ -37,10 +41,17 @@ const getGradient = (id) => {
     return PREMIUM_GRADIENTS[sum % PREMIUM_GRADIENTS.length];
 };
 
-export function FormViewer({ formId, submissionId, onSelectForm, onEditSubmission, onEditForm, onCreate, slug, isPublic, ticketCode, user }) {
+export function FormViewer({ formId: propsFormId, submissionId: propsSubmissionId, onSelectForm, onEditSubmission, onEditForm, onCreate, slug, isPublic, ticketCode, user }) {
     const { t, i18n } = useTranslation();
     const toast = useToast();
     const isRtl = i18n.language === 'ar';
+    const navigate = useNavigate();
+    const { formId: urlFormId } = useParams();
+    const [searchParams] = useSearchParams();
+
+    // Prioritize URL param over prop (backward compatibility)
+    const formId = urlFormId || propsFormId;
+    const submissionId = searchParams.get('submissionId') || propsSubmissionId;
     const isKiosk = window.location.search.includes('kiosk=true');
     const [resultsViewId, setResultsViewId] = React.useState(null);
     const startTimeRef = React.useRef(null);
@@ -978,7 +989,15 @@ export function FormViewer({ formId, submissionId, onSelectForm, onEditSubmissio
                 </div>
             </div>
 
-            {isLoading && <div style={{ textAlign: 'center', padding: '60px', color: '#64748b', fontSize: '1.2em' }}>Loading your surveys...</div>}
+            {isLoading && (
+                <div role="status" aria-label="Loading surveys" style={{ display: 'flex', flexWrap: 'wrap', gap: '20px', padding: '20px' }}>
+                    {[1, 2, 3, 4, 5, 6].map(i => (
+                        <div key={i} style={{ flex: '1 1 280px', minWidth: '280px', maxWidth: '400px' }}>
+                            <SkeletonCard />
+                        </div>
+                    ))}
+                </div>
+            )}
 
             {error && <div role="alert" style={{ textAlign: 'center', padding: '20px', background: '#fee2e2', color: '#dc2626', borderRadius: '8px' }}>Error: {error}</div>}
 
@@ -1240,6 +1259,15 @@ export function FormViewer({ formId, submissionId, onSelectForm, onEditSubmissio
                                                                 <button onClick={() => setCollectViewId(form.id)} style={{ padding: '10px 12px', background: 'transparent', border: 'none', cursor: 'pointer', color: '#1e293b', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.9em', borderRadius: '6px' }} onMouseEnter={e => e.currentTarget.style.background = '#f1f5f9'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
                                                                     <Share2 size={16} color="#10b981" /> {t('surveys.action.collect')}
                                                                 </button>
+                                                                <a
+                                                                    href={`https://api.whatsapp.com/send?text=${encodeURIComponent(`${form.title} - ${window.location.origin}/s/${form.slug || form.id}`)}`}
+                                                                    target="_blank" rel="noopener noreferrer"
+                                                                    style={{ padding: '10px 12px', background: 'transparent', border: 'none', cursor: 'pointer', color: '#1e293b', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.9em', borderRadius: '6px', textDecoration: 'none' }}
+                                                                    onMouseEnter={e => e.currentTarget.style.background = '#dcfce7'}
+                                                                    onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                                                                >
+                                                                    <span style={{ display: 'inline-flex', width: 16, height: 16, alignItems: 'center', justifyContent: 'center', color: '#25D366', fontWeight: 'bold', fontSize: '16px' }}>◉</span> Share via WhatsApp
+                                                                </a>
                                                                 <div style={{ height: '1px', background: '#e2e8f0', margin: '4px 0' }}></div>
                                                                 <button onClick={() => setSettingsViewId(form.id)} style={{ padding: '10px 12px', background: 'transparent', border: 'none', cursor: 'pointer', color: '#1e293b', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.9em', borderRadius: '6px' }} onMouseEnter={e => e.currentTarget.style.background = '#f1f5f9'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
                                                                     <Settings size={16} color="#64748b" /> {t('surveys.action.settings')}
@@ -1509,7 +1537,7 @@ export function FormViewer({ formId, submissionId, onSelectForm, onEditSubmissio
                                             <div>
                                                 <div style={{ fontWeight: '600', color: '#334155' }}>Version {h.version}</div>
                                                 <div style={{ fontSize: '0.8em', color: '#64748b' }}>
-                                                    {h.created_at ? new Date(h.created_at).toLocaleDateString() + ' ' + new Date(h.created_at).toLocaleTimeString() : 'Unknown Date'}
+                                                    {h.created_at ? <InlineHijriDate date={h.created_at} /> : 'Unknown Date'}
                                                 </div>
                                             </div>
                                             <div style={{ display: 'flex', gap: '8px' }}>

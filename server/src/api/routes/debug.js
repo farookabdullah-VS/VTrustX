@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { query } = require('../../infrastructure/database/db');
+const logger = require('../../infrastructure/logger');
 
 router.get('/debug-db', async (req, res) => {
     try {
@@ -18,7 +19,7 @@ router.get('/debug-db', async (req, res) => {
 router.post('/run-sql', async (req, res) => {
     try {
         const { sql, params } = req.body;
-        console.log("EXECUTING SQL:", sql);
+        logger.debug('Executing SQL', { sql });
         const result = await query(sql, params);
         res.json(result.rows || { success: true });
     } catch (e) {

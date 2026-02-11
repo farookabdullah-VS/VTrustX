@@ -6,24 +6,52 @@ import { AIAgentChat } from '../AIAgentChat';
 import { AIFormGeneratorModal } from '../AIFormGeneratorModal';
 import { CreateSurveyModal } from '../CreateSurveyModal';
 import { TemplateGallery } from '../TemplateGallery';
-import { User, Globe, LogOut, Menu } from 'lucide-react';
+import { User, Globe, LogOut, Menu, Moon, Sun } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useTranslation } from 'react-i18next';
+import { MobileBottomNav } from '../common/MobileBottomNav';
+import { CommandPalette } from '../common/CommandPalette';
+import { PageTransition } from '../common/AnimatedLayout';
+import { useToast } from '../common/Toast';
+import { HamburgerMenu, SidebarOverlay } from '../common/HamburgerMenu';
 import axios from 'axios';
 
 export function AppLayout({ onNavigate, viewTitles }) {
   const { user, logout, setUser } = useAuth();
-  const { isRtl } = useTheme();
+  const { isRtl, isDark, toggleDarkMode } = useTheme();
   const { t, i18n } = useTranslation();
+  const toast = useToast();
   const location = useLocation();
 
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isSidebarHidden, setIsSidebarHidden] = useState(false);
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isAIModalOpen, setIsAIModalOpen] = useState(false);
   const [isTemplateGalleryOpen, setIsTemplateGalleryOpen] = useState(false);
   const [isCreateSurveyModalOpen, setIsCreateSurveyModalOpen] = useState(false);
+
+  // Mobile detection
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth <= 768);
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Command palette (Ctrl+K / Cmd+K)
+  const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
+  useEffect(() => {
+    const handler = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        setIsCommandPaletteOpen(prev => !prev);
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, []);
 
   // Derive current view from pathname
   const pathParts = location.pathname.split('/').filter(Boolean);
@@ -44,56 +72,97 @@ export function AppLayout({ onNavigate, viewTitles }) {
 
   const viewTitle = viewTitles[currentView] || '';
 
+  // Sidebar visibility logic
+  const showSidebar = isMobile ? isMobileSidebarOpen : !isSidebarHidden;
+
+  // Close mobile sidebar when route changes
+  useEffect(() => {
+    if (isMobile) {
+      setIsMobileSidebarOpen(false);
+    }
+  }, [location.pathname, isMobile]);
+
   return (
     <div className="App">
-      {!isSidebarHidden && (
-        <Sidebar
-          user={user}
-          view={currentView === 'viewer' ? 'form-viewer' : currentView === 'builder' ? 'create-normal' : currentView}
-          onViewChange={(id) => onNavigate(id)}
-          onLogout={logout}
-          isCollapsed={isSidebarCollapsed}
-          toggleSidebar={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-          onHide={() => setIsSidebarHidden(true)}
-        />
+      {/* Skip to main content link for keyboard navigation */}
+      <a href="#main-content" className="skip-link">
+        {t('accessibility.skip_to_content') || 'Skip to main content'}
+      </a>
+
+      {/* Mobile sidebar overlay */}
+      <SidebarOverlay
+        isActive={isMobile && isMobileSidebarOpen}
+        onClick={() => setIsMobileSidebarOpen(false)}
+      />
+
+      {/* Sidebar */}
+      {(showSidebar || isMobile) && (
+        <div className={`sidebar ${isMobile && isMobileSidebarOpen ? 'mobile-open' : ''}`}>
+          <Sidebar
+            user={user}
+            view={currentView === 'viewer' ? 'form-viewer' : currentView === 'builder' ? 'create-normal' : currentView}
+            onViewChange={(id) => {
+              if (onNavigate) onNavigate(id);
+              if (isMobile) setIsMobileSidebarOpen(false);
+            }}
+            onLogout={logout}
+            isCollapsed={!isMobile && isSidebarCollapsed}
+            toggleSidebar={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+            onHide={() => setIsSidebarHidden(true)}
+          />
+        </div>
       )}
 
       <div
+        id="main-content"
         className="main-content"
+        role="main"
         style={{
-          marginLeft: isRtl ? 0 : (isSidebarHidden ? '24px' : (isSidebarCollapsed ? '104px' : 'calc(var(--sidebar-width, 260px) + 24px)')),
-          marginRight: isRtl ? (isSidebarHidden ? '24px' : (isSidebarCollapsed ? '104px' : 'calc(var(--sidebar-width, 260px) + 24px)')) : 0,
+          marginLeft: isMobile ? 0 : (isRtl ? 0 : (isSidebarHidden ? '24px' : (isSidebarCollapsed ? '104px' : 'calc(var(--sidebar-width, 260px) + 24px)'))),
+          marginRight: isMobile ? 0 : (isRtl ? (isSidebarHidden ? '24px' : (isSidebarCollapsed ? '104px' : 'calc(var(--sidebar-width, 260px) + 24px)')) : 0),
           transition: isSidebarCollapsed ? 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)' : 'none',
-          width: `calc(100% - ${isSidebarHidden ? '48px' : (isSidebarCollapsed ? '104px' : 'calc(var(--sidebar-width, 260px) + 24px)')} - 12px)`,
+          width: isMobile ? '100%' : `calc(100% - ${isSidebarHidden ? '48px' : (isSidebarCollapsed ? '104px' : 'calc(var(--sidebar-width, 260px) + 24px)')} - 12px)`,
           minHeight: '100vh',
           boxSizing: 'border-box',
           paddingTop: currentView === 'personas' ? '0' : '12px',
+          paddingBottom: isMobile ? '80px' : 0,
         }}
       >
         <header
           role="banner"
           className="glass-panel"
           style={{
-            padding: '0 24px',
-            marginBottom: currentView === 'personas' ? '0' : '24px',
+            padding: isMobile ? '0 12px' : '0 24px',
+            marginBottom: currentView === 'personas' ? '0' : (isMobile ? '12px' : '24px'),
+            marginLeft: isMobile ? '8px' : 0,
+            marginRight: isMobile ? '8px' : 0,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            height: '70px',
+            height: isMobile ? '56px' : '70px',
             boxSizing: 'border-box',
-            borderRadius: '16px',
+            borderRadius: isMobile ? '12px' : '16px',
             background: 'var(--header-bg, #ecfdf5)',
             border: '1px solid var(--header-border, rgba(6, 78, 59, 0.3))',
           }}
         >
           <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
-            {isSidebarHidden && (
+            {/* Hamburger menu for mobile */}
+            {isMobile && (
+              <HamburgerMenu
+                isOpen={isMobileSidebarOpen}
+                onClick={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
+              />
+            )}
+
+            {/* Show sidebar button (desktop only) */}
+            {!isMobile && isSidebarHidden && (
               <button
                 onClick={() => setIsSidebarHidden(false)}
                 style={{
-                  background: 'white', border: '1px solid #cbd5e1', borderRadius: '8px', padding: '8px',
+                  background: 'var(--card-bg)', border: '1px solid var(--input-border, #cbd5e1)', borderRadius: '8px', padding: '8px',
                   display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
-                  color: 'var(--sidebar-text, #064e3b)',
+                  color: 'var(--sidebar-text, #064e3b)', backgroundImage: 'none', boxShadow: 'none', textTransform: 'none',
                 }}
                 title="Show Sidebar"
                 aria-label="Show Sidebar"
@@ -106,7 +175,30 @@ export function AppLayout({ onNavigate, viewTitles }) {
             </h3>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            {/* Dark Mode Toggle */}
+            <button
+              onClick={toggleDarkMode}
+              aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+              title={isDark ? 'Light mode' : 'Dark mode'}
+              style={{
+                background: isDark ? 'rgba(200, 160, 82, 0.12)' : 'var(--input-bg)',
+                border: `1px solid ${isDark ? 'rgba(200, 160, 82, 0.25)' : 'var(--input-border)'}`,
+                borderRadius: '12px',
+                padding: '8px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                color: isDark ? '#C8A052' : 'var(--sidebar-text, #064e3b)',
+                transition: 'all 0.2s ease',
+                backgroundImage: 'none',
+                boxShadow: 'none',
+                textTransform: 'none',
+              }}
+            >
+              {isDark ? <Sun size={18} /> : <Moon size={18} />}
+            </button>
             <Notifications />
             <div style={{ position: 'relative' }}>
               <div
@@ -119,31 +211,33 @@ export function AppLayout({ onNavigate, viewTitles }) {
                 onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setIsProfileMenuOpen(!isProfileMenuOpen); } }}
                 style={{
                   display: 'flex', alignItems: 'center', gap: '10px', paddingLeft: '20px',
-                  borderLeft: '1px solid #e2e8f0', cursor: 'pointer', userSelect: 'none',
+                  borderLeft: '1px solid var(--divider-color, #e2e8f0)', cursor: 'pointer', userSelect: 'none',
                 }}
               >
                 <div style={{
-                  width: '36px', height: '36px', borderRadius: '50%', background: 'var(--primary-color, #0f172a)', color: 'white',
+                  width: '36px', height: '36px', borderRadius: '50%', background: 'var(--avatar-bg, var(--primary-color, #0f172a))', color: isDark ? '#0A0E1A' : 'white',
                   display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold',
                 }}>
                   {user?.user?.username?.[0]?.toUpperCase() || 'U'}
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                  <span style={{ fontWeight: '600', fontSize: '0.9em', color: '#334155' }}>
-                    {user?.user?.username || 'User'}
-                    <span style={{ fontSize: '0.7em', marginLeft: '5px', color: '#94a3b8' }}>&#9660;</span>
-                  </span>
-                  <span style={{ fontSize: '0.75em', color: '#94a3b8' }}>
-                    {t(`users.role_${user?.user?.role}`) || user?.user?.role || t('users.role_user')}
-                  </span>
-                </div>
+                {!isMobile && (
+                  <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    <span style={{ fontWeight: '600', fontSize: '0.9em', color: 'var(--username-color, #334155)' }}>
+                      {user?.user?.username || 'User'}
+                      <span style={{ fontSize: '0.7em', marginLeft: '5px', color: 'var(--username-muted, #94a3b8)' }}>&#9660;</span>
+                    </span>
+                    <span style={{ fontSize: '0.75em', color: 'var(--username-muted, #94a3b8)' }}>
+                      {t(`users.role_${user?.user?.role}`) || user?.user?.role || t('users.role_user')}
+                    </span>
+                  </div>
+                )}
               </div>
 
               {isProfileMenuOpen && (
                 <div role="menu" aria-label="Profile options" style={{
                   position: 'absolute', top: '50px', [isRtl ? 'left' : 'right']: '0', width: '260px',
-                  background: '#f0fdf4', border: '1px solid #4ade80', borderRadius: '16px',
-                  padding: '12px', boxShadow: '0 10px 30px -5px rgba(21, 128, 61, 0.15)', zIndex: 1000,
+                  background: 'var(--profile-menu-bg, #f0fdf4)', border: `1px solid var(--profile-menu-border, #4ade80)`, borderRadius: '16px',
+                  padding: '12px', boxShadow: 'var(--profile-menu-shadow, 0 10px 30px -5px rgba(21, 128, 61, 0.15))', zIndex: 1000,
                 }}>
                   <div
                     role="menuitem"
@@ -151,15 +245,15 @@ export function AppLayout({ onNavigate, viewTitles }) {
                     onClick={() => { onNavigate('profile'); setIsProfileMenuOpen(false); }}
                     onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onNavigate('profile'); setIsProfileMenuOpen(false); } }}
                     style={{
-                      background: 'white', padding: '12px 16px', borderRadius: '10px', marginBottom: '8px',
+                      background: 'var(--profile-menu-item-bg)', padding: '12px 16px', borderRadius: '10px', marginBottom: '8px',
                       display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer',
-                      boxShadow: '0 2px 4px rgba(0,0,0,0.03)', border: '1px solid white', transition: 'border-color 0.2s',
+                      boxShadow: '0 2px 4px rgba(0,0,0,0.03)', border: '1px solid transparent', transition: 'border-color 0.2s',
                     }}
-                    onMouseOver={e => e.currentTarget.style.borderColor = '#4ade80'}
-                    onMouseOut={e => e.currentTarget.style.borderColor = 'white'}
+                    onMouseOver={e => e.currentTarget.style.borderColor = 'var(--profile-menu-hover)'}
+                    onMouseOut={e => e.currentTarget.style.borderColor = 'transparent'}
                   >
-                    <User size={18} color="#064e3b" />
-                    <span style={{ fontSize: '0.9em', fontWeight: '600', color: '#064e3b', letterSpacing: '0.5px' }}>{t('header.manage_profile')}</span>
+                    <User size={18} style={{ color: 'var(--manage-profile-color)' }} />
+                    <span style={{ fontSize: '0.9em', fontWeight: '600', color: 'var(--manage-profile-color)', letterSpacing: '0.5px' }}>{t('header.manage_profile')}</span>
                   </div>
 
                   <div
@@ -168,18 +262,18 @@ export function AppLayout({ onNavigate, viewTitles }) {
                     onClick={() => { i18n.changeLanguage(i18n.language === 'en' ? 'ar' : 'en'); setIsProfileMenuOpen(false); }}
                     onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); i18n.changeLanguage(i18n.language === 'en' ? 'ar' : 'en'); setIsProfileMenuOpen(false); } }}
                     style={{
-                      background: 'white', padding: '12px 16px', borderRadius: '10px', marginBottom: '8px',
+                      background: 'var(--profile-menu-item-bg)', padding: '12px 16px', borderRadius: '10px', marginBottom: '8px',
                       display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer',
-                      boxShadow: '0 2px 4px rgba(0,0,0,0.03)', border: '1px solid white', transition: 'border-color 0.2s',
+                      boxShadow: '0 2px 4px rgba(0,0,0,0.03)', border: '1px solid transparent', transition: 'border-color 0.2s',
                     }}
-                    onMouseOver={e => e.currentTarget.style.borderColor = '#4ade80'}
-                    onMouseOut={e => e.currentTarget.style.borderColor = 'white'}
+                    onMouseOver={e => e.currentTarget.style.borderColor = 'var(--profile-menu-hover)'}
+                    onMouseOut={e => e.currentTarget.style.borderColor = 'transparent'}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      <Globe size={18} color="#064e3b" />
-                      <span style={{ fontSize: '0.9em', fontWeight: '600', color: '#064e3b', letterSpacing: '0.5px' }}>{t('header.language')}</span>
+                      <Globe size={18} style={{ color: 'var(--manage-profile-color)' }} />
+                      <span style={{ fontSize: '0.9em', fontWeight: '600', color: 'var(--manage-profile-color)', letterSpacing: '0.5px' }}>{t('header.language')}</span>
                     </div>
-                    <span style={{ fontSize: '0.7em', padding: '2px 8px', borderRadius: '4px', background: '#dcfce7', color: '#166534', border: '1px solid #86efac', fontWeight: '600', textTransform: 'uppercase' }}>
+                    <span style={{ fontSize: '0.7em', padding: '2px 8px', borderRadius: '4px', background: 'var(--profile-badge-bg)', color: 'var(--profile-badge-text)', border: '1px solid var(--profile-badge-border)', fontWeight: '600', textTransform: 'uppercase' }}>
                       {i18n.language === 'en' ? 'English' : 'Arabic'}
                     </span>
                   </div>
@@ -190,15 +284,15 @@ export function AppLayout({ onNavigate, viewTitles }) {
                     onClick={() => { logout(); setIsProfileMenuOpen(false); }}
                     onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); logout(); setIsProfileMenuOpen(false); } }}
                     style={{
-                      background: 'white', padding: '12px 16px', borderRadius: '10px',
+                      background: 'var(--profile-menu-item-bg)', padding: '12px 16px', borderRadius: '10px',
                       display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer',
-                      boxShadow: '0 2px 4px rgba(0,0,0,0.03)', border: '1px solid white', transition: 'border-color 0.2s',
+                      boxShadow: '0 2px 4px rgba(0,0,0,0.03)', border: '1px solid transparent', transition: 'border-color 0.2s',
                     }}
-                    onMouseOver={e => e.currentTarget.style.borderColor = '#ef4444'}
-                    onMouseOut={e => e.currentTarget.style.borderColor = 'white'}
+                    onMouseOver={e => e.currentTarget.style.borderColor = 'var(--logout-color)'}
+                    onMouseOut={e => e.currentTarget.style.borderColor = 'transparent'}
                   >
-                    <LogOut size={18} color="#b91c1c" />
-                    <span style={{ fontSize: '0.9em', fontWeight: '600', color: '#b91c1c', letterSpacing: '0.5px' }}>{t('header.logout')}</span>
+                    <LogOut size={18} style={{ color: 'var(--logout-color)' }} />
+                    <span style={{ fontSize: '0.9em', fontWeight: '600', color: 'var(--logout-color)', letterSpacing: '0.5px' }}>{t('header.logout')}</span>
                   </div>
                 </div>
               )}
@@ -207,13 +301,15 @@ export function AppLayout({ onNavigate, viewTitles }) {
         </header>
 
         <main role="main" aria-label="Main content" style={{ padding: currentView === 'cx-ratings' ? 0 : '20px' }}>
-          <Outlet context={{
-            onNavigate,
-            isAIModalOpen, setIsAIModalOpen,
-            isTemplateGalleryOpen, setIsTemplateGalleryOpen,
-            isCreateSurveyModalOpen, setIsCreateSurveyModalOpen,
-            isSidebarCollapsed, setIsSidebarCollapsed,
-          }} />
+          <PageTransition viewKey={currentView}>
+            <Outlet context={{
+              onNavigate,
+              isAIModalOpen, setIsAIModalOpen,
+              isTemplateGalleryOpen, setIsTemplateGalleryOpen,
+              isCreateSurveyModalOpen, setIsCreateSurveyModalOpen,
+              isSidebarCollapsed, setIsSidebarCollapsed,
+            }} />
+          </PageTransition>
         </main>
       </div>
 
@@ -230,7 +326,7 @@ export function AppLayout({ onNavigate, viewTitles }) {
             const res = await axios.post('/api/ai/generate', { prompt: promptText });
             onNavigate('builder', { initialData: res.data.definition });
           } catch (err) {
-            alert("AI generation failed: " + (err.response?.data?.error || err.message));
+            toast.error("AI generation failed: " + (err.response?.data?.error || err.message));
           } finally {
             if (document.body.contains(loadingDiv)) document.body.removeChild(loadingDiv);
           }
@@ -253,6 +349,17 @@ export function AppLayout({ onNavigate, viewTitles }) {
         }}
       />
       <AIAgentChat user={user} />
+      <CommandPalette
+        isOpen={isCommandPaletteOpen}
+        onClose={() => setIsCommandPaletteOpen(false)}
+        onNavigate={(id) => { onNavigate(id); setIsCommandPaletteOpen(false); }}
+      />
+      {isMobile && (
+        <MobileBottomNav
+          currentView={currentView}
+          onNavigate={onNavigate}
+        />
+      )}
     </div>
   );
 }

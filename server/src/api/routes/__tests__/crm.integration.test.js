@@ -26,7 +26,7 @@ jest.mock('../../../infrastructure/database/db', () => {
     };
     return {
         query: mockPoolQuery,
-        pool: { query: mockPoolQuery },
+        pool: { query: mockPoolQuery, connect: mockPoolConnect.mockResolvedValue(mockClient) },
         connect: mockPoolConnect.mockResolvedValue(mockClient),
         transaction: jest.fn((cb) => cb(mockClient)),
         _mockClient: mockClient,

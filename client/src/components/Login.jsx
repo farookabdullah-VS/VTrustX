@@ -1,8 +1,10 @@
 /* eslint-disable */
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { login, register } from '../services/authService';
+import { fetchCsrfToken } from '../axiosConfig';
 import { useToast } from './common/Toast';
+import { useFormValidation, ValidatedInput, rules } from './common/FormValidation';
 
 export function Login({ onLogin }) {
     const toast = useToast();
@@ -11,9 +13,36 @@ export function Login({ onLogin }) {
     const title = t('login.title') || "Welcome Back";
 
     const [isRegistering, setIsRegistering] = useState(false);
-    const [username, setUsername] = useState('');
-    const [password, setPassword] = useState('');
     const [error, setError] = useState('');
+
+    const form = useFormValidation({
+        initialValues: { username: '', password: '' },
+        validationRules: {
+            username: [rules.required(t('validation.required') !== 'validation.required' ? t('validation.required') : 'Username is required')],
+            password: [
+                rules.required(t('validation.required') !== 'validation.required' ? t('validation.required') : 'Password is required'),
+                rules.minLength(3, t('validation.min_length') !== 'validation.min_length' ? t('validation.min_length') : 'Minimum 3 characters'),
+            ],
+        },
+        onSubmit: async (values) => {
+            setError('');
+            try {
+                if (isRegistering) {
+                    await register({ username: values.username, password: values.password });
+                    toast.success("Registered! Please login.");
+                    setIsRegistering(false);
+                    form.reset();
+                } else {
+                    const data = await login(values.username, values.password);
+                    await fetchCsrfToken(); // Refresh CSRF token for the new session
+                    onLogin(data);
+                }
+            } catch (err) {
+                const msg = err.response?.data?.error || `Authentication failed: ${err.message}`;
+                setError(msg);
+            }
+        },
+    });
 
     useEffect(() => {
         const params = new URLSearchParams(window.location.search);
@@ -28,7 +57,8 @@ export function Login({ onLogin }) {
                 headers: { 'Content-Type': 'application/json' }
             })
                 .then(r => r.ok ? r.json() : Promise.reject(new Error('OAuth session invalid')))
-                .then(data => {
+                .then(async (data) => {
+                    await fetchCsrfToken(); // Refresh CSRF token for the new session
                     onLogin(data);
                     window.history.replaceState({}, document.title, '/');
                 })
@@ -43,27 +73,6 @@ export function Login({ onLogin }) {
         }
     }, [onLogin, t]);
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setError('');
-
-        try {
-            if (isRegistering) {
-                await register({ username, password });
-                toast.success("Registered! Please login.");
-                setIsRegistering(false);
-            } else {
-                const data = await login(username, password);
-                onLogin(data);
-            }
-        } catch (err) {
-            console.error("Login Err Details:", err);
-            // Show specific error from server or network error message
-            const msg = err.response?.data?.error || `Authentication failed: ${err.message}`;
-            setError(msg);
-        }
-    };
-
     // State for Component
 
     return (
@@ -73,14 +82,16 @@ export function Login({ onLogin }) {
             left: 0,
             width: '100vw',
             height: '100vh',
-            background: '#f8fafc',
-            backgroundImage: 'radial-gradient(#e2e8f0 1px, transparent 1px)',
-            backgroundSize: '32px 32px',
+            background: 'var(--deep-bg, #f8fafc)',
+            backgroundImage: 'var(--bg-pattern)',
+            backgroundSize: 'var(--bg-pattern-size)',
             fontFamily: "'Outfit', sans-serif",
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
-            zIndex: 9999
+            zIndex: 9999,
+            padding: '16px',
+            boxSizing: 'border-box',
         }}>
             <style>{`
                 input:-webkit-autofill,
@@ -93,7 +104,7 @@ export function Login({ onLogin }) {
                     transition: background-color 5000s ease-in-out 0s;
                 }
             `}</style>
-            <div style={{ background: '#ffffff', padding: '48px', borderRadius: '24px', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.1)', width: '400px', border: '1px solid #e2e8f0' }}>
+            <div style={{ background: 'var(--card-bg, #ffffff)', padding: 'clamp(24px, 5vw, 48px)', borderRadius: '24px', boxShadow: 'var(--glass-shadow, 0 25px 50px -12px rgba(0,0,0,0.1))', width: '100%', maxWidth: '420px', border: '1px solid var(--glass-border, #e2e8f0)', boxSizing: 'border-box' }}>
                 <div style={{ textAlign: 'center', marginBottom: '30px' }}>
                     <img src="/rayix_v2.jpg" alt="RayiX" style={{ width: '150px', height: 'auto', display: 'block', margin: '0 auto 15px' }} />
                     <h2 style={{ margin: 0, fontSize: '1.8em', color: 'var(--primary-color)', letterSpacing: '-0.5px', fontWeight: '700' }}>RayiX</h2>
@@ -106,61 +117,31 @@ export function Login({ onLogin }) {
 
                 {error && <div role="alert" aria-live="assertive" style={{ color: 'var(--status-error)', marginBottom: '20px', fontSize: '0.9em', textAlign: 'center', background: 'rgba(239, 68, 68, 0.1)', padding: '12px', borderRadius: '8px', border: '1px solid var(--status-error)' }}>{error}</div>}
 
-                <form onSubmit={handleSubmit}>
-                    <div style={{ marginBottom: '20px' }}>
-                        <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9em', color: 'var(--label-color)', fontWeight: '600', marginLeft: '2px' }}>{t('login.username')}</label>
-                        <input
-                            required
-                            aria-required="true"
-                            aria-label={t('login.username')}
-                            type="text"
-                            value={username}
-                            onChange={e => setUsername(e.target.value)}
-                            style={{
-                                width: '100%',
-                                padding: '14px',
-                                borderRadius: '12px',
-                                border: '1px solid var(--input-border)',
-                                background: 'var(--input-bg)',
-                                color: 'var(--input-text)',
-                                fontSize: '15px',
-                                boxSizing: 'border-box',
-                                outline: 'none',
-                                transition: 'all 0.2s',
-                            }}
-                            onFocus={(e) => { e.target.style.borderColor = 'var(--primary-color)'; e.target.style.background = 'var(--input-bg)'; e.target.style.boxShadow = '0 0 0 4px rgba(5, 150, 105, 0.1)'; }}
-                            onBlur={(e) => { e.target.style.borderColor = 'var(--input-border)'; e.target.style.background = 'var(--input-bg)'; e.target.style.boxShadow = 'none'; }}
-                        />
-                    </div>
-                    <div style={{ marginBottom: '30px' }}>
-                        <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.9em', color: 'var(--label-color)', fontWeight: '600', marginLeft: '2px' }}>{t('login.password')}</label>
-                        <input
-                            required
-                            aria-required="true"
-                            aria-label={t('login.password')}
-                            type="password"
-                            value={password}
-                            onChange={e => setPassword(e.target.value)}
-                            style={{
-                                width: '100%',
-                                padding: '14px',
-                                borderRadius: '12px',
-                                border: '1px solid var(--input-border)',
-                                background: 'var(--input-bg)',
-                                color: 'var(--input-text)',
-                                fontSize: '15px',
-                                boxSizing: 'border-box',
-                                outline: 'none',
-                                transition: 'all 0.2s',
-                            }}
-                            onFocus={(e) => { e.target.style.borderColor = 'var(--primary-color)'; e.target.style.background = 'var(--input-bg)'; e.target.style.boxShadow = '0 0 0 4px rgba(5, 150, 105, 0.1)'; }}
-                            onBlur={(e) => { e.target.style.borderColor = 'var(--input-border)'; e.target.style.background = 'var(--input-bg)'; e.target.style.boxShadow = 'none'; }}
-                        />
-                    </div>
-                    <button type="submit" style={{ width: '100%', padding: '16px', background: 'var(--primary-gradient)', color: 'var(--button-text)', border: 'none', borderRadius: '12px', cursor: 'pointer', fontSize: '16px', fontWeight: '600', transition: 'all 0.2s', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}>
-                        {isRegistering ? t('auth.register_now') : t('login.button')}
+                <form onSubmit={form.handleSubmit}>
+                    <ValidatedInput
+                        name="username"
+                        label={t('login.username')}
+                        type="text"
+                        value={form.values.username}
+                        error={form.touched.username && form.errors.username}
+                        onChange={form.handleChange}
+                        onBlur={form.handleBlur}
+                        required
+                    />
+                    <ValidatedInput
+                        name="password"
+                        label={t('login.password')}
+                        type="password"
+                        value={form.values.password}
+                        error={form.touched.password && form.errors.password}
+                        onChange={form.handleChange}
+                        onBlur={form.handleBlur}
+                        required
+                        style={{ marginBottom: '30px' }}
+                    />
+                    <button type="submit" disabled={form.isSubmitting} style={{ width: '100%', padding: '16px', background: 'var(--primary-gradient)', color: 'var(--button-text)', border: 'none', borderRadius: '12px', cursor: form.isSubmitting ? 'wait' : 'pointer', fontSize: '16px', fontWeight: '600', transition: 'all 0.2s', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)', opacity: form.isSubmitting ? 0.7 : 1 }}>
+                        {form.isSubmitting ? '...' : (isRegistering ? t('auth.register_now') : t('login.button'))}
                     </button>
-                    {/* Hover effect handled by CSS if needed */}
                 </form>
 
                 {!isRegistering && (

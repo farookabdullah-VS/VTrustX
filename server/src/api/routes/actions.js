@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { query } = require('../../infrastructure/database/db');
 const authenticate = require('../middleware/auth');
+const logger = require('../../infrastructure/logger');
 
 // 1. Get All Action Plans (Goals)
 router.get('/plans', authenticate, async (req, res) => {
@@ -26,7 +27,8 @@ router.get('/plans', authenticate, async (req, res) => {
         // res.json(result.rows);
 
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        logger.error('Failed to fetch action plans', { error: err.message });
+        res.status(500).json({ error: 'Failed to fetch action plans' });
     }
 });
 
@@ -37,7 +39,8 @@ router.post('/plans', authenticate, async (req, res) => {
         // Insert into DB
         res.json({ id: Math.floor(Math.random() * 1000), title, status: 'New' });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        logger.error('Failed to create action plan', { error: err.message });
+        res.status(500).json({ error: 'Failed to create action plan' });
     }
 });
 
@@ -50,7 +53,8 @@ router.get('/plans/:id/initiatives', authenticate, async (req, res) => {
             { id: 102, plan_id: req.params.id, title: 'Conduct User Interviews', status: 'In Progress', impact: 'Medium' }
         ]);
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        logger.error('Failed to fetch initiatives', { error: err.message });
+        res.status(500).json({ error: 'Failed to fetch initiatives' });
     }
 });
 

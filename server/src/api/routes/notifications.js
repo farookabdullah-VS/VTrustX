@@ -5,7 +5,44 @@ const authenticate = require('../middleware/auth');
 
 router.use(authenticate);
 
-// GET Notifications (Unread first, then recent)
+/**
+ * @swagger
+ * /api/notifications:
+ *   get:
+ *     tags: [Notifications]
+ *     summary: List notifications
+ *     description: Returns up to 20 notifications for the authenticated user, ordered with unread first then by most recent.
+ *     security:
+ *       - cookieAuth: []
+ *     responses:
+ *       200:
+ *         description: List of notifications
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: string
+ *                     format: uuid
+ *                   user_id:
+ *                     type: string
+ *                     format: uuid
+ *                   tenant_id:
+ *                     type: string
+ *                     format: uuid
+ *                   is_read:
+ *                     type: boolean
+ *                   created_at:
+ *                     type: string
+ *                     format: date-time
+ *       401:
+ *         description: Not authenticated
+ *       500:
+ *         description: Server error
+ */
 router.get('/', async (req, res) => {
     try {
         const userId = req.user.id;
@@ -24,7 +61,38 @@ router.get('/', async (req, res) => {
     }
 });
 
-// Mark Single as Read
+/**
+ * @swagger
+ * /api/notifications/{id}/read:
+ *   put:
+ *     tags: [Notifications]
+ *     summary: Mark a notification as read
+ *     description: Marks a single notification as read for the authenticated user.
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Notification ID
+ *     responses:
+ *       200:
+ *         description: Notification marked as read
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *       401:
+ *         description: Not authenticated
+ *       500:
+ *         description: Server error
+ */
 router.put('/:id/read', async (req, res) => {
     try {
         const id = req.params.id;
@@ -39,7 +107,30 @@ router.put('/:id/read', async (req, res) => {
     }
 });
 
-// Mark All as Read
+/**
+ * @swagger
+ * /api/notifications/read-all:
+ *   put:
+ *     tags: [Notifications]
+ *     summary: Mark all notifications as read
+ *     description: Marks all notifications as read for the authenticated user within their tenant.
+ *     security:
+ *       - cookieAuth: []
+ *     responses:
+ *       200:
+ *         description: All notifications marked as read
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *       401:
+ *         description: Not authenticated
+ *       500:
+ *         description: Server error
+ */
 router.put('/read-all', async (req, res) => {
     try {
         await pool.query(

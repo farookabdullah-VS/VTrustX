@@ -1,9 +1,55 @@
 const express = require('express');
 const router = express.Router();
 const { query } = require('../../infrastructure/database/db');
+const logger = require('../../infrastructure/logger');
 
-// GET /api/plans - Public
-// Returns all plans with active discounts (if any)
+/**
+ * @swagger
+ * /api/plans:
+ *   get:
+ *     tags: [Plans]
+ *     summary: List available plans
+ *     description: Returns all plans with their base prices and any active discounts applied. This is a public endpoint that does not require authentication.
+ *     responses:
+ *       200:
+ *         description: List of plans with discount information
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 plans:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: string
+ *                         format: uuid
+ *                       name:
+ *                         type: string
+ *                       base_price:
+ *                         type: number
+ *                         format: float
+ *                       discounted_price:
+ *                         type: number
+ *                         format: float
+ *                       features:
+ *                         type: object
+ *                       discount:
+ *                         type: object
+ *                         nullable: true
+ *                         properties:
+ *                           code:
+ *                             type: string
+ *                           type:
+ *                             type: string
+ *                             enum: [PERCENTAGE, FIXED_AMOUNT]
+ *                           value:
+ *                             type: number
+ *       500:
+ *         description: Server error
+ */
 router.get('/', async (req, res) => {
     try {
         // Fetch all plans
@@ -63,7 +109,7 @@ router.get('/', async (req, res) => {
 
         res.json({ plans: plansWithDiscounts });
     } catch (e) {
-        console.error("Error fetching plans:", e);
+        logger.error('Error fetching plans', { error: e.message });
         res.status(500).json({ error: e.message });
     }
 });

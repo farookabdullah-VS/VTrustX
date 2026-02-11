@@ -3,6 +3,7 @@ const router = express.Router();
 const { query } = require('../../infrastructure/database/db');
 const { v4: uuidv4 } = require('uuid');
 const authenticate = require('../middleware/auth');
+const logger = require('../../infrastructure/logger');
 
 // ==========================================
 // 1. CAMPAIGNS
@@ -21,7 +22,7 @@ router.get('/campaigns', authenticate, async (req, res) => {
         `, [tenantId]);
         res.json(result.rows);
     } catch (err) {
-        console.error('Error fetching campaigns:', err);
+        logger.error('Error fetching campaigns', { error: err.message });
         res.status(500).json({ error: 'Failed to fetch campaigns' });
     }
 });
@@ -74,7 +75,7 @@ router.post('/campaigns', authenticate, async (req, res) => {
 
         res.status(201).json(result.rows[0]);
     } catch (err) {
-        console.error('Error creating campaign:', err);
+        logger.error('Error creating campaign', { error: err.message });
         res.status(500).json({ error: 'Failed to create campaign' });
     }
 });
@@ -101,7 +102,7 @@ router.get('/posts', authenticate, async (req, res) => {
         `, [tenantId]);
         res.json(result.rows);
     } catch (err) {
-        console.error('Error fetching posts:', err);
+        logger.error('Error fetching posts', { error: err.message });
         res.status(500).json({ error: 'Failed to fetch posts' });
     }
 });

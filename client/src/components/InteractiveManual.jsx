@@ -227,7 +227,7 @@ export function InteractiveManual() {
             display: 'flex',
             flexDirection: 'column',
             background: '#f8fafc',
-            fontFamily: "'Outfit', 'Inter', sans-serif",
+            fontFamily: "'Outfit', sans-serif",
             color: '#1e293b',
             borderRadius: '16px',
             overflow: 'hidden'

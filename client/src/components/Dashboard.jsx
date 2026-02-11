@@ -2,12 +2,35 @@ import React, { useMemo, useCallback } from 'react';
 import './Dashboard.css';
 import axios from 'axios';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
+import { useTheme } from '../contexts/ThemeContext';
+import { DashboardSkeleton } from './common/Skeleton';
+import { StaggerContainer, StaggerItem, AnimatedCounter } from './common/AnimatedLayout';
+import { EmptySurveys, EmptyResponses } from './common/EmptyState';
+import { DualDate } from './common/HijriDate';
+import { StatusBadge } from './common/PremiumComponents';
+import { ThemeBarChart } from './common/UnifiedChart';
+import { Pagination, usePagination } from './common/Pagination';
 import * as XLSX from 'xlsx';
+import { Users, BarChart3, Zap, Sparkles, FileText, Settings } from 'lucide-react';
 
 
 export function Dashboard({ onNavigate, onEdit, onEditSubmission }) {
     const { t, i18n } = useTranslation();
+    const { isDark } = useTheme();
     const isRtl = i18n.language === 'ar';
+    const navigate = useNavigate();
+
+    // Helper to use new routing when callbacks aren't provided
+    const handleEdit = useCallback((formId) => {
+        if (onEdit) onEdit(formId);
+        else navigate(`/surveys/${formId}/edit`);
+    }, [onEdit, navigate]);
+
+    const handleViewResults = useCallback((formId) => {
+        if (onNavigate) onNavigate('view-results', formId);
+        else navigate(`/surveys/${formId}/results`);
+    }, [onNavigate, navigate]);
 
     // Default: Last 30 Days
     const [dateRange, setDateRange] = React.useState({
@@ -23,10 +46,14 @@ export function Dashboard({ onNavigate, onEdit, onEditSubmission }) {
         newResponses: 0,
         topSurveys: [],
         dailyTrend: [],
-        allForms: []
+        allForms: [],
+        completionRate: 0,
+        averageTime: null
     });
 
     const [activeMenuId, setActiveMenuId] = React.useState(null);
+    const [surveyPage, setSurveyPage] = React.useState(1);
+    const [surveyPageSize, setSurveyPageSize] = React.useState(10);
 
     const [loading, setLoading] = React.useState(false);
 
@@ -142,7 +169,9 @@ export function Dashboard({ onNavigate, onEdit, onEditSubmission }) {
                     newResponses: newSubsCount,
                     topSurveys: topSurveys,
                     dailyTrend: calculateDailyTrend(filteredSubmissions, dateRange),
-                    allForms: displayForms.sort((a, b) => new Date(b.created_at || b.createdAt) - new Date(a.created_at || a.createdAt))
+                    allForms: displayForms.sort((a, b) => new Date(b.created_at || b.createdAt) - new Date(a.created_at || a.createdAt)),
+                    completionRate: calculateCompletionRate(filteredSubmissions),
+                    averageTime: calculateAverageTime(filteredSubmissions)
                 });
 
             } catch (err) {
@@ -156,12 +185,44 @@ export function Dashboard({ onNavigate, onEdit, onEditSubmission }) {
         return () => controller.abort();
     }, [dateRange]);
 
+    // Calculate completion rate from submissions
+    const calculateCompletionRate = (subs) => {
+        if (subs.length === 0) return 0;
+        const completed = subs.filter(s =>
+            s.metadata?.status === 'complete' ||
+            s.status === 'complete' ||
+            (!s.metadata?.status && !s.status) // Assume complete if no status
+        ).length;
+        return Math.round((completed / subs.length) * 100);
+    };
+
+    // Calculate average completion time
+    const calculateAverageTime = (subs) => {
+        const timesInSeconds = subs
+            .map(s => s.metadata?.completion_time || s.completion_time)
+            .filter(t => t && !isNaN(t));
+
+        if (timesInSeconds.length === 0) return null;
+
+        const avgSeconds = timesInSeconds.reduce((sum, t) => sum + t, 0) / timesInSeconds.length;
+        const minutes = Math.floor(avgSeconds / 60);
+        const seconds = Math.round(avgSeconds % 60);
+        return `${minutes}m ${seconds}s`;
+    };
+
     const calculateDailyTrend = (subs, range) => {
         const buckets = {};
-        const days = 7;
-        for (let i = 0; i < days; i++) {
-            const d = new Date();
-            d.setDate(d.getDate() - i);
+
+        // Use the provided date range instead of hardcoded 7 days
+        const start = new Date(range.start);
+        const end = new Date(range.end);
+        const diffTime = Math.abs(end - start);
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+
+        // Create buckets for each day in the range
+        for (let i = 0; i < diffDays; i++) {
+            const d = new Date(start);
+            d.setDate(d.getDate() + i);
             const key = d.toISOString().split('T')[0];
             buckets[key] = 0;
         }
@@ -174,7 +235,7 @@ export function Dashboard({ onNavigate, onEdit, onEditSubmission }) {
             }
         });
 
-        return Object.entries(buckets).reverse().map(([date, count]) => ({ date, count }));
+        return Object.entries(buckets).sort(([a], [b]) => a.localeCompare(b)).map(([date, count]) => ({ date, count }));
     };
 
     const handleDateChange = (type, val) => {
@@ -214,7 +275,7 @@ export function Dashboard({ onNavigate, onEdit, onEditSubmission }) {
                             aria-label="Start date"
                             value={dateRange.start}
                             onChange={(e) => handleDateChange('start', e.target.value)}
-                            style={{ border: 'none', color: 'var(--text-color)', background: 'transparent', fontWeight: '500', outline: 'none', fontFamily: 'inherit', colorScheme: 'light', cursor: 'pointer' }}
+                            style={{ border: 'none', color: 'var(--text-color)', background: 'transparent', fontWeight: '500', outline: 'none', fontFamily: 'inherit', colorScheme: isDark ? 'dark' : 'light', cursor: 'pointer' }}
                         />
                         <span style={{ color: 'var(--text-muted)' }}>-</span>
                         <input
@@ -222,7 +283,7 @@ export function Dashboard({ onNavigate, onEdit, onEditSubmission }) {
                             aria-label="End date"
                             value={dateRange.end}
                             onChange={(e) => handleDateChange('end', e.target.value)}
-                            style={{ border: 'none', color: 'var(--text-color)', background: 'transparent', fontWeight: '500', outline: 'none', fontFamily: 'inherit', colorScheme: 'light', cursor: 'pointer' }}
+                            style={{ border: 'none', color: 'var(--text-color)', background: 'transparent', fontWeight: '500', outline: 'none', fontFamily: 'inherit', colorScheme: isDark ? 'dark' : 'light', cursor: 'pointer' }}
                         />
                     </div>
 
@@ -230,14 +291,13 @@ export function Dashboard({ onNavigate, onEdit, onEditSubmission }) {
                 </div>
             </div>
 
-            {loading ? <div aria-live="polite" role="status">Loading...</div> : (
+            {loading ? <DashboardSkeleton /> : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
 
                     {/* Metrics Row */}
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '24px' }}>
-                        {/* METRIC 1 */}
+                    <StaggerContainer staggerDelay={0.08} style={{ display: 'flex', flexWrap: 'wrap', gap: '24px' }}>
                         {/* METRIC 1: Total Responses (Blue Theme) */}
-                        <div style={{ flex: '1 1 250px', minWidth: '250px' }}>
+                        <StaggerItem style={{ flex: '1 1 250px', minWidth: '250px' }}>
                             <div style={{
                                 ...cardStyle,
                                 background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, rgba(37, 99, 235, 0.05) 100%)',
@@ -248,21 +308,22 @@ export function Dashboard({ onNavigate, onEdit, onEditSubmission }) {
                                     <div>
                                         <div style={{ color: 'var(--text-muted)', fontSize: '0.9em', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{t('dashboard.total_responses')}</div>
                                         <div style={{ fontSize: '3.5rem', fontWeight: '800', color: 'var(--text-color)', marginTop: '8px', letterSpacing: '-2px' }}>
-                                            {stats.totalResponses}
+                                            <AnimatedCounter value={stats.totalResponses} />
                                         </div>
                                         <div style={{ fontSize: '0.9em', color: '#10b981', marginTop: '5px', display: 'flex', alignItems: 'center', gap: '5px', fontWeight: '600' }}>
                                             <span style={{ background: '#d1fae5', borderRadius: '50%', padding: '2px', width: '16px', height: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>▲</span>
                                             {stats.newResponses} new (24h)
                                         </div>
                                     </div>
-                                    <div style={{ background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)', color: 'white', padding: '14px', borderRadius: '16px', fontSize: '1.5em', boxShadow: '0 4px 10px rgba(59, 130, 246, 0.4)' }}>👥</div>
+                                    <div style={{ background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)', color: 'white', padding: '14px', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 10px rgba(59, 130, 246, 0.4)' }}>
+                                        <Users size={32} strokeWidth={2.5} />
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+                        </StaggerItem>
 
-                        {/* METRIC 2 */}
                         {/* METRIC 2: Total Surveys (Purple/Red Theme) */}
-                        <div style={{ flex: '1 1 250px', minWidth: '250px' }}>
+                        <StaggerItem style={{ flex: '1 1 250px', minWidth: '250px' }}>
                             <div style={{
                                 ...cardStyle,
                                 background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.08) 0%, rgba(220, 38, 38, 0.05) 100%)',
@@ -273,20 +334,21 @@ export function Dashboard({ onNavigate, onEdit, onEditSubmission }) {
                                     <div>
                                         <div style={{ color: 'var(--text-muted)', fontSize: '0.9em', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{t('dashboard.total_surveys')}</div>
                                         <div style={{ fontSize: '3.5rem', fontWeight: '800', color: 'var(--text-color)', marginTop: '8px', letterSpacing: '-2px' }}>
-                                            {stats.totalSurveys}
+                                            <AnimatedCounter value={stats.totalSurveys} />
                                         </div>
                                         <div style={{ fontSize: '0.9em', color: 'var(--text-muted)', marginTop: '5px', fontWeight: '500' }}>
                                             <span style={{ color: '#10b981' }}>{stats.activeSurveys} Active</span> • <span style={{ color: '#f59e0b' }}>{stats.draftSurveys} Draft</span>
                                         </div>
                                     </div>
-                                    <div style={{ background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)', color: 'white', padding: '14px', borderRadius: '16px', fontSize: '1.5em', boxShadow: '0 4px 10px rgba(239, 68, 68, 0.4)' }}>📊</div>
+                                    <div style={{ background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)', color: 'white', padding: '14px', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 10px rgba(239, 68, 68, 0.4)' }}>
+                                        <BarChart3 size={32} strokeWidth={2.5} />
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+                        </StaggerItem>
 
-                        {/* METRIC 3 */}
                         {/* METRIC 3: Completion (Amber/Orange Theme) */}
-                        <div style={{ flex: '1 1 250px', minWidth: '250px' }}>
+                        <StaggerItem style={{ flex: '1 1 250px', minWidth: '250px' }}>
                             <div style={{
                                 ...cardStyle,
                                 background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.08) 0%, rgba(217, 119, 6, 0.05) 100%)',
@@ -297,35 +359,39 @@ export function Dashboard({ onNavigate, onEdit, onEditSubmission }) {
                                     <div>
                                         <div style={{ color: 'var(--text-muted)', fontSize: '0.9em', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{t('dashboard.metrics.avg_completion')}</div>
                                         <div style={{ fontSize: '3.5rem', fontWeight: '800', color: 'var(--text-color)', marginTop: '8px', letterSpacing: '-2px' }}>
-                                            {stats.totalResponses > 0 ? "92%" : "0%"}
+                                            {stats.completionRate}%
                                         </div>
-                                        <div style={{ fontSize: '0.9em', color: 'var(--text-muted)', marginTop: '5px', fontWeight: '500' }}>
-                                            ⏱️ ~2m 30s avg
+                                        <div style={{ fontSize: '0.9em', color: 'var(--text-muted)', marginTop: '5px', fontWeight: '500', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                            <Zap size={14} /> {stats.averageTime ? `${stats.averageTime} avg` : 'No data yet'}
                                         </div>
                                     </div>
-                                    <div style={{ background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)', color: 'white', padding: '14px', borderRadius: '16px', fontSize: '1.5em', boxShadow: '0 4px 10px rgba(245, 158, 11, 0.4)' }}>⚡</div>
+                                    <div style={{ background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)', color: 'white', padding: '14px', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 10px rgba(245, 158, 11, 0.4)' }}>
+                                        <Zap size={32} strokeWidth={2.5} />
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+                        </StaggerItem>
 
                         {/* METRIC 4 */}
-                        <div style={{ flex: '1 1 250px', minWidth: '250px' }}>
+                        <StaggerItem style={{ flex: '1 1 250px', minWidth: '250px' }}>
                             <div style={{ ...cardStyle, background: 'var(--primary-gradient)', color: 'white', border: 'none' }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                                     <div>
                                         <div style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.9em', fontWeight: '600', textTransform: 'uppercase' }}>{t('dashboard.metrics.ai_analysis')}</div>
                                         <div style={{ fontSize: '2rem', fontWeight: '700', marginTop: '10px', lineHeight: '1.2' }}>
-                                            {t('dashboard.metrics.positive_sentiment')}
+                                            {stats.totalResponses > 0 ? 'Analysis Ready' : 'No Data Yet'}
                                         </div>
                                         <div style={{ fontSize: '0.9em', color: 'rgba(255,255,255,0.9)', marginTop: '10px' }}>
-                                            Based on recent text analysis.
+                                            {stats.totalResponses > 0 ? 'AI sentiment analysis coming soon' : 'Collect responses to enable AI analysis'}
                                         </div>
                                     </div>
-                                    <div style={{ background: 'rgba(255,255,255,0.2)', color: 'white', padding: '12px', borderRadius: '12px', fontSize: '1.5em' }}>✨</div>
+                                    <div style={{ background: 'rgba(255,255,255,0.2)', color: 'white', padding: '12px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                        <Sparkles size={32} strokeWidth={2.5} />
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </div>
+                        </StaggerItem>
+                    </StaggerContainer>
 
                     {/* Middle Row */}
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '24px' }}>
@@ -333,37 +399,19 @@ export function Dashboard({ onNavigate, onEdit, onEditSubmission }) {
                         <div style={{ flex: '2 1 600px', minWidth: '300px' }}>
                             <div style={cardStyle}>
                                 <h2 style={{ margin: '0 0 20px 0', fontSize: '1.1em', color: 'var(--text-color)' }}>{t('dashboard.metrics.response_trends')}</h2>
-                                <div style={{ flex: 1, display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', paddingBottom: '20px', gap: '10px', minHeight: '300px' }}>
-                                    {stats.dailyTrend && stats.dailyTrend.map((day, i) => {
-                                        const max = Math.max(...stats.dailyTrend.map(d => d.count), 5);
-                                        const height = (day.count / max) * 100;
-                                        return (
-                                            <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
-                                                <div style={{
-                                                    width: '100%',
-                                                    height: '200px',
-                                                    background: 'var(--input-bg)',
-                                                    borderRadius: '8px',
-                                                    display: 'flex',
-                                                    alignItems: 'flex-end',
-                                                    justifyContent: 'center',
-                                                    overflow: 'hidden',
-                                                    position: 'relative'
-                                                }}>
-                                                    <div style={{
-                                                        width: '60%',
-                                                        height: `${height}%`,
-                                                        background: 'var(--primary-color)',
-                                                        borderRadius: '4px 4px 0 0',
-                                                        transition: 'height 0.5s',
-                                                        minHeight: day.count > 0 ? '4px' : '0'
-                                                    }}></div>
-                                                </div>
-                                                <div style={{ fontSize: '0.8em', color: 'var(--text-muted)', textAlign: 'center' }}>{new Date(day.date).toLocaleDateString(undefined, { weekday: 'short' })}</div>
-                                            </div>
-                                        )
-                                    })}
-                                </div>
+                                {stats.dailyTrend && stats.dailyTrend.length > 0 && (
+                                    <ThemeBarChart
+                                        data={stats.dailyTrend.map(d => ({
+                                            ...d,
+                                            label: new Date(d.date).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' }),
+                                        }))}
+                                        xKey="label"
+                                        yKey="count"
+                                        height={300}
+                                        color="var(--primary-color)"
+                                        isRtl={isRtl}
+                                    />
+                                )}
                             </div>
                         </div>
 
@@ -371,10 +419,23 @@ export function Dashboard({ onNavigate, onEdit, onEditSubmission }) {
                         <div style={{ flex: '1 1 350px', minWidth: '300px' }}>
                             <div style={cardStyle}>
                                 <h2 style={{ margin: '0 0 20px 0', fontSize: '1.1em', color: 'var(--text-color)' }}>{t('dashboard.metrics.top_performing')}</h2>
-                                {stats.topSurveys.length === 0 ? <p style={{ color: 'var(--text-muted)' }}>No data yet.</p> : (
+                                {stats.topSurveys.length === 0 ? <EmptyResponses /> : (
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
                                         {stats.topSurveys.map((s, i) => (
-                                            <div key={i} onDoubleClick={() => onEdit(s.id)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: '15px', borderBottom: i < stats.topSurveys.length - 1 ? '1px solid var(--input-border)' : 'none', cursor: 'pointer' }}>
+                                            <div
+                                                key={i}
+                                                role="button"
+                                                tabIndex={0}
+                                                onClick={() => handleEdit(s.id)}
+                                                onKeyDown={(e) => {
+                                                    if (e.key === 'Enter' || e.key === ' ') {
+                                                        e.preventDefault();
+                                                        handleEdit(s.id);
+                                                    }
+                                                }}
+                                                aria-label={`Edit survey: ${s.title}`}
+                                                style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: '15px', borderBottom: i < stats.topSurveys.length - 1 ? '1px solid var(--input-border)' : 'none', cursor: 'pointer' }}
+                                            >
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                                                     <div style={{ width: '32px', height: '32px', background: 'var(--input-bg)', border: '1px solid var(--primary-color)', color: 'var(--primary-color)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.9em', fontWeight: 'bold' }}>
                                                         {i + 1}
@@ -399,36 +460,37 @@ export function Dashboard({ onNavigate, onEdit, onEditSubmission }) {
                             <div style={cardStyle}>
                                 <h2 style={{ margin: '0 0 20px 0', fontSize: '1.1em', color: 'var(--text-color)' }}>{t('dashboard.my_surveys')}</h2>
                                 <div style={{ overflowX: 'auto' }}>
-                                    <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: isRtl ? 'right' : 'left' }}>
+                                    <table role="table" aria-label="List of surveys" style={{ width: '100%', borderCollapse: 'collapse', textAlign: isRtl ? 'right' : 'left' }}>
+                                        <caption style={{ position: 'absolute', width: '1px', height: '1px', padding: '0', margin: '-1px', overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', borderWidth: '0' }}>
+                                            My Surveys - Dashboard Overview
+                                        </caption>
                                         <thead>
                                             <tr style={{ color: 'var(--text-muted)', fontSize: '0.85em', borderBottom: '1px solid var(--input-border)' }}>
-                                                <th style={{ padding: '15px' }}>{t('dashboard.table.title')}</th>
-                                                <th style={{ padding: '15px' }}>{t('dashboard.table.status')}</th>
-                                                <th style={{ padding: '15px' }}>{t('dashboard.table.responses')}</th>
-                                                <th style={{ padding: '15px' }}>{t('dashboard.table.created')}</th>
-                                                <th style={{ padding: '15px' }}>{t('dashboard.table.actions')}</th>
+                                                <th scope="col" style={{ padding: '15px' }}>{t('dashboard.table.title')}</th>
+                                                <th scope="col" style={{ padding: '15px' }}>{t('dashboard.table.status')}</th>
+                                                <th scope="col" style={{ padding: '15px' }}>{t('dashboard.table.responses')}</th>
+                                                <th scope="col" style={{ padding: '15px' }}>{t('dashboard.table.created')}</th>
+                                                <th scope="col" style={{ padding: '15px' }}>{t('dashboard.table.actions')}</th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {stats.allForms.map(form => (
-                                                <tr key={form.id} style={{ borderBottom: '1px solid var(--input-border)', cursor: 'pointer' }} onDoubleClick={() => onEdit(form.id)}>
+                                            {stats.allForms.slice((surveyPage - 1) * surveyPageSize, surveyPage * surveyPageSize).map(form => (
+                                                <tr key={form.id} style={{ borderBottom: '1px solid var(--input-border)' }}>
                                                     <td style={{ padding: '15px', fontWeight: '500', color: 'var(--text-color)' }}>{form.title}</td>
                                                     <td style={{ padding: '15px' }}>
-                                                        <span style={{
-                                                            padding: '4px 10px', borderRadius: '20px', fontSize: '0.8em',
-                                                            background: (form.is_published || form.isPublished) ? 'var(--input-bg)' : '#fef3c7',
-                                                            color: (form.is_published || form.isPublished) ? 'var(--primary-color)' : '#d97706',
-                                                            border: (form.is_published || form.isPublished) ? '1px solid var(--primary-color)' : 'none'
-                                                        }}>
-                                                            {(form.is_published || form.isPublished) ? t('dashboard.status.published') : t('dashboard.status.draft')}
-                                                        </span>
+                                                        <StatusBadge
+                                                            status={(form.is_published || form.isPublished) ? 'published' : 'draft'}
+                                                            label={(form.is_published || form.isPublished) ? t('dashboard.status.published') : t('dashboard.status.draft')}
+                                                        />
                                                     </td>
                                                     <td style={{ padding: '15px', color: 'var(--text-muted)' }}>-</td>
-                                                    <td style={{ padding: '15px', color: 'var(--text-muted)' }}>{new Date(form.created_at || form.createdAt).toLocaleDateString()}</td>
+                                                    <td style={{ padding: '15px', color: 'var(--text-muted)' }}>
+                                                        <DualDate date={form.created_at || form.createdAt} compact />
+                                                    </td>
                                                     <td style={{ padding: '15px', position: 'relative' }}>
                                                         <div style={{ display: 'flex', gap: '10px' }}>
                                                             <button
-                                                                onClick={() => onEdit(form.id)}
+                                                                onClick={() => handleEdit(form.id)}
                                                                 style={{ padding: '6px 12px', border: '1px solid var(--input-border)', background: 'var(--input-bg)', borderRadius: '6px', cursor: 'pointer', fontSize: '0.9em', color: 'var(--text-color)' }}>
                                                                 {t('dashboard.actions.edit')}
                                                             </button>
@@ -442,35 +504,75 @@ export function Dashboard({ onNavigate, onEdit, onEditSubmission }) {
                                                             </button>
                                                         </div>
                                                         {activeMenuId === form.id && (
-                                                            <div style={{
-                                                                position: 'absolute', [isRtl ? 'left' : 'right']: '15px', top: '100%',
-                                                                background: 'var(--card-bg)', border: '1px solid var(--input-border)', borderRadius: '8px',
-                                                                boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)', zIndex: 10, width: '180px',
-                                                                padding: '5px 0'
-                                                            }}>
-                                                                <div onClick={() => onEdit(form.id, 'audience')} style={{ padding: '10px 15px', cursor: 'pointer', fontSize: '0.9em', color: 'var(--text-color)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                            <div
+                                                                role="menu"
+                                                                aria-label={`Actions for survey ${form.title}`}
+                                                                onKeyDown={(e) => {
+                                                                    if (e.key === 'Escape') {
+                                                                        setActiveMenuId(null);
+                                                                    }
+                                                                }}
+                                                                style={{
+                                                                    position: 'absolute', [isRtl ? 'left' : 'right']: '15px', top: '100%',
+                                                                    background: 'var(--card-bg)', border: '1px solid var(--input-border)', borderRadius: '8px',
+                                                                    boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)', zIndex: 10, width: '180px',
+                                                                    padding: '5px 0'
+                                                                }}
+                                                            >
+                                                                <button
+                                                                    role="menuitem"
+                                                                    onClick={() => { handleEdit(form.id, 'audience'); setActiveMenuId(null); }}
+                                                                    style={{ width: '100%', padding: '10px 15px', cursor: 'pointer', fontSize: '0.9em', color: 'var(--text-color)', display: 'flex', alignItems: 'center', gap: '8px', background: 'transparent', border: 'none', textAlign: isRtl ? 'right' : 'left' }}
+                                                                >
                                                                     <span>📢</span> Survey Audience
-                                                                </div>
-                                                                <div onClick={() => onNavigate('view-results', { id: form.id, view: 'individual' })} style={{ padding: '10px 15px', cursor: 'pointer', fontSize: '0.9em', color: 'var(--text-color)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                                    <span>📝</span> Edit Response
-                                                                </div>
-                                                                <div onClick={() => onEdit(form.id, 'analytics')} style={{ padding: '10px 15px', cursor: 'pointer', fontSize: '0.9em', color: 'var(--text-color)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                                    <span>📊</span> Analytics
-                                                                </div>
-                                                                <div onClick={() => onEdit(form.id, 'settings')} style={{ padding: '10px 15px', cursor: 'pointer', fontSize: '0.9em', color: 'var(--text-color)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                                    <span>⚙️</span> Settings
-                                                                </div>
+                                                                </button>
+                                                                <button
+                                                                    role="menuitem"
+                                                                    onClick={() => { handleViewResults(form.id); setActiveMenuId(null); }}
+                                                                    style={{ width: '100%', padding: '10px 15px', cursor: 'pointer', fontSize: '0.9em', color: 'var(--text-color)', display: 'flex', alignItems: 'center', gap: '8px', background: 'transparent', border: 'none', textAlign: isRtl ? 'right' : 'left' }}
+                                                                >
+                                                                    <FileText size={16} /> View Results
+                                                                </button>
+                                                                <button
+                                                                    role="menuitem"
+                                                                    onClick={() => { handleEdit(form.id, 'analytics'); setActiveMenuId(null); }}
+                                                                    style={{ width: '100%', padding: '10px 15px', cursor: 'pointer', fontSize: '0.9em', color: 'var(--text-color)', display: 'flex', alignItems: 'center', gap: '8px', background: 'transparent', border: 'none', textAlign: isRtl ? 'right' : 'left' }}
+                                                                >
+                                                                    <BarChart3 size={16} /> Analytics
+                                                                </button>
+                                                                <button
+                                                                    role="menuitem"
+                                                                    onClick={() => { handleEdit(form.id, 'settings'); setActiveMenuId(null); }}
+                                                                    style={{ width: '100%', padding: '10px 15px', cursor: 'pointer', fontSize: '0.9em', color: 'var(--text-color)', display: 'flex', alignItems: 'center', gap: '8px', background: 'transparent', border: 'none', textAlign: isRtl ? 'right' : 'left' }}
+                                                                >
+                                                                    <Settings size={16} /> Settings
+                                                                </button>
                                                             </div>
                                                         )}
                                                     </td>
                                                 </tr>
                                             ))}
                                             {stats.allForms.length === 0 && (
-                                                <tr><td colSpan="5" style={{ padding: '20px', textAlign: 'center', color: 'var(--text-muted)' }}>{t('dashboard.empty')}</td></tr>
+                                                <tr><td colSpan="5">
+                                                    <EmptySurveys
+                                                        onCreateSurvey={() => onNavigate('create-normal')}
+                                                        onBrowseTemplates={() => onNavigate('templates')}
+                                                    />
+                                                </td></tr>
                                             )}
                                         </tbody>
                                     </table>
                                 </div>
+                                {stats.allForms.length > surveyPageSize && (
+                                    <Pagination
+                                        currentPage={surveyPage}
+                                        totalItems={stats.allForms.length}
+                                        pageSize={surveyPageSize}
+                                        onPageChange={setSurveyPage}
+                                        onPageSizeChange={(size) => { setSurveyPageSize(size); setSurveyPage(1); }}
+                                        pageSizeOptions={[10, 25, 50]}
+                                    />
+                                )}
                             </div>
                         </div>
                     </div>

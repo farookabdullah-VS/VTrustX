@@ -1,0 +1,479 @@
+/* VTrustX Responsive Design System */
+/* Mobile-first approach with progressive enhancement */
+
+/* ==========================================
+   BREAKPOINTS
+   ========================================== */
+
+:root {
+  /* Breakpoint values */
+  --breakpoint-mobile: 480px;
+  --breakpoint-tablet: 768px;
+  --breakpoint-desktop: 1024px;
+  --breakpoint-wide: 1440px;
+
+  /* Responsive spacing */
+  --spacing-mobile: 12px;
+  --spacing-tablet: 16px;
+  --spacing-desktop: 24px;
+
+  /* Sidebar widths */
+  --sidebar-width-mobile: 280px;
+  --sidebar-width-tablet: 240px;
+  --sidebar-width-desktop: 260px;
+}
+
+/* ==========================================
+   MOBILE (< 768px)
+   ========================================== */
+
+@media (max-width: 767px) {
+  /* Typography scaling */
+  :root {
+    font-size: 13px; /* Reduce base font size */
+  }
+
+  /* Hide sidebar by default on mobile */
+  .sidebar {
+    position: fixed;
+    left: -100%;
+    top: 0;
+    height: 100vh;
+    width: var(--sidebar-width-mobile);
+    z-index: 1000;
+    transition: left 0.3s ease;
+    box-shadow: none;
+  }
+
+  .sidebar.mobile-open {
+    left: 0;
+    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.3);
+  }
+
+  /* Mobile overlay */
+  .sidebar-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+  }
+
+  .sidebar-overlay.active {
+    display: block;
+  }
+
+  /* Hamburger menu button */
+  .hamburger-menu {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--text-color);
+  }
+
+  /* Main content adjustment */
+  .app-content {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    padding: var(--spacing-mobile);
+    width: 100% !important;
+  }
+
+  /* Dashboard cards - stack vertically */
+  .dashboard-metrics {
+    flex-direction: column !important;
+    gap: 12px !important;
+  }
+
+  .dashboard-metric-card {
+    min-width: 100% !important;
+    flex: 1 1 100% !important;
+  }
+
+  /* Dashboard grid */
+  .dashboard-grid {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+
+  /* Cards */
+  .card {
+    padding: 16px !important;
+    border-radius: 12px !important;
+  }
+
+  /* Tables - horizontal scroll */
+  .table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin: 0 -16px; /* Full width on mobile */
+    padding: 0 16px;
+  }
+
+  table {
+    min-width: 600px; /* Minimum width for readability */
+  }
+
+  table th,
+  table td {
+    padding: 10px 8px !important;
+    font-size: 0.9em;
+  }
+
+  /* Hide less important columns on mobile */
+  .mobile-hide {
+    display: none !important;
+  }
+
+  /* Forms */
+  .form-row {
+    flex-direction: column !important;
+    gap: 12px !important;
+  }
+
+  .form-group {
+    width: 100% !important;
+  }
+
+  /* Modals */
+  .modal {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+    height: 100vh;
+  }
+
+  /* Buttons */
+  button {
+    min-height: 44px; /* Touch target size */
+    padding: 12px 16px !important;
+  }
+
+  /* Hero text */
+  .hero-title {
+    font-size: 2rem !important; /* Down from 3.5rem */
+  }
+
+  .hero-subtitle {
+    font-size: 1.1rem !important;
+  }
+
+  /* Reduce padding on containers */
+  .container {
+    padding: 12px !important;
+  }
+
+  /* Metric numbers */
+  .metric-number {
+    font-size: 2.5rem !important; /* Down from 3.5rem */
+  }
+
+  /* Charts */
+  .chart-container {
+    height: 250px !important; /* Reduce height on mobile */
+  }
+
+  /* Flexbox adjustments */
+  .flex-row {
+    flex-direction: column !important;
+  }
+
+  .flex-wrap {
+    flex-wrap: wrap !important;
+  }
+
+  /* Hide certain UI elements on mobile */
+  .desktop-only {
+    display: none !important;
+  }
+
+  /* Show mobile-specific elements */
+  .mobile-only {
+    display: block !important;
+  }
+
+  /* Bottom navigation for mobile (optional) */
+  .mobile-bottom-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background: var(--background-color);
+    border-top: 1px solid var(--input-border);
+    z-index: 900;
+    padding: 8px;
+    justify-content: space-around;
+    align-items: center;
+  }
+
+  .mobile-bottom-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 8px;
+    min-width: 60px;
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.75rem;
+  }
+
+  .mobile-bottom-nav-item.active {
+    color: var(--primary-color);
+  }
+
+  /* Add padding to avoid bottom nav overlap */
+  .app-content-with-bottom-nav {
+    padding-bottom: 80px !important;
+  }
+}
+
+/* ==========================================
+   TABLET (768px - 1023px)
+   ========================================== */
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  :root {
+    font-size: 14px;
+  }
+
+  /* Sidebar - collapsible on tablet */
+  .sidebar {
+    width: var(--sidebar-width-tablet);
+  }
+
+  .sidebar.collapsed {
+    width: 80px;
+  }
+
+  /* Main content */
+  .app-content {
+    margin-left: var(--sidebar-width-tablet);
+    padding: var(--spacing-tablet);
+    width: calc(100% - var(--sidebar-width-tablet));
+  }
+
+  .app-content.sidebar-collapsed {
+    margin-left: 80px;
+    width: calc(100% - 80px);
+  }
+
+  /* Dashboard - 2 columns */
+  .dashboard-metrics {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 16px !important;
+  }
+
+  /* Tables */
+  table th,
+  table td {
+    padding: 12px 10px !important;
+  }
+
+  /* Forms - 2 column layout */
+  .form-row {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 16px !important;
+  }
+
+  /* Modals */
+  .modal {
+    max-width: 600px !important;
+  }
+}
+
+/* ==========================================
+   DESKTOP (1024px - 1439px)
+   ========================================== */
+
+@media (min-width: 1024px) and (max-width: 1439px) {
+  .sidebar {
+    width: var(--sidebar-width-desktop);
+  }
+
+  .app-content {
+    margin-left: var(--sidebar-width-desktop);
+    padding: var(--spacing-desktop);
+  }
+
+  /* Dashboard - 3-4 columns */
+  .dashboard-metrics {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 20px !important;
+  }
+
+  .dashboard-metric-card {
+    flex: 1 1 calc(25% - 20px);
+    min-width: 250px;
+  }
+}
+
+/* ==========================================
+   WIDE SCREENS (≥ 1440px)
+   ========================================== */
+
+@media (min-width: 1440px) {
+  .container {
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  /* Dashboard - 4 columns */
+  .dashboard-metrics {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 24px !important;
+  }
+
+  .dashboard-metric-card {
+    flex: 1 1 calc(25% - 24px);
+    min-width: 280px;
+  }
+}
+
+/* ==========================================
+   TOUCH DEVICE OPTIMIZATIONS
+   ========================================== */
+
+@media (hover: none) and (pointer: coarse) {
+  /* Increase touch targets */
+  button,
+  a,
+  input[type="checkbox"],
+  input[type="radio"],
+  .clickable {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Remove hover states */
+  *:hover {
+    /* Disable hover effects on touch devices */
+  }
+
+  /* Larger tap areas for icons */
+  .icon-button {
+    padding: 12px !important;
+  }
+
+  /* Better scroll behavior */
+  * {
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* ==========================================
+   PRINT STYLES
+   ========================================== */
+
+@media print {
+  .sidebar,
+  .hamburger-menu,
+  .mobile-bottom-nav,
+  button,
+  .no-print {
+    display: none !important;
+  }
+
+  .app-content {
+    margin: 0 !important;
+    width: 100% !important;
+  }
+
+  * {
+    background: white !important;
+    color: black !important;
+  }
+}
+
+/* ==========================================
+   UTILITY CLASSES
+   ========================================== */
+
+/* Responsive visibility */
+.mobile-only {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .mobile-only {
+    display: block;
+  }
+  .tablet-up {
+    display: none;
+  }
+}
+
+.desktop-only {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .desktop-only {
+    display: block;
+  }
+}
+
+/* Responsive text alignment */
+@media (max-width: 767px) {
+  .mobile-center {
+    text-align: center !important;
+  }
+}
+
+/* Responsive spacing */
+.responsive-padding {
+  padding: var(--spacing-mobile);
+}
+
+@media (min-width: 768px) {
+  .responsive-padding {
+    padding: var(--spacing-tablet);
+  }
+}
+
+@media (min-width: 1024px) {
+  .responsive-padding {
+    padding: var(--spacing-desktop);
+  }
+}
+
+/* Responsive grid */
+.responsive-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 768px) {
+  .responsive-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .responsive-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 1440px) {
+  .responsive-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}

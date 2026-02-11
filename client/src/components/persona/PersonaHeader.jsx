@@ -58,7 +58,7 @@ export function PersonaHeader({ persona, setPersona }) {
     const getTypeIcon = (typeId) => PERSONALITY_TYPES.find(t => t.id === typeId)?.icon || '💡';
 
     return (
-        <div style={{ display: 'flex', gap: '30px', fontFamily: "'Inter', sans-serif" }}>
+        <div style={{ display: 'flex', gap: '30px', fontFamily: "'Outfit', sans-serif" }}>
 
             {/* COLUMN 1: IMAGE CARD */}
             <div

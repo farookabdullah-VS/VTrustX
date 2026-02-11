@@ -12,8 +12,53 @@ const path = require('path');
 const exportService = new ExportService();
 
 /**
- * POST /api/exports/raw
- * Generate raw data export (Excel/CSV)
+ * @swagger
+ * /api/exports/raw:
+ *   post:
+ *     summary: Export raw survey data as Excel or CSV
+ *     tags: [Exports]
+ *     security:
+ *       - cookieAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - formId
+ *               - format
+ *             properties:
+ *               formId:
+ *                 type: integer
+ *                 description: ID of the form to export
+ *               format:
+ *                 type: string
+ *                 enum: [xlsx, csv]
+ *               options:
+ *                 type: object
+ *               filters:
+ *                 type: object
+ *     responses:
+ *       202:
+ *         description: Export job created
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 jobId:
+ *                   type: string
+ *                 statusUrl:
+ *                   type: string
+ *       400:
+ *         description: Missing required fields or invalid format
+ *       401:
+ *         description: Not authenticated
+ *       500:
+ *         description: Server error
  */
 router.post('/raw', authenticate, authenticate.checkPermission('forms', 'view'), async (req, res) => {
     try {
@@ -51,13 +96,63 @@ router.post('/raw', authenticate, authenticate.checkPermission('forms', 'view'),
 
     } catch (error) {
         logger.error('Raw export error', { error: error.message });
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ error: 'Failed to create raw data export' });
     }
 });
 
 /**
- * POST /api/exports/analytics
- * Generate charts and analytics export
+ * @swagger
+ * /api/exports/analytics:
+ *   post:
+ *     summary: Export analytics and charts as PPTX, DOCX, XLSX, or PDF
+ *     tags: [Exports]
+ *     security:
+ *       - cookieAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - formId
+ *               - format
+ *             properties:
+ *               formId:
+ *                 type: integer
+ *                 description: ID of the form to export
+ *               format:
+ *                 type: string
+ *                 enum: [pptx, ppt, docx, xlsx, pdf]
+ *               template:
+ *                 type: string
+ *                 description: Presentation template name
+ *                 default: QuestionPro/Blue
+ *               includeOpenEnded:
+ *                 type: boolean
+ *                 default: true
+ *               filters:
+ *                 type: object
+ *     responses:
+ *       202:
+ *         description: Export job created
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 jobId:
+ *                   type: string
+ *                 statusUrl:
+ *                   type: string
+ *       400:
+ *         description: Missing required fields or invalid format
+ *       401:
+ *         description: Not authenticated
+ *       500:
+ *         description: Server error
  */
 router.post('/analytics', authenticate, authenticate.checkPermission('forms', 'view'), async (req, res) => {
     try {
@@ -100,13 +195,54 @@ router.post('/analytics', authenticate, authenticate.checkPermission('forms', 'v
 
     } catch (error) {
         logger.error('Analytics export error', { error: error.message });
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ error: 'Failed to create analytics export' });
     }
 });
 
 /**
- * POST /api/exports/spss
- * Generate SPSS export
+ * @swagger
+ * /api/exports/spss:
+ *   post:
+ *     summary: Export form data in SPSS format
+ *     tags: [Exports]
+ *     security:
+ *       - cookieAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - formId
+ *             properties:
+ *               formId:
+ *                 type: integer
+ *                 description: ID of the form to export
+ *               options:
+ *                 type: object
+ *               filters:
+ *                 type: object
+ *     responses:
+ *       202:
+ *         description: Export job created
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 jobId:
+ *                   type: string
+ *                 statusUrl:
+ *                   type: string
+ *       400:
+ *         description: Missing required field formId
+ *       401:
+ *         description: Not authenticated
+ *       500:
+ *         description: Server error
  */
 router.post('/spss', authenticate, authenticate.checkPermission('forms', 'view'), async (req, res) => {
     try {
@@ -140,13 +276,58 @@ router.post('/spss', authenticate, authenticate.checkPermission('forms', 'view')
 
     } catch (error) {
         logger.error('SPSS export error', { error: error.message });
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ error: 'Failed to create SPSS export' });
     }
 });
 
 /**
- * POST /api/exports/sql
- * Generate SQL export
+ * @swagger
+ * /api/exports/sql:
+ *   post:
+ *     summary: Export form data as SQL statements
+ *     tags: [Exports]
+ *     security:
+ *       - cookieAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - formId
+ *             properties:
+ *               formId:
+ *                 type: integer
+ *                 description: ID of the form to export
+ *               includeScores:
+ *                 type: boolean
+ *                 default: true
+ *               includeTimestamps:
+ *                 type: boolean
+ *                 default: true
+ *               filters:
+ *                 type: object
+ *     responses:
+ *       202:
+ *         description: Export job created
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 jobId:
+ *                   type: string
+ *                 statusUrl:
+ *                   type: string
+ *       400:
+ *         description: Missing required field formId
+ *       401:
+ *         description: Not authenticated
+ *       500:
+ *         description: Server error
  */
 router.post('/sql', authenticate, authenticate.checkPermission('forms', 'view'), async (req, res) => {
     try {
@@ -185,13 +366,53 @@ router.post('/sql', authenticate, authenticate.checkPermission('forms', 'view'),
 
     } catch (error) {
         logger.error('SQL export error', { error: error.message });
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ error: 'Failed to create SQL export' });
     }
 });
 
 /**
- * GET /api/exports/jobs/:id
- * Get export job status
+ * @swagger
+ * /api/exports/jobs/{id}:
+ *   get:
+ *     summary: Get the status of an export job
+ *     tags: [Exports]
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Export job ID
+ *     responses:
+ *       200:
+ *         description: Export job status
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: string
+ *                 status:
+ *                   type: string
+ *                   enum: [pending, processing, completed, failed]
+ *                 export_type:
+ *                   type: string
+ *                 format:
+ *                   type: string
+ *                 created_at:
+ *                   type: string
+ *                   format: date-time
+ *                 completed_at:
+ *                   type: string
+ *                   format: date-time
+ *                   nullable: true
+ *       401:
+ *         description: Not authenticated
+ *       404:
+ *         description: Export job not found
  */
 router.get('/jobs/:id', authenticate, async (req, res) => {
     try {
@@ -205,13 +426,37 @@ router.get('/jobs/:id', authenticate, async (req, res) => {
 
     } catch (error) {
         logger.error('Get job status error', { error: error.message });
-        res.status(404).json({ error: error.message });
+        res.status(404).json({ error: 'Export job not found' });
     }
 });
 
 /**
- * GET /api/exports/download/:jobId
- * Download completed export file
+ * @swagger
+ * /api/exports/download/{jobId}:
+ *   get:
+ *     summary: Download a completed export file
+ *     tags: [Exports]
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: jobId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Export job ID
+ *     responses:
+ *       200:
+ *         description: File download stream
+ *         content:
+ *           application/octet-stream:
+ *             schema:
+ *               type: string
+ *               format: binary
+ *       401:
+ *         description: Not authenticated
+ *       404:
+ *         description: Export file not found
  */
 router.get('/download/:jobId', authenticate, async (req, res) => {
     try {
@@ -249,13 +494,50 @@ router.get('/download/:jobId', authenticate, async (req, res) => {
 
     } catch (error) {
         logger.error('Download error', { error: error.message });
-        res.status(404).json({ error: error.message });
+        res.status(404).json({ error: 'Export file not found' });
     }
 });
 
 /**
- * GET /api/exports/history
- * Get export history for current user
+ * @swagger
+ * /api/exports/history:
+ *   get:
+ *     summary: Get export history for the current user
+ *     tags: [Exports]
+ *     security:
+ *       - cookieAuth: []
+ *     responses:
+ *       200:
+ *         description: List of recent export jobs (last 50)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: string
+ *                   export_type:
+ *                     type: string
+ *                   format:
+ *                     type: string
+ *                   status:
+ *                     type: string
+ *                     enum: [pending, processing, completed, failed]
+ *                   created_at:
+ *                     type: string
+ *                     format: date-time
+ *                   completed_at:
+ *                     type: string
+ *                     format: date-time
+ *                     nullable: true
+ *                   form_title:
+ *                     type: string
+ *       401:
+ *         description: Not authenticated
+ *       500:
+ *         description: Server error
  */
 router.get('/history', authenticate, async (req, res) => {
     try {
@@ -281,13 +563,39 @@ router.get('/history', authenticate, async (req, res) => {
 
     } catch (error) {
         logger.error('Get export history error', { error: error.message });
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ error: 'Failed to retrieve export history' });
     }
 });
 
 /**
- * DELETE /api/exports/jobs/:id
- * Delete export job and file
+ * @swagger
+ * /api/exports/jobs/{id}:
+ *   delete:
+ *     summary: Delete an export job and its associated file
+ *     tags: [Exports]
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Export job ID
+ *     responses:
+ *       200:
+ *         description: Export job deleted
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *       401:
+ *         description: Not authenticated
+ *       500:
+ *         description: Server error
  */
 router.delete('/jobs/:id', authenticate, async (req, res) => {
     try {
@@ -325,13 +633,44 @@ router.delete('/jobs/:id', authenticate, async (req, res) => {
 
     } catch (error) {
         logger.error('Delete export job error', { error: error.message });
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ error: 'Failed to delete export job' });
     }
 });
 
 /**
- * POST /api/exports/cleanup
- * Manually trigger cleanup of old exports (admin only)
+ * @swagger
+ * /api/exports/cleanup:
+ *   post:
+ *     summary: Manually trigger cleanup of old export files (admin only)
+ *     tags: [Exports]
+ *     security:
+ *       - cookieAuth: []
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               olderThanHours:
+ *                 type: integer
+ *                 default: 24
+ *                 description: Delete exports older than this many hours
+ *     responses:
+ *       200:
+ *         description: Cleanup completed
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *       401:
+ *         description: Not authenticated
+ *       403:
+ *         description: Admin permission required
+ *       500:
+ *         description: Server error
  */
 router.post('/cleanup', authenticate, authenticate.checkPermission('admin', 'manage'), async (req, res) => {
     try {
@@ -343,7 +682,7 @@ router.post('/cleanup', authenticate, authenticate.checkPermission('admin', 'man
 
     } catch (error) {
         logger.error('Cleanup error', { error: error.message });
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ error: 'Failed to run export cleanup' });
     }
 });
 

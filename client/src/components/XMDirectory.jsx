@@ -40,7 +40,7 @@ export function XMDirectory() {
     const activeUser = contacts.find(c => c.id === selectedContact);
 
     return (
-        <div style={{ display: 'flex', height: '100%', fontFamily: "'Inter', sans-serif", overflow: 'hidden' }}>
+        <div style={{ display: 'flex', height: '100%', fontFamily: "'Outfit', sans-serif", overflow: 'hidden' }}>
 
             {/* MAIN LIST AREA */}
             <div style={{ flex: 1, padding: '40px', overflowY: 'auto' }}>
@@ -155,6 +155,9 @@ export function XMDirectory() {
                                         <div style={{ paddingBottom: '32px' }}>
                                             <div style={{ fontSize: '0.85em', color: '#94a3b8', marginBottom: '4px' }}>
                                                 {new Date(event.date).toLocaleDateString()} • {new Date(event.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                <span style={{ fontSize: '0.8em', color: '#b0b8c4', marginLeft: '6px' }}>
+                                                    ({(() => { try { return new Intl.DateTimeFormat('en-SA-u-ca-islamic', { month: 'short', day: 'numeric' }).format(new Date(event.date)); } catch(e) { return ''; } })()})
+                                                </span>
                                             </div>
                                             <div style={{ background: 'white', padding: '16px', borderRadius: '12px', border: '1px solid #e2e8f0', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
                                                 <div style={{ fontWeight: '600', marginBottom: '4px', color: '#1e293b' }}>{event.title}</div>

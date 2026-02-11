@@ -2,9 +2,31 @@ const express = require('express');
 const router = express.Router();
 const { query } = require('../../infrastructure/database/db');
 const authenticate = require('../middleware/auth');
+const validate = require('../middleware/validate');
+const { createPersonaSchema } = require('../schemas/personas.schemas');
 const logger = require('../../infrastructure/logger');
 
-// GET /api/cx-personas - List all
+/**
+ * @swagger
+ * /api/cx-personas:
+ *   get:
+ *     summary: List personas
+ *     description: Retrieve all CX personas for the authenticated tenant, returning summary fields (id, name, title, photo_url, updated_at).
+ *     tags: [Personas]
+ *     security:
+ *       - cookieAuth: []
+ *     responses:
+ *       200:
+ *         description: Array of persona summaries
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Persona'
+ *       500:
+ *         description: Internal server error
+ */
 router.get('/', authenticate, async (req, res) => {
     try {
         // Return summary
@@ -12,11 +34,38 @@ router.get('/', authenticate, async (req, res) => {
         res.json(result.rows);
     } catch (e) {
         logger.error("[CX_PERSONAS_ERROR]", { error: e.message });
-        res.status(500).json({ error: e.message });
+        res.status(500).json({ error: 'Failed to fetch personas' });
     }
 });
 
-// GET /api/cx-personas/:id - Get full details (including layout)
+/**
+ * @swagger
+ * /api/cx-personas/{id}:
+ *   get:
+ *     summary: Get persona
+ *     description: Retrieve full details of a single CX persona by ID, including layout configuration.
+ *     tags: [Personas]
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Persona ID
+ *     responses:
+ *       200:
+ *         description: Full persona object
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Persona'
+ *       404:
+ *         description: Persona not found
+ *       500:
+ *         description: Internal server error
+ */
 router.get('/:id', authenticate, async (req, res) => {
     try {
         const { id } = req.params;
@@ -25,7 +74,7 @@ router.get('/:id', authenticate, async (req, res) => {
         res.json(result.rows[0]);
     } catch (e) {
         logger.error("[CX_PERSONAS_ERROR]", { error: e.message });
-        res.status(500).json({ error: e.message });
+        res.status(500).json({ error: 'Failed to fetch persona' });
     }
 });
 
@@ -47,8 +96,74 @@ async function ensureSchema() {
     }
 }
 
-// POST /api/cx-personas - Create
-router.post('/', authenticate, async (req, res) => {
+/**
+ * @swagger
+ * /api/cx-personas:
+ *   post:
+ *     summary: Create persona
+ *     description: Create a new CX persona with optional layout configuration, tags, and mapping rules.
+ *     tags: [Personas]
+ *     security:
+ *       - cookieAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 minLength: 1
+ *                 maxLength: 255
+ *                 description: Persona name
+ *               title:
+ *                 type: string
+ *                 maxLength: 255
+ *                 description: Persona title or role
+ *               photo_url:
+ *                 type: string
+ *                 format: uri
+ *                 maxLength: 500
+ *                 description: URL for persona avatar
+ *               layout_config:
+ *                 type: object
+ *                 description: Layout configuration for the persona card
+ *               status:
+ *                 type: string
+ *                 enum: [active, inactive, draft]
+ *                 default: active
+ *               tags:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 description: Tags for categorization
+ *               persona_type:
+ *                 type: string
+ *                 maxLength: 100
+ *                 description: Type of persona (e.g. Customer)
+ *               domain:
+ *                 type: string
+ *                 maxLength: 255
+ *                 description: Domain scope (e.g. CX)
+ *               mapping_rules:
+ *                 type: object
+ *                 description: Rules for mapping persona to data sources
+ *     responses:
+ *       201:
+ *         description: Persona created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Persona'
+ *       400:
+ *         description: Validation error
+ *       500:
+ *         description: Internal server error
+ */
+router.post('/', authenticate, validate(createPersonaSchema), async (req, res) => {
     try {
         await ensureSchema(); // Ensure columns exist
 
@@ -82,11 +197,38 @@ router.post('/', authenticate, async (req, res) => {
         res.status(201).json(result.rows[0]);
     } catch (e) {
         logger.error("[CX_PERSONAS_ERROR]", { error: e.message });
-        res.status(500).json({ error: e.message });
+        res.status(500).json({ error: 'Failed to create persona' });
     }
 });
 
-// POST /api/cx-personas/:id/clone
+/**
+ * @swagger
+ * /api/cx-personas/{id}/clone:
+ *   post:
+ *     summary: Clone persona
+ *     description: Create a copy of an existing CX persona. The cloned persona is set to Draft status with " (Copy)" appended to the name.
+ *     tags: [Personas]
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID of the persona to clone
+ *     responses:
+ *       201:
+ *         description: Cloned persona created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Persona'
+ *       404:
+ *         description: Source persona not found
+ *       500:
+ *         description: Internal server error
+ */
 router.post('/:id/clone', authenticate, async (req, res) => {
     try {
         const { id } = req.params;
@@ -116,11 +258,70 @@ router.post('/:id/clone', authenticate, async (req, res) => {
         );
         res.status(201).json(result.rows[0]);
     } catch (e) {
-        res.status(500).json({ error: e.message });
+        logger.error("[CX_PERSONAS_ERROR] Failed to clone persona", { error: e.message });
+        res.status(500).json({ error: 'Failed to clone persona' });
     }
 });
 
-// PUT /api/cx-personas/:id - Update (Auto-save)
+/**
+ * @swagger
+ * /api/cx-personas/{id}:
+ *   put:
+ *     summary: Update persona
+ *     description: Update an existing CX persona. Supports partial updates (auto-save). Only provided fields are updated.
+ *     tags: [Personas]
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Persona ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               title:
+ *                 type: string
+ *               photo_url:
+ *                 type: string
+ *                 format: uri
+ *               layout_config:
+ *                 type: object
+ *               status:
+ *                 type: string
+ *                 enum: [active, inactive, draft]
+ *               tags:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *               accent_color:
+ *                 type: string
+ *               orientation:
+ *                 type: string
+ *               cjm_links:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *               persona_type:
+ *                 type: string
+ *               domain:
+ *                 type: string
+ *               mapping_rules:
+ *                 type: object
+ *     responses:
+ *       200:
+ *         description: Persona updated successfully
+ *       500:
+ *         description: Internal server error
+ */
 router.put('/:id', authenticate, async (req, res) => {
     try {
         const { id } = req.params;
@@ -157,18 +358,39 @@ router.put('/:id', authenticate, async (req, res) => {
         res.json({ success: true });
     } catch (e) {
         logger.error("[CX_PERSONAS_ERROR]", { error: e.message });
-        res.status(500).json({ error: e.message });
+        res.status(500).json({ error: 'Failed to update persona' });
     }
 });
 
-// DELETE /api/cx-personas/:id
+/**
+ * @swagger
+ * /api/cx-personas/{id}:
+ *   delete:
+ *     summary: Delete persona
+ *     description: Delete a CX persona by ID. Only personas belonging to the authenticated tenant can be deleted.
+ *     tags: [Personas]
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Persona ID
+ *     responses:
+ *       204:
+ *         description: Persona deleted successfully
+ *       500:
+ *         description: Internal server error
+ */
 router.delete('/:id', authenticate, async (req, res) => {
     try {
         await query('DELETE FROM cx_personas WHERE id = $1 AND tenant_id = $2', [req.params.id, req.user.tenant_id]);
         res.status(204).send();
     } catch (e) {
         logger.error("[CX_PERSONAS_ERROR]", { error: e.message });
-        res.status(500).json({ error: e.message });
+        res.status(500).json({ error: 'Failed to delete persona' });
     }
 });
 

@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const logger = require('../../infrastructure/logger');
+const authenticate = require('../middleware/auth');
 const { processAndSave, retrieveAndDecrypt } = require('../../core/fileStorage');
 
 // Memory storage to process buffer before saving
@@ -19,7 +20,7 @@ const upload = multer({
 });
 
 // UPLOAD
-router.post('/upload', upload.single('file'), async (req, res) => {
+router.post('/upload', authenticate, upload.single('file'), async (req, res) => {
     try {
         if (!req.file) throw new Error('No file provided');
 
@@ -34,12 +35,12 @@ router.post('/upload', upload.single('file'), async (req, res) => {
         });
     } catch (e) {
         logger.error("Upload failed", { error: e.message });
-        res.status(500).json({ error: e.message });
+        res.status(500).json({ error: 'Failed to upload file' });
     }
 });
 
 // DOWNLOAD / VIEW (Decrypted on flight)
-router.get('/:filename', async (req, res) => {
+router.get('/:filename', authenticate, async (req, res) => {
     try {
         // Prevent path traversal
         const filename = req.params.filename;

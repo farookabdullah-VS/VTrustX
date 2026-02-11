@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { query } = require('../../../infrastructure/database/db');
+const logger = require('../../../infrastructure/logger');
 
 // 1. Get Topic Bubbles (Aggregated)
 const axios = require('axios');
@@ -73,7 +74,7 @@ router.get('/topics', async (req, res) => {
         res.json(aiRes.data.topics);
 
     } catch (err) {
-        console.error("TextIQ Analysis Failed:", err.message);
+        logger.error('TextIQ analysis failed', { error: err.message });
         res.status(500).json({ error: err.message });
     }
 });

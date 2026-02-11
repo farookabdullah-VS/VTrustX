@@ -124,7 +124,7 @@ export function CxPersonaBuilder({ onToggleSidebar, onNavigate }) {
 
     // --- RENDER LIST ---
     return (
-        <div style={{ padding: '30px', fontFamily: "'Inter', sans-serif" }}>
+        <div style={{ padding: '30px', fontFamily: "'Outfit', sans-serif" }}>
             {/* Header */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
                 <div>

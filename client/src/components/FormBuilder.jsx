@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { SurveyCreatorComponent, SurveyCreator } from "survey-creator-react";
 import { Serializer, Action } from "survey-core";
 import { ReactElementFactory } from "survey-react-ui";
@@ -13,7 +14,7 @@ import './FormBuilder.css';
 import "survey-core/themes/index";
 import "survey-creator-core/themes/index";
 import axios from 'axios';
-import { User, Globe, LogOut, ChevronDown, Bell } from 'lucide-react';
+import { User, Globe, LogOut, ChevronDown, Bell, Sparkles, Edit3, Eye, AlertTriangle } from 'lucide-react';
 import { SettingsView } from './SettingsView';
 import { CollectView } from './CollectView';
 
@@ -38,13 +39,20 @@ const creatorOptions = {
     isAutoSave: false
 };
 
-export function FormBuilder({ user, formId, initialData, onBack, onNavigate, onFormChange }) {
+export function FormBuilder({ user, formId: propsFormId, initialData, onBack, onNavigate, onFormChange }) {
     const { t, i18n } = useTranslation();
     const toast = useToast();
     const isRtl = i18n.language === 'ar';
+    const navigate = useNavigate();
+    const { formId: urlFormId } = useParams();
+    const [searchParams] = useSearchParams();
+
+    // Prioritize URL param over prop (backward compatibility)
+    const formId = urlFormId || propsFormId;
+    const initialTab = searchParams.get('tab') || initialData?.initialTab;
     const [creator, setCreator] = useState(null);
     const [formMetadata, setFormMetadata] = useState(null);
-    const [activeNav, setActiveNav] = useState(initialData?.initialTab || 'questionnaire');
+    const [activeNav, setActiveNav] = useState(initialTab || 'questionnaire');
     const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
 
     // AI State
@@ -242,7 +250,8 @@ export function FormBuilder({ user, formId, initialData, onBack, onNavigate, onF
                     callback(saveNo, true);
                 }).catch(err => {
                     console.error("Save Error:", err);
-                    toast.error("Save Error: " + (err.response?.data?.error || err.message));
+                    const errorMsg = err.response?.data?.error?.message || err.response?.data?.error || err.message;
+                    toast.error("Save Error: " + errorMsg);
                     callback(saveNo, false);
                 });
             } else {
@@ -393,7 +402,8 @@ export function FormBuilder({ user, formId, initialData, onBack, onNavigate, onF
                 if (creator) creator.readOnly = true;
             } catch (err) {
                 console.error("Publish Error:", err);
-                toast.error("Publish Failed: " + (err.response?.data?.error || err.message));
+                const errorMsg = err.response?.data?.error?.message || err.response?.data?.error || err.message;
+                toast.error("Publish Failed: " + errorMsg);
             }
         }
     };
@@ -406,9 +416,10 @@ export function FormBuilder({ user, formId, initialData, onBack, onNavigate, onF
                 toast.success("New draft version created!");
                 if (onFormChange && res.data.id) {
                     // Switch to the new draft immediately
-                    onFormChange(res.data.id);
-                } else if (onBack) {
-                    onBack();
+                    onFormChange?.(res.data.id);
+                } else {
+                    // Navigate back to surveys list
+                    onBack ? onBack() : navigate('/surveys');
                 }
             })
             .catch(err => toast.error(err.message));
@@ -428,7 +439,8 @@ export function FormBuilder({ user, formId, initialData, onBack, onNavigate, onF
             setAiLoading(false);
         } catch (err) {
             console.error(err);
-            toast.error("AI Generation Failed: " + (err.response?.data?.error || err.message));
+            const errorMsg = err.response?.data?.error?.message || err.response?.data?.error || err.message;
+            toast.error("AI Generation Failed: " + errorMsg);
             setAiLoading(false);
         }
     };
@@ -447,7 +459,10 @@ export function FormBuilder({ user, formId, initialData, onBack, onNavigate, onF
                 toast.success("Settings Saved!");
                 setFormMetadata(res.data);
             })
-            .catch(err => toast.error("Error saving settings: " + err.message));
+            .catch(err => {
+                const errorMsg = err.response?.data?.error?.message || err.response?.data?.error || err.message;
+                toast.error("Error saving settings: " + errorMsg);
+            });
     };
 
     const renderSettings = () => {
@@ -591,21 +606,22 @@ export function FormBuilder({ user, formId, initialData, onBack, onNavigate, onF
                                 fontSize: '14px',
                                 boxShadow: '0 2px 5px rgba(6, 78, 59, 0.3)'
                             }}>
-                            ✨ {t('builder.btn.ai_assistant')}
+                            <Sparkles size={16} style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '4px' }} />
+                            {t('builder.btn.ai_assistant')}
                         </button>
                         <button
                             onClick={() => creator.setDisplayMode('design')}
                             style={{ padding: '8px 12px', background: creator.activeTab === 'designer' ? '#e2e8f0' : 'white', border: '1px solid #cbd5e1', borderRadius: '8px', cursor: 'pointer', fontSize: '14px' }}
                             title="Edit Design"
                             aria-label="Edit Design">
-                            ✏️
+                            <Edit3 size={16} />
                         </button>
                         <button
                             onClick={() => creator.setDisplayMode('test')}
                             style={{ padding: '8px 12px', background: creator.activeTab === 'test' ? '#e2e8f0' : 'white', border: '1px solid #cbd5e1', borderRadius: '8px', cursor: 'pointer', fontSize: '14px' }}
                             title="Preview Survey"
                             aria-label="Preview Survey">
-                            👁️
+                            <Eye size={16} />
                         </button>
                         {!formMetadata?.isPublished && (
                             <button
@@ -682,14 +698,25 @@ export function FormBuilder({ user, formId, initialData, onBack, onNavigate, onF
 
             {/* AI Modal */}
             {showAIModal && (
-                <div style={{
-                    position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-                    backgroundColor: 'rgba(15, 23, 42, 0.6)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10000
-                }}>
+                <div
+                    role="dialog"
+                    aria-modal="true"
+                    aria-labelledby="ai-modal-title"
+                    onClick={(e) => {
+                        if (e.target === e.currentTarget) setShowAIModal(false);
+                    }}
+                    onKeyDown={(e) => {
+                        if (e.key === 'Escape') setShowAIModal(false);
+                    }}
+                    style={{
+                        position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+                        backgroundColor: 'rgba(15, 23, 42, 0.6)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10000
+                    }}
+                >
                     <div style={{ background: '#D9F8E5', padding: '30px', borderRadius: '16px', width: '550px', maxWidth: '90%', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                            <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '10px', fontSize: '1.25em', color: '#1e293b' }}>
-                                <span style={{ fontSize: '1.2em' }}>✨</span> {t('builder.ai_modal.title')}
+                            <h3 id="ai-modal-title" style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '10px', fontSize: '1.25em', color: '#1e293b' }}>
+                                <Sparkles size={20} /> {t('builder.ai_modal.title')}
                             </h3>
                             <button onClick={() => setShowAIModal(false)} aria-label="Close AI assistant modal" style={{ border: 'none', background: 'none', cursor: 'pointer', fontSize: '1.5em', color: '#94a3b8', padding: 0, lineHeight: 1 }}>×</button>
                         </div>
@@ -709,7 +736,7 @@ export function FormBuilder({ user, formId, initialData, onBack, onNavigate, onF
                                 onBlur={(e) => e.target.style.borderColor = '#cbd5e1'}
                             />
                             <div style={{ fontSize: '0.8em', color: '#ef4444', marginTop: '8px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                ⚠️ {t('builder.ai_modal.warning')}
+                                <AlertTriangle size={14} /> {t('builder.ai_modal.warning')}
                             </div>
                         </div>
 
@@ -719,6 +746,8 @@ export function FormBuilder({ user, formId, initialData, onBack, onNavigate, onF
                                 style={{ background: 'linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%)', color: 'white', border: 'none', padding: '10px 24px', borderRadius: '8px', cursor: 'pointer', opacity: aiLoading ? 0.7 : 1, fontWeight: '600', boxShadow: '0 4px 6px -1px rgba(99, 102, 241, 0.4)' }}
                                 onClick={handleAIGenerate}
                                 disabled={aiLoading}
+                                aria-busy={aiLoading}
+                                aria-label={aiLoading ? 'Generating survey, please wait' : 'Generate survey with AI'}
                             >
                                 {aiLoading ? t('builder.ai_modal.generating') : t('builder.ai_modal.generate')}
                             </button>

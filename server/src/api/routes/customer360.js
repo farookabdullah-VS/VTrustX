@@ -1,29 +1,89 @@
 const express = require('express');
 const router = express.Router();
-const { query } = require('../../infrastructure/database/db');
+const { query, transaction } = require('../../infrastructure/database/db');
 const authenticate = require('../middleware/auth');
 const logger = require('../../infrastructure/logger');
+const validate = require('../middleware/validate');
+const { createProfileSchema } = require('../schemas/customer360.schemas');
 
-// Helper: Identity Resolution
-async function resolveIdentity(identities, tenantId) {
+// Helper: Identity Resolution (accepts optional client for use inside transactions)
+async function resolveIdentity(identities, tenantId, queryFn) {
     // identities: [{ type, value }]
     // Find any existing customer that matches ANY of the provided identities
+    const execQuery = queryFn || query;
 
     if (!identities || identities.length === 0) return null;
 
     const values = identities.map(i => i.value);
     const sql = `
-        SELECT customer_id 
-        FROM customer_identities 
+        SELECT customer_id
+        FROM customer_identities
         WHERE identity_value = ANY($1)
         LIMIT 1
     `;
-    const res = await query(sql, [values]);
+    const res = await execQuery(sql, [values]);
     return res.rows[0]?.customer_id || null;
 }
 
-// POST /api/customer360/profile - Ingest or Update Profile
-router.post('/profile', authenticate, async (req, res) => {
+/**
+ * @swagger
+ * /api/customer360/profile:
+ *   post:
+ *     tags: [Customer360]
+ *     summary: Ingest or update profile
+ *     description: Creates a new customer profile or updates an existing one via identity resolution. The entire operation (customer create/update, identity linking, and contact upserts) runs inside a single database transaction for atomicity.
+ *     security:
+ *       - cookieAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [source]
+ *             properties:
+ *               source:
+ *                 type: string
+ *               external_id:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *                 format: email
+ *               mobile:
+ *                 type: string
+ *               full_name:
+ *                 type: string
+ *               date_of_birth:
+ *                 type: string
+ *                 format: date
+ *               nationality:
+ *                 type: string
+ *               primary_language:
+ *                 type: string
+ *               gender:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Profile ingested successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 customer_id:
+ *                   type: integer
+ *                 message:
+ *                   type: string
+ *       400:
+ *         description: Validation error
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Server error
+ */
+router.post('/profile', authenticate, validate(createProfileSchema), async (req, res) => {
     try {
         const tenantId = req.user.tenant_id;
         const {
@@ -43,102 +103,139 @@ router.post('/profile', authenticate, async (req, res) => {
         if (email) identities.push({ type: 'email', value: email });
         if (mobile) identities.push({ type: 'mobile', value: mobile });
 
-        // 2. Resolve to Golden ID
-        // Priority 1: Explicit ID passed (Update Scenario)
-        // Priority 2: Identity Resolution (Ingest Scenario)
-        let customerId = req.body.customer_id;
+        // Wrap entire profile ingest in a single transaction for atomicity
+        const customerId = await transaction(async (client) => {
+            const clientQuery = client.query.bind(client);
 
-        if (!customerId) {
-            customerId = await resolveIdentity(identities, tenantId);
-        }
-
-        // 3. Create if New
-        if (!customerId) {
-            const createSql = `
-                INSERT INTO customers (
-                    tenant_id, full_name, date_of_birth, nationality, primary_language, 
-                    gender, occupation, city, is_citizen, city_tier, 
-                    monthly_income_local, family_status, employment_sector
-                )
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
-                RETURNING id
-            `;
-            const createRes = await query(createSql, [
-                tenantId, full_name, date_of_birth, nationality,
-                primary_language || 'en',
-                req.body.gender || null,
-                req.body.occupation || null,
-                req.body.city || null,
-                req.body.is_citizen === 'true' || req.body.is_citizen === true,
-                req.body.city_tier || 'Tier1',
-                req.body.monthly_income_local || 0,
-                req.body.family_status || null,
-                req.body.employment_sector || null
-            ]);
-            customerId = createRes.rows[0].id;
-        } else {
-            // Update existing
-            const updateFields = [];
-            const updateParams = [];
-            let paramCount = 1;
-
-            if (full_name) { updateFields.push(`full_name = $${paramCount++}`); updateParams.push(full_name); }
-            if (date_of_birth) { updateFields.push(`date_of_birth = $${paramCount++}`); updateParams.push(date_of_birth); }
-            if (nationality) { updateFields.push(`nationality = $${paramCount++}`); updateParams.push(nationality); }
-            if (req.body.gender) { updateFields.push(`gender = $${paramCount++}`); updateParams.push(req.body.gender); }
-            if (req.body.occupation) { updateFields.push(`occupation = $${paramCount++}`); updateParams.push(req.body.occupation); }
-            if (req.body.city) { updateFields.push(`city = $${paramCount++}`); updateParams.push(req.body.city); }
-
-            // GCC Spec Fields
-            if (req.body.is_citizen !== undefined) { updateFields.push(`is_citizen = $${paramCount++}`); updateParams.push(req.body.is_citizen === 'true' || req.body.is_citizen === true); }
-            if (req.body.city_tier) { updateFields.push(`city_tier = $${paramCount++}`); updateParams.push(req.body.city_tier); }
-            if (req.body.monthly_income_local !== undefined) { updateFields.push(`monthly_income_local = $${paramCount++}`); updateParams.push(req.body.monthly_income_local); }
-            if (req.body.family_status) { updateFields.push(`family_status = $${paramCount++}`); updateParams.push(req.body.family_status); }
-            if (req.body.employment_sector) { updateFields.push(`employment_sector = $${paramCount++}`); updateParams.push(req.body.employment_sector); }
-
-            if (updateFields.length > 0) {
-                updateParams.push(customerId);
-                await query(`UPDATE customers SET ${updateFields.join(', ')} WHERE id = $${paramCount}`, updateParams);
+            // 2. Resolve to Golden ID
+            let cId = req.body.customer_id;
+            if (!cId) {
+                cId = await resolveIdentity(identities, tenantId, clientQuery);
             }
-        }
 
-        // 4. Link Identities
-        // 4. Link Identities
-        // 4. Link Identities (Manage Unique Types for this Form)
-        // We assume for manual entry, we are Replacing the primary email/mobile
-        for (const identity of identities) {
-            // Check if this customer already has an identity of this type
-            // Note: In a real complex graph, we might add multiple. Here we treat the form fields as "Current Primary".
+            // 3. Create if New
+            if (!cId) {
+                const createSql = `
+                    INSERT INTO customers (
+                        tenant_id, full_name, date_of_birth, nationality, primary_language,
+                        gender, occupation, city, is_citizen, city_tier,
+                        monthly_income_local, family_status, employment_sector
+                    )
+                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+                    RETURNING id
+                `;
+                const createRes = await client.query(createSql, [
+                    tenantId, full_name, date_of_birth, nationality,
+                    primary_language || 'en',
+                    req.body.gender || null,
+                    req.body.occupation || null,
+                    req.body.city || null,
+                    req.body.is_citizen === 'true' || req.body.is_citizen === true,
+                    req.body.city_tier || 'Tier1',
+                    req.body.monthly_income_local || 0,
+                    req.body.family_status || null,
+                    req.body.employment_sector || null
+                ]);
+                cId = createRes.rows[0].id;
+            } else {
+                // Update existing
+                const updateFields = [];
+                const updateParams = [];
+                let paramCount = 1;
 
-            // Delete existing identity of this type for this customer to ensure clean state
-            await query(`DELETE FROM customer_identities WHERE customer_id = $1 AND identity_type = $2`, [customerId, identity.type]);
+                if (full_name) { updateFields.push(`full_name = $${paramCount++}`); updateParams.push(full_name); }
+                if (date_of_birth) { updateFields.push(`date_of_birth = $${paramCount++}`); updateParams.push(date_of_birth); }
+                if (nationality) { updateFields.push(`nationality = $${paramCount++}`); updateParams.push(nationality); }
+                if (req.body.gender) { updateFields.push(`gender = $${paramCount++}`); updateParams.push(req.body.gender); }
+                if (req.body.occupation) { updateFields.push(`occupation = $${paramCount++}`); updateParams.push(req.body.occupation); }
+                if (req.body.city) { updateFields.push(`city = $${paramCount++}`); updateParams.push(req.body.city); }
 
-            // Insert new
-            await query(`
-                INSERT INTO customer_identities (customer_id, identity_type, identity_value, source_system, is_primary)
-                VALUES ($1, $2, $3, $4, true)
-            `, [customerId, identity.type, identity.value, source]);
-        }
+                // GCC Spec Fields
+                if (req.body.is_citizen !== undefined) { updateFields.push(`is_citizen = $${paramCount++}`); updateParams.push(req.body.is_citizen === 'true' || req.body.is_citizen === true); }
+                if (req.body.city_tier) { updateFields.push(`city_tier = $${paramCount++}`); updateParams.push(req.body.city_tier); }
+                if (req.body.monthly_income_local !== undefined) { updateFields.push(`monthly_income_local = $${paramCount++}`); updateParams.push(req.body.monthly_income_local); }
+                if (req.body.family_status) { updateFields.push(`family_status = $${paramCount++}`); updateParams.push(req.body.family_status); }
+                if (req.body.employment_sector) { updateFields.push(`employment_sector = $${paramCount++}`); updateParams.push(req.body.employment_sector); }
 
-        // 5. Update Contacts (Manage as "Single Primary" for this simple profile view)
-        if (email) {
-            // Remove existing emails to avoid duplicates coming from multiple sources/edits
-            await query(`DELETE FROM customer_contacts WHERE customer_id = $1 AND type = 'email'`, [customerId]);
-            await query(`INSERT INTO customer_contacts (customer_id, type, value) VALUES ($1, 'email', $2)`, [customerId, email]);
-        }
-        if (mobile) {
-            await query(`DELETE FROM customer_contacts WHERE customer_id = $1 AND type = 'mobile'`, [customerId]);
-            await query(`INSERT INTO customer_contacts (customer_id, type, value) VALUES ($1, 'mobile', $2)`, [customerId, mobile]);
-        }
+                if (updateFields.length > 0) {
+                    updateParams.push(cId);
+                    await client.query(`UPDATE customers SET ${updateFields.join(', ')} WHERE id = $${paramCount}`, updateParams);
+                }
+            }
+
+            // 4. Link Identities
+            for (const identity of identities) {
+                await client.query(
+                    `DELETE FROM customer_identities WHERE customer_id = $1 AND identity_type = $2`,
+                    [cId, identity.type]
+                );
+                await client.query(`
+                    INSERT INTO customer_identities (customer_id, identity_type, identity_value, source_system, is_primary)
+                    VALUES ($1, $2, $3, $4, true)
+                `, [cId, identity.type, identity.value, source]);
+            }
+
+            // 5. Update Contacts
+            if (email) {
+                await client.query(`DELETE FROM customer_contacts WHERE customer_id = $1 AND type = 'email'`, [cId]);
+                await client.query(`INSERT INTO customer_contacts (customer_id, type, value) VALUES ($1, 'email', $2)`, [cId, email]);
+            }
+            if (mobile) {
+                await client.query(`DELETE FROM customer_contacts WHERE customer_id = $1 AND type = 'mobile'`, [cId]);
+                await client.query(`INSERT INTO customer_contacts (customer_id, type, value) VALUES ($1, 'mobile', $2)`, [cId, mobile]);
+            }
+
+            return cId;
+        });
 
         res.json({ success: true, customer_id: customerId, message: 'Profile ingested successfully' });
 
     } catch (e) {
-        res.status(500).json({ error: e.message });
+        logger.error('Customer360 profile ingest error', { error: e.message });
+        res.status(500).json({ error: 'Failed to ingest profile' });
     }
 });
 
-// POST /api/customer360/event - Ingest Event
+/**
+ * @swagger
+ * /api/customer360/event:
+ *   post:
+ *     tags: [Customer360]
+ *     summary: Record event
+ *     description: Records a customer event (interaction, transaction, etc.) linked to the specified customer profile.
+ *     security:
+ *       - cookieAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [customer_id]
+ *             properties:
+ *               customer_id:
+ *                 type: integer
+ *               event_type:
+ *                 type: string
+ *               channel:
+ *                 type: string
+ *               timestamp:
+ *                 type: string
+ *                 format: date-time
+ *               payload:
+ *                 type: object
+ *     responses:
+ *       200:
+ *         description: Event captured
+ *       400:
+ *         description: Customer ID required
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Customer not found
+ *       500:
+ *         description: Server error
+ */
 router.post('/event', authenticate, async (req, res) => {
     try {
         const { customer_id, event_type, channel, timestamp, payload } = req.body;
@@ -158,11 +255,60 @@ router.post('/event', authenticate, async (req, res) => {
 
         res.json({ success: true, message: 'Event captured' });
     } catch (e) {
-        res.status(500).json({ error: e.message });
+        logger.error('Customer360 event ingest error', { error: e.message });
+        res.status(500).json({ error: 'Failed to capture event' });
     }
 });
 
-// GET /api/customer360/search - Global Search
+/**
+ * @swagger
+ * /api/customer360/search:
+ *   get:
+ *     tags: [Customer360]
+ *     summary: Search profiles
+ *     description: Searches customer profiles by name (fuzzy) or identity value (exact). Supports exact and fuzzy match modes.
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: q
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Search query
+ *       - in: query
+ *         name: match_type
+ *         schema:
+ *           type: string
+ *           enum: [exact, fuzzy]
+ *         description: Match type (defaults to fuzzy)
+ *     responses:
+ *       200:
+ *         description: Search results
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   customer_id:
+ *                     type: integer
+ *                   full_name:
+ *                     type: string
+ *                   kyc_status:
+ *                     type: string
+ *                   primary_identity:
+ *                     type: string
+ *                   match_confidence:
+ *                     type: number
+ *       400:
+ *         description: Search query required
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Server error
+ */
 router.get('/search', authenticate, async (req, res) => {
     try {
         const { q, match_type } = req.query;
@@ -199,11 +345,37 @@ router.get('/search', authenticate, async (req, res) => {
         const result = await query(sql, params);
         res.json(result.rows);
     } catch (e) {
-        res.status(500).json({ error: e.message });
+        logger.error('Customer360 search error', { error: e.message });
+        res.status(500).json({ error: 'Failed to search customers' });
     }
 });
 
-// GET /api/customer360/:id - The "Single Customer View" (Mega-JSON)
+/**
+ * @swagger
+ * /api/customer360/{id}:
+ *   get:
+ *     tags: [Customer360]
+ *     summary: Get profile
+ *     description: Returns the full "Single Customer View" with all dimensions — demographics, contacts, financials, behavioral signals, CX intelligence, AI recommendations, identities, consents, products, and event history.
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Customer ID
+ *     responses:
+ *       200:
+ *         description: Full customer profile
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Customer not found
+ *       500:
+ *         description: Server error
+ */
 router.get('/:id', authenticate, async (req, res) => {
     try {
         const customerId = req.params.id;
@@ -349,12 +521,46 @@ router.get('/:id', authenticate, async (req, res) => {
 
         res.json(responseData);
     } catch (e) {
-        logger.error("Customer360 profile error", { error: e.message });
-        res.status(500).json({ error: e.message });
+        logger.error('Customer360 profile view error', { error: e.message });
+        res.status(500).json({ error: 'Failed to fetch customer profile' });
     }
 });
 
-// POST /api/customer360/relationships - Add Relationship
+/**
+ * @swagger
+ * /api/customer360/relationships:
+ *   post:
+ *     tags: [Customer360]
+ *     summary: Create relationship
+ *     description: Creates a directional relationship between two customer profiles. Both customers must belong to the authenticated user's tenant.
+ *     security:
+ *       - cookieAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [from_id, to_id, type]
+ *             properties:
+ *               from_id:
+ *                 type: integer
+ *               to_id:
+ *                 type: integer
+ *               type:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Relationship created
+ *       400:
+ *         description: IDs required
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Access denied
+ *       500:
+ *         description: Server error
+ */
 router.post('/relationships', authenticate, async (req, res) => {
     try {
         const { from_id, to_id, type } = req.body;
@@ -368,11 +574,37 @@ router.post('/relationships', authenticate, async (req, res) => {
         await query('INSERT INTO customer_relationships (customer_id_from, customer_id_to, relationship_type) VALUES ($1, $2, $3)', [from_id, to_id, type]);
         res.json({ success: true });
     } catch (e) {
-        res.status(500).json({ error: e.message });
+        logger.error('Customer360 relationship create error', { error: e.message });
+        res.status(500).json({ error: 'Failed to create relationship' });
     }
 });
 
-// DELETE /api/customer360/relationships/:id - Delete Relationship
+/**
+ * @swagger
+ * /api/customer360/relationships/{id}:
+ *   delete:
+ *     tags: [Customer360]
+ *     summary: Delete relationship
+ *     description: Deletes a customer relationship by ID. Verifies ownership via tenant check on the source customer.
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Relationship ID
+ *     responses:
+ *       200:
+ *         description: Relationship deleted
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Relationship not found
+ *       500:
+ *         description: Server error
+ */
 router.delete('/relationships/:id', authenticate, async (req, res) => {
     try {
         const tenantId = req.user.tenant_id;
@@ -388,11 +620,37 @@ router.delete('/relationships/:id', authenticate, async (req, res) => {
         await query('DELETE FROM customer_relationships WHERE id = $1', [req.params.id]);
         res.json({ success: true });
     } catch (e) {
-        res.status(500).json({ error: e.message });
+        logger.error('Customer360 relationship delete error', { error: e.message });
+        res.status(500).json({ error: 'Failed to delete relationship' });
     }
 });
 
-// GET /api/customer360/:id/products (Specific endpoint)
+/**
+ * @swagger
+ * /api/customer360/{id}/products:
+ *   get:
+ *     tags: [Customer360]
+ *     summary: Get customer products
+ *     description: Returns all products associated with a customer profile.
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Customer ID
+ *     responses:
+ *       200:
+ *         description: List of customer products
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Customer not found
+ *       500:
+ *         description: Server error
+ */
 router.get('/:id/products', authenticate, async (req, res) => {
     try {
         const customerId = req.params.id;
@@ -404,11 +662,54 @@ router.get('/:id/products', authenticate, async (req, res) => {
         const result = await query('SELECT * FROM customer_products WHERE customer_id = $1', [customerId]);
         res.json(result.rows);
     } catch (e) {
-        res.status(500).json({ error: e.message });
+        logger.error('Customer360 products list error', { error: e.message });
+        res.status(500).json({ error: 'Failed to fetch products' });
     }
 });
 
-// POST /api/customer360/products - Ingest Products
+/**
+ * @swagger
+ * /api/customer360/products:
+ *   post:
+ *     tags: [Customer360]
+ *     summary: Add product
+ *     description: Associates a product with a customer profile.
+ *     security:
+ *       - cookieAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [customer_id]
+ *             properties:
+ *               customer_id:
+ *                 type: integer
+ *               product_name:
+ *                 type: string
+ *               product_type:
+ *                 type: string
+ *               account_number:
+ *                 type: string
+ *               status:
+ *                 type: string
+ *               balance:
+ *                 type: number
+ *               currency:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Product added
+ *       400:
+ *         description: Customer ID required
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Customer not found
+ *       500:
+ *         description: Server error
+ */
 router.post('/products', authenticate, async (req, res) => {
     try {
         const { customer_id, product_name, product_type, account_number, status, balance, currency } = req.body;
@@ -426,11 +727,37 @@ router.post('/products', authenticate, async (req, res) => {
 
         res.json({ success: true });
     } catch (e) {
-        res.status(500).json({ error: e.message });
+        logger.error('Customer360 product ingest error', { error: e.message });
+        res.status(500).json({ error: 'Failed to ingest product' });
     }
 });
 
-// DELETE /api/customer360/:id - Delete Customer Profile
+/**
+ * @swagger
+ * /api/customer360/{id}:
+ *   delete:
+ *     tags: [Customer360]
+ *     summary: Delete profile
+ *     description: Deletes a customer profile and all associated data (identities, contacts, products, consents, events, firmographics, preferences, financials, CX metrics).
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Customer ID
+ *     responses:
+ *       200:
+ *         description: Customer profile deleted
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Customer not found
+ *       500:
+ *         description: Server error
+ */
 router.delete('/:id', authenticate, async (req, res) => {
     try {
         const customerId = req.params.id;
@@ -447,11 +774,50 @@ router.delete('/:id', authenticate, async (req, res) => {
         await query('DELETE FROM customers WHERE id = $1', [customerId]);
         res.json({ success: true, message: 'Customer profile deleted' });
     } catch (e) {
-        res.status(500).json({ error: e.message });
+        logger.error('Customer360 delete error', { error: e.message });
+        res.status(500).json({ error: 'Failed to delete customer profile' });
     }
 });
 
-// PUT /api/customer360/:id/consent - Update Consent Status
+/**
+ * @swagger
+ * /api/customer360/{id}/consent:
+ *   put:
+ *     tags: [Customer360]
+ *     summary: Update consent
+ *     description: Grants or revokes a specific consent type for a customer profile. Performs an upsert on the consent record.
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Customer ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [consent_type, status]
+ *             properties:
+ *               consent_type:
+ *                 type: string
+ *               status:
+ *                 type: string
+ *                 enum: [granted, revoked]
+ *     responses:
+ *       200:
+ *         description: Consent updated
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Customer not found
+ *       500:
+ *         description: Server error
+ */
 router.put('/:id/consent', authenticate, async (req, res) => {
     try {
         const customerId = req.params.id;
@@ -471,18 +837,54 @@ router.put('/:id/consent', authenticate, async (req, res) => {
         }
         res.json({ success: true });
     } catch (e) {
-        res.status(500).json({ error: e.message });
+        logger.error('Customer360 consent update error', { error: e.message });
+        res.status(500).json({ error: 'Failed to update consent' });
     }
 });
 
-// GET /api/customer360 - List (for UI)
+/**
+ * @swagger
+ * /api/customer360:
+ *   get:
+ *     tags: [Customer360]
+ *     summary: List profiles
+ *     description: Returns the most recent 20 customer profiles for the authenticated user's tenant.
+ *     security:
+ *       - cookieAuth: []
+ *     responses:
+ *       200:
+ *         description: List of customer profiles
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: integer
+ *                   full_name:
+ *                     type: string
+ *                   nationality:
+ *                     type: string
+ *                   kyc_status:
+ *                     type: string
+ *                   created_at:
+ *                     type: string
+ *                     format: date-time
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Server error
+ */
 router.get('/', authenticate, async (req, res) => {
     try {
         const tenantId = req.user.tenant_id;
         const result = await query('SELECT * FROM customers WHERE tenant_id = $1 ORDER BY created_at DESC LIMIT 20', [tenantId]);
         res.json(result.rows);
     } catch (e) {
-        res.status(500).json({ error: e.message });
+        logger.error('Customer360 list error', { error: e.message });
+        res.status(500).json({ error: 'Failed to fetch customers' });
     }
 });
 

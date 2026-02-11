@@ -5,6 +5,8 @@ const authenticate = require('../middleware/auth');
 const { query } = require('../../infrastructure/database/db');
 const logger = require('../../infrastructure/logger');
 const { rateLimitCache } = require('../../infrastructure/cache');
+const validate = require('../middleware/validate');
+const { createFormSchema, updateFormSchema } = require('../schemas/forms.schemas');
 
 // Initialize Repository
 const formRepo = new PostgresRepository('forms');
@@ -67,7 +69,29 @@ const checkIpAccess = (allowedIps, reqIp) => {
 
 const debugLog = require('./debug_logger');
 
-// Get all forms
+/**
+ * @swagger
+ * /api/forms:
+ *   get:
+ *     summary: List all forms
+ *     description: Returns all forms belonging to the authenticated user's tenant, ordered by last updated.
+ *     tags: [Forms]
+ *     security:
+ *       - cookieAuth: []
+ *     responses:
+ *       200:
+ *         description: Array of form objects
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Form'
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Server error
+ */
 router.get('/', authenticate, authenticate.checkPermission('forms', 'view'), async (req, res) => {
     try {
         debugLog(`GET /api/forms - Start. User: ${req.user.username} Tenant: ${req.user.tenant_id}`);
@@ -86,11 +110,43 @@ router.get('/', authenticate, authenticate.checkPermission('forms', 'view'), asy
     } catch (error) {
         debugLog(`GET /api/forms - ERROR: ${error.message} - Stack: ${error.stack}`);
         logger.error("GET /api/forms Error", { error: error.message });
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ error: 'Failed to retrieve forms' });
     }
 });
 
-// GET RAW SUBMISSIONS for a specific form (for Analytics Studio)
+/**
+ * @swagger
+ * /api/forms/{id}/submissions/raw-data:
+ *   get:
+ *     summary: Get raw submission data for a form
+ *     description: Returns flattened submission data for the specified form, intended for Analytics Studio consumption.
+ *     tags: [Forms]
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Form ID
+ *     responses:
+ *       200:
+ *         description: Array of flattened submission data objects
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *       404:
+ *         description: Form not found
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Server error
+ */
 router.get('/:id/submissions/raw-data', authenticate, async (req, res) => {
     try {
         const formId = req.params.id;
@@ -117,11 +173,44 @@ router.get('/:id/submissions/raw-data', authenticate, async (req, res) => {
         res.json(flatData);
 
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        logger.error('Failed to fetch raw submissions', { error: err.message });
+        res.status(500).json({ error: 'Failed to retrieve submissions data' });
     }
 });
 
-// Get form by Slug
+/**
+ * @swagger
+ * /api/forms/slug/{slug}:
+ *   get:
+ *     summary: Get form by slug
+ *     description: Returns a published form by its slug (or ID fallback). This is a public endpoint used for form rendering. Enforces IP allowlist if configured.
+ *     tags: [Forms]
+ *     parameters:
+ *       - in: path
+ *         name: slug
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Form slug or ID
+ *     responses:
+ *       200:
+ *         description: Form object with tenant theme
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/Form'
+ *                 - type: object
+ *                   properties:
+ *                     tenantTheme:
+ *                       type: object
+ *       403:
+ *         description: IP not allowed
+ *       404:
+ *         description: Form not found or not published
+ *       500:
+ *         description: Server error
+ */
 router.get('/slug/:slug', async (req, res) => {
     try {
         const slug = req.params.slug;
@@ -153,18 +242,50 @@ router.get('/slug/:slug', async (req, res) => {
         entity.tenantTheme = row.tenant_theme;
         res.json(entity);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        logger.error('Failed to get form by slug', { error: error.message });
+        res.status(500).json({ error: 'Failed to retrieve form' });
     }
 });
 
-// Get specific form by ID
+/**
+ * @swagger
+ * /api/forms/{id}:
+ *   get:
+ *     summary: Get form by ID
+ *     description: Returns a single form by its ID. The form must belong to the authenticated user's tenant.
+ *     tags: [Forms]
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Form ID
+ *     responses:
+ *       200:
+ *         description: Form object
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Form'
+ *       404:
+ *         description: Form not found
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Server error
+ */
 router.get('/:id', authenticate, authenticate.checkPermission('forms', 'view'), async (req, res) => {
     try {
         const row = await formRepo.findById(req.params.id);
         if (!row || row.tenant_id !== req.user.tenant_id) return res.status(404).json({ error: 'Form not found' });
         res.json(toEntity(row));
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        logger.error('Failed to get form by ID', { error: error.message });
+        res.status(500).json({ error: 'Failed to retrieve form' });
     }
 });
 
@@ -176,8 +297,75 @@ async function hashFormPassword(password) {
     return bcrypt.hash(password, salt);
 }
 
-// Create new form
-router.post('/', authenticate, authenticate.checkPermission('forms', 'create'), async (req, res) => {
+/**
+ * @swagger
+ * /api/forms:
+ *   post:
+ *     summary: Create a new form
+ *     description: Creates a new form with a generated slug. The form is assigned to the authenticated user's tenant and starts in draft status.
+ *     tags: [Forms]
+ *     security:
+ *       - cookieAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - title
+ *             properties:
+ *               title:
+ *                 type: string
+ *                 minLength: 1
+ *                 maxLength: 255
+ *               definition:
+ *                 type: object
+ *                 nullable: true
+ *               allow_audio:
+ *                 type: boolean
+ *               allow_camera:
+ *                 type: boolean
+ *               allow_location:
+ *                 type: boolean
+ *               ai_enabled:
+ *                 type: boolean
+ *               folder_id:
+ *                 oneOf:
+ *                   - type: integer
+ *                   - type: string
+ *                 nullable: true
+ *               status:
+ *                 type: string
+ *                 enum: [draft, published, archived]
+ *               password:
+ *                 type: string
+ *                 nullable: true
+ *               settings:
+ *                 type: object
+ *                 nullable: true
+ *               type:
+ *                 type: string
+ *                 nullable: true
+ *               language:
+ *                 type: string
+ *                 maxLength: 10
+ *                 nullable: true
+ *     responses:
+ *       201:
+ *         description: Form created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Form'
+ *       400:
+ *         description: Validation error
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Server error
+ */
+router.post('/', authenticate, validate(createFormSchema), authenticate.checkPermission('forms', 'create'), async (req, res) => {
     try {
         logger.info("POST /api/forms - Creating Form", { user: req.user?.username });
 
@@ -212,12 +400,88 @@ router.post('/', authenticate, authenticate.checkPermission('forms', 'create'), 
         res.status(201).json(toEntity(savedRow));
     } catch (error) {
         logger.error("Create Form Error", { error: error.message });
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ error: 'Failed to create form' });
     }
 });
 
-// Update form
-router.put('/:id', authenticate, authenticate.checkPermission('forms', 'update'), async (req, res) => {
+/**
+ * @swagger
+ * /api/forms/{id}:
+ *   put:
+ *     summary: Update a form
+ *     description: Updates an existing form. The form must belong to the authenticated user's tenant. At least one field must be provided.
+ *     tags: [Forms]
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Form ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             minProperties: 1
+ *             properties:
+ *               title:
+ *                 type: string
+ *                 minLength: 1
+ *                 maxLength: 255
+ *               definition:
+ *                 type: object
+ *                 nullable: true
+ *               allow_audio:
+ *                 type: boolean
+ *               allow_camera:
+ *                 type: boolean
+ *               allow_location:
+ *                 type: boolean
+ *               ai_enabled:
+ *                 type: boolean
+ *               folder_id:
+ *                 oneOf:
+ *                   - type: integer
+ *                   - type: string
+ *                 nullable: true
+ *               status:
+ *                 type: string
+ *                 enum: [draft, published, archived]
+ *               password:
+ *                 type: string
+ *                 nullable: true
+ *               settings:
+ *                 type: object
+ *                 nullable: true
+ *               type:
+ *                 type: string
+ *                 nullable: true
+ *               language:
+ *                 type: string
+ *                 maxLength: 10
+ *                 nullable: true
+ *     responses:
+ *       200:
+ *         description: Form updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Form'
+ *       400:
+ *         description: Validation error
+ *       404:
+ *         description: Form not found
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Server error
+ */
+router.put('/:id', authenticate, validate(updateFormSchema), authenticate.checkPermission('forms', 'update'), async (req, res) => {
     try {
         const existing = await formRepo.findById(req.params.id);
         if (!existing || existing.tenant_id !== req.user.tenant_id) return res.status(404).json({ error: 'Form not found' });
@@ -256,11 +520,42 @@ router.put('/:id', authenticate, authenticate.checkPermission('forms', 'update')
         const updated = await formRepo.update(req.params.id, updatedData);
         res.json(toEntity(updated));
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        logger.error('Failed to update form', { error: error.message });
+        res.status(500).json({ error: 'Failed to update form' });
     }
 });
 
-// Publish a form (Direct - Legacy or Admin override)
+/**
+ * @swagger
+ * /api/forms/{id}/publish:
+ *   post:
+ *     summary: Publish a form
+ *     description: Directly publishes a form, bypassing the approval workflow. Intended for legacy support or admin override.
+ *     tags: [Forms]
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Form ID
+ *     responses:
+ *       200:
+ *         description: Form published successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Form'
+ *       404:
+ *         description: Form not found
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Server error
+ */
 router.post('/:id/publish', authenticate, authenticate.checkPermission('forms', 'update'), async (req, res) => {
     try {
         const existing = await formRepo.findById(req.params.id);
@@ -273,11 +568,42 @@ router.post('/:id/publish', authenticate, authenticate.checkPermission('forms', 
         });
         res.json(toEntity(updatedRow));
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        logger.error('Failed to publish form', { error: error.message });
+        res.status(500).json({ error: 'Failed to publish form' });
     }
 });
 
-// Request Approval (Maker)
+/**
+ * @swagger
+ * /api/forms/{id}/request-approval:
+ *   post:
+ *     summary: Request form approval
+ *     description: Submits a form for approval as part of the Maker-Checker workflow. Sets the form status to pending_approval.
+ *     tags: [Forms]
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Form ID
+ *     responses:
+ *       200:
+ *         description: Approval requested successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Form'
+ *       404:
+ *         description: Form not found
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Server error
+ */
 router.post('/:id/request-approval', authenticate, async (req, res) => {
     try {
         const existing = await formRepo.findById(req.params.id);
@@ -290,11 +616,44 @@ router.post('/:id/request-approval', authenticate, async (req, res) => {
         });
         res.json(toEntity(updatedRow));
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        logger.error('Failed to request form approval', { error: error.message });
+        res.status(500).json({ error: 'Failed to request form approval' });
     }
 });
 
-// Approve Form (Checker)
+/**
+ * @swagger
+ * /api/forms/{id}/approve:
+ *   post:
+ *     summary: Approve a form
+ *     description: Approves a form as part of the Maker-Checker workflow. The approver cannot be the same user who requested approval (enforced in production). Publishes the form upon approval.
+ *     tags: [Forms]
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Form ID
+ *     responses:
+ *       200:
+ *         description: Form approved and published
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Form'
+ *       403:
+ *         description: Maker cannot be the Checker
+ *       404:
+ *         description: Form not found
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Server error
+ */
 router.post('/:id/approve', authenticate, async (req, res) => {
     try {
         const existing = await formRepo.findById(req.params.id);
@@ -313,11 +672,42 @@ router.post('/:id/approve', authenticate, async (req, res) => {
         });
         res.json(toEntity(updatedRow));
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        logger.error('Failed to approve form', { error: error.message });
+        res.status(500).json({ error: 'Failed to approve form' });
     }
 });
 
-// Reject Form (Checker)
+/**
+ * @swagger
+ * /api/forms/{id}/reject:
+ *   post:
+ *     summary: Reject a form
+ *     description: Rejects a form as part of the Maker-Checker workflow. Sets the form status to rejected and unpublishes it.
+ *     tags: [Forms]
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Form ID
+ *     responses:
+ *       200:
+ *         description: Form rejected
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Form'
+ *       404:
+ *         description: Form not found
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Server error
+ */
 router.post('/:id/reject', authenticate, async (req, res) => {
     try {
         const existing = await formRepo.findById(req.params.id);
@@ -331,11 +721,42 @@ router.post('/:id/reject', authenticate, async (req, res) => {
         });
         res.json(toEntity(updatedRow));
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        logger.error('Failed to reject form', { error: error.message });
+        res.status(500).json({ error: 'Failed to reject form' });
     }
 });
 
-// Create new version (draft) logic
+/**
+ * @swagger
+ * /api/forms/{id}/draft:
+ *   post:
+ *     summary: Create a new draft version of a form
+ *     description: Creates a new draft version based on an existing form. Increments the version number and sets the status to draft.
+ *     tags: [Forms]
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Source form ID to create a new draft from
+ *     responses:
+ *       201:
+ *         description: Draft version created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Form'
+ *       404:
+ *         description: Form not found
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Server error
+ */
 router.post('/:id/draft', authenticate, async (req, res) => {
     try {
         const existing = await formRepo.findById(req.params.id);
@@ -356,11 +777,56 @@ router.post('/:id/draft', authenticate, async (req, res) => {
         const savedRow = await formRepo.create(newVersionData);
         res.status(201).json(toEntity(savedRow));
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        logger.error('Failed to create form draft', { error: error.message });
+        res.status(500).json({ error: 'Failed to create form draft' });
     }
 });
 
-// Secure Password Check — rate limited, bcrypt compare
+/**
+ * @swagger
+ * /api/forms/{id}/check-password:
+ *   post:
+ *     summary: Check form password
+ *     description: Verifies a password for a password-protected form. Rate limited to 5 requests per minute per IP. Supports both bcrypt-hashed and legacy plaintext passwords.
+ *     tags: [Forms]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Form ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - password
+ *             properties:
+ *               password:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Password check result
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *       401:
+ *         description: Incorrect password
+ *       404:
+ *         description: Form not found
+ *       429:
+ *         description: Too many password attempts
+ *       500:
+ *         description: Server error
+ */
 router.post('/:id/check-password', passwordCheckLimiter, async (req, res) => {
     try {
         const { password } = req.body;
@@ -385,11 +851,38 @@ router.post('/:id/check-password', passwordCheckLimiter, async (req, res) => {
 
         res.status(401).json({ error: 'Incorrect password' });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        logger.error('Failed to check form password', { error: err.message });
+        res.status(500).json({ error: 'Failed to verify password' });
     }
 });
 
-// Delete form
+/**
+ * @swagger
+ * /api/forms/{id}:
+ *   delete:
+ *     summary: Delete a form
+ *     description: Deletes a form and all its associated submissions (cascade). The form must belong to the authenticated user's tenant.
+ *     tags: [Forms]
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Form ID
+ *     responses:
+ *       204:
+ *         description: Form deleted successfully
+ *       404:
+ *         description: Form not found
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Server error
+ */
 router.delete('/:id', authenticate, authenticate.checkPermission('forms', 'delete'), async (req, res) => {
     try {
         const id = req.params.id;
@@ -406,7 +899,7 @@ router.delete('/:id', authenticate, authenticate.checkPermission('forms', 'delet
         res.status(204).send();
     } catch (error) {
         logger.error("Delete Error", { error: error.message });
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ error: 'Failed to delete form' });
     }
 });
 

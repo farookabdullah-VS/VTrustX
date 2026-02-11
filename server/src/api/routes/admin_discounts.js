@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const { query } = require('../../infrastructure/database/db');
 const authenticate = require('../middleware/auth');
+const validate = require('../middleware/validate');
+const { createDiscountSchema, updateDiscountSchema } = require('../schemas/discounts.schemas');
 const logger = require('../../infrastructure/logger');
 
 // Middleware to check admin role
@@ -13,18 +15,113 @@ const isAdmin = (req, res, next) => {
     }
 };
 
-// GET /api/admin/discounts - List Discounts
+/**
+ * @swagger
+ * /api/admin/discounts:
+ *   get:
+ *     summary: List discounts
+ *     description: Retrieve all discounts. Requires admin role.
+ *     tags: [AdminDiscounts]
+ *     security:
+ *       - cookieAuth: []
+ *     responses:
+ *       200:
+ *         description: Array of discounts
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Discount'
+ *       403:
+ *         description: Access denied - admin role required
+ *       500:
+ *         description: Internal server error
+ */
 router.get('/', authenticate, isAdmin, async (req, res) => {
     try {
         const result = await query('SELECT * FROM discounts ORDER BY created_at DESC');
         res.json(result.rows);
     } catch (e) {
-        res.status(500).json({ error: e.message });
+        logger.error('Failed to fetch discounts', { error: e.message });
+        res.status(500).json({ error: 'Failed to fetch discounts' });
     }
 });
 
-// POST /api/admin/discounts - Create Discount
-router.post('/', authenticate, isAdmin, async (req, res) => {
+/**
+ * @swagger
+ * /api/admin/discounts:
+ *   post:
+ *     summary: Create discount
+ *     description: Create a new discount code. Requires admin role.
+ *     tags: [AdminDiscounts]
+ *     security:
+ *       - cookieAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - code
+ *               - type
+ *               - value
+ *             properties:
+ *               code:
+ *                 type: string
+ *                 minLength: 1
+ *                 maxLength: 50
+ *                 description: Unique discount code
+ *               type:
+ *                 type: string
+ *                 enum: [percentage, fixed]
+ *                 description: Discount type
+ *               value:
+ *                 type: number
+ *                 minimum: 0
+ *                 description: Discount value
+ *               start_date:
+ *                 type: string
+ *                 format: date-time
+ *                 description: Start date for the discount
+ *               end_date:
+ *                 type: string
+ *                 format: date-time
+ *                 description: End date for the discount
+ *               applies_to_plan_id:
+ *                 type: integer
+ *                 description: Restrict discount to a specific plan
+ *               max_redemptions:
+ *                 type: integer
+ *                 minimum: 0
+ *                 description: Maximum number of redemptions
+ *               partner_id:
+ *                 type: string
+ *                 maxLength: 255
+ *                 description: Associated partner ID
+ *               recurrence_rule:
+ *                 type: string
+ *                 maxLength: 255
+ *                 description: Recurrence rule for the discount
+ *               is_active:
+ *                 type: boolean
+ *                 default: true
+ *     responses:
+ *       201:
+ *         description: Discount created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Discount'
+ *       400:
+ *         description: Validation error
+ *       403:
+ *         description: Access denied - admin role required
+ *       500:
+ *         description: Internal server error
+ */
+router.post('/', authenticate, isAdmin, validate(createDiscountSchema), async (req, res) => {
     try {
         const {
             code, type, value, start_date, end_date,
@@ -58,12 +155,79 @@ router.post('/', authenticate, isAdmin, async (req, res) => {
         res.status(201).json(result.rows[0]);
     } catch (e) {
         logger.error("Error creating discount", { error: e.message });
-        res.status(500).json({ error: e.message });
+        res.status(500).json({ error: 'Failed to create discount' });
     }
 });
 
-// PATCH /api/admin/discounts/:id - Update Discount
-router.patch('/:id', authenticate, isAdmin, async (req, res) => {
+/**
+ * @swagger
+ * /api/admin/discounts/{id}:
+ *   patch:
+ *     summary: Update discount
+ *     description: Update an existing discount. Supports partial updates. Requires admin role.
+ *     tags: [AdminDiscounts]
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Discount ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               code:
+ *                 type: string
+ *                 minLength: 1
+ *                 maxLength: 50
+ *               type:
+ *                 type: string
+ *                 enum: [percentage, fixed]
+ *               value:
+ *                 type: number
+ *                 minimum: 0
+ *               start_date:
+ *                 type: string
+ *                 format: date-time
+ *               end_date:
+ *                 type: string
+ *                 format: date-time
+ *               applies_to_plan_id:
+ *                 type: integer
+ *               max_redemptions:
+ *                 type: integer
+ *                 minimum: 0
+ *               partner_id:
+ *                 type: string
+ *                 maxLength: 255
+ *               recurrence_rule:
+ *                 type: string
+ *                 maxLength: 255
+ *               is_active:
+ *                 type: boolean
+ *     responses:
+ *       200:
+ *         description: Discount updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Discount'
+ *       400:
+ *         description: Validation error or no valid fields to update
+ *       403:
+ *         description: Access denied - admin role required
+ *       404:
+ *         description: Discount not found
+ *       500:
+ *         description: Internal server error
+ */
+router.patch('/:id', authenticate, isAdmin, validate(updateDiscountSchema), async (req, res) => {
     try {
         const { id } = req.params;
         const updates = req.body;
@@ -99,7 +263,7 @@ router.patch('/:id', authenticate, isAdmin, async (req, res) => {
 
     } catch (e) {
         logger.error("Error updating discount", { error: e.message });
-        res.status(500).json({ error: e.message });
+        res.status(500).json({ error: 'Failed to update discount' });
     }
 });
 

@@ -127,7 +127,7 @@ export function EnhancedAuditLogViewer() {
     };
 
     return (
-        <div style={{ padding: '20px', maxWidth: '1400px', margin: '0 auto', fontFamily: 'Inter, sans-serif' }}>
+        <div style={{ padding: '20px', maxWidth: '1400px', margin: '0 auto', fontFamily: 'Outfit, sans-serif' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
                 <div>
                     <h2 style={{ margin: 0, fontSize: '1.8em', color: 'var(--text-color)' }}>Persona Audit Logs</h2>

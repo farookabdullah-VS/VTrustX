@@ -239,7 +239,7 @@ Make the persona realistic, detailed, and relevant to the description. Choose an
             position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
             background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            zIndex: 10000, fontFamily: "'Inter', sans-serif"
+            zIndex: 10000, fontFamily: "'Outfit', sans-serif"
         }}>
             <div style={{
                 background: 'white', borderRadius: '24px', width: '900px', maxWidth: '95%',

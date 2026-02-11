@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const PostgresRepository = require('../../infrastructure/database/PostgresRepository');
-const pool = require('../../infrastructure/database/db');
+const { pool, transaction } = require('../../infrastructure/database/db');
 const logger = require('../../infrastructure/logger'); // Direct pool access for complex queries
 
 const authenticate = require('../middleware/auth');
@@ -27,6 +27,110 @@ const VALID_TRANSITIONS = {
 
 // --- TICKETS ---
 
+/**
+ * @swagger
+ * /api/crm/tickets:
+ *   get:
+ *     summary: List tickets
+ *     description: Retrieve tickets with filtering, pagination, search, and sorting. When page is omitted, returns a raw array (max 50) for backward compatibility.
+ *     tags: [CRM]
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [new, open, pending, resolved, closed]
+ *         description: Filter by ticket status
+ *       - in: query
+ *         name: priority
+ *         schema:
+ *           type: string
+ *           enum: [low, medium, high, urgent]
+ *         description: Filter by ticket priority
+ *       - in: query
+ *         name: assignee
+ *         schema:
+ *           type: integer
+ *         description: Filter by assigned user ID
+ *       - in: query
+ *         name: team
+ *         schema:
+ *           type: integer
+ *         description: Filter by assigned team ID
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Search in subject, description, and ticket code (ILIKE)
+ *       - in: query
+ *         name: dateFrom
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *         description: Filter tickets created on or after this date
+ *       - in: query
+ *         name: dateTo
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *         description: Filter tickets created on or before this date
+ *       - in: query
+ *         name: sort
+ *         schema:
+ *           type: string
+ *           enum: [created_at, priority, status, subject, ticket_code]
+ *         description: Sort field (default created_at)
+ *       - in: query
+ *         name: order
+ *         schema:
+ *           type: string
+ *           enum: [asc, desc]
+ *         description: Sort direction (default desc)
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *         description: Page number for paginated response. Omit for raw array.
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 100
+ *         description: Items per page (default 20, max 100)
+ *     responses:
+ *       200:
+ *         description: Tickets retrieved successfully. Returns array if page is omitted, or paginated object if page is provided.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               oneOf:
+ *                 - type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Ticket'
+ *                 - type: object
+ *                   properties:
+ *                     data:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/Ticket'
+ *                     pagination:
+ *                       type: object
+ *                       properties:
+ *                         page:
+ *                           type: integer
+ *                         limit:
+ *                           type: integer
+ *                         total:
+ *                           type: integer
+ *                         totalPages:
+ *                           type: integer
+ *       500:
+ *         description: Server error
+ */
 // GET Tickets (List) — with pagination, search, sorting
 router.get('/tickets', authenticate, async (req, res) => {
     try {
@@ -99,6 +203,41 @@ router.get('/tickets', authenticate, async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ * /api/crm/tickets/{id}:
+ *   get:
+ *     summary: Get ticket by ID
+ *     description: Retrieve a single ticket with full details including contact, account, assignee info, and all messages.
+ *     tags: [CRM]
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Ticket ID
+ *     responses:
+ *       200:
+ *         description: Ticket details with messages
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/Ticket'
+ *                 - type: object
+ *                   properties:
+ *                     messages:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/TicketMessage'
+ *       404:
+ *         description: Ticket not found
+ *       500:
+ *         description: Server error
+ */
 // GET Ticket Detail
 router.get('/tickets/:id', authenticate, async (req, res) => {
     try {
@@ -135,6 +274,60 @@ router.get('/tickets/:id', authenticate, async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ * /api/crm/tickets:
+ *   post:
+ *     summary: Create ticket
+ *     description: Create a new support ticket. Auto-resolves contact from the logged-in user if not provided. Calculates SLA deadlines based on priority and tenant SLA policies. Auto-assigns to team/user based on keyword rules and content analysis.
+ *     tags: [CRM]
+ *     security:
+ *       - cookieAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - subject
+ *             properties:
+ *               subject:
+ *                 type: string
+ *                 description: Ticket subject line
+ *               description:
+ *                 type: string
+ *                 description: Detailed ticket description
+ *               priority:
+ *                 type: string
+ *                 enum: [low, medium, high, urgent]
+ *                 default: medium
+ *               status:
+ *                 type: string
+ *                 enum: [new, open]
+ *                 default: new
+ *               channel:
+ *                 type: string
+ *                 enum: [web, email, phone, chat]
+ *                 default: web
+ *               contact_id:
+ *                 type: integer
+ *                 description: Contact ID (auto-resolved from user if omitted)
+ *               account_id:
+ *                 type: integer
+ *                 description: CRM account ID
+ *     responses:
+ *       201:
+ *         description: Ticket created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Ticket'
+ *       400:
+ *         description: Validation error
+ *       500:
+ *         description: Server error
+ */
 // POST Create Ticket
 router.post('/tickets', authenticate, validate(createTicketSchema), async (req, res) => {
     try {
@@ -261,6 +454,43 @@ router.post('/tickets', authenticate, validate(createTicketSchema), async (req, 
     }
 });
 
+/**
+ * @swagger
+ * /api/crm/tickets/{id}/transitions:
+ *   get:
+ *     summary: Get ticket state transitions
+ *     description: Return the current status of the ticket and the list of valid workflow transitions from that status.
+ *     tags: [CRM]
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Ticket ID
+ *     responses:
+ *       200:
+ *         description: Current status and allowed transitions
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 currentStatus:
+ *                   type: string
+ *                   enum: [new, open, pending, resolved, closed]
+ *                 allowedTransitions:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *                     enum: [new, open, pending, resolved, closed]
+ *       404:
+ *         description: Ticket not found
+ *       500:
+ *         description: Server error
+ */
 // GET Allowed Transitions for a Ticket
 router.get('/tickets/:id/transitions', authenticate, async (req, res) => {
     try {
@@ -276,6 +506,74 @@ router.get('/tickets/:id/transitions', authenticate, async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ * /api/crm/tickets/bulk:
+ *   put:
+ *     summary: Bulk update tickets
+ *     description: Update multiple tickets at once with the same set of field changes. Validates workflow transitions individually per ticket. Runs in a database transaction with batch audit logging.
+ *     tags: [CRM]
+ *     security:
+ *       - cookieAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - ticketIds
+ *               - updates
+ *             properties:
+ *               ticketIds:
+ *                 type: array
+ *                 items:
+ *                   type: integer
+ *                 description: Array of ticket IDs to update
+ *               updates:
+ *                 type: object
+ *                 properties:
+ *                   status:
+ *                     type: string
+ *                     enum: [new, open, pending, resolved, closed]
+ *                   priority:
+ *                     type: string
+ *                     enum: [low, medium, high, urgent]
+ *                   assigned_user_id:
+ *                     type: integer
+ *                   assigned_team_id:
+ *                     type: integer
+ *     responses:
+ *       200:
+ *         description: Bulk update results
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 updated:
+ *                   type: array
+ *                   items:
+ *                     type: integer
+ *                   description: IDs of successfully updated tickets
+ *                 errors:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: integer
+ *                       error:
+ *                         type: string
+ *                       allowedTransitions:
+ *                         type: array
+ *                         items:
+ *                           type: string
+ *       400:
+ *         description: Validation error or no valid fields
+ *       500:
+ *         description: Server error
+ */
 // PUT Bulk Update Tickets
 router.put('/tickets/bulk', authenticate, validate(bulkUpdateSchema), async (req, res) => {
     const client = await pool.connect();
@@ -354,6 +652,90 @@ router.put('/tickets/bulk', authenticate, validate(bulkUpdateSchema), async (req
     }
 });
 
+/**
+ * @swagger
+ * /api/crm/tickets/{id}:
+ *   put:
+ *     summary: Update single ticket
+ *     description: Update a ticket's fields with workflow transition validation. The ticket update, audit log insert, and notification insert are wrapped in a database transaction for atomicity. Triggers workflow evaluation and email notifications for assignment, resolution, and closure events.
+ *     tags: [CRM]
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Ticket ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               status:
+ *                 type: string
+ *                 enum: [new, open, pending, resolved, closed]
+ *               priority:
+ *                 type: string
+ *                 enum: [low, medium, high, urgent]
+ *               assigned_user_id:
+ *                 type: integer
+ *               assigned_team_id:
+ *                 type: integer
+ *               request_type:
+ *                 type: string
+ *               impact:
+ *                 type: string
+ *               description:
+ *                 type: string
+ *               issue:
+ *                 type: string
+ *               analysis:
+ *                 type: string
+ *               solution:
+ *                 type: string
+ *               mode:
+ *                 type: string
+ *               level:
+ *                 type: string
+ *               urgency:
+ *                 type: string
+ *               group_name:
+ *                 type: string
+ *               category:
+ *                 type: string
+ *               assets:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Ticket updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Ticket'
+ *       400:
+ *         description: Invalid status transition
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                 currentStatus:
+ *                   type: string
+ *                 allowedTransitions:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *       404:
+ *         description: Ticket not found
+ *       500:
+ *         description: Server error
+ */
 // PUT Update Ticket
 router.put('/tickets/:id', authenticate, async (req, res) => {
     try {
@@ -362,7 +744,7 @@ router.put('/tickets/:id', authenticate, async (req, res) => {
         const updates = req.body;
 
         // Verify Ownership & get current status
-        const check = await pool.query('SELECT id, status FROM tickets WHERE id = $1 AND tenant_id = $2', [id, tenantId]);
+        const check = await pool.query('SELECT id, status, assigned_user_id FROM tickets WHERE id = $1 AND tenant_id = $2', [id, tenantId]);
         if (check.rows.length === 0) return res.status(404).json({ error: 'Ticket not found' });
 
         const currentStatus = check.rows[0].status;
@@ -393,37 +775,43 @@ router.put('/tickets/:id', authenticate, async (req, res) => {
         if (safeUpdates.status === 'closed') safeUpdates.closed_at = new Date();
         if (safeUpdates.status === 'open' && currentStatus === 'closed') safeUpdates.closed_at = null;
 
-        const updated = await ticketRepo.update(id, safeUpdates);
+        // Wrap ticket update + audit log + notification in a transaction
+        const updated = await transaction(async (client) => {
+            // 1. Update the ticket
+            const scopedTicketRepo = ticketRepo.withClient(client);
+            const updatedTicket = await scopedTicketRepo.update(id, safeUpdates);
 
-        // Audit Log
-        const auditQuery = `
-            INSERT INTO audit_logs (entity_type, entity_id, action, details, actor_id)
-            VALUES ($1, $2, $3, $4, $5)
-        `;
-        await pool.query(auditQuery, ['ticket', id, 'update', JSON.stringify(safeUpdates), req.user.id]);
+            // 2. Audit Log
+            await client.query(
+                `INSERT INTO audit_logs (entity_type, entity_id, action, details, actor_id)
+                 VALUES ($1, $2, $3, $4, $5)`,
+                ['ticket', id, 'update', JSON.stringify(safeUpdates), req.user.id]
+            );
 
-        // Notification: If assigned_user_id changed
-        if (safeUpdates.assigned_user_id) {
-            const tRes = await pool.query('SELECT ticket_code, subject FROM tickets WHERE id = $1', [id]);
-            if (tRes.rows.length > 0) {
-                const { ticket_code, subject } = tRes.rows[0];
-                await pool.query(
-                    `INSERT INTO notifications (tenant_id, user_id, title, message, type, reference_id)
-                     VALUES ($1, $2, 'Ticket Assigned', $3, 'assignment', $4)`,
-                    [tenantId, safeUpdates.assigned_user_id, `You have been assigned ticket ${ticket_code}: ${subject}`, id]
-                );
+            // 3. Notification: If assigned_user_id changed
+            if (safeUpdates.assigned_user_id) {
+                const tRes = await client.query('SELECT ticket_code, subject FROM tickets WHERE id = $1', [id]);
+                if (tRes.rows.length > 0) {
+                    const { ticket_code, subject } = tRes.rows[0];
+                    await client.query(
+                        `INSERT INTO notifications (tenant_id, user_id, title, message, type, reference_id)
+                         VALUES ($1, $2, 'Ticket Assigned', $3, 'assignment', $4)`,
+                        [tenantId, safeUpdates.assigned_user_id, `You have been assigned ticket ${ticket_code}: ${subject}`, id]
+                    );
+                }
             }
-        }
 
-        // Trigger Workflows
-        // Trigger Workflows
+            return updatedTicket;
+        });
+
+        // Trigger Workflows (fire-and-forget, outside transaction)
         workflowEngine.evaluate('ticket', { ...safeUpdates, id: id, tenant_id: tenantId }, 'ticket_updated')
             .catch(err => logger.error("Workflow Update Error", { error: err.message }));
 
         // --- NOTIFICATIONS: Lifecycle Hooks ---
-        // Fetch fresh ticket data with contact info
+        // Fetch fresh ticket data with contact info (read-only, outside transaction)
         const freshTicketRes = await pool.query(`
-            SELECT t.*, c.name as contact_name, c.email as contact_email 
+            SELECT t.*, c.name as contact_name, c.email as contact_email
             FROM tickets t
             LEFT JOIN crm_contacts c ON t.contact_id = c.id
             WHERE t.id = $1
@@ -470,6 +858,55 @@ router.put('/tickets/:id', authenticate, async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ * /api/crm/tickets/{id}/audit:
+ *   get:
+ *     summary: Get ticket audit trail
+ *     description: Retrieve the full audit log history for a specific ticket, ordered by most recent first. Includes actor username for each entry.
+ *     tags: [CRM]
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Ticket ID
+ *     responses:
+ *       200:
+ *         description: Audit log entries
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: integer
+ *                   entity_type:
+ *                     type: string
+ *                   entity_id:
+ *                     type: integer
+ *                   action:
+ *                     type: string
+ *                   details:
+ *                     type: string
+ *                     description: JSON-encoded change details
+ *                   actor_id:
+ *                     type: integer
+ *                   actor_name:
+ *                     type: string
+ *                   created_at:
+ *                     type: string
+ *                     format: date-time
+ *       404:
+ *         description: Ticket not found
+ *       500:
+ *         description: Server error
+ */
 // GET Audit Logs for Ticket
 router.get('/tickets/:id/audit', authenticate, async (req, res) => {
     try {
@@ -494,7 +931,51 @@ router.get('/tickets/:id/audit', authenticate, async (req, res) => {
     }
 });
 
-// POST Message
+/**
+ * @swagger
+ * /api/crm/tickets/{id}/messages:
+ *   post:
+ *     summary: Add message to ticket
+ *     description: Add a public or internal message/note to an existing ticket. The authenticated user is recorded as the sender.
+ *     tags: [CRM]
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Ticket ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - body
+ *             properties:
+ *               body:
+ *                 type: string
+ *                 description: Message content
+ *               type:
+ *                 type: string
+ *                 enum: [public, internal]
+ *                 default: public
+ *                 description: Message visibility type
+ *     responses:
+ *       201:
+ *         description: Message created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/TicketMessage'
+ *       404:
+ *         description: Ticket not found
+ *       500:
+ *         description: Server error
+ */
 // POST Message
 router.post('/tickets/:id/messages', authenticate, async (req, res) => {
     try {
@@ -524,8 +1005,27 @@ router.post('/tickets/:id/messages', authenticate, async (req, res) => {
 
 // --- ACCOUNTS & CONTACTS ---
 
-// --- ACCOUNTS & CONTACTS ---
-
+/**
+ * @swagger
+ * /api/crm/accounts:
+ *   get:
+ *     summary: List CRM accounts
+ *     description: Retrieve all CRM accounts for the current tenant.
+ *     tags: [CRM]
+ *     security:
+ *       - cookieAuth: []
+ *     responses:
+ *       200:
+ *         description: List of CRM accounts
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/CrmAccount'
+ *       500:
+ *         description: Server error
+ */
 router.get('/accounts', authenticate, async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM crm_accounts WHERE tenant_id = $1', [req.user.tenant_id]);
@@ -536,6 +1036,49 @@ router.get('/accounts', authenticate, async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ * /api/crm/accounts:
+ *   post:
+ *     summary: Create account
+ *     description: Create a new CRM account. The authenticated user is set as the account owner.
+ *     tags: [CRM]
+ *     security:
+ *       - cookieAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: Account name
+ *               industry:
+ *                 type: string
+ *                 description: Industry sector
+ *               domain:
+ *                 type: string
+ *                 description: Company domain
+ *               website:
+ *                 type: string
+ *                 description: Company website URL
+ *               address:
+ *                 type: string
+ *                 description: Physical address
+ *     responses:
+ *       201:
+ *         description: Account created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/CrmAccount'
+ *       500:
+ *         description: Server error
+ */
 router.post('/accounts', authenticate, async (req, res) => {
     try {
         const { name, industry, domain, website, address } = req.body;
@@ -557,6 +1100,27 @@ router.post('/accounts', authenticate, async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ * /api/crm/contacts:
+ *   get:
+ *     summary: List CRM contacts
+ *     description: Retrieve all CRM contacts for the current tenant.
+ *     tags: [CRM]
+ *     security:
+ *       - cookieAuth: []
+ *     responses:
+ *       200:
+ *         description: List of CRM contacts
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/CrmContact'
+ *       500:
+ *         description: Server error
+ */
 router.get('/contacts', authenticate, async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM crm_contacts WHERE tenant_id = $1', [req.user.tenant_id]);
@@ -567,6 +1131,51 @@ router.get('/contacts', authenticate, async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ * /api/crm/contacts:
+ *   post:
+ *     summary: Create CRM contact
+ *     description: Create a new CRM contact associated with the current tenant.
+ *     tags: [CRM]
+ *     security:
+ *       - cookieAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *               - email
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: Contact full name
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 description: Contact email address
+ *               phone:
+ *                 type: string
+ *                 description: Contact phone number
+ *               title:
+ *                 type: string
+ *                 description: Job title
+ *               account_id:
+ *                 type: integer
+ *                 description: Associated CRM account ID
+ *     responses:
+ *       201:
+ *         description: Contact created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/CrmContact'
+ *       500:
+ *         description: Server error
+ */
 router.post('/contacts', authenticate, async (req, res) => {
     try {
         const { name, email, phone, title, account_id } = req.body;
@@ -588,7 +1197,57 @@ router.post('/contacts', authenticate, async (req, res) => {
 });
 
 // --- REPORTING / STATS ---
-// --- REPORTING / STATS ---
+
+/**
+ * @swagger
+ * /api/crm/stats:
+ *   get:
+ *     summary: Get CRM statistics
+ *     description: Retrieve aggregated CRM statistics including ticket counts by status, team, priority, and SLA breach count.
+ *     tags: [CRM]
+ *     security:
+ *       - cookieAuth: []
+ *     responses:
+ *       200:
+ *         description: CRM statistics
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 byStatus:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       status:
+ *                         type: string
+ *                       count:
+ *                         type: integer
+ *                 byTeam:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       name:
+ *                         type: string
+ *                       count:
+ *                         type: integer
+ *                 byPriority:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       priority:
+ *                         type: string
+ *                       count:
+ *                         type: integer
+ *                 breaches:
+ *                   type: integer
+ *                   description: Number of tickets breaching SLA
+ *       500:
+ *         description: Server error
+ */
 router.get('/stats', authenticate, async (req, res) => {
     try {
         const tenantId = req.user.tenant_id;
@@ -638,6 +1297,64 @@ router.get('/stats', authenticate, async (req, res) => {
 });
 
 // --- WEBHOOKS ---
+
+/**
+ * @swagger
+ * /api/crm/webhooks/email:
+ *   post:
+ *     summary: Email webhook
+ *     description: Inbound email webhook endpoint. Validates the webhook secret, finds or creates a contact from the sender address, and creates a new ticket from the email content. Triggers workflow evaluation and sends a creation notification.
+ *     tags: [CRM]
+ *     parameters:
+ *       - in: header
+ *         name: x-webhook-secret
+ *         schema:
+ *           type: string
+ *         description: Webhook authentication secret (validated against WEBHOOK_SECRET env var)
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - from
+ *               - subject
+ *               - tenant_id
+ *             properties:
+ *               from:
+ *                 type: string
+ *                 format: email
+ *                 description: Sender email address
+ *               subject:
+ *                 type: string
+ *                 description: Email subject line
+ *               body:
+ *                 type: string
+ *                 description: Email body content
+ *               tenant_id:
+ *                 type: integer
+ *                 description: Target tenant ID
+ *     responses:
+ *       200:
+ *         description: Email processed and ticket created
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: ok
+ *                 ticket:
+ *                   $ref: '#/components/schemas/Ticket'
+ *       400:
+ *         description: Missing required fields
+ *       401:
+ *         description: Invalid webhook secret
+ *       500:
+ *         description: Server error
+ */
 router.post('/webhooks/email', async (req, res) => {
     try {
         const webhookSecret = req.headers['x-webhook-secret'];
@@ -724,6 +1441,52 @@ router.post('/webhooks/email', async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ * /api/crm/public/tickets:
+ *   post:
+ *     summary: Public ticket creation
+ *     description: Create a ticket from a public-facing form without authentication. Finds or creates a contact from the submitted email. Resolves tenant from request body or defaults to the first tenant. Auto-assigns to the General Support team.
+ *     tags: [CRM]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *               - email
+ *               - subject
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: Submitter name
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 description: Submitter email address
+ *               subject:
+ *                 type: string
+ *                 description: Ticket subject
+ *               description:
+ *                 type: string
+ *                 description: Ticket description
+ *               tenant_id:
+ *                 type: integer
+ *                 description: Target tenant ID (defaults to first tenant if omitted)
+ *     responses:
+ *       201:
+ *         description: Ticket created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Ticket'
+ *       400:
+ *         description: Missing required fields (name, email, subject)
+ *       500:
+ *         description: Server error
+ */
 // Public Form Submission
 router.post('/public/tickets', async (req, res) => {
     try {

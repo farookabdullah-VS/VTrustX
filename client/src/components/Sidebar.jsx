@@ -364,6 +364,7 @@ export function Sidebar({ user, view, onViewChange, onLogout, isCollapsed, toggl
                                                     role="button"
                                                     tabIndex={0}
                                                     aria-label={isFav ? `Remove ${t(item.label)} from favorites` : `Add ${t(item.label)} to favorites`}
+                                                    aria-pressed={isFav}
                                                     onClick={(e) => toggleFavorite(e, item.id)}
                                                     onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleFavorite(e, item.id); } }}
                                                     style={{
@@ -373,6 +374,8 @@ export function Sidebar({ user, view, onViewChange, onLogout, isCollapsed, toggl
                                                     }}
                                                     onMouseOver={e => e.currentTarget.style.opacity = 1}
                                                     onMouseOut={e => e.currentTarget.style.opacity = isFav ? 1 : 0.2}
+                                                    onFocus={e => e.currentTarget.style.opacity = 1}
+                                                    onBlur={e => e.currentTarget.style.opacity = isFav ? 1 : 0.2}
                                                 >
                                                     <Star size={14} fill={isFav ? "#f59e0b" : "none"} color={isFav ? "#f59e0b" : "currentColor"} />
                                                 </div>

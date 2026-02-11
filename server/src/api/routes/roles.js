@@ -2,8 +2,51 @@ const express = require('express');
 const router = express.Router();
 const { query } = require('../../infrastructure/database/db');
 const authenticate = require('../middleware/auth');
+const validate = require('../middleware/validate');
+const { createRoleSchema, updateRoleSchema } = require('../schemas/roles.schemas');
 
 // GET all roles for the tenant
+
+/**
+ * @swagger
+ * /api/roles:
+ *   get:
+ *     tags: [Roles]
+ *     summary: List roles
+ *     description: Returns all roles for the authenticated user's tenant, ordered by creation date.
+ *     security:
+ *       - cookieAuth: []
+ *     responses:
+ *       200:
+ *         description: List of roles
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: integer
+ *                   tenant_id:
+ *                     type: integer
+ *                   name:
+ *                     type: string
+ *                   description:
+ *                     type: string
+ *                   permissions:
+ *                     type: object
+ *                   created_at:
+ *                     type: string
+ *                     format: date-time
+ *                   updated_at:
+ *                     type: string
+ *                     format: date-time
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Server error
+ */
 router.get('/', authenticate, async (req, res) => {
     try {
         const tenantId = req.user.tenant_id;
@@ -15,7 +58,59 @@ router.get('/', authenticate, async (req, res) => {
 });
 
 // CREATE a new role
-router.post('/', authenticate, async (req, res) => {
+
+/**
+ * @swagger
+ * /api/roles:
+ *   post:
+ *     tags: [Roles]
+ *     summary: Create role
+ *     description: Creates a new role with a name, optional description, and a permissions object for the tenant.
+ *     security:
+ *       - cookieAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [name, permissions]
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 minLength: 1
+ *                 maxLength: 100
+ *               description:
+ *                 type: string
+ *                 maxLength: 500
+ *               permissions:
+ *                 type: object
+ *     responses:
+ *       201:
+ *         description: Role created
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: integer
+ *                 tenant_id:
+ *                   type: integer
+ *                 name:
+ *                   type: string
+ *                 description:
+ *                   type: string
+ *                 permissions:
+ *                   type: object
+ *       400:
+ *         description: Validation error
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Server error
+ */
+router.post('/', authenticate, validate(createRoleSchema), async (req, res) => {
     try {
         const tenantId = req.user.tenant_id;
         const { name, description, permissions } = req.body;
@@ -31,7 +126,67 @@ router.post('/', authenticate, async (req, res) => {
 });
 
 // UPDATE a role
-router.put('/:id', authenticate, async (req, res) => {
+
+/**
+ * @swagger
+ * /api/roles/{id}:
+ *   put:
+ *     tags: [Roles]
+ *     summary: Update role
+ *     description: Updates an existing role by ID. At least one field (name, description, or permissions) must be provided.
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Role ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 minLength: 1
+ *                 maxLength: 100
+ *               description:
+ *                 type: string
+ *                 maxLength: 500
+ *               permissions:
+ *                 type: object
+ *     responses:
+ *       200:
+ *         description: Role updated
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: integer
+ *                 tenant_id:
+ *                   type: integer
+ *                 name:
+ *                   type: string
+ *                 description:
+ *                   type: string
+ *                 permissions:
+ *                   type: object
+ *       400:
+ *         description: Validation error
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Role not found
+ *       500:
+ *         description: Server error
+ */
+router.put('/:id', authenticate, validate(updateRoleSchema), async (req, res) => {
     try {
         const tenantId = req.user.tenant_id;
         const { name, description, permissions } = req.body;
@@ -50,6 +205,31 @@ router.put('/:id', authenticate, async (req, res) => {
 });
 
 // DELETE a role
+
+/**
+ * @swagger
+ * /api/roles/{id}:
+ *   delete:
+ *     tags: [Roles]
+ *     summary: Delete role
+ *     description: Deletes a role by ID for the authenticated user's tenant.
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Role ID
+ *     responses:
+ *       200:
+ *         description: Role deleted
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Server error
+ */
 router.delete('/:id', authenticate, async (req, res) => {
     try {
         const tenantId = req.user.tenant_id;

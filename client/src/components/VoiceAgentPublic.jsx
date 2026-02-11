@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { Mic, Bot, User, Volume2, Send } from 'lucide-react';
+import { toast } from './common/Toast';
 
 export function VoiceAgentPublic({ slug }) {
     const [status, setStatus] = useState('initializing'); // initializing, ready, speaking, listening, processing, ended, error
@@ -20,7 +21,7 @@ export function VoiceAgentPublic({ slug }) {
             display: 'flex',
             flexDirection: 'column',
             backgroundColor: '#f8fafc',
-            fontFamily: "'Inter', 'Outfit', sans-serif"
+            fontFamily: "'Outfit', sans-serif"
         },
         header: {
             padding: '20px',
@@ -142,8 +143,8 @@ export function VoiceAgentPublic({ slug }) {
         if (provider === 'browser') {
             const SpeechOrWebkit = window.SpeechRecognition || window.webkitSpeechRecognition;
             if (!SpeechOrWebkit) {
-                // Fallback to server if browser not supported? Or alert.
-                alert("Browser speech recognition not supported.");
+                // Fallback to server if browser not supported? Or toast.
+                toast.error("Browser speech recognition not supported.");
                 return;
             }
             const rec = new SpeechOrWebkit();
@@ -214,7 +215,7 @@ export function VoiceAgentPublic({ slug }) {
 
         } catch (err) {
             console.error("Mic Error", err);
-            alert("Could not access microphone.");
+            toast.error("Could not access microphone.");
             setStatus('error');
         }
     };

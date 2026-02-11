@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { toast } from './common/Toast';
 
 export function AudioRecorder({ onRecordingComplete }) {
     const [isRecording, setIsRecording] = useState(false);
@@ -41,7 +42,7 @@ export function AudioRecorder({ onRecordingComplete }) {
 
         } catch (err) {
             console.error("Error accessing microphone:", err);
-            alert("Could not access microphone. Please ensure permissions are granted.");
+            toast.error("Could not access microphone. Please ensure permissions are granted.");
         }
     };
 

@@ -3,6 +3,7 @@ import axios from 'axios';
 import * as XLSX from 'xlsx';
 import { useTranslation } from 'react-i18next';
 import { useToast } from './common/Toast';
+import { Pagination } from './common/Pagination';
 
 export function ContactMaster() {
     const { t } = useTranslation();
@@ -24,6 +25,10 @@ export function ContactMaster() {
     const [availableSurveys, setAvailableSurveys] = useState([]);
     const [selectedSurveyId, setSelectedSurveyId] = useState('');
     const [callLoading, setCallLoading] = useState(false);
+
+    // Pagination State
+    const [contactPage, setContactPage] = useState(1);
+    const [contactPageSize, setContactPageSize] = useState(25);
 
     // Import State
     const [isImportModalOpen, setIsImportModalOpen] = useState(false);
@@ -217,7 +222,7 @@ export function ContactMaster() {
                             </tr>
                         </thead>
                         <tbody>
-                            {contacts.map(c => (
+                            {contacts.slice((contactPage - 1) * contactPageSize, contactPage * contactPageSize).map(c => (
                                 <tr key={c.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
                                     <td style={{ padding: '15px', fontWeight: '500' }}>{c.name}</td>
                                     <td style={{ padding: '15px', color: '#64748b' }}>{c.email}</td>
@@ -238,6 +243,17 @@ export function ContactMaster() {
                             )}
                         </tbody>
                     </table>
+                    {contacts.length > contactPageSize && (
+                        <Pagination
+                            currentPage={contactPage}
+                            totalItems={contacts.length}
+                            pageSize={contactPageSize}
+                            onPageChange={setContactPage}
+                            onPageSizeChange={(size) => { setContactPageSize(size); setContactPage(1); }}
+                            pageSizeOptions={[25, 50, 100]}
+                            style={{ padding: '16px' }}
+                        />
+                    )}
                 </div>
             )}
 

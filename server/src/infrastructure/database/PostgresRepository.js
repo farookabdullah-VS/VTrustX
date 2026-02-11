@@ -1,4 +1,5 @@
 const { query } = require('./db');
+const logger = require('../logger');
 
 class PostgresRepository {
     constructor(tableName, client = null) {
@@ -65,7 +66,7 @@ class PostgresRepository {
             const res = await this._query(sql, values);
             return res.rows[0];
         } catch (err) {
-            console.error(`Error creating in ${this.tableName}:`, err);
+            logger.error(`Error creating in ${this.tableName}`, { error: err.message });
             throw err;
         }
     }

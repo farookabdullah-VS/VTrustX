@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
 import { useTranslation } from 'react-i18next';
 
@@ -8,12 +8,41 @@ export function ThemeProvider({ children, user }) {
   const { i18n } = useTranslation();
   const isRtl = i18n.language.startsWith('ar');
 
-  // Update Body Direction
+  // Dark mode: check localStorage first, then system preference
+  const [isDark, setIsDark] = useState(() => {
+    const saved = localStorage.getItem('vtrustx_theme_mode');
+    if (saved) return saved === 'dark';
+    return window.matchMedia?.('(prefers-color-scheme: dark)').matches ?? false;
+  });
+
+  // Apply direction
   useEffect(() => {
     document.body.dir = isRtl ? 'rtl' : 'ltr';
   }, [isRtl]);
 
-  // Fetch and apply theme
+  // Apply dark/light theme attribute
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+    localStorage.setItem('vtrustx_theme_mode', isDark ? 'dark' : 'light');
+  }, [isDark]);
+
+  // Listen for system theme changes
+  useEffect(() => {
+    const mq = window.matchMedia?.('(prefers-color-scheme: dark)');
+    if (!mq) return;
+    const handler = (e) => {
+      const saved = localStorage.getItem('vtrustx_theme_mode');
+      if (!saved) setIsDark(e.matches);
+    };
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
+
+  const toggleDarkMode = useCallback(() => {
+    setIsDark(prev => !prev);
+  }, []);
+
+  // Fetch and apply brand theme from backend
   useEffect(() => {
     axios.get('/api/settings/theme')
       .then(res => {
@@ -26,7 +55,7 @@ export function ThemeProvider({ children, user }) {
   }, [user]);
 
   return (
-    <ThemeContext.Provider value={{ isRtl }}>
+    <ThemeContext.Provider value={{ isRtl, isDark, toggleDarkMode }}>
       {children}
     </ThemeContext.Provider>
   );

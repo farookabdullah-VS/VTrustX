@@ -17,12 +17,14 @@ axios.defaults.withCredentials = true;
 // --- CSRF Token Management ---
 let csrfToken = null;
 
-async function fetchCsrfToken() {
+export async function fetchCsrfToken() {
     try {
         const res = await axios.get('/api/auth/csrf-token');
         csrfToken = res.data.csrfToken;
+        return csrfToken;
     } catch (e) {
-        // CSRF endpoint may not be available yet during startup
+        console.error("Failed to fetch CSRF token:", e);
+        return null;
     }
 }
 
@@ -42,15 +44,19 @@ axios.interceptors.response.use(
     (response) => response,
     async (error) => {
         const originalRequest = error.config;
+        const errorData = error.response?.data?.error;
+
         if (
             error.response?.status === 403 &&
-            error.response?.data?.error?.includes?.('csrf') &&
+            (errorData?.code === 'EBADCSRFTOKEN' || (typeof errorData === 'string' && errorData.includes('csrf')) || errorData?.message?.toLowerCase().includes('csrf')) &&
             !originalRequest._csrfRetry
         ) {
             originalRequest._csrfRetry = true;
             await fetchCsrfToken();
-            originalRequest.headers['X-CSRF-Token'] = csrfToken;
-            return axios(originalRequest);
+            if (csrfToken) {
+                originalRequest.headers['X-CSRF-Token'] = csrfToken;
+                return axios(originalRequest);
+            }
         }
         return Promise.reject(error);
     }

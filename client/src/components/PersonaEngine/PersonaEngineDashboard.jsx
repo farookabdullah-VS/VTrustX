@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Settings, List, Map as MapIcon, Activity, FileText, Play, Shield, AlertTriangle, Save, RefreshCw, Trash2 } from 'lucide-react';
 import { EnhancedAuditLogViewer } from './EnhancedAuditLogViewer';
+import { SkeletonTable } from '../common/Skeleton';
 
 const Card = ({ children, style }) => (
     <div style={{ background: 'var(--card-bg)', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', padding: '20px', marginBottom: '20px', border: '1px solid var(--input-border)', color: 'var(--text-color)', ...style }}>
@@ -77,7 +78,7 @@ export function PersonaEngineDashboard() {
     };
 
     return (
-        <div style={{ padding: '20px', maxWidth: '1200px', margin: '0 auto', fontFamily: 'Inter, sans-serif' }}>
+        <div style={{ padding: '20px', maxWidth: '1200px', margin: '0 auto', fontFamily: 'Outfit, sans-serif' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
                 <div>
                     <h1 style={{ margin: 0, fontSize: '1.8em', color: 'var(--text-color)' }}>GCC Persona Engine</h1>
@@ -107,7 +108,9 @@ export function PersonaEngineDashboard() {
                         <Button variant="secondary" onClick={fetchData}><RefreshCw size={16} /> Refresh</Button>
                     </div>
 
-                    {loading ? <div>Loading...</div> : (
+                    {loading ? (
+                        <SkeletonTable rows={8} cols={5} />
+                    ) : (
                         <>
                             {configTab === 'params' && (
                                 <Card>

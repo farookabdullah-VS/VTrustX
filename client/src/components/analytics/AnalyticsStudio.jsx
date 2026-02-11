@@ -25,6 +25,7 @@ import { getForms, getSubmissionsForForm } from '../../services/formService';
 import { getReports, saveReport, deleteReport } from '../../services/reportService';
 import { SurveyAnalystChat } from './SurveyAnalystChat';
 import { useToast } from '../common/Toast';
+import { Skeleton } from '../common/Skeleton';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'];
 
@@ -2308,7 +2309,7 @@ const ReportDesigner = ({ report: initialReport, onBack }) => {
             return savedReport;
         } catch (e) {
             console.error("Save Error:", e);
-            const msg = e.response?.data?.error || e.message;
+            const msg = e.response?.data?.error?.message || e.response?.data?.error || e.message;
             toast.error('Failed to save report: ' + msg);
             throw e;
         }
@@ -2353,8 +2354,9 @@ const ReportDesigner = ({ report: initialReport, onBack }) => {
                 toast.success("URL copied to clipboard!");
             }
         } catch (err) {
-            console.error("Publish Error:", err);
-            toast.error("Failed to publish: " + (err.response?.data?.error || err.message));
+            console.error(err);
+            const errorMsg = err.response?.data?.error?.message || err.response?.data?.error || err.message;
+            toast.error("Failed to publish: " + errorMsg);
         } finally {
             setIsPublishing(false);
         }
@@ -2748,7 +2750,18 @@ const ReportDesigner = ({ report: initialReport, onBack }) => {
                                                             {w.title}
                                                         </div>
                                                     )}
-                                                    {loadingData ? <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#94a3b8' }}>Loading...</div> :
+                                                    {loadingData ? (
+                                                        <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                                            <Skeleton width="40%" height="16px" style={{ marginBottom: '10px' }} />
+                                                            <div style={{ display: 'flex', alignItems: 'flex-end', gap: '8px', height: '200px' }}>
+                                                                {[60, 40, 80, 55, 90, 70].map((h, i) => (
+                                                                    <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-end', height: '100%' }}>
+                                                                        <Skeleton width="100%" height={`${h}%`} borderRadius="4px" />
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    ) : (
                                                         <ChartRenderer
                                                             type={w.type}
                                                             data={filteredData}
@@ -2844,7 +2857,7 @@ const ReportDesigner = ({ report: initialReport, onBack }) => {
                             {activeSidePane === 'filters' && (
                                 <FiltersPane
                                     dataset={dataset}
-                                    filters={filters}
+                                    filters={activeFilters}
                                     onFilterChange={handleFilterChange}
                                     isCollapsed={false}
                                     onToggle={() => setActiveSidePane(null)}

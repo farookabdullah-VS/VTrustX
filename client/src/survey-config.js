@@ -96,6 +96,6 @@ export const VTrustTheme = {
         "--sjs-primary-backcolor-light": "color-mix(in srgb, var(--primary-color, #00695C) 10%, transparent)",
         "--sjs-primary-backcolor-dark": "color-mix(in srgb, var(--primary-color, #00695C), black 20%)",
         "--sjs-primary-forecolor": "rgba(255, 255, 255, 1)",
-        "--sjs-font-family": "var(--font-family, 'Outfit', 'Google Sans', 'Inter', system-ui, sans-serif)"
+        "--sjs-font-family": "var(--font-family, 'Outfit', 'Google Sans', system-ui, sans-serif)"
     }
 };

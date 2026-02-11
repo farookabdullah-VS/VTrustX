@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Bell } from 'lucide-react';
+import { formatRelativeTime } from './common/HijriDate';
 
 export function Notifications() {
     const [isOpen, setIsOpen] = useState(false);
@@ -73,7 +74,7 @@ export function Notifications() {
                         <div key={n.id} onClick={() => n.is_read ? null : markRead(n.id)} style={{ padding: '12px', borderBottom: '1px solid var(--input-border)', background: n.is_read ? 'transparent' : 'rgba(0,0,0,0.02)', cursor: n.is_read ? 'default' : 'pointer', transition: 'background 0.2s' }}>
                             <div style={{ fontWeight: '600', fontSize: '0.9em', color: 'var(--text-color)' }}>{n.title}</div>
                             <div style={{ fontSize: '0.85em', color: 'var(--text-color)', margin: '4px 0', opacity: 0.8 }}>{n.message}</div>
-                            <div style={{ fontSize: '0.75em', color: '#94a3b8', opacity: 0.6 }}>{new Date(n.created_at).toLocaleString()}</div>
+                            <div style={{ fontSize: '0.75em', color: '#94a3b8', opacity: 0.6 }}>{formatRelativeTime(n.created_at)}</div>
                         </div>
                     ))}
                 </div>

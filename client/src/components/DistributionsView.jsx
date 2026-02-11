@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Mail, MessageSquare, Smartphone, QrCode, Plus, Users, Send, CheckCircle } from 'lucide-react';
 import { useToast } from './common/Toast';
+import { SkeletonTable } from './common/Skeleton';
 
 export function DistributionsView() {
     const toast = useToast();
@@ -232,7 +233,9 @@ export function DistributionsView() {
                 </button>
             </div>
 
-            {loading ? <div>Loading...</div> : (
+            {loading ? (
+                <SkeletonTable rows={5} cols={6} />
+            ) : (
                 <div style={{ background: 'white', borderRadius: '16px', border: '1px solid #e2e8f0', overflow: 'hidden' }}>
                     <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                         <thead style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>

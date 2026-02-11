@@ -115,7 +115,7 @@ Here is everything you know about yourself:\n\n`;
             position: 'fixed', top: 0, right: 0, bottom: 0, width: '420px',
             background: 'white', boxShadow: '-10px 0 30px rgba(0,0,0,0.1)',
             zIndex: 9999, display: 'flex', flexDirection: 'column',
-            fontFamily: "'Inter', sans-serif", borderLeft: '1px solid #e2e8f0'
+            fontFamily: "'Outfit', sans-serif", borderLeft: '1px solid #e2e8f0'
         }}>
             {/* Header */}
             <div style={{

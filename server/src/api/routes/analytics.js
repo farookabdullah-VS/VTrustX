@@ -52,7 +52,8 @@ router.get('/daily-stats', authenticate, async (req, res) => {
 
         res.json(stats);
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        logger.error('Failed to fetch daily stats', { error: err.message });
+        res.status(500).json({ error: 'Failed to fetch daily statistics' });
     }
 });
 
@@ -116,7 +117,8 @@ router.get('/question-stats', authenticate, async (req, res) => {
 
         res.json({ questions: allQuestions, answers: allAnswers });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        logger.error('Failed to fetch question stats', { error: err.message });
+        res.status(500).json({ error: 'Failed to fetch question statistics' });
     }
 });
 
@@ -168,7 +170,8 @@ router.get('/csat-stats', authenticate, async (req, res) => {
             }))
         });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        logger.error('Failed to fetch CSAT stats', { error: err.message });
+        res.status(500).json({ error: 'Failed to fetch CSAT statistics' });
     }
 });
 
@@ -197,7 +200,8 @@ router.get('/sentiment-timeline', authenticate, async (req, res) => {
             value: parseFloat(r.sentiment || 0)
         })));
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        logger.error('Failed to fetch sentiment timeline', { error: err.message });
+        res.status(500).json({ error: 'Failed to fetch sentiment timeline' });
     }
 });
 
@@ -255,7 +259,7 @@ router.get('/detailed-responses', authenticate, async (req, res) => {
         res.json(flattened);
     } catch (err) {
         logger.error("Detailed Responses Error", { error: err.message });
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ error: 'Failed to fetch detailed responses' });
     }
 });
 
@@ -331,7 +335,7 @@ router.post('/key-drivers', authenticate, async (req, res) => {
         res.json(responseData);
     } catch (err) {
         logger.error("Key Driver Analysis Error", { error: err.message });
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ error: 'Failed to perform key driver analysis' });
     }
 });
 
@@ -396,7 +400,7 @@ router.post('/text-analytics', authenticate, async (req, res) => {
         res.json(responseData);
     } catch (err) {
         logger.error("Text Analytics Error", { error: err.message });
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ error: 'Failed to perform text analytics' });
     }
 });
 
@@ -475,7 +479,7 @@ router.post('/nps-significance', authenticate, async (req, res) => {
 
     } catch (err) {
         logger.error("Stat Test Error", { error: err.message });
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ error: 'Failed to perform NPS significance test' });
     }
 });
 
@@ -556,7 +560,7 @@ router.post('/cross-tab', authenticate, async (req, res) => {
 
     } catch (err) {
         logger.error("Cross-Tab Error", { error: err.message });
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ error: 'Failed to perform cross-tabulation' });
     }
 });
 
@@ -641,7 +645,7 @@ router.post('/anomalies', authenticate, async (req, res) => {
 
     } catch (err) {
         logger.error("Anomaly Error", { error: err.message });
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ error: 'Failed to detect anomalies' });
     }
 });
 
