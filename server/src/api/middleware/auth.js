@@ -2,10 +2,11 @@ const { query } = require('../../infrastructure/database/db');
 const PostgresRepository = require('../../infrastructure/database/PostgresRepository');
 const userRepo = new PostgresRepository('users');
 const tenantRepo = new PostgresRepository('tenants');
+const { authCache, tenantCache } = require('../../infrastructure/cache');
 
 const jwt = require('jsonwebtoken');
 
-// Real JWT Authentication
+// Real JWT Authentication with caching
 const authenticate = async (req, res, next) => {
     try {
         const authHeader = req.headers.authorization;
@@ -29,38 +30,54 @@ const authenticate = async (req, res, next) => {
 
         const userId = decoded.id;
 
-        const user = await userRepo.findById(userId);
+        // Check auth cache first (user + permissions cached for 60s)
+        const cacheKey = `auth:${userId}`;
+        let user = authCache.get(cacheKey);
 
-        if (!user) return res.status(401).json({ error: 'User not found' });
+        if (!user) {
+            user = await userRepo.findById(userId);
+            if (!user) return res.status(401).json({ error: 'User not found' });
 
-        // Fetch permissions if role_id exists
-        user.permissions = {};
-        if (user.role_id) {
-            const roleRes = await query('SELECT permissions FROM roles WHERE id = $1', [user.role_id]);
-            if (roleRes.rows.length > 0) {
-                user.permissions = roleRes.rows[0].permissions;
-            }
-        } else {
-            // Fallback for legacy roles (admin/user)
-            if (user.role === 'admin' || user.role === 'global_admin') {
-                user.permissions = { forms: { view: true, create: true, update: true, delete: true } };
+            // Fetch permissions if role_id exists
+            user.permissions = {};
+            if (user.role_id) {
+                const roleRes = await query('SELECT permissions FROM roles WHERE id = $1', [user.role_id]);
+                if (roleRes.rows.length > 0) {
+                    user.permissions = roleRes.rows[0].permissions;
+                }
             } else {
-                user.permissions = { forms: { view: true, create: false, update: false, delete: false } };
+                // Fallback for legacy roles (admin/user)
+                if (user.role === 'admin' || user.role === 'global_admin') {
+                    user.permissions = { forms: { view: true, create: true, update: true, delete: true } };
+                } else {
+                    user.permissions = { forms: { view: true, create: false, update: false, delete: false } };
+                }
             }
+
+            // Cache for 60 seconds
+            authCache.set(cacheKey, user, 60);
         }
 
         req.user = user;
 
-        // Fetch Tenant
+        // Fetch Tenant (cached for 5 minutes)
         if (user.tenant_id) {
-            const tenant = await tenantRepo.findById(user.tenant_id);
+            const tenantCacheKey = `tenant:${user.tenant_id}`;
+            let tenant = tenantCache.get(tenantCacheKey);
+
+            if (!tenant) {
+                tenant = await tenantRepo.findById(user.tenant_id);
+                if (tenant) {
+                    tenantCache.set(tenantCacheKey, tenant, 300);
+                }
+            }
+
             req.tenant = tenant;
 
             // Check Subscription Expiry
             if (tenant && tenant.subscription_expires_at) {
                 const expiry = new Date(tenant.subscription_expires_at);
                 if (expiry < new Date()) {
-                    // Allow global admin bypass or specific route bypasses here if needed
                     if (user.role !== 'global_admin') {
                         return res.status(403).json({ error: 'Subscription expired. Please contact administrator.' });
                     }
@@ -88,6 +105,15 @@ authenticate.checkPermission = (module, action) => {
 
         next();
     };
+};
+
+// Invalidate cache for a specific user (call on user/tenant update)
+authenticate.invalidateUserCache = (userId) => {
+    authCache.del(`auth:${userId}`);
+};
+
+authenticate.invalidateTenantCache = (tenantId) => {
+    tenantCache.del(`tenant:${tenantId}`);
 };
 
 module.exports = authenticate;

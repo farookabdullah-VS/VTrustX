@@ -3,19 +3,17 @@ const router = express.Router();
 const passport = require('passport');
 const User = require('../../core/entities/User');
 const PostgresRepository = require('../../infrastructure/database/PostgresRepository');
+const validate = require('../middleware/validate');
+const { registerSchema, loginSchema, changePasswordSchema } = require('../schemas/auth.schemas');
 
 // Separate repo for users
 const userRepo = new PostgresRepository('users');
 const tenantRepo = new PostgresRepository('tenants');
 
 // Register
-router.post('/register', async (req, res) => {
+router.post('/register', validate(registerSchema), async (req, res) => {
     try {
-        const { username, password } = req.body; // Remove role from body
-
-        if (!username || !password) {
-            return res.status(400).json({ error: 'Username and password required' });
-        }
+        const { username, password } = req.body;
 
         // Check if exists
         const existingUser = await userRepo.findBy('username', username);
@@ -78,7 +76,7 @@ const signToken = (user) => {
 };
 
 // Login
-router.post('/login', async (req, res) => {
+router.post('/login', validate(loginSchema), async (req, res) => {
     try {
         const { username, password } = req.body;
         const user = await userRepo.findBy('username', username);
@@ -186,19 +184,9 @@ router.get('/me', async (req, res) => {
     }
 });
 
-router.post('/change-password', authenticate, async (req, res) => {
+router.post('/change-password', authenticate, validate(changePasswordSchema), async (req, res) => {
     try {
         const { currentPassword, newPassword } = req.body;
-
-        if (!currentPassword || !newPassword) {
-            return res.status(400).json({ error: 'Current password and new password are required' });
-        }
-        if (newPassword.length < 10) {
-            return res.status(400).json({ error: 'New password must be at least 10 characters' });
-        }
-        if (!/[A-Z]/.test(newPassword) || !/[a-z]/.test(newPassword) || !/[0-9]/.test(newPassword)) {
-            return res.status(400).json({ error: 'Password must contain uppercase, lowercase, and a number' });
-        }
 
         // Use authenticated user's ID, not username from body
         const user = await userRepo.findById(req.user.id);

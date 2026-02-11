@@ -57,10 +57,27 @@ const pool = new Pool({
 });
 
 pool.on('error', (err) => {
-    console.error('[DB] Unexpected pool error:', err.message);
+    console.error('[DB] Unexpected pool error:', err.message, {
+        totalCount: pool.totalCount,
+        idleCount: pool.idleCount,
+        waitingCount: pool.waitingCount,
+    });
 });
+
+const getPoolStats = () => ({
+    totalCount: pool.totalCount,
+    idleCount: pool.idleCount,
+    waitingCount: pool.waitingCount,
+});
+
+const gracefulShutdown = async () => {
+    await pool.end();
+};
 
 module.exports = {
     query: (text, params) => pool.query(text, params),
-    pool: pool
+    pool: pool,
+    connect: () => pool.connect(),
+    getPoolStats,
+    gracefulShutdown,
 };

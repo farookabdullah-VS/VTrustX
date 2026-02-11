@@ -6,6 +6,8 @@ const userRepo = new PostgresRepository('users');
 
 const authenticate = require('../middleware/auth');
 const pool = require('../../infrastructure/database/db');
+const validate = require('../middleware/validate');
+const { createUserSchema } = require('../schemas/users.schemas');
 
 // Helper: resolve plan user limit dynamically
 async function getPlanUserLimit(tenant) {
@@ -74,16 +76,12 @@ router.get('/', authenticate, authenticate.checkPermission('users', 'view'), asy
 });
 
 // POST create user (Check Limits + Hash Password)
-router.post('/', authenticate, authenticate.checkPermission('users', 'create'), async (req, res) => {
+router.post('/', authenticate, authenticate.checkPermission('users', 'create'), validate(createUserSchema), async (req, res) => {
     try {
         const { username, password, role, role_id, email, phone, name, name_ar } = req.body;
         const tenant = req.tenant;
 
         if (!tenant) return res.status(403).json({ error: 'No tenant context' });
-
-        if (!username || !password) return res.status(400).json({ error: 'Username and password are required' });
-        if (password.length < 6) return res.status(400).json({ error: 'Password must be at least 6 characters' });
-        if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.status(400).json({ error: 'Invalid email format' });
 
         // Check Limit dynamically
         const countRes = await pool.query('SELECT COUNT(*) FROM users WHERE tenant_id = $1', [tenant.id]);

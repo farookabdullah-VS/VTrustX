@@ -1,20 +1,21 @@
-console.log("Server Process Starting...");
 try {
     const dotenv = require('dotenv');
     dotenv.config();
-} catch (e) {
-    console.log("Dotenv skipped/failed:", e.message);
-}
+} catch (e) { /* dotenv optional */ }
 
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const logger = require('./src/infrastructure/logger');
+const requestLogger = require('./src/api/middleware/requestLogger');
+const { errorHandler } = require('./src/api/middleware/errorHandler');
+const { rateLimitCache } = require('./src/infrastructure/cache');
 
-console.log("Stage 1: Modules Loaded. Config:", {
+logger.info('Server starting', {
     host: process.env.DB_HOST,
     db: process.env.DB_NAME,
     instance: process.env.INSTANCE_CONNECTION_NAME ? 'Set' : 'Unset',
-    port: process.env.PORT
+    port: process.env.PORT,
 });
 
 const helmet = require('helmet');
@@ -22,31 +23,29 @@ const helmet = require('helmet');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Rate Limiting (Issue 19)
-const NodeCache = require('node-cache');
-const rateLimitCache = new NodeCache({ stdTTL: 60, checkperiod: 120 });
-const rateLimiter = (limit = 100, windowMs = 60000) => {
+// --- Rate Limiting using CacheService ---
+const createRateLimiter = (limit = 100, windowSec = 60) => {
     return (req, res, next) => {
-        const key = req.ip || req.headers['x-forwarded-for'] || 'unknown';
+        const key = `rl:${req.ip || req.headers['x-forwarded-for'] || 'unknown'}`;
         const current = rateLimitCache.get(key) || 0;
         if (current >= limit) {
+            res.setHeader('Retry-After', String(windowSec));
+            logger.warn('Rate limit exceeded', { ip: req.ip, limit });
             return res.status(429).json({ error: 'Too many requests. Please try again later.' });
         }
-        rateLimitCache.set(key, current + 1, 60);
+        rateLimitCache.set(key, current + 1, windowSec);
         next();
     };
 };
 
-app.use(rateLimiter(200)); // Global limit
-app.use('/api/auth', rateLimiter(20)); // Stricter limit for auth
-console.log(`Stage 2: Starting VTrustX Server on ${PORT} (v2.2 - Debugging)...`);
+app.use(createRateLimiter(200)); // Global limit
+app.use('/api/auth', createRateLimiter(20));
+app.use('/api/ai', createRateLimiter(30));
+app.use('/api/exports', createRateLimiter(10));
 
-const formsRouter = require('./src/api/routes/forms');
-console.log("Stage 3: Forms Router Loaded");
-
-app.set('trust proxy', 1); // Only trust the first proxy (e.g. Cloud Run LB)
+app.set('trust proxy', 1);
 app.use(helmet({
-    contentSecurityPolicy: false, // Disabled for SPA compatibility
+    contentSecurityPolicy: false,
     crossOriginEmbedderPolicy: false,
 }));
 
@@ -61,22 +60,41 @@ app.use(cors(corsOptions));
 
 app.use(express.json({ limit: '2mb' }));
 app.use(express.urlencoded({ limit: '2mb', extended: true }));
-const debugLog = require('./src/api/routes/debug_logger');
-app.use((req, res, next) => {
-    console.log(`[Request] ${req.method} ${req.url}`);
-    debugLog(`[Request] ${req.method} ${req.url}`);
-    next();
-});
+
+// Request ID + structured HTTP logging (replaces console.log request logger)
+app.use(requestLogger);
 
 // Initialize Passport
 const passport = require('./src/config/passport');
 app.use(passport.initialize());
-console.log("Stage 4: Passport Initialized");
+logger.info('Passport initialized');
 
-// Routes
+// --- Health & Readiness Endpoints ---
+const db = require('./src/infrastructure/database/db');
+
+app.get('/health', (req, res) => {
+    res.json({
+        status: 'ok',
+        uptime: process.uptime(),
+        timestamp: new Date().toISOString(),
+    });
+});
+
+app.get('/ready', async (req, res) => {
+    try {
+        await db.query('SELECT 1');
+        res.json({ ready: true, timestamp: new Date().toISOString() });
+    } catch (err) {
+        logger.error('Readiness check failed', { error: err.message });
+        res.status(503).json({ ready: false, error: 'Database unavailable' });
+    }
+});
+
+// --- Routes ---
+const formsRouter = require('./src/api/routes/forms');
 app.use('/api/forms', formsRouter);
 app.use('/api/submissions', require('./src/api/routes/submissions'));
-app.use('/api/ai', require('./src/api/routes/ai')); // Creation AI
+app.use('/api/ai', require('./src/api/routes/ai'));
 app.use('/api/workflows', require('./src/api/routes/workflows'));
 app.use('/api/insights', require('./src/api/routes/insights'));
 app.use('/api/ai-providers', require('./src/api/routes/ai-providers'));
@@ -104,10 +122,8 @@ app.use('/api/form-audience', require('./src/api/routes/form_contacts'));
 app.use('/api/calls', require('./src/api/routes/calls'));
 app.use('/api/ai-service', require('./src/api/routes/ai_proxy'));
 app.use('/api/analytics', require('./src/api/routes/analytics'));
-console.log("Stage 5: Base Routes Loaded");
 
 const agentChatRouter = require('./src/api/routes/agent_chat');
-console.log("Agent Chat Router Type:", typeof agentChatRouter, agentChatRouter.name);
 app.get('/api/agent-chat/test-inline', (req, res) => res.json([{ id: 1, title: 'Inline Survey' }]));
 app.use('/api/agent-chat', agentChatRouter);
 
@@ -115,8 +131,8 @@ app.use('/api/crm', require('./src/api/routes/crm'));
 app.use('/api/cx-personas', require('./src/api/routes/cx_personas'));
 app.use('/api/customer360', require('./src/api/routes/customer360'));
 app.use('/api/journeys', require('./src/api/routes/journeys'));
-app.use('/api/cjm', require('./src/api/routes/cjm')); // New CJM Grid Builder
-app.use('/api/cjm-export', require('./src/api/routes/cjm_export')); // CJM Export
+app.use('/api/cjm', require('./src/api/routes/cjm'));
+app.use('/api/cjm-export', require('./src/api/routes/cjm_export'));
 app.use('/api/cx-persona-templates', require('./src/api/routes/cx_persona_templates'));
 app.use('/api/notifications', require('./src/api/routes/notifications'));
 app.use('/api/quotas', require('./src/api/routes/quotas'));
@@ -125,17 +141,13 @@ app.use('/v1/persona', require('./src/api/routes/persona_engine'));
 app.use('/api/master', require('./src/api/routes/master_data'));
 app.use('/api/v1/social-media', require('./src/api/routes/social_media'));
 app.use('/api/v1/smm', require('./src/api/routes/smm'));
-app.use('/api/actions', require('./src/api/routes/actions')); // Action Planning
-app.use('/api/distributions', require('./src/api/routes/distributions/index')); // Campaign Manager
-app.use('/api/reputation', require('./src/api/routes/reputation/index')); // Reputation Management
-app.use('/api/directory', require('./src/api/routes/directory/index')); // XM Directory
-app.use('/api/textiq', require('./src/api/routes/textiq/index')); // Text iQ
-app.use('/api/workflows', require('./src/api/routes/workflows/index')); // Workflow Automation
-console.log("Stage 6: All Routes Loaded");
-
-app.get('/health', (req, res) => {
-    res.json({ status: 'ok', timestamp: new Date() });
-});
+app.use('/api/actions', require('./src/api/routes/actions'));
+app.use('/api/distributions', require('./src/api/routes/distributions/index'));
+app.use('/api/reputation', require('./src/api/routes/reputation/index'));
+app.use('/api/directory', require('./src/api/routes/directory/index'));
+app.use('/api/textiq', require('./src/api/routes/textiq/index'));
+app.use('/api/workflows', require('./src/api/routes/workflows/index'));
+logger.info('All routes loaded');
 
 // Serve static files from the React app
 app.use(express.static(path.join(__dirname, '../client/dist')));
@@ -149,48 +161,74 @@ app.get('*', (req, res) => {
     res.sendFile(path.resolve(__dirname, '../client/dist/index.html'));
 });
 
-// Global Error Handler Middleware
-app.use((err, req, res, next) => {
-    console.error(`[Internal Error] ${req.method} ${req.url}:`, err);
+// --- Global Error Handler ---
+app.use(errorHandler);
 
-    const isProd = process.env.NODE_ENV === 'production' || !process.env.NODE_ENV;
+// --- Run Migrations ---
+async function runMigrations() {
+    const scripts = [
+        { name: 'reports', fn: require('./src/scripts/ensure_reports_table') },
+        { name: 'analytics', fn: require('./src/scripts/ensure_analytics_tables') },
+        { name: 'quotas', fn: require('./src/scripts/ensure_quotas_table') },
+        { name: 'cjm', fn: require('./src/scripts/ensure_cjm_tables') },
+        { name: 'indexes', fn: require('./src/scripts/ensure_indexes') },
+    ];
 
-    res.status(err.status || 500).json({
-        error: isProd ? 'An internal error occurred.' : err.message,
-        ...(isProd ? {} : { stack: err.stack }),
+    for (const script of scripts) {
+        try {
+            await script.fn();
+            logger.debug(`Migration "${script.name}" completed`);
+        } catch (err) {
+            logger.error(`Migration "${script.name}" failed`, { error: err.message });
+        }
+    }
+    logger.info(`All ${scripts.length} migrations processed`);
+}
+
+// --- Server Start ---
+const server = app.listen(PORT, '0.0.0.0', () => {
+    logger.info(`Server listening on 0.0.0.0:${PORT}`);
+});
+
+// --- Graceful Shutdown ---
+const gracefulShutdown = (signal) => {
+    logger.info(`${signal} received, shutting down gracefully...`);
+    server.close(() => {
+        logger.info('HTTP server closed');
+        db.gracefulShutdown()
+            .then(() => {
+                logger.info('Database pool closed');
+                process.exit(0);
+            })
+            .catch((err) => {
+                logger.error('Error closing database pool', { error: err.message });
+                process.exit(1);
+            });
     });
-});
 
-// Explicitly listen on 0.0.0.0 for Cloud Run
-app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Server successfully listening on 0.0.0.0:${PORT}`);
-    console.log('Theme system initialized.');
-});
+    // Force close after 10 seconds
+    setTimeout(() => {
+        logger.error('Forced shutdown after timeout');
+        process.exit(1);
+    }, 10000);
+};
 
-// Email Service
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+
+// --- Background Services ---
 const emailService = require('./src/services/emailService');
 setInterval(() => {
-    if (process.env.NODE_ENV !== 'test') { // Avoid spamming logs in simple tests
-        console.log('[Scheduler] Triggering Email Sync...');
+    if (process.env.NODE_ENV !== 'test') {
+        logger.debug('Triggering email sync...');
         emailService.processAllChannels();
     }
 }, 60000);
 
-// Short delay start
+// Delayed startup tasks
 setTimeout(() => {
     if (process.env.NODE_ENV !== 'test') {
         emailService.processAllChannels();
-        // Ensure Schema
-        try {
-            const ensureReportsTable = require('./src/scripts/ensure_reports_table');
-            const ensureAnalyticsTables = require('./src/scripts/ensure_analytics_tables');
-            const ensureQuotasTable = require('./src/scripts/ensure_quotas_table');
-            ensureReportsTable();
-            ensureAnalyticsTables();
-            ensureQuotasTable();
-            const ensureCJMTables = require('./src/scripts/ensure_cjm_tables');
-            ensureCJMTables();
-        } catch (e) { console.error("Failed to init schema:", e); }
+        runMigrations();
     }
 }, 5000);
-

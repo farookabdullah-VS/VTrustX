@@ -4,6 +4,8 @@ const PostgresRepository = require('../../infrastructure/database/PostgresReposi
 const pool = require('../../infrastructure/database/db'); // Direct pool access for complex queries
 
 const authenticate = require('../middleware/auth');
+const validate = require('../middleware/validate');
+const { createTicketSchema, bulkUpdateSchema } = require('../schemas/crm.schemas');
 
 // Repositories
 const ticketRepo = new PostgresRepository('tickets');
@@ -131,7 +133,7 @@ router.get('/tickets/:id', authenticate, async (req, res) => {
 });
 
 // POST Create Ticket
-router.post('/tickets', authenticate, async (req, res) => {
+router.post('/tickets', authenticate, validate(createTicketSchema), async (req, res) => {
     try {
         let { subject, description, priority, contact_id, account_id, status, channel } = req.body;
         const tenantId = req.user.tenant_id;
@@ -266,7 +268,7 @@ router.get('/tickets/:id/transitions', authenticate, async (req, res) => {
 });
 
 // PUT Bulk Update Tickets
-router.put('/tickets/bulk', authenticate, async (req, res) => {
+router.put('/tickets/bulk', authenticate, validate(bulkUpdateSchema), async (req, res) => {
     const client = await pool.connect();
     try {
         const { ticketIds, updates } = req.body;

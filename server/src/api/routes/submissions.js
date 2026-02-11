@@ -28,11 +28,14 @@ const toEntity = (row) => {
     };
 };
 
-// Get all submissions (Filtered by Tenant)
+// Get all submissions (Filtered by Tenant) — with pagination
 router.get('/', authenticate, async (req, res) => {
     try {
         const tenantId = req.user.tenant_id;
         const formId = req.query.formId;
+        const page = Math.max(1, parseInt(req.query.page) || 1);
+        const limit = Math.min(1000, Math.max(1, parseInt(req.query.limit) || 1000));
+        const offset = (page - 1) * limit;
         let rows;
 
         if (formId) {
@@ -40,10 +43,17 @@ router.get('/', authenticate, async (req, res) => {
             const formRes = await query('SELECT id FROM forms WHERE id = $1 AND tenant_id = $2', [formId, tenantId]);
             if (formRes.rows.length === 0) return res.status(404).json({ error: 'Form not found or access denied' });
 
-            const result = await query('SELECT * FROM submissions WHERE form_id = $1 AND tenant_id = $2', [formId, tenantId]);
+            const result = await query(
+                'SELECT * FROM submissions WHERE form_id = $1 AND tenant_id = $2 ORDER BY created_at DESC LIMIT $3 OFFSET $4',
+                [formId, tenantId, limit, offset]
+            );
             rows = result.rows;
         } else {
-            rows = await submissionRepo.findAllBy('tenant_id', tenantId, 'created_at DESC');
+            const result = await query(
+                'SELECT * FROM submissions WHERE tenant_id = $1 ORDER BY created_at DESC LIMIT $2 OFFSET $3',
+                [tenantId, limit, offset]
+            );
+            rows = result.rows;
         }
         res.json(rows.map(toEntity));
     } catch (error) {

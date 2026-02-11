@@ -1,351 +1,151 @@
-import React, { useState } from 'react';
-import { ResultsViewer } from './components/ResultsViewer';
-import { SurveyDistribution } from './components/SurveyDistribution';
-import { FormBuilder } from './components/FormBuilder';
-import { FormViewer } from './components/FormViewer';
-import { Dashboard } from './components/Dashboard';
-import { CxDashboard } from './components/CxDashboard';
-import { AIIntegrations } from './components/AIIntegrations';
-import { IntegrationsView } from './components/IntegrationsView';
-import { PublicReportViewer } from './components/PublicReportViewer';
-import { UserManagement } from './components/UserManagement';
-import { UserProfile } from './components/UserProfile';
-import { RoleMaster } from './components/RoleMaster';
-import { ContactMaster } from './components/ContactMaster';
-import { TicketListView } from './components/TicketListView';
-import { TicketDetailView } from './components/TicketDetailView';
-import { CrmDashboard } from './components/CrmDashboard';
-import { Login } from './components/Login';
-import { LandingPage } from './components/LandingPage';
-import { AIFormGeneratorModal } from './components/AIFormGeneratorModal';
-import { CreateSurveyModal } from './components/CreateSurveyModal';
-import { SubscriptionManagement } from './components/SubscriptionManagement';
-import { GlobalAdminDashboard } from './components/GlobalAdminDashboard';
-import { TemplateGallery } from './components/TemplateGallery';
-import { Sidebar } from './components/Sidebar';
-import { SupportPage } from './components/SupportPage';
-import { ThemeSettings } from './components/ThemeSettings';
-import { SystemSettings } from './components/SystemSettings';
-import { Notifications } from './components/Notifications';
-import { RulesEngine } from './components/RulesEngine';
-import { CxPersonaBuilder } from './components/CxPersonaBuilder';
-import { JourneyBuilder } from './components/JourneyBuilder';
-import { User, Globe, LogOut, Menu, MessageSquare } from 'lucide-react';
-import { Customer360 } from './components/Customer360';
-import { TicketSettings } from './components/TicketSettings';
-import { SurveyReportSelector } from './components/SurveyReportSelector';
-import { AISurveyor } from './components/AISurveyor';
-import { AIVideoAgentPage } from './components/AIVideoAgentPage';
-import { VoiceAgentPublic } from './components/VoiceAgentPublic';
-import axios from 'axios';
-import CxPersonaTemplates from './components/CxPersonaTemplates';
-import { AnalyticsStudio } from './components/analytics/AnalyticsStudio';
-import { SurveyAnalystChat } from './components/analytics/SurveyAnalystChat';
-import { AIAgentChat } from './components/AIAgentChat';
-import { AnalyticsBuilder } from './components/analytics/AnalyticsBuilder';
-import { SurveyAnalyticsDashboard } from './components/analytics/SurveyAnalyticsDashboard';
-import DynamicDashboard from './components/DynamicDashboard';
-import { TextIQDashboard } from './components/TextIQDashboard';
-import { XMDirectory } from './components/XMDirectory';
-import { ActionPlanning } from './components/ActionPlanning';
-import { SocialMediaMarketing } from './components/SocialMediaMarketing';
-import { ReputationManager } from './components/ReputationManager';
-import { CJMBuilder } from './components/CJM/CJMBuilder';
-import { CJMDashboard } from './components/CJM/CJMDashboard';
-import { CJMAnalyticsDashboard } from './components/CJM/CJMAnalyticsDashboard';
-import { InteractiveManual } from './components/InteractiveManual';
+import React, { Suspense, useState, useCallback } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, useNavigate, useParams, useLocation } from 'react-router-dom';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { ThemeProvider } from './contexts/ThemeContext';
+import { NotificationProvider } from './contexts/NotificationContext';
+import { LoadingSpinner } from './components/common/LoadingSpinner';
+import { AppLayout } from './components/layout/AppLayout';
 import { useTranslation } from 'react-i18next';
 import './App.css';
 
-function App() {
-  const { t, i18n } = useTranslation();
-  // Support ar, ar-EG, ar-SA etc
-  const isRtl = i18n.language.startsWith('ar');
+// --- Lazy-loaded route components ---
+const Dashboard = React.lazy(() => import('./components/Dashboard').then(m => ({ default: m.Dashboard })));
+const CxDashboard = React.lazy(() => import('./components/CxDashboard').then(m => ({ default: m.CxDashboard })));
+const FormBuilder = React.lazy(() => import('./components/FormBuilder').then(m => ({ default: m.FormBuilder })));
+const FormViewer = React.lazy(() => import('./components/FormViewer').then(m => ({ default: m.FormViewer })));
+const ResultsViewer = React.lazy(() => import('./components/ResultsViewer').then(m => ({ default: m.ResultsViewer })));
+const SurveyDistribution = React.lazy(() => import('./components/SurveyDistribution').then(m => ({ default: m.SurveyDistribution })));
+const AIIntegrations = React.lazy(() => import('./components/AIIntegrations').then(m => ({ default: m.AIIntegrations })));
+const IntegrationsView = React.lazy(() => import('./components/IntegrationsView').then(m => ({ default: m.IntegrationsView })));
+const PublicReportViewer = React.lazy(() => import('./components/PublicReportViewer').then(m => ({ default: m.PublicReportViewer })));
+const UserManagement = React.lazy(() => import('./components/UserManagement').then(m => ({ default: m.UserManagement })));
+const UserProfile = React.lazy(() => import('./components/UserProfile').then(m => ({ default: m.UserProfile })));
+const RoleMaster = React.lazy(() => import('./components/RoleMaster').then(m => ({ default: m.RoleMaster })));
+const ContactMaster = React.lazy(() => import('./components/ContactMaster').then(m => ({ default: m.ContactMaster })));
+const TicketListView = React.lazy(() => import('./components/TicketListView').then(m => ({ default: m.TicketListView })));
+const TicketDetailView = React.lazy(() => import('./components/TicketDetailView').then(m => ({ default: m.TicketDetailView })));
+const CrmDashboard = React.lazy(() => import('./components/CrmDashboard').then(m => ({ default: m.CrmDashboard })));
+const Login = React.lazy(() => import('./components/Login').then(m => ({ default: m.Login })));
+const LandingPage = React.lazy(() => import('./components/LandingPage').then(m => ({ default: m.LandingPage })));
+const SubscriptionManagement = React.lazy(() => import('./components/SubscriptionManagement').then(m => ({ default: m.SubscriptionManagement })));
+const GlobalAdminDashboard = React.lazy(() => import('./components/GlobalAdminDashboard').then(m => ({ default: m.GlobalAdminDashboard })));
+const TemplateGallery = React.lazy(() => import('./components/TemplateGallery').then(m => ({ default: m.TemplateGallery })));
+const SupportPage = React.lazy(() => import('./components/SupportPage').then(m => ({ default: m.SupportPage })));
+const ThemeSettings = React.lazy(() => import('./components/ThemeSettings').then(m => ({ default: m.ThemeSettings })));
+const SystemSettings = React.lazy(() => import('./components/SystemSettings').then(m => ({ default: m.SystemSettings })));
+const RulesEngine = React.lazy(() => import('./components/RulesEngine').then(m => ({ default: m.RulesEngine })));
+const CxPersonaBuilder = React.lazy(() => import('./components/CxPersonaBuilder').then(m => ({ default: m.CxPersonaBuilder })));
+const JourneyBuilder = React.lazy(() => import('./components/JourneyBuilder').then(m => ({ default: m.JourneyBuilder })));
+const Customer360 = React.lazy(() => import('./components/Customer360').then(m => ({ default: m.Customer360 })));
+const TicketSettings = React.lazy(() => import('./components/TicketSettings').then(m => ({ default: m.TicketSettings })));
+const SurveyReportSelector = React.lazy(() => import('./components/SurveyReportSelector').then(m => ({ default: m.SurveyReportSelector })));
+const AISurveyor = React.lazy(() => import('./components/AISurveyor').then(m => ({ default: m.AISurveyor })));
+const AIVideoAgentPage = React.lazy(() => import('./components/AIVideoAgentPage').then(m => ({ default: m.AIVideoAgentPage })));
+const VoiceAgentPublic = React.lazy(() => import('./components/VoiceAgentPublic').then(m => ({ default: m.VoiceAgentPublic })));
+const CxPersonaTemplates = React.lazy(() => import('./components/CxPersonaTemplates'));
+const AnalyticsStudio = React.lazy(() => import('./components/analytics/AnalyticsStudio').then(m => ({ default: m.AnalyticsStudio })));
+const AnalyticsBuilder = React.lazy(() => import('./components/analytics/AnalyticsBuilder').then(m => ({ default: m.AnalyticsBuilder })));
+const SurveyAnalyticsDashboard = React.lazy(() => import('./components/analytics/SurveyAnalyticsDashboard').then(m => ({ default: m.SurveyAnalyticsDashboard })));
+const DynamicDashboard = React.lazy(() => import('./components/DynamicDashboard'));
+const TextIQDashboard = React.lazy(() => import('./components/TextIQDashboard').then(m => ({ default: m.TextIQDashboard })));
+const XMDirectory = React.lazy(() => import('./components/XMDirectory').then(m => ({ default: m.XMDirectory })));
+const ActionPlanning = React.lazy(() => import('./components/ActionPlanning').then(m => ({ default: m.ActionPlanning })));
+const SocialMediaMarketing = React.lazy(() => import('./components/SocialMediaMarketing').then(m => ({ default: m.SocialMediaMarketing })));
+const ReputationManager = React.lazy(() => import('./components/ReputationManager').then(m => ({ default: m.ReputationManager })));
+const CJMBuilder = React.lazy(() => import('./components/CJM/CJMBuilder').then(m => ({ default: m.CJMBuilder })));
+const CJMDashboard = React.lazy(() => import('./components/CJM/CJMDashboard').then(m => ({ default: m.CJMDashboard })));
+const CJMAnalyticsDashboard = React.lazy(() => import('./components/CJM/CJMAnalyticsDashboard').then(m => ({ default: m.CJMAnalyticsDashboard })));
+const InteractiveManual = React.lazy(() => import('./components/InteractiveManual').then(m => ({ default: m.InteractiveManual })));
+const Notifications = React.lazy(() => import('./components/Notifications').then(m => ({ default: m.Notifications })));
 
-  // Auth State - Persist
-  const [user, setUser] = useState(() => {
-    try {
-      const saved = localStorage.getItem('vtrustx_user');
-      if (!saved) return null;
-      const parsed = JSON.parse(saved);
-      // Validate that the user object has a token
-      return (parsed && parsed.token) ? parsed : null;
-    } catch { return null; }
-  });
+// --- View title mapping ---
+const VIEW_TITLES = {
+  dashboard: 'Overview',
+  builder: 'Form Builder',
+  viewer: 'Surveys',
+  results: 'Results',
+  'ai-settings': 'AI Settings',
+  'system-settings': 'System Settings',
+  'theme-settings': 'Theme & Branding',
+  integrations: 'Integrations',
+  'user-management': 'User Management',
+  workflows: 'Workflows',
+  tickets: 'Tickets',
+  'ticket-detail': 'Tickets',
+  'cx-ratings': 'CX Dashboard',
+  personas: 'CX Personas',
+  templates: 'Templates',
+  'contact-master': 'Contacts',
+  'role-master': 'Roles',
+  subscription: 'Subscription',
+  customer360: 'Unified Customer Profile',
+  journeys: 'Journey Orchestration',
+  'global-admin': 'Global Administration',
+  profile: 'My Profile',
+  'survey-reports': 'Survey Reports',
+  'crm-reports': 'CRM Reports',
+  'analytics-studio': 'Analytics Studio',
+  'analytics-builder': 'Analytics Builder',
+  'analytics-dashboard': 'Dynamic Dashboard',
+  'survey-activity-dashboard': 'Survey Activity',
+  textiq: 'Text iQ',
+  'xm-directory': 'XM Directory',
+  actions: 'Action Planning',
+  'social-media': 'Social Media Marketing',
+  reputation: 'Reputation Manager',
+  cjm: 'Customer Journey Maps',
+  'cjm-analytics': 'CJM Analytics',
+  'interactive-manual': 'Manual',
+  'ai-surveyor': 'AI Surveyor',
+  'ai-video-agent': 'AI Video Agent',
+  'ticket-settings': 'Ticket Settings',
+  'persona-templates': 'Persona Templates',
+  collect: 'Distribution',
+};
 
-  // Configure Axios Auth Header whenever user changes
-  React.useEffect(() => {
-    if (user && user.token) {
-      axios.defaults.headers.common['Authorization'] = `Bearer ${user.token}`;
-      localStorage.setItem('vtrustx_user', JSON.stringify(user));
-    } else {
-      delete axios.defaults.headers.common['Authorization'];
-      localStorage.removeItem('vtrustx_user');
-    }
-  }, [user]);
+// --- Protected Route Wrapper ---
+function ProtectedRoute({ children }) {
+  const { isAuthenticated } = useAuth();
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  return children;
+}
 
-  const handleLogin = (userData) => {
-    setUser(userData);
-  };
+// --- Main App Router (inside AuthProvider) ---
+function AppRoutes() {
+  const { user, login, isAuthenticated, setUser } = useAuth();
+  const navigate = useNavigate();
 
-  // Update Body Direction
-  React.useEffect(() => {
-    document.body.dir = isRtl ? 'rtl' : 'ltr';
-  }, [isRtl]);
-
-  React.useEffect(() => {
-    // Fetch theme - Allow public access if configured, or tenant access if logged in
-    axios.get('/api/settings/theme')
-      .then(res => {
-        const theme = res.data;
-        if (theme && Object.keys(theme).length > 0) {
-          const root = document.documentElement;
-          if (theme.primaryColor) {
-            root.style.setProperty('--primary-color', theme.primaryColor);
-            // Dynamic Sidebar & Header Variables based on primary color
-            // Sidebar: Light tint of primary
-            root.style.setProperty('--sidebar-bg', `color-mix(in srgb, ${theme.primaryColor} 4%, white)`);
-            root.style.setProperty('--sidebar-text', theme.primaryColor);
-            root.style.setProperty('--sidebar-active-bg', theme.primaryColor);
-            root.style.setProperty('--sidebar-active-text', '#ffffff');
-            root.style.setProperty('--sidebar-border', `color-mix(in srgb, ${theme.primaryColor} 15%, transparent)`);
-
-            // Header: Very light tint
-            root.style.setProperty('--header-bg', `color-mix(in srgb, ${theme.primaryColor} 2%, white)`);
-            root.style.setProperty('--header-border', `color-mix(in srgb, ${theme.primaryColor} 15%, transparent)`);
-          }
-          if (theme.secondaryColor) root.style.setProperty('--secondary-color', theme.secondaryColor);
-          if (theme.backgroundColor) root.style.setProperty('--background-color', theme.backgroundColor);
-          if (theme.textColor) {
-            root.style.setProperty('--text-color', theme.textColor);
-          }
-          if (theme.borderRadius) root.style.setProperty('--border-radius', theme.borderRadius);
-          if (theme.fontFamily) root.style.setProperty('--font-family', theme.fontFamily);
-        }
-      })
-      .catch(err => {
-        console.warn("Theme load failed (using defaults):", err.message);
-      });
-  }, [user]);
-
-  // Views: dashboard, builder, viewer, system-settings, integrations, public-survey
-  const [view, setView] = useState(() => {
-    const path = window.location.pathname;
-    // Public routes handling
-    if (path.startsWith('/s/voice/')) return 'public-voice';
-    if (path.startsWith('/s/report/')) return 'public-report';
-    if (path.startsWith('/report/')) return 'public-report';
-    if (path.startsWith('/s/')) return 'public-survey';
-
-    // Internal routes: '/viewName/id'
-    const parts = path.split('/').filter(p => p);
-    // Ignore static assets or API calls if routed here by mistake
-    if (parts.length > 0 && !['api', 'static', 'uploads', 's', 'report'].includes(parts[0])) {
-      return parts[0];
-    }
-    return 'dashboard';
-  });
-
-  const [currentFormId, setCurrentFormId] = useState(() => {
-    const path = window.location.pathname;
-    const parts = path.split('/').filter(p => p);
-    // Logic: /builder/123 -> parts[0]=builder, parts[1]=123
-    if (parts.length > 1 && !['s', 'report', 'api'].includes(parts[0])) {
-      // Check if second part looks like an ID (numeric or UUID)
-      // For now just return it
-      return parts[1];
-    }
-    return null;
-  });
-
+  // Shared state for form editing context
+  const [currentFormId, setCurrentFormId] = useState(null);
   const [currentTicketId, setCurrentTicketId] = useState(null);
   const [currentSubmissionId, setCurrentSubmissionId] = useState(null);
   const [initialData, setInitialData] = useState(null);
-  const [isAIModalOpen, setIsAIModalOpen] = useState(false);
-  const [isTemplateGalleryOpen, setIsTemplateGalleryOpen] = useState(false);
-  const [isCreateSurveyModalOpen, setIsCreateSurveyModalOpen] = useState(false);
   const [currentCjmMapId, setCurrentCjmMapId] = useState(null);
 
-  // --- BROWSER HISTORY SYNC START ---
-  const isPopping = React.useRef(false);
-
-  // 1. Listen for Back/Forward Button
-  React.useEffect(() => {
-    const onPopState = (e) => {
-      isPopping.current = true;
-      if (e.state) {
-        if (e.state.view) setView(e.state.view);
-        setCurrentFormId(e.state.currentFormId || null);
-        setCurrentSubmissionId(e.state.currentSubmissionId || null);
-        if (e.state.currentTicketId) setCurrentTicketId(e.state.currentTicketId);
-      } else {
-        // Fallback or external navigation back to root
-        // Re-parse URL or verify if we should go to dashboard
-        const parts = window.location.pathname.split('/').filter(p => p);
-        if (parts.length > 0 && !['s', 'api'].includes(parts[0])) {
-          setView(parts[0]);
-          setCurrentFormId(parts[1] || null);
-        } else {
-          setView('dashboard');
-        }
-      }
-    };
-    window.addEventListener('popstate', onPopState);
-    return () => window.removeEventListener('popstate', onPopState);
-  }, []);
-
-  // 2. Push State on View Change
-  React.useEffect(() => {
-    if (isPopping.current) {
-      isPopping.current = false;
-      return;
-    }
-
-    // Skip public views that manage their own URL handling
-    if (['public-voice', 'public-survey', 'public-report'].includes(view)) return;
-
-    let url = view === 'dashboard' ? '/' : `/${view}`;
-    if (currentFormId && (view === 'builder' || view === 'viewer')) {
-      url += `/${currentFormId}`;
-    }
-
-    // Replace if same view/url (e.g. init), push if different
-    if (window.location.pathname !== url) {
-      const state = { view, currentFormId, currentSubmissionId, currentTicketId };
-      window.history.pushState(state, '', url);
-    } else {
-      // Ensure state object is populated for back button functionality
-      const state = { view, currentFormId, currentSubmissionId, currentTicketId };
-      window.history.replaceState(state, '', url);
-    }
-
-  }, [view, currentFormId, currentSubmissionId, currentTicketId]);
-  // --- BROWSER HISTORY SYNC END ---
-
-  // Sidebar State
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  const [isSidebarHidden, setIsSidebarHidden] = useState(false);
-  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
-
-  // Auto-hide/Collapse Sidebar Logic to maximize space
-  React.useEffect(() => {
-    // Full screen builders (Hide Sidebar completely)
-    if (view === 'personas' || view === 'builder' || view === 'analytics-studio') {
-      setIsSidebarHidden(true);
-    }
-    // Data intensive views (Collapse Sidebar to icons)
-    else if ((view === 'viewer' && currentFormId) || view === 'results' || view === 'analytics-dashboard') {
-      setIsSidebarHidden(false);
-      setIsSidebarCollapsed(true);
-    }
-    // Default Views (Show Sidebar Expanded)
-    else {
-      setIsSidebarHidden(false);
-      setIsSidebarCollapsed(false);
-    }
-  }, [view, currentFormId]);
-
-  // Idle Timer Logic
-  const [idleTimeout, setIdleTimeout] = useState(0);
-  const lastActivity = React.useRef(Date.now());
-
-  // Fetch Settings for Idle Timeout
-  React.useEffect(() => {
-    if (user) {
-      axios.get('/api/settings')
-        .then(res => {
-          if (res.data.idle_timeout) {
-            setIdleTimeout(parseInt(res.data.idle_timeout, 10));
-          }
-        })
-        .catch(err => console.error("Failed to fetch settings for idle timer", err));
-    }
-  }, [user]);
-
-  // Track Activity
-  React.useEffect(() => {
-    const updateActivity = () => {
-      lastActivity.current = Date.now();
-    };
-
-    // Throttle slightly by not debouncing but valid enough
-    window.addEventListener('mousemove', updateActivity);
-    window.addEventListener('keydown', updateActivity);
-    window.addEventListener('click', updateActivity);
-    window.addEventListener('scroll', updateActivity);
-
-    return () => {
-      window.removeEventListener('mousemove', updateActivity);
-      window.removeEventListener('keydown', updateActivity);
-      window.removeEventListener('click', updateActivity);
-      window.removeEventListener('scroll', updateActivity);
-    };
-  }, []);
-
-  // Check Idle Status
-  React.useEffect(() => {
-    if (!user || idleTimeout <= 0) return;
-
-    const checkInterval = setInterval(() => {
-      const now = Date.now();
-      // minutes * 60 * 1000
-      const limit = idleTimeout * 60 * 1000;
-
-      if (now - lastActivity.current > limit) {
-        console.log("User idle for too long. Logging out.");
-        setUser(null);
-        alert("Session expired due to inactivity.");
-      }
-    }, 10000); // Check every 10 seconds
-
-    return () => clearInterval(checkInterval);
-  }, [user, idleTimeout]);
-
-  // Public Survey State - Init from URL
-  const [publicSlug, setPublicSlug] = useState(() => {
-    const path = window.location.pathname;
-    if (path.startsWith('/s/voice/')) return path.split('/s/voice/')[1];
-    if (path.startsWith('/s/report/')) return path.split('/s/report/')[1];
-    if (path.startsWith('/report/')) return path.split('/report/')[1];
-    if (path.startsWith('/s/')) return path.split('/s/')[1];
-    return null;
-  });
-
-  const isSupportPage = window.location.pathname === '/support';
-
-  if (isSupportPage) {
-    return <SupportPage />;
-  }
-
-  if (!user && !publicSlug) {
-    return <LandingPage onLogin={handleLogin} />;
-  }
-
-  const handleNavigate = async (action, payload) => {
-    // Reset state
+  const handleNavigate = useCallback((id, payload) => {
     setCurrentSubmissionId(null);
     setCurrentFormId(null);
 
-    if (action === 'create-normal') {
-      setIsCreateSurveyModalOpen(true);
+    if (id === 'create-normal') {
+      navigate('/viewer');
+      // Signal to open create modal — handled in AppLayout
+      return;
     }
-    else if (action === 'create-template') {
-      setIsTemplateGalleryOpen(true);
+    if (id === 'create-template') {
+      navigate('/templates');
+      return;
     }
-    else if (action === 'create-ai') {
-      setIsAIModalOpen(true);
+    if (id === 'create-ai') {
+      navigate('/viewer');
+      return;
     }
-    else if (action === 'create-imported') {
-      // payload should contain { title, definition }
-      setInitialData(payload || { title: "Imported Survey", pages: [] });
-      setView('builder');
-    }
-    else if (action === 'take-survey') {
+    if (id === 'take-survey') {
       setCurrentFormId(payload);
       setCurrentSubmissionId(null);
-      setView('viewer');
+      navigate('/viewer');
+      return;
     }
-    else if (action === 'view-results') {
+    if (id === 'view-results') {
       if (typeof payload === 'object' && payload !== null) {
         setCurrentFormId(payload.id);
         setInitialData({ view: payload.view });
@@ -353,463 +153,210 @@ function App() {
         setCurrentFormId(payload);
         setInitialData(null);
       }
-      setView('results');
+      navigate('/results');
+      return;
     }
-    else if (action === 'ai-settings') setView('ai-settings');
-    else if (action === 'system-settings') setView('system-settings');
-    else if (action === 'integrations') setView('integrations');
-    else if (action === 'user-management') setView('user-management');
-    else if (action === 'theme-settings') setView('theme-settings');
-    else if (action === 'profile') setView('profile');
-  };
-
-  const handleSidebarNav = (id) => {
-    if (id === 'dashboard') setView('dashboard');
-    else if (id === 'create-normal') handleNavigate('create-normal');
-    else if (id === 'form-viewer') {
+    // Builder with payload
+    if (id === 'builder' && payload?.initialData) {
+      setInitialData(payload.initialData);
       setCurrentFormId(null);
-      setCurrentSubmissionId(null);
-      setView('viewer');
+      navigate('/builder');
+      return;
     }
-    else if (id === 'ai-settings') handleNavigate('ai-settings');
-    else if (id === 'survey-reports') setView('survey-reports');
-    else if (id === 'survey-results') setView('survey-reports');
-    else if (id === 'ai-surveyor') setView('ai-surveyor');
-    else if (id === 'ai-video-agent') setView('ai-video-agent');
-    else if (id === 'cx-ratings') setView('cx-ratings');
-    else if (id === 'system-settings') setView('system-settings');
-    else if (id === 'integrations') setView('integrations');
-    else if (id === 'user-management') setView('user-management');
-    else if (id === 'role-master') setView('role-master');
-    else if (id === 'subscription') setView('subscription');
-    else if (id === 'global-admin') setView('global-admin');
-    else if (id === 'tickets') setView('tickets');
-    else if (id === 'workflows') setView('workflows');
-    else if (id === 'personas') setView('personas');
-    else if (id === 'persona-templates') setView('persona-templates');
-    else if (id === 'contact-master') setView('contact-master');
-    else if (id === 'templates') setView('templates');
-    else if (id === 'theme-settings') setView('theme-settings');
-    else if (id === 'customer360') setView('customer360');
-    else if (id === 'journeys') setView('journeys');
-    else if (id === 'ticket-settings') setView('ticket-settings');
-    else if (id === 'identity') setView('identity'); // Placeholder if view exists
-    else if (id === 'support') setView('support'); // Or navigate to support page
-    // Analytics
-    else if (id === 'analytics-studio') setView('analytics-studio');
-    else if (id === 'analytics-builder') setView('analytics-builder');
-    else if (id === 'analytics-dashboard') setView('analytics-dashboard');
-    else if (id === 'survey-activity-dashboard') setView('survey-activity-dashboard');
-    // Other Modules
-    else if (id === 'textiq') setView('textiq');
-    else if (id === 'xm-directory') setView('xm-directory');
-    else if (id === 'actions') setView('actions');
-    else if (id === 'social-media') setView('social-media');
-    else if (id === 'reputation') setView('reputation');
-    else if (id === 'cjm') { setView('cjm'); setCurrentCjmMapId(null); }
-    else if (id === 'cjm-analytics') setView('cjm-analytics');
-  };
+    // Default: navigate to the view
+    navigate(`/${id}`);
+  }, [navigate]);
 
-  const handleEditForm = (id, tab = 'questionnaire') => {
+  const handleEditForm = useCallback((id, tab = 'questionnaire') => {
     setCurrentFormId(id);
     setCurrentSubmissionId(null);
     setInitialData({ initialTab: tab });
-    setView('builder');
-  }
+    navigate('/builder');
+  }, [navigate]);
 
-  const handleEditSubmission = (subId, formId) => {
+  const handleEditSubmission = useCallback((subId, formId) => {
     setCurrentFormId(formId);
     setCurrentSubmissionId(subId);
-    setView('viewer');
-  }
-
-  if (view === 'public-survey' && publicSlug) {
-    return (
-      <div style={{ width: '100%', minHeight: '100vh', background: '#ffffff' }}>
-        <FormViewer
-          slug={publicSlug}
-          isPublic={true}
-        />
-      </div>
-    )
-  }
-
-  if (view === 'public-report' && publicSlug) {
-    return <PublicReportViewer token={publicSlug} />
-  }
-
-  if (view === 'public-voice' && publicSlug) {
-    return <VoiceAgentPublic slug={publicSlug} />
-  }
+    navigate('/viewer');
+  }, [navigate]);
 
   return (
-    <div className="App">
-      {!isSidebarHidden && (
-        <Sidebar
-          user={user}
-          view={view === 'viewer' ? 'form-viewer' : view === 'builder' ? 'create-normal' : view}
-          onViewChange={handleSidebarNav}
-          onLogout={() => setUser(null)}
-          isCollapsed={isSidebarCollapsed}
-          toggleSidebar={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-          onHide={() => setIsSidebarHidden(true)}
-        />
-      )}
+    <ThemeProvider user={user}>
+      <NotificationProvider isAuthenticated={isAuthenticated}>
+        <Suspense fallback={<LoadingSpinner />}>
+          <Routes>
+            {/* Public routes */}
+            <Route path="/login" element={
+              isAuthenticated ? <Navigate to="/" replace /> : <LandingPage onLogin={login} />
+            } />
+            <Route path="/support" element={<SupportPage />} />
+            <Route path="/s/voice/:slug" element={<PublicVoiceRoute />} />
+            <Route path="/s/report/:slug" element={<PublicReportRoute />} />
+            <Route path="/report/:slug" element={<PublicReportRoute />} />
+            <Route path="/s/:slug" element={<PublicSurveyRoute />} />
 
-      <div
-        className="main-content"
-        style={{
-          marginLeft: isRtl ? 0 : (isSidebarHidden ? '24px' : (isSidebarCollapsed ? '104px' : 'calc(var(--sidebar-width, 260px) + 24px)')), // Sidebar + 12px gap + 12px gap
-          marginRight: isRtl ? (isSidebarHidden ? '24px' : (isSidebarCollapsed ? '104px' : 'calc(var(--sidebar-width, 260px) + 24px)')) : 0,
-          transition: isSidebarCollapsed ? 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)' : 'none', // Disable transition during drag resize to avoid lag
-          width: `calc(100% - ${isSidebarHidden ? '48px' : (isSidebarCollapsed ? '104px' : 'calc(var(--sidebar-width, 260px) + 24px)')} - 12px)`, // Right gap 12px
-          minHeight: '100vh',
-          boxSizing: 'border-box',
-          paddingTop: view === 'personas' ? '0' : '12px'
-        }}
-      >
-        <header
-          className="glass-panel"
-          style={{
-            padding: '0 24px',
-            marginBottom: view === 'personas' ? '0' : '24px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            height: '70px',
-            boxSizing: 'border-box',
-            borderRadius: '16px',
-            background: 'var(--header-bg, #ecfdf5)', // Use dynamic var or fallback
-            border: '1px solid var(--header-border, rgba(6, 78, 59, 0.3))' // Full Outline
-          }}
-        >
-          <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
-            {isSidebarHidden && (
-              <button
-                onClick={() => setIsSidebarHidden(false)}
-                style={{
-                  background: 'white', border: '1px solid #cbd5e1', borderRadius: '8px', padding: '8px',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
-                  color: 'var(--sidebar-text, #064e3b)'
-                }}
-                title="Show Sidebar"
-              >
-                <Menu size={20} />
-              </button>
-            )}
-            <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: '700', color: 'var(--sidebar-text, #064e3b)' }}>
-              {view === 'dashboard' ? 'Overview' :
-                view === 'builder' ? 'Form Builder' :
-                  view === 'viewer' ? (currentSubmissionId ? 'Edit Submission' : 'Surveys') :
-                    view === 'results' ? 'Results' :
-                      view === 'ai-settings' ? 'AI Settings' :
-                        view === 'system-settings' ? 'System Settings' :
-                          view === 'theme-settings' ? 'Theme & Branding' :
-                            view === 'integrations' ? 'Integrations' :
-                              view === 'user-management' ? 'User Management' :
-                                view === 'workflows' ? 'Workflows' :
-                                  view === 'tickets' || view === 'ticket-detail' ? 'Tickets' :
-                                    view === 'cx-ratings' ? 'CX Dashboard' :
-                                      view === 'personas' ? 'CX Personas' :
-                                        view === 'templates' ? 'Templates' :
-                                          view === 'contact-master' ? 'Contacts' :
-                                            view === 'role-master' ? 'Roles' :
-                                              view === 'subscription' ? 'Subscription' :
-                                                view === 'customer360' ? 'Unified Customer Profile' :
-                                                  view === 'journeys' ? 'Journey Orchestration' :
-                                                    view === 'global-admin' ? 'Global Administration' :
-                                                      view === 'profile' ? 'My Profile' :
-                                                        ''}
-            </h3>
-          </div>
-
-          {/* User Profile & Notifications - Top Right */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-            <Notifications />
-
-            {/* Profile Dropdown */}
-            <div style={{ position: 'relative' }}>
-              <div
-                onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: '10px', paddingLeft: '20px',
-                  borderLeft: '1px solid #e2e8f0', cursor: 'pointer', userSelect: 'none'
-                }}
-              >
-                <div style={{
-                  width: '36px', height: '36px', borderRadius: '50%', background: 'var(--primary-color, #0f172a)', color: 'white',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold'
-                }}>
-                  {user?.user?.username?.[0]?.toUpperCase() || 'U'}
+            {/* Protected routes with AppLayout */}
+            <Route element={
+              <ProtectedRoute>
+                <AppLayout onNavigate={handleNavigate} viewTitles={VIEW_TITLES} />
+              </ProtectedRoute>
+            }>
+              <Route index element={<Dashboard onNavigate={handleNavigate} onEdit={handleEditForm} onEditSubmission={handleEditSubmission} />} />
+              <Route path="dashboard" element={<Dashboard onNavigate={handleNavigate} onEdit={handleEditForm} onEditSubmission={handleEditSubmission} />} />
+              <Route path="cx-ratings" element={<CxDashboard onNavigate={handleNavigate} />} />
+              <Route path="survey-reports" element={<SurveyReportSelector onSelect={(id) => { setCurrentFormId(id); navigate('/results'); }} />} />
+              <Route path="builder" element={
+                <FormBuilder user={user} formId={currentFormId} initialData={initialData}
+                  onBack={() => { setCurrentFormId(null); navigate('/viewer'); }}
+                  onNavigate={(target) => { if (target === 'results') navigate('/results'); }}
+                  onFormChange={handleEditForm}
+                />
+              } />
+              <Route path="builder/:id" element={<BuilderWithParam handleEditForm={handleEditForm} />} />
+              <Route path="results" element={
+                <ResultsViewer formId={currentFormId} initialView={initialData?.view}
+                  onBack={() => navigate('/')}
+                  onEditSubmission={handleEditSubmission}
+                  onNavigate={(target) => { if (target === 'builder') handleEditForm(currentFormId); else navigate(`/${target}`); }}
+                />
+              } />
+              <Route path="collect" element={
+                <SurveyDistribution formId={currentFormId}
+                  onBack={() => navigate('/')}
+                  onNavigate={(target) => { if (target === 'builder') handleEditForm(currentFormId); else navigate(`/${target}`); }}
+                />
+              } />
+              <Route path="viewer" element={
+                <FormViewer formId={currentFormId} submissionId={currentSubmissionId}
+                  onSelectForm={(id) => setCurrentFormId(id)}
+                  onEditSubmission={handleEditSubmission}
+                  onEditForm={handleEditForm}
+                  onCreate={(type) => handleNavigate(type)}
+                  user={user}
+                />
+              } />
+              <Route path="ai-settings" element={<AIIntegrations />} />
+              <Route path="system-settings" element={<SystemSettings />} />
+              <Route path="ticket-settings" element={<TicketSettings />} />
+              <Route path="theme-settings" element={<ThemeSettings />} />
+              <Route path="interactive-manual" element={<InteractiveManual />} />
+              <Route path="ai-surveyor" element={<AISurveyor />} />
+              <Route path="ai-video-agent" element={<AIVideoAgentPage />} />
+              <Route path="profile" element={<UserProfile user={user} onUpdateUser={(updatedUser) => setUser(prev => ({ ...prev, user: updatedUser }))} />} />
+              <Route path="integrations" element={<IntegrationsView />} />
+              <Route path="workflows" element={<RulesEngine />} />
+              <Route path="user-management" element={<UserManagement />} />
+              <Route path="role-master" element={<RoleMaster />} />
+              <Route path="subscription" element={<SubscriptionManagement />} />
+              <Route path="global-admin" element={<GlobalAdminDashboard />} />
+              <Route path="contact-master" element={<ContactMaster />} />
+              <Route path="customer360" element={<Customer360 />} />
+              <Route path="personas" element={<CxPersonaBuilder onNavigate={(v) => navigate(`/${v}`)} />} />
+              <Route path="journeys" element={<JourneyBuilder />} />
+              <Route path="persona-templates" element={
+                <PersonaTemplatesRoute navigate={navigate} />
+              } />
+              <Route path="templates" element={
+                <div style={{ height: 'calc(100vh - 100px)' }}>
+                  <TemplateGallery displayMode="page" onSelect={(template) => {
+                    setInitialData({ ...template.definition, title: template.title });
+                    setCurrentFormId(null);
+                    navigate('/builder');
+                  }} />
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                  <span style={{ fontWeight: '600', fontSize: '0.9em', color: '#334155' }}>
-                    {user?.user?.username || 'User'}
-                    <span style={{ fontSize: '0.7em', marginLeft: '5px', color: '#94a3b8' }}>▼</span>
-                  </span>
-                  <span style={{ fontSize: '0.75em', color: '#94a3b8' }}>
-                    {t(`users.role_${user?.user?.role}`) || user?.user?.role || t('users.role_user')}
-                  </span>
-                </div>
-              </div>
+              } />
+              <Route path="tickets" element={
+                <TicketListView user={user} onSelectTicket={(id) => {
+                  if (id === 'reports') navigate('/crm-reports');
+                  else { setCurrentTicketId(id); navigate('/ticket-detail'); }
+                }} />
+              } />
+              <Route path="crm-reports" element={<CrmDashboard user={user} />} />
+              <Route path="ticket-detail" element={
+                <TicketDetailView ticketId={currentTicketId} user={user}
+                  onBack={() => { navigate('/tickets'); setCurrentTicketId(null); }}
+                />
+              } />
+              <Route path="analytics-studio" element={<AnalyticsStudio />} />
+              <Route path="analytics-builder" element={<AnalyticsBuilder onNavigate={(v) => navigate(`/${v}`)} />} />
+              <Route path="analytics-dashboard" element={<DynamicDashboard />} />
+              <Route path="survey-activity-dashboard" element={<SurveyAnalyticsDashboard />} />
+              <Route path="textiq" element={<TextIQDashboard />} />
+              <Route path="xm-directory" element={<XMDirectory />} />
+              <Route path="actions" element={<ActionPlanning />} />
+              <Route path="social-media" element={<SocialMediaMarketing />} />
+              <Route path="reputation" element={<ReputationManager />} />
+              <Route path="cjm" element={
+                currentCjmMapId
+                  ? <CJMBuilder mapId={currentCjmMapId} onBack={() => setCurrentCjmMapId(null)} />
+                  : <CJMDashboard onSelectMap={(id) => setCurrentCjmMapId(id)} />
+              } />
+              <Route path="cjm-analytics" element={<CJMAnalyticsDashboard />} />
+            </Route>
 
-              {/* Dropdown Menu */}
-              {isProfileMenuOpen && (
-                <div style={{
-                  position: 'absolute', top: '50px', [isRtl ? 'left' : 'right']: '0', width: '260px',
-                  background: '#f0fdf4', // Light green bg
-                  border: '1px solid #4ade80',
-                  borderRadius: '16px',
-                  padding: '12px',
-                  boxShadow: '0 10px 30px -5px rgba(21, 128, 61, 0.15)',
-                  zIndex: 1000,
-                }}>
-                  {/* MANAGE PROFILE */}
-                  <div
-                    onClick={() => { setView('profile'); setIsProfileMenuOpen(false); }}
-                    style={{
-                      background: 'white', padding: '12px 16px', borderRadius: '10px',
-                      marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '12px',
-                      cursor: 'pointer', boxShadow: '0 2px 4px rgba(0,0,0,0.03)',
-                      border: '1px solid white', transition: 'border-color 0.2s'
-                    }}
-                    onMouseOver={e => e.currentTarget.style.borderColor = '#4ade80'}
-                    onMouseOut={e => e.currentTarget.style.borderColor = 'white'}
-                  >
-                    <User size={18} color="#064e3b" />
-                    <span style={{ fontSize: '0.9em', fontWeight: '600', color: '#064e3b', letterSpacing: '0.5px' }}>{t('header.manage_profile')}</span>
-                  </div>
+            {/* Catch-all: redirect to dashboard or login */}
+            <Route path="*" element={<Navigate to={isAuthenticated ? "/" : "/login"} replace />} />
+          </Routes>
+        </Suspense>
+      </NotificationProvider>
+    </ThemeProvider>
+  );
+}
 
-                  {/* LANGUAGE */}
-                  <div
-                    onClick={() => { i18n.changeLanguage(i18n.language === 'en' ? 'ar' : 'en'); setIsProfileMenuOpen(false); }}
-                    style={{
-                      background: 'white', padding: '12px 16px', borderRadius: '10px',
-                      marginBottom: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                      cursor: 'pointer', boxShadow: '0 2px 4px rgba(0,0,0,0.03)',
-                      border: '1px solid white', transition: 'border-color 0.2s'
-                    }}
-                    onMouseOver={e => e.currentTarget.style.borderColor = '#4ade80'}
-                    onMouseOut={e => e.currentTarget.style.borderColor = 'white'}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      <Globe size={18} color="#064e3b" />
-                      <span style={{ fontSize: '0.9em', fontWeight: '600', color: '#064e3b', letterSpacing: '0.5px' }}>{t('header.language')}</span>
-                    </div>
-                    <span style={{ fontSize: '0.7em', padding: '2px 8px', borderRadius: '4px', background: '#dcfce7', color: '#166534', border: '1px solid #86efac', fontWeight: '600', textTransform: 'uppercase' }}>
-                      {i18n.language === 'en' ? 'English' : 'Arabic'}
-                    </span>
-                  </div>
-
-                  {/* LOGOUT */}
-                  <div
-                    onClick={() => { setUser(null); setIsProfileMenuOpen(false); }}
-                    style={{
-                      background: 'white', padding: '12px 16px', borderRadius: '10px',
-                      display: 'flex', alignItems: 'center', gap: '12px',
-                      cursor: 'pointer', boxShadow: '0 2px 4px rgba(0,0,0,0.03)',
-                      border: '1px solid white', transition: 'border-color 0.2s'
-                    }}
-                    onMouseOver={e => e.currentTarget.style.borderColor = '#ef4444'}
-                    onMouseOut={e => e.currentTarget.style.borderColor = 'white'}
-                  >
-                    <LogOut size={18} color="#b91c1c" />
-                    <span style={{ fontSize: '0.9em', fontWeight: '600', color: '#b91c1c', letterSpacing: '0.5px' }}>{t('header.logout')}</span>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </header>
-
-        <main style={{ padding: view === 'cx-ratings' ? 0 : '20px' }}>
-          {view === 'dashboard' && (
-            <Dashboard onNavigate={handleNavigate} onEdit={handleEditForm} onEditSubmission={handleEditSubmission} />
-          )}
-          {view === 'cx-ratings' && <CxDashboard onNavigate={handleNavigate} />}
-          {view === 'survey-reports' && <SurveyReportSelector onSelect={(id) => { setCurrentFormId(id); setView('results'); }} />}
-          {view === 'builder' && <FormBuilder user={user} formId={currentFormId} initialData={initialData} onBack={() => { setCurrentFormId(null); setView('viewer'); }} onNavigate={(target) => { if (target === 'results') setView('results'); }} onFormChange={handleEditForm} />}
-          {view === 'results' && (
-            <ResultsViewer
-              formId={currentFormId}
-              initialView={initialData?.view}
-              onBack={() => setView('dashboard')}
-              onEditSubmission={handleEditSubmission}
-              onNavigate={(target) => {
-                if (target === 'builder') handleEditForm(currentFormId);
-                else setView(target);
-              }}
-            />
-          )}
-          {view === 'collect' && (
-            <SurveyDistribution
-              formId={currentFormId}
-              onBack={() => setView('dashboard')}
-              onNavigate={(target) => {
-                if (target === 'builder') handleEditForm(currentFormId);
-                else setView(target);
-              }}
-            />
-          )}
-          {view === 'viewer' && (
-            <FormViewer
-              formId={currentFormId}
-              submissionId={currentSubmissionId}
-              onSelectForm={(id) => setCurrentFormId(id)}
-              onEditSubmission={handleEditSubmission}
-              onEditForm={handleEditForm}
-              onCreate={(type) => handleNavigate(type)}
-              user={user}
-            />
-          )}
-          {view === 'ai-settings' && <AIIntegrations />}
-          {view === 'system-settings' && <SystemSettings />}
-          {view === 'ticket-settings' && <TicketSettings />}
-          {view === 'theme-settings' && <ThemeSettings />}
-          {view === 'interactive-manual' && <InteractiveManual />}
-          {view === 'ai-surveyor' && <AISurveyor />}
-          {view === 'ai-video-agent' && <AIVideoAgentPage />}
-          {view === 'profile' && <UserProfile user={user} onUpdateUser={(updatedUser) => setUser(prev => ({ ...prev, user: updatedUser }))} />}
-          {view === 'integrations' && <IntegrationsView />}
-          {view === 'workflows' && <RulesEngine />}
-          {view === 'user-management' && <UserManagement />}
-          {view === 'role-master' && <RoleMaster />}
-          {view === 'subscription' && <SubscriptionManagement />}
-          {view === 'global-admin' && <GlobalAdminDashboard />}
-          {view === 'contact-master' && <ContactMaster />}
-          {view === 'customer360' && <Customer360 />}
-          {view === 'personas' && <CxPersonaBuilder onToggleSidebar={setIsSidebarCollapsed} onNavigate={setView} />}
-          {view === 'journeys' && <JourneyBuilder />}
-          {view === 'persona-templates' && (
-            <CxPersonaTemplates
-              onSelectTemplate={(tmpl) => {
-                const payload = {
-                  name: tmpl.payload.name || tmpl.title,
-                  title: tmpl.payload.title || "Generated Persona",
-                  layout_config: tmpl.payload.layout_config
-                };
-                axios.post('/api/cx-personas', payload)
-                  .then(() => {
-                    setView('personas');
-                  })
-                  .catch(err => alert("Failed to create: " + err.message));
-              }}
-            />
-          )}
-          {view === 'templates' && (
-            <div style={{ height: 'calc(100vh - 100px)' }}>
-              <TemplateGallery
-                displayMode="page"
-                onSelect={(template) => {
-                  setInitialData({ ...template.definition, title: template.title });
-                  setCurrentFormId(null);
-                  setView('builder');
-                }}
-              />
-            </div>
-          )}
-
-          {view === 'tickets' && (
-            <TicketListView
-              user={user}
-              onSelectTicket={(id) => {
-                if (id === 'reports') setView('crm-reports');
-                else { setCurrentTicketId(id); setView('ticket-detail'); }
-              }}
-            />
-          )}
-
-          {view === 'crm-reports' && <CrmDashboard user={user} />}
-
-          {view === 'ticket-detail' && (
-            <TicketDetailView
-              ticketId={currentTicketId}
-              user={user}
-              onBack={() => { setView('tickets'); setCurrentTicketId(null); }}
-            />
-          )}
-
-          {/* Analytics Views */}
-          {view === 'analytics-studio' && <AnalyticsStudio />}
-          {view === 'analytics-builder' && <AnalyticsBuilder onNavigate={setView} />}
-          {view === 'analytics-dashboard' && <DynamicDashboard />}
-          {view === 'survey-activity-dashboard' && <SurveyAnalyticsDashboard />}
-
-          {/* Other Module Views */}
-          {view === 'textiq' && <TextIQDashboard />}
-          {view === 'xm-directory' && <XMDirectory />}
-          {view === 'actions' && <ActionPlanning />}
-          {view === 'social-media' && <SocialMediaMarketing />}
-          {view === 'reputation' && <ReputationManager />}
-          {view === 'cjm' && (
-            currentCjmMapId
-              ? <CJMBuilder mapId={currentCjmMapId} onBack={() => setCurrentCjmMapId(null)} />
-              : <CJMDashboard onSelectMap={(id) => setCurrentCjmMapId(id)} />
-          )}
-          {view === 'cjm-analytics' && <CJMAnalyticsDashboard />}
-        </main>
-      </div>
-      <AIFormGeneratorModal
-        isOpen={isAIModalOpen}
-        onClose={() => setIsAIModalOpen(false)}
-        onGenerate={async (promptText) => {
-          setIsAIModalOpen(false);
-          const loadingDiv = document.createElement('div');
-          loadingDiv.innerText = "✨ Generating Survey... Please wait.";
-          loadingDiv.style.position = 'fixed';
-          loadingDiv.style.top = '50%';
-          loadingDiv.style.left = '50%';
-          loadingDiv.style.transform = 'translate(-50%, -50%)';
-          loadingDiv.style.padding = '20px 40px';
-          loadingDiv.style.background = 'white';
-          loadingDiv.style.color = '#334155';
-          loadingDiv.style.borderRadius = '12px';
-          loadingDiv.style.zIndex = '9999';
-          loadingDiv.style.boxShadow = '0 20px 25px -5px rgba(0, 0, 0, 0.1)';
-          loadingDiv.style.border = '1px solid #e2e8f0';
-          loadingDiv.style.fontWeight = '500';
-          document.body.appendChild(loadingDiv);
-
-          try {
-            const res = await axios.post('/api/ai/generate', { prompt: promptText });
-            setInitialData(res.data.definition);
-            setView('builder');
-          } catch (err) {
-            alert("AI generation failed: " + (err.response?.data?.error || err.message));
-          } finally {
-            if (document.body.contains(loadingDiv)) document.body.removeChild(loadingDiv);
-          }
-        }}
-      />
-      <TemplateGallery
-        isOpen={isTemplateGalleryOpen}
-        onClose={() => setIsTemplateGalleryOpen(false)}
-        onSelect={(template) => {
-          setInitialData({ ...template.definition, title: template.title });
-          setIsTemplateGalleryOpen(false);
-          setView('builder');
-        }}
-      />
-
-      {/* Dynamic Create Survey Modal */}
-      <CreateSurveyModal
-        isOpen={isCreateSurveyModalOpen}
-        onClose={() => setIsCreateSurveyModalOpen(false)}
-        onCreate={(data) => {
-          setInitialData({
-            title: data.title,
-            description: data.description, // Pass description if builder supports it in metadata
-            pages: [{ name: "page1", elements: [] }]
-          });
-          setIsCreateSurveyModalOpen(false);
-          setView('builder');
-        }}
-      />
-
-      {/* AI Agent Floating Chatbot - Always visible when logged in */}
-      <AIAgentChat user={user} />
-
+// --- Helper route components ---
+function PublicSurveyRoute() {
+  const { slug } = useParams();
+  return (
+    <div style={{ width: '100%', minHeight: '100vh', background: '#ffffff' }}>
+      <Suspense fallback={<LoadingSpinner />}>
+        <FormViewer slug={slug} isPublic={true} />
+      </Suspense>
     </div>
+  );
+}
+
+function PublicReportRoute() {
+  const { slug } = useParams();
+  return <Suspense fallback={<LoadingSpinner />}><PublicReportViewer token={slug} /></Suspense>;
+}
+
+function PublicVoiceRoute() {
+  const { slug } = useParams();
+  return <Suspense fallback={<LoadingSpinner />}><VoiceAgentPublic slug={slug} /></Suspense>;
+}
+
+function BuilderWithParam({ handleEditForm }) {
+  const { id } = useParams();
+  React.useEffect(() => { handleEditForm(id); }, [id]);
+  return null;
+}
+
+function PersonaTemplatesRoute({ navigate }) {
+  const axios = require('axios').default;
+  return (
+    <CxPersonaTemplates
+      onSelectTemplate={(tmpl) => {
+        const payload = {
+          name: tmpl.payload?.name || tmpl.title,
+          title: tmpl.payload?.title || "Generated Persona",
+          layout_config: tmpl.payload?.layout_config,
+        };
+        axios.post('/api/cx-personas', payload)
+          .then(() => navigate('/personas'))
+          .catch(err => alert("Failed to create: " + err.message));
+      }}
+    />
+  );
+}
+
+// --- Root App ---
+function App() {
+  return (
+    <BrowserRouter>
+      <AuthProvider>
+        <AppRoutes />
+      </AuthProvider>
+    </BrowserRouter>
   );
 }
 

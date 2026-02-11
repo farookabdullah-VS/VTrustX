@@ -33,6 +33,9 @@ class ErrorBoundary extends React.Component {
             <br />
             {this.state.errorInfo && this.state.errorInfo.componentStack}
           </details>
+          <button onClick={() => window.location.href = '/'} style={{ marginTop: '20px', padding: '10px 20px', cursor: 'pointer' }}>
+            Go Home
+          </button>
         </div>
       );
     }
@@ -45,7 +48,6 @@ const rootElement = document.getElementById('root');
 if (!rootElement) {
   console.error('Critical: Root element not found!');
 } else {
-  console.log('Mounting React Application...');
   try {
     createRoot(rootElement).render(
       <StrictMode>
@@ -54,7 +56,6 @@ if (!rootElement) {
         </ErrorBoundary>
       </StrictMode>
     );
-    console.log('React Application Mounted.');
   } catch (err) {
     console.error('Failed to mount React app:', err);
     const errDiv = document.createElement('div');

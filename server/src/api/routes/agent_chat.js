@@ -1,14 +1,18 @@
 const express = require('express');
 const router = express.Router();
 
-
 const PostgresRepository = require('../../infrastructure/database/PostgresRepository');
 const providerRepo = new PostgresRepository('ai_providers');
 const formRepo = new PostgresRepository('forms'); // Direct DB access
 const submissionRepo = new PostgresRepository('submissions');
+const { sessionCache } = require('../../infrastructure/cache');
 
-// Simple In-Memory Session Store (For Demo)
-const sessions = {};
+// Session store backed by CacheService (TTL: 30 min, max: 1000)
+const sessions = {
+    get: (id) => sessionCache.get(`chat:${id}`),
+    set: (id, data) => sessionCache.set(`chat:${id}`, data, 1800),
+    del: (id) => sessionCache.del(`chat:${id}`),
+};
 
 // Helper to get active key
 async function getActiveKey() {
@@ -54,7 +58,7 @@ router.post('/start', async (req, res) => {
         if (questions.length === 0) return res.status(400).json({ error: "Survey has no questions" });
 
         const sessionId = Date.now().toString();
-        sessions[sessionId] = {
+        sessions.set(sessionId, {
             id: sessionId,
             surveyId: form.id,
             surveyTitle: form.title,
@@ -62,7 +66,7 @@ router.post('/start', async (req, res) => {
             currentStep: 0,
             answers: {},
             stage: 'GREETING' // New State: GREETING, CONSENT, SURVEY
-        };
+        });
 
         const introText = `Hello, I'm Layla from VTrustX. How are you doing today?`;
 
@@ -78,11 +82,11 @@ router.post('/start', async (req, res) => {
 router.post('/chat', async (req, res) => {
     try {
         const { sessionId, message } = req.body;
-        if (!sessionId || !sessions[sessionId]) {
+        if (!sessionId || !sessions.get(sessionId)) {
             return res.status(404).json({ error: "Session not found or expired" });
         }
 
-        const session = sessions[sessionId];
+        const session = sessions.get(sessionId);
 
         const apiKey = await getActiveKey();
         if (!apiKey) return res.status(500).json({ error: "AI Config Missing" });
@@ -142,7 +146,7 @@ router.post('/chat', async (req, res) => {
 
             if (!result.authorized) {
                 // End Call
-                delete sessions[sessionId];
+                sessions.del(sessionId);
                 return res.json({ text: result.response || "Okay, have a great day.", isComplete: true });
             }
 
@@ -212,7 +216,7 @@ router.post('/chat', async (req, res) => {
                     form_version: 1,
                     created_at: new Date()
                 });
-                delete sessions[sessionId];
+                sessions.del(sessionId);
                 return res.json({
                     text: "Thank you for your time. Your responses have been recorded. Have a wonderful day!",
                     isComplete: true
