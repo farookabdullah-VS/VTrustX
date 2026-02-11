@@ -6,6 +6,7 @@ import { Trash2, GripVertical, FileText, BarChart2, Smartphone, Image as ImageIc
 import axios from 'axios';
 import { getLucideIcon } from './ChannelSelectorModal';
 import { PieChart as RPieChart, Pie, Cell, BarChart as RBarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, RadialBarChart, RadialBar, PolarAngleAxis } from 'recharts';
+import { AIPersonaAssistant } from './AIPersonaAssistant';
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
@@ -147,7 +148,7 @@ const MetricsWidget = ({ section }) => {
     );
 };
 
-function SectionCard({ section, updateSection, removeSection, style, className, onMouseDown, onMouseUp, onTouchEnd, isSelected, onSelect, personalityColor, onManageChannels, onManageChart, onManageDocuments }) {
+function SectionCard({ section, updateSection, removeSection, style, className, onMouseDown, onMouseUp, onTouchEnd, isSelected, onSelect, personalityColor, onManageChannels, onManageChart, onManageDocuments, personaName, personaRole }) {
 
     const currentStyle = section.style || {};
     const textColor = currentStyle.color || '#475569';
@@ -641,7 +642,15 @@ function SectionCard({ section, updateSection, removeSection, style, className, 
                         }}
                     />
                 </div>
-                <div style={{ display: 'flex', gap: '5px' }}>
+                <div style={{ display: 'flex', gap: '5px', alignItems: 'center' }}>
+                    {section.type !== 'header' && section.type !== 'imageSection' && section.type !== 'photo' && section.type !== 'documentSection' && section.type !== 'chart' && section.type !== 'metrics' && (
+                        <AIPersonaAssistant
+                            section={section}
+                            personaName={personaName}
+                            personaRole={personaRole}
+                            onApply={(updates) => updateSection(section.id, updates)}
+                        />
+                    )}
                     {section.type === 'header' && (
                         <button onClick={(e) => { e.stopPropagation(); setShowConfig(!showConfig); }} style={{ border: 'none', background: showConfig ? '#e2e8f0' : 'transparent', cursor: 'pointer', color: '#94a3b8', padding: '2px', borderRadius: '4px' }} title="Configure"><Settings size={16} /></button>
                     )}
@@ -687,7 +696,7 @@ function SectionCard({ section, updateSection, removeSection, style, className, 
     );
 }
 
-export function PersonaCanvas({ sections, updateSection, removeSection, updateLayouts, selectedSectionId, onSelectSection, personalityColor, onManageChannels, onManageChart, onManageDocuments }) {
+export function PersonaCanvas({ sections, updateSection, removeSection, updateLayouts, selectedSectionId, onSelectSection, personalityColor, onManageChannels, onManageChart, onManageDocuments, personaName, personaRole }) {
     const layouts = sections.map((s, i) => {
         const baseLayout = s.layout || { i: s.id, x: (i % 3) * 4, y: Infinity, w: 4, h: 4 };
         if (s.collapsed) return { ...baseLayout, h: 2, i: s.id };
@@ -719,6 +728,8 @@ export function PersonaCanvas({ sections, updateSection, removeSection, updateLa
                             onManageChannels={onManageChannels}
                             onManageChart={onManageChart}
                             onManageDocuments={onManageDocuments}
+                            personaName={personaName}
+                            personaRole={personaRole}
                         />
                     </div>
                 ))}

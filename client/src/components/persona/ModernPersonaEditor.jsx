@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
-import { X, Settings, HelpCircle, Save, PanelLeftClose, PanelLeft, PanelRightClose, PanelRight, Target, Quote, AlertCircle, Zap, Shield, History, MapPin, Map as MapIcon, FileText, MousePointer, Plus, User, Briefcase, GraduationCap, Layout, Layers, Image as ImageIcon, Smartphone, BarChart2, Globe, TrendingUp, Code, Award, File, Camera, Sliders, PieChart, Printer, Download, FileSpreadsheet } from 'lucide-react';
+import { X, Settings, HelpCircle, Save, PanelLeftClose, PanelLeft, PanelRightClose, PanelRight, Target, Quote, AlertCircle, Zap, Shield, History, MapPin, Map as MapIcon, FileText, MousePointer, Plus, User, Briefcase, GraduationCap, Layout, Layers, Image as ImageIcon, Smartphone, BarChart2, Globe, TrendingUp, Code, Award, File, Camera, Sliders, PieChart, Printer, Download, FileSpreadsheet, Sparkles, MessageCircle, Wand2 } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import * as XLSX from 'xlsx';
 import { PersonaHeader } from './PersonaHeader';
@@ -9,6 +9,8 @@ import { PersonaHelpModal } from './PersonaHelpModal';
 import { ChannelSelectorModal } from './ChannelSelectorModal';
 import { ChartEditorModal } from './ChartEditorModal';
 import { DocumentSelectorModal } from './DocumentSelectorModal';
+import { AIPersonaImprover } from './AIPersonaImprover';
+import { AIPersonaChat } from './AIPersonaChat';
 
 const SECTION_TEMPLATES = {
     // --- IDENTITY / HEADER ---
@@ -283,12 +285,14 @@ export function ModernPersonaEditor({ persona, setPersona: setParentPersona, per
     });
 
     const [showHelp, setShowHelp] = useState(false);
+    const isDirtyRef = useRef(false);
 
     useEffect(() => {
         if (persona) setLocalPersona(persona);
     }, [persona]);
 
     const setPersona = (val) => {
+        isDirtyRef.current = true;
         setLocalPersona(val);
         if (setParentPersona) setParentPersona(val);
     };
@@ -310,6 +314,8 @@ export function ModernPersonaEditor({ persona, setPersona: setParentPersona, per
     const [activeDocumentSectionId, setActiveDocumentSectionId] = useState(null);
 
     const [surveys, setSurveys] = useState([]);
+    const [showAIImprover, setShowAIImprover] = useState(false);
+    const [showAIChat, setShowAIChat] = useState(false);
 
     useEffect(() => {
         if (personaId) loadPersona();
@@ -333,6 +339,7 @@ export function ModernPersonaEditor({ persona, setPersona: setParentPersona, per
             setLocalPersona({ ...data, type: data.persona_type || data.type || 'Rational', sections });
         } catch (err) {
             console.error(err);
+            alert("Failed to load persona data.");
         }
         setLoading(false);
     };
@@ -348,6 +355,7 @@ export function ModernPersonaEditor({ persona, setPersona: setParentPersona, per
             };
             if (personaId) await axios.put(`/api/cx-personas/${personaId}`, payload);
             else await axios.post('/api/cx-personas', payload);
+            isDirtyRef.current = false;
             alert("Saved successfully!");
         } catch (err) {
             console.error(err);
@@ -368,11 +376,13 @@ export function ModernPersonaEditor({ persona, setPersona: setParentPersona, per
             icon: template.iconStr,
             layout: { i: id, x: 0, y: Infinity, w: 4, h: 4 }
         };
+        isDirtyRef.current = true;
         setLocalPersona(prev => ({ ...prev, sections: [...prev.sections, newSection] }));
         setSelectedSectionId(id);
     };
 
     const updateSection = (id, updates) => {
+        isDirtyRef.current = true;
         setLocalPersona(prev => ({
             ...prev,
             sections: prev.sections.map(s => s.id === id ? { ...s, ...updates } : s)
@@ -664,12 +674,14 @@ export function ModernPersonaEditor({ persona, setPersona: setParentPersona, per
                     </style>
                 </div>
                 <div style={{ display: 'flex', gap: '10px' }}>
+                    <button onClick={() => setShowAIImprover(true)} style={{ display: 'flex', alignItems: 'center', gap: '5px', background: 'linear-gradient(135deg, rgba(124,58,237,0.3), rgba(139,92,246,0.2))', border: '1px solid rgba(167,139,250,0.4)', color: '#c4b5fd', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: '600', transition: 'all 0.2s' }} onMouseOver={e => e.currentTarget.style.background = 'linear-gradient(135deg, rgba(124,58,237,0.5), rgba(139,92,246,0.4))'} onMouseOut={e => e.currentTarget.style.background = 'linear-gradient(135deg, rgba(124,58,237,0.3), rgba(139,92,246,0.2))'}><Wand2 size={15} /> AI Improve</button>
+                    <button onClick={() => setShowAIChat(true)} style={{ display: 'flex', alignItems: 'center', gap: '5px', background: 'linear-gradient(135deg, rgba(59,130,246,0.3), rgba(37,99,235,0.2))', border: '1px solid rgba(96,165,250,0.4)', color: '#93c5fd', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: '600', transition: 'all 0.2s' }} onMouseOver={e => e.currentTarget.style.background = 'linear-gradient(135deg, rgba(59,130,246,0.5), rgba(37,99,235,0.4))'} onMouseOut={e => e.currentTarget.style.background = 'linear-gradient(135deg, rgba(59,130,246,0.3), rgba(37,99,235,0.2))'}><MessageCircle size={15} /> Chat</button>
                     <button onClick={() => setShowHelp(true)} style={{ background: 'transparent', border: '1px solid #334155', color: '#94a3b8', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', display: 'flex', gap: '5px', alignItems: 'center' }}>Help <span style={{ width: '16px', height: '16px', borderRadius: '50%', background: '#334155', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px' }}>?</span></button>
                     <button onClick={() => window.print()} style={{ display: 'flex', alignItems: 'center', gap: '5px', background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.2)', color: 'white', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: '600' }}><Printer size={16} /> PRINT</button>
                     <button onClick={handleExportExcel} style={{ display: 'flex', alignItems: 'center', gap: '5px', background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', color: 'white', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem' }}><FileSpreadsheet size={16} /> Excel</button>
                     <button onClick={handleExportPNG} style={{ display: 'flex', alignItems: 'center', gap: '5px', background: 'transparent', border: '1px solid rgba(255,255,255,0.2)', color: 'white', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem' }}><Download size={16} /> PNG</button>
                     <button onClick={handleSave} style={{ display: 'flex', alignItems: 'center', gap: '5px', background: 'white', border: '1px solid white', color: 'var(--primary-color, #0f172a)', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 'bold', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}><Save size={16} /> SAVE</button>
-                    <button onClick={onClose} style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(0,0,0,0.1)', color: 'white', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.8rem' }}>CLOSE</button>
+                    <button onClick={() => { if (!isDirtyRef.current || window.confirm('You have unsaved changes. Are you sure you want to close?')) onClose(); }} style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(0,0,0,0.1)', color: 'white', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', fontSize: '0.8rem' }}>CLOSE</button>
                 </div>
             </div>
 
@@ -693,6 +705,24 @@ export function ModernPersonaEditor({ persona, setPersona: setParentPersona, per
                 isOpen={showDocumentModal}
                 onClose={() => setShowDocumentModal(false)}
                 onSelect={handleDocumentSelect}
+            />
+
+            <AIPersonaImprover
+                isOpen={showAIImprover}
+                onClose={() => setShowAIImprover(false)}
+                sections={localPersona.sections}
+                personaName={localPersona.sections.find(s => s.type === 'header')?.data?.name || localPersona.name}
+                personaRole={localPersona.sections.find(s => s.type === 'header')?.data?.role || localPersona.title}
+                onApplySectionUpdate={(sectionId, updates) => updateSection(sectionId, updates)}
+            />
+
+            <AIPersonaChat
+                isOpen={showAIChat}
+                onClose={() => setShowAIChat(false)}
+                sections={localPersona.sections}
+                personaName={localPersona.sections.find(s => s.type === 'header')?.data?.name || localPersona.name}
+                personaRole={localPersona.sections.find(s => s.type === 'header')?.data?.role || localPersona.title}
+                personaType={localPersona.type}
             />
 
             <div className="print-layout-row" style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
@@ -769,6 +799,8 @@ export function ModernPersonaEditor({ persona, setPersona: setParentPersona, per
                             onManageChannels={handleManageChannels}
                             onManageChart={handleManageChart}
                             onManageDocuments={handleManageDocuments}
+                            personaName={localPersona.sections.find(s => s.type === 'header')?.data?.name || localPersona.name}
+                            personaRole={localPersona.sections.find(s => s.type === 'header')?.data?.role || localPersona.title}
                         />
                     </div>
                 </div>

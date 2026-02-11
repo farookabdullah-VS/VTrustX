@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ModernPersonaEditor } from './persona/ModernPersonaEditor';
+import { AIPersonaGenerator } from './persona/AIPersonaGenerator';
 import { Plus, X, File, Layout, Sparkles, User, Calendar, MoreVertical, Trash2, Edit2, Copy, Search, Loader2 } from 'lucide-react';
 import axios from 'axios';
 
@@ -26,8 +27,10 @@ export function CxPersonaBuilder({ onToggleSidebar, onNavigate }) {
     const [mode, setMode] = useState('list'); // 'list' | 'editor'
     const [personas, setPersonas] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [loadError, setLoadError] = useState(null);
     const [selectedPersonaId, setSelectedPersonaId] = useState(null);
     const [showCreateModal, setShowCreateModal] = useState(false);
+    const [showAIGenerator, setShowAIGenerator] = useState(false);
 
     // Load personas on mount or when mode changes to list
     useEffect(() => {
@@ -40,11 +43,13 @@ export function CxPersonaBuilder({ onToggleSidebar, onNavigate }) {
 
     const loadPersonas = async () => {
         setLoading(true);
+        setLoadError(null);
         try {
             const res = await axios.get('/api/cx-personas');
             setPersonas(res.data);
         } catch (e) {
             console.error("Failed to load personas", e);
+            setLoadError("Failed to load personas. Please try again.");
         }
         setLoading(false);
     };
@@ -79,8 +84,8 @@ export function CxPersonaBuilder({ onToggleSidebar, onNavigate }) {
             }
             setShowCreateModal(false);
         } else if (option === 'ai') {
-            alert("AI Persona Generation is coming soon!");
             setShowCreateModal(false);
+            setShowAIGenerator(true);
         }
     };
 
@@ -145,6 +150,11 @@ export function CxPersonaBuilder({ onToggleSidebar, onNavigate }) {
                     <Loader2 size={32} className="animate-spin" />
                     <div>Loading personas...</div>
                 </div>
+            ) : loadError ? (
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '100px', color: '#b91c1c', gap: '15px' }}>
+                    <div style={{ fontSize: '1.1rem', fontWeight: '600' }}>{loadError}</div>
+                    <button onClick={loadPersonas} style={{ padding: '8px 20px', borderRadius: '8px', border: '1px solid #fca5a5', background: '#fef2f2', color: '#b91c1c', cursor: 'pointer', fontWeight: '600' }}>Retry</button>
+                </div>
             ) : (
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '24px' }}>
                     {personas.map(p => (
@@ -152,7 +162,7 @@ export function CxPersonaBuilder({ onToggleSidebar, onNavigate }) {
                             key={p.id}
                             onClick={() => handleEdit(p.id)}
                             style={{
-                                background: 'white', borderRadius: '16px', border: '1px solid #e2e8f0', pading: '0',
+                                background: 'white', borderRadius: '16px', border: '1px solid #e2e8f0', padding: '0',
                                 cursor: 'pointer', overflow: 'hidden', display: 'flex', flexDirection: 'column',
                                 transition: 'all 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
                             }}
@@ -215,6 +225,30 @@ export function CxPersonaBuilder({ onToggleSidebar, onNavigate }) {
                     </div>
                 </div>
             )}
+
+            {/* AI Generator Modal */}
+            <AIPersonaGenerator
+                isOpen={showAIGenerator}
+                onClose={() => setShowAIGenerator(false)}
+                onGenerate={async (data) => {
+                    try {
+                        const res = await axios.post('/api/cx-personas', {
+                            name: data.name || 'AI Generated Persona',
+                            title: data.title || '',
+                            status: 'Draft',
+                            persona_type: data.persona_type || 'Rational',
+                            layout_config: data.sections || []
+                        });
+                        const newId = res.data.id;
+                        setShowAIGenerator(false);
+                        setSelectedPersonaId(newId);
+                        setMode('editor');
+                        if (onToggleSidebar) onToggleSidebar(true);
+                    } catch (e) {
+                        alert("Failed to create persona: " + (e.response?.data?.error || e.message));
+                    }
+                }}
+            />
 
             {/* Create Modal */}
             {showCreateModal && (
