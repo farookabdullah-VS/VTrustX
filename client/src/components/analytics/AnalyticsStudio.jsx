@@ -27,6 +27,7 @@ import { SurveyAnalystChat } from './SurveyAnalystChat';
 import { useToast } from '../common/Toast';
 import { Skeleton } from '../common/Skeleton';
 import { DeliveryAnalyticsDashboard } from './DeliveryAnalyticsDashboard';
+import { SentimentDashboard } from './SentimentDashboard';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'];
 
@@ -3169,9 +3170,10 @@ const CreateReportModal = ({ onClose, onSelect }) => {
 
 export const AnalyticsStudio = () => {
     const [view, setView] = useState('list'); // list, designer
-    const [activeTab, setActiveTab] = useState('surveys'); // surveys, delivery
+    const [activeTab, setActiveTab] = useState('surveys'); // surveys, delivery, sentiment
     const [activeReport, setActiveReport] = useState(null);
     const [showCreateModal, setShowCreateModal] = useState(false);
+    const [selectedForm, setSelectedForm] = useState(null);
 
     const handleCreateReport = () => setShowCreateModal(true);
 
@@ -3247,6 +3249,22 @@ export const AnalyticsStudio = () => {
                 >
                     📬 Delivery Performance
                 </button>
+                <button
+                    onClick={() => setActiveTab('sentiment')}
+                    style={{
+                        padding: '16px 24px',
+                        border: 'none',
+                        background: 'transparent',
+                        borderBottom: activeTab === 'sentiment' ? '3px solid var(--primary)' : '3px solid transparent',
+                        color: activeTab === 'sentiment' ? 'var(--primary)' : 'var(--text-muted)',
+                        fontWeight: activeTab === 'sentiment' ? '600' : '400',
+                        cursor: 'pointer',
+                        fontSize: '0.95rem',
+                        transition: 'all 0.2s'
+                    }}
+                >
+                    😊 Sentiment Analysis
+                </button>
             </div>
 
             {/* Tab Content */}
@@ -3257,6 +3275,7 @@ export const AnalyticsStudio = () => {
                 </>
             )}
             {activeTab === 'delivery' && <DeliveryAnalyticsDashboard />}
+            {activeTab === 'sentiment' && <SentimentDashboard formId={selectedForm?.id} />}
         </div>
     );
 };

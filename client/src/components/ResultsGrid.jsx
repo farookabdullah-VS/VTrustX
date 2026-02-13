@@ -78,16 +78,69 @@ export function ResultsGrid({ submissions, questions, onEdit, onDelete, readOnly
                 return <span style={{ color: '#2563eb', fontWeight: '500' }}>#{sub.id}</span>;
             case 'date':
                 return <span style={{ color: '#64748b' }}>{new Date(sub.createdAt || sub.created_at).toLocaleString()}</span>;
-            case 'sentiment':
+            case 'sentiment': {
+                // Check for AI-powered sentiment first
+                const aiSentiment = sub.analysis?.sentiment?.aggregate;
+                if (aiSentiment) {
+                    const emotion = aiSentiment.emotion || 'neutral';
+                    const score = aiSentiment.score || 0;
+
+                    // Emotion icons
+                    const emotionIcons = {
+                        happy: '😊',
+                        satisfied: '😌',
+                        neutral: '😐',
+                        confused: '😕',
+                        disappointed: '😞',
+                        frustrated: '😤',
+                        angry: '😠'
+                    };
+
+                    // Color based on score
+                    let bgColor, textColor;
+                    if (score >= 0.3) {
+                        bgColor = '#dcfce7';
+                        textColor = '#166534';
+                    } else if (score <= -0.3) {
+                        bgColor = '#fee2e2';
+                        textColor = '#991b1b';
+                    } else {
+                        bgColor = '#fef3c7';
+                        textColor = '#92400e';
+                    }
+
+                    return (
+                        <span style={{
+                            padding: '4px 10px',
+                            borderRadius: '12px',
+                            fontSize: '0.85em',
+                            background: bgColor,
+                            color: textColor,
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            fontWeight: '500'
+                        }}>
+                            <span>{emotionIcons[emotion] || '😐'}</span>
+                            <span style={{ textTransform: 'capitalize' }}>{emotion}</span>
+                            <span style={{ fontSize: '0.8em', opacity: 0.7 }}>({score.toFixed(2)})</span>
+                        </span>
+                    );
+                }
+
+                // Fallback to keyword-based sentiment
                 return (
                     <span style={{
-                        padding: '2px 8px', borderRadius: '12px', fontSize: '0.85em',
+                        padding: '2px 8px',
+                        borderRadius: '12px',
+                        fontSize: '0.85em',
                         background: sub.computedSentiment === 'Positive' ? '#dcfce7' : (sub.computedSentiment === 'Negative' ? '#fee2e2' : '#f1f5f9'),
                         color: sub.computedSentiment === 'Positive' ? '#166534' : (sub.computedSentiment === 'Negative' ? '#991b1b' : '#475569')
                     }}>
-                        {sub.computedSentiment}
+                        {sub.computedSentiment || 'N/A'}
                     </span>
                 );
+            }
             default: {
                 // It's a question
                 const val = sub.data ? sub.data[colId] : '';

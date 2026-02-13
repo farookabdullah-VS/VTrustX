@@ -7,6 +7,7 @@ const logger = require('../../infrastructure/logger');
 
 const workflowEngine = require('../../core/workflowEngine');
 const { classifySubmission } = require('../../core/ctlClassifier');
+const sentimentService = require('../../services/sentimentService');
 
 // Initialize Repositories
 const submissionRepo = new PostgresRepository('submissions');
@@ -372,29 +373,105 @@ router.post('/', validate(createSubmissionSchema), async (req, res) => {
             logger.error('CTL auto-classify error', { error: ctlErr.message });
         }
 
-        // AI Trigger Logic
+        // Sentiment Analysis Trigger Logic
         const aiProvidersRes = await query("SELECT * FROM ai_providers WHERE is_active = true LIMIT 1");
         const activeProviderRow = aiProvidersRes.rows[0];
 
         if (savedEntity.data && activeProviderRow) {
-            const aiPayload = {
-                submission: savedEntity,
-                formDefinition: {},
-                aiConfig: {
+            // Extract text fields for sentiment analysis
+            const textFields = sentimentService.extractTextFields(savedEntity.data, {});
+
+            if (textFields.length > 0) {
+                const sentimentPrompt = sentimentService.buildSentimentPrompt(textFields);
+
+                const aiServiceUrl = process.env.AI_SERVICE_URL || 'http://localhost:3001';
+                const aiConfig = {
                     provider: activeProviderRow.provider,
                     apiKey: activeProviderRow.api_key,
-                    model: 'gemini-2.0-flash'
-                }
-            };
+                    model: activeProviderRow.provider === 'gemini' ? 'gemini-1.5-flash' : 'gpt-4o-mini'
+                };
 
-            const aiServiceUrl = process.env.AI_SERVICE_URL || 'http://localhost:3001';
-            fetch(`${aiServiceUrl}/analyze`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(aiPayload)
-            }).then(r => r.json())
-                .then(data => logger.info('AI analysis triggered', { submissionId: savedEntity.id }))
-                .catch(err => logger.error('AI trigger failed', { error: err.message }));
+                // Fire-and-forget sentiment analysis
+                fetch(`${aiServiceUrl}/analyze-sentiment`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt: sentimentPrompt, aiConfig })
+                })
+                    .then(r => r.json())
+                    .then(async (data) => {
+                        try {
+                            const parsed = sentimentService.parseSentimentResponse(data.sentiment);
+
+                            if (parsed) {
+                                // Store sentiment in analysis field
+                                const analysisData = {
+                                    provider: aiConfig.provider,
+                                    timestamp: new Date().toISOString(),
+                                    sentiment: {
+                                        ...parsed,
+                                        flagged: sentimentService.shouldTriggerAlert(parsed),
+                                        flagReason: sentimentService.shouldTriggerAlert(parsed)
+                                            ? sentimentService.getFlagReason(parsed)
+                                            : null
+                                    }
+                                };
+
+                                await query(
+                                    'UPDATE submissions SET analysis = $1 WHERE id = $2',
+                                    [JSON.stringify(analysisData), savedEntity.id]
+                                );
+
+                                logger.info('Sentiment analysis completed', {
+                                    submissionId: savedEntity.id,
+                                    score: parsed.aggregate?.score,
+                                    emotion: parsed.aggregate?.emotion
+                                });
+
+                                // Create CTL alert if negative sentiment detected
+                                if (sentimentService.shouldTriggerAlert(parsed)) {
+                                    const alertLevel = sentimentService.getCTLAlertLevel(parsed.aggregate.score);
+                                    const formCheck = await query('SELECT tenant_id FROM forms WHERE id = $1', [savedEntity.formId]);
+                                    const tenantId = formCheck.rows[0]?.tenant_id;
+
+                                    if (tenantId && alertLevel) {
+                                        await query(
+                                            `INSERT INTO ctl_alerts (tenant_id, form_id, submission_id, alert_level, score_value, score_type, sentiment)
+                                             VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+                                            [
+                                                tenantId,
+                                                savedEntity.formId,
+                                                savedEntity.id,
+                                                alertLevel,
+                                                parsed.aggregate.score,
+                                                'sentiment_ai',
+                                                parsed.aggregate.emotion
+                                            ]
+                                        );
+
+                                        logger.info('CTL alert created for negative sentiment', {
+                                            submissionId: savedEntity.id,
+                                            alertLevel,
+                                            score: parsed.aggregate.score
+                                        });
+                                    }
+                                }
+                            }
+                        } catch (storageErr) {
+                            logger.error('Failed to store sentiment analysis', {
+                                submissionId: savedEntity.id,
+                                error: storageErr.message
+                            });
+                        }
+                    })
+                    .catch(err => logger.error('Sentiment analysis failed', {
+                        submissionId: savedEntity.id,
+                        error: err.message
+                    }));
+            } else {
+                logger.debug('No text fields found for sentiment analysis', {
+                    submissionId: savedEntity.id
+                });
+            }
         }
 
         res.status(201).json(savedEntity);

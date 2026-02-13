@@ -58,9 +58,28 @@ app.post('/completion', async (req, res) => {
 
 const { handleBatchAnalysis } = require('./src/handlers/batchHandler');
 const { handleAgentInteract } = require('./src/handlers/agentHandler');
+const { analyzeSentiment } = require('./src/handlers/sentimentHandler');
 
 app.post('/analyze-batch', handleBatchAnalysis);
 app.post('/agent-interact', handleAgentInteract);
+
+app.post('/analyze-sentiment', async (req, res) => {
+    try {
+        const { prompt, aiConfig } = req.body;
+        console.log('[SentimentEndpoint] Received sentiment analysis request');
+
+        if (!prompt || typeof prompt !== 'string' || prompt.trim().length === 0) {
+            return res.status(400).json({ error: 'Prompt is required' });
+        }
+
+        const sentiment = await analyzeSentiment(prompt, aiConfig);
+        res.json({ sentiment });
+
+    } catch (error) {
+        console.error('[SentimentEndpoint] Analysis failed:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
 
 app.post('/analyze', async (req, res) => {
     try {

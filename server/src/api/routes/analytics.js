@@ -14,6 +14,10 @@ router.use(deliveryRouter);
 const { router: sseRouter } = require('./analytics/sse');
 router.use('/sse', sseRouter);
 
+// Import sentiment analytics routes
+const sentimentRouter = require('./analytics/sentiment');
+router.use('/sentiment', sentimentRouter);
+
 const STOP_WORDS = new Set(['the', 'and', 'a', 'to', 'of', 'in', 'i', 'is', 'that', 'it', 'on', 'you', 'this', 'for', 'but', 'with', 'are', 'have', 'be', 'at', 'or', 'as', 'was', 'so', 'if', 'out', 'not', 'an', 'very', 'my', 'me', 'we']);
 
 // Helper to extract questions (similar to reports.js)
