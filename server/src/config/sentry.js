@@ -93,6 +93,11 @@ function initSentry(app) {
  * Must be added after all routes but before global error handler
  */
 function getSentryErrorHandler() {
+  // Return no-op middleware if Sentry is not configured
+  if (!process.env.SENTRY_DSN) {
+    return (err, req, res, next) => next(err);
+  }
+
   return Sentry.Handlers.errorHandler({
     shouldHandleError(error) {
       // Capture all errors with status >= 500

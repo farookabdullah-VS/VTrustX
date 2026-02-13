@@ -5,10 +5,7 @@ const path = require('path');
 const { query } = require('../../../infrastructure/database/db');
 const authenticate = require('../../middleware/auth');
 const logger = require('../../../infrastructure/logger');
-const { StorageService } = require('../../../infrastructure/storage/StorageService');
-
-// Initialize storage service
-const storageService = new StorageService();
+const storageService = require('../../../infrastructure/storage/StorageService');
 
 // Configure multer for file uploads (memory storage for processing)
 const upload = multer({
