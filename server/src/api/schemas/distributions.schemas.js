@@ -13,6 +13,12 @@ const createDistributionSchema = Joi.object({
             phone: Joi.string().max(20).allow('', null),
         })
     ).min(1).required(),
+    experimentId: Joi.number().integer().positive().optional(),
+    mediaAttachments: Joi.array().items(
+        Joi.object({
+            id: Joi.number().integer().positive().required()
+        })
+    ).optional()
 });
 
 module.exports = { createDistributionSchema };

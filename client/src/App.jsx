@@ -59,6 +59,9 @@ const CJMDashboard = React.lazy(() => import('./components/CJM/CJMDashboard').th
 const CJMAnalyticsDashboard = React.lazy(() => import('./components/CJM/CJMAnalyticsDashboard').then(m => ({ default: m.CJMAnalyticsDashboard })));
 const InteractiveManual = React.lazy(() => import('./components/InteractiveManual').then(m => ({ default: m.InteractiveManual })));
 const Notifications = React.lazy(() => import('./components/Notifications').then(m => ({ default: m.Notifications })));
+const ABTestingDashboard = React.lazy(() => import('./components/ab-testing/ABTestingDashboard'));
+const ABExperimentBuilder = React.lazy(() => import('./components/ab-testing/ABExperimentBuilder'));
+const ABStatsComparison = React.lazy(() => import('./components/ab-testing/ABStatsComparison'));
 
 // --- View title mapping ---
 const VIEW_TITLES = {
@@ -103,6 +106,7 @@ const VIEW_TITLES = {
   'ticket-settings': 'Ticket Settings',
   'persona-templates': 'Persona Templates',
   collect: 'Distribution',
+  'ab-tests': 'A/B Testing',
 };
 
 // --- Protected Route Wrapper ---
@@ -341,6 +345,11 @@ function AppRoutes() {
                   : <CJMDashboard onSelectMap={(id) => setCurrentCjmMapId(id)} />
               } />
               <Route path="cjm-analytics" element={<CJMAnalyticsDashboard />} />
+
+              {/* A/B Testing Routes */}
+              <Route path="ab-tests" element={<ABTestingDashboard />} />
+              <Route path="ab-tests/new" element={<ABExperimentBuilder />} />
+              <Route path="ab-tests/:id" element={<ABStatsComparison />} />
 
               {/* Backward Compatibility Redirects */}
               <Route path="form-viewer" element={<Navigate to="/surveys" replace />} />

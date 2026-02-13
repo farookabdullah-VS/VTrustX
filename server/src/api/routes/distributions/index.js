@@ -152,14 +152,14 @@ router.get('/', async (req, res) => {
 // 3. Create Campaign
 router.post('/', validate(createDistributionSchema), async (req, res) => {
     try {
-        const { name, surveyId, type, subject, body, contacts, mediaAttachments = [] } = req.body;
+        const { name, surveyId, type, subject, body, contacts, mediaAttachments = [], experimentId } = req.body;
 
         if (!name || !type || !contacts || !Array.isArray(contacts)) {
             return res.status(400).json({ error: 'name, type, and contacts array are required' });
         }
 
         logger.info(`[Distribution] Creating Campaign: ${name} (${type})`);
-        logger.info(`[Distribution] Contacts: ${contacts.length}, Media: ${mediaAttachments.length}`);
+        logger.info(`[Distribution] Contacts: ${contacts.length}, Media: ${mediaAttachments.length}, ExperimentId: ${experimentId || 'none'}`);
 
         const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
         const tenantId = req.user?.tenant_id || 1; // Get tenant from authenticated user
@@ -177,29 +177,88 @@ router.post('/', validate(createDistributionSchema), async (req, res) => {
             mediaAssets = mediaResult.rows;
         }
 
+        // Create distribution record (needed for message tracking and experiment tracking)
+        const distResult = await query(
+            `INSERT INTO distributions (name, type, survey_id, tenant_id, experiment_id, status, created_at)
+             VALUES ($1, $2, $3, $4, $5, 'processing', NOW())
+             RETURNING id`,
+            [name, type, surveyId, tenantId, experimentId || null]
+        );
+        const distributionId = distResult.rows[0].id;
+
         if (type === 'email') {
-            sendBatch(contacts, subject, body, surveyId, 'email', frontendUrl, tenantId, null, mediaAssets);
+            sendBatch(contacts, subject, body, surveyId, 'email', frontendUrl, tenantId, distributionId, mediaAssets, experimentId);
         } else if (type === 'sms') {
-            sendBatch(contacts, subject, body, surveyId, 'sms', frontendUrl, tenantId, null, mediaAssets);
+            sendBatch(contacts, subject, body, surveyId, 'sms', frontendUrl, tenantId, distributionId, mediaAssets, experimentId);
         } else if (type === 'whatsapp') {
-            sendBatch(contacts, subject, body, surveyId, 'whatsapp', frontendUrl, tenantId, null, mediaAssets);
+            sendBatch(contacts, subject, body, surveyId, 'whatsapp', frontendUrl, tenantId, distributionId, mediaAssets, experimentId);
         }
 
-        res.status(201).json({ id: Date.now(), status: 'Scheduled' });
+        res.status(201).json({ id: distributionId, status: 'Scheduled' });
     } catch (err) {
         logger.error('Failed to create distribution campaign', { error: err.message });
         res.status(500).json({ error: 'Failed to create distribution campaign' });
     }
 });
 
-async function sendBatch(contacts, subject, body, surveyId, type, frontendUrl, tenantId, distributionId = null, mediaAssets = []) {
-    logger.info(`Starting ${type.toUpperCase()} Batch Send...`, { tenantId, contactCount: contacts.length, mediaCount: mediaAssets.length });
+async function sendBatch(contacts, subject, body, surveyId, type, frontendUrl, tenantId, distributionId = null, mediaAssets = [], experimentId = null) {
+    logger.info(`Starting ${type.toUpperCase()} Batch Send...`, { tenantId, contactCount: contacts.length, mediaCount: mediaAssets.length, experimentId });
     let sent = 0;
+
+    // A/B Testing: Validate experiment is running
+    if (experimentId) {
+        const expCheck = await query(
+            'SELECT status FROM ab_experiments WHERE id = $1 AND tenant_id = $2',
+            [experimentId, tenantId]
+        );
+
+        if (expCheck.rows.length === 0) {
+            throw new Error(`Experiment ${experimentId} not found for tenant ${tenantId}`);
+        }
+
+        if (expCheck.rows[0].status !== 'running') {
+            throw new Error(`Experiment must be in running status (current: ${expCheck.rows[0].status})`);
+        }
+
+        logger.info(`A/B Test Active: Experiment ${experimentId}`, { status: expCheck.rows[0].status });
+    }
 
     for (const contact of contacts) {
         try {
             const contactId = contact.email || contact.phone || 'unknown';
             const uniqueLink = `${frontendUrl}/s/${surveyId}?u=${encodeURIComponent(contactId)}`;
+
+            // A/B Testing: Assign variant if experiment active
+            let finalSubject = subject;
+            let finalBody = body;
+            let finalMediaAssets = mediaAssets;
+
+            if (experimentId) {
+                const ABTestService = require('../../../services/ABTestService');
+                const variant = await ABTestService.assignVariant(
+                    experimentId,
+                    contactId,
+                    contact.name
+                );
+
+                // Use variant content (subject can be null for SMS/WhatsApp)
+                finalSubject = variant.subject || subject;
+                finalBody = variant.body;
+
+                // Parse media attachments from variant (stored as JSON string)
+                const variantMediaIds = JSON.parse(variant.media_attachments || '[]');
+                if (variantMediaIds && variantMediaIds.length > 0) {
+                    const variantMediaResult = await query(
+                        `SELECT id, filename, media_type, cdn_url, storage_path
+                         FROM media_assets
+                         WHERE id = ANY($1) AND tenant_id = $2`,
+                        [variantMediaIds, tenantId]
+                    );
+                    finalMediaAssets = variantMediaResult.rows;
+                }
+
+                logger.debug(`Variant assigned: ${variant.variant_name} for ${contactId}`, { experimentId });
+            }
 
             // Prepare context for template rendering
             const context = {
@@ -212,9 +271,9 @@ async function sendBatch(contacts, subject, body, surveyId, type, frontendUrl, t
 
             // Render template with media using TemplateService
             const rendered = await TemplateService.renderTemplate(
-                body,
+                finalBody,
                 context,
-                mediaAssets,
+                finalMediaAssets,
                 type,
                 { tenantId }
             );
@@ -222,7 +281,7 @@ async function sendBatch(contacts, subject, body, surveyId, type, frontendUrl, t
             if (type === 'email') {
                 await emailService.sendEmail(
                     contact.email,
-                    subject,
+                    finalSubject,
                     rendered.html || rendered.text,
                     rendered.text,
                     {

@@ -288,6 +288,17 @@ const server = app.listen(PORT, '0.0.0.0', () => {
     logger.info(`Server listening on 0.0.0.0:${PORT}`);
 });
 
+// --- Start Cron Jobs ---
+// A/B Test Auto-Winner Detection (optional - can be disabled via env var)
+if (process.env.ENABLE_AB_AUTO_WINNER !== 'false') {
+    try {
+        require('./src/jobs/abTestMonitor');
+        logger.info('[Cron] A/B test auto-winner detection enabled');
+    } catch (err) {
+        logger.error('[Cron] Failed to start A/B test monitor', { error: err.message });
+    }
+}
+
 // --- Graceful Shutdown ---
 const gracefulShutdown = (signal) => {
     logger.info(`${signal} received, shutting down gracefully...`);

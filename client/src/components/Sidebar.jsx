@@ -6,7 +6,7 @@ import {
     LayoutDashboard, UserCircle, Contact, Fingerprint, Map, UserCog,
     BarChart3, Bot, ClipboardList, Library, Ticket, Settings, Plug,
     Shield, Users, CreditCard, Palette, Wrench, Globe, HelpCircle,
-    GripVertical, Star, PieChart, PhoneCall, Video, Share2, Target, Database, Megaphone, Smartphone, BookOpen, Menu
+    GripVertical, Star, PieChart, PhoneCall, Video, Share2, Target, Database, Megaphone, Smartphone, BookOpen, Menu, FlaskConical
 } from 'lucide-react';
 
 const getInitialGroups = (user) => [
@@ -26,6 +26,7 @@ const getInitialGroups = (user) => [
             { id: 'form-viewer', label: 'sidebar.item.surveys', icon: <ClipboardList size={16} /> },
             { id: 'survey-results', label: 'Survey Results', icon: <PieChart size={16} /> },
             { id: 'distributions', label: 'SmartReach', icon: <Megaphone size={16} /> },
+            { id: 'ab-tests', label: 'A/B Testing', icon: <FlaskConical size={16} /> },
             { id: 'mobile-app', label: 'Frontline App', icon: <Smartphone size={16} /> },
             { id: 'templates', label: 'sidebar.item.templates', icon: <Library size={16} /> }
         ]
