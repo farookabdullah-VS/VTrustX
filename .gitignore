@@ -30,6 +30,9 @@ client/coverage/
 
 # Debug & build artifacts
 debug_api.log
+debug_*.js
+server/debug/
+server/scripts/debug_*.js
 nul
 columns.json
 tables.json

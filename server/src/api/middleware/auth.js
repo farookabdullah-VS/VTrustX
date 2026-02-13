@@ -43,8 +43,8 @@ const authenticate = async (req, res, next) => {
         const userId = decoded.id;
 
         // Check auth cache first (user + permissions cached for 60s)
-        const cacheKey = `auth:${userId}`;
-        let user = authCache.get(cacheKey);
+        const cacheKey = `${userId}`;
+        let user = await authCache.get(cacheKey);
 
         if (!user) {
             user = await userRepo.findById(userId);
@@ -60,27 +60,41 @@ const authenticate = async (req, res, next) => {
             } else {
                 // Fallback for legacy roles (admin/user)
                 if (user.role === 'admin' || user.role === 'global_admin') {
-                    user.permissions = { forms: { view: true, create: true, update: true, delete: true } };
+                    user.permissions = {
+                        forms: { view: true, create: true, update: true, delete: true },
+                        users: { view: true, create: true, update: true, delete: true },
+                        roles: { view: true, create: true, update: true, delete: true },
+                        analytics: { view: true, create: true, update: true, delete: true },
+                        contacts: { view: true, create: true, update: true, delete: true },
+                        crm: { view: true, create: true, update: true, delete: true }
+                    };
                 } else {
-                    user.permissions = { forms: { view: true, create: false, update: false, delete: false } };
+                    user.permissions = {
+                        forms: { view: true, create: false, update: false, delete: false },
+                        users: { view: false, create: false, update: false, delete: false },
+                        roles: { view: false, create: false, update: false, delete: false },
+                        analytics: { view: true, create: false, update: false, delete: false },
+                        contacts: { view: false, create: false, update: false, delete: false },
+                        crm: { view: false, create: false, update: false, delete: false }
+                    };
                 }
             }
 
             // Cache for 60 seconds
-            authCache.set(cacheKey, user, 60);
+            await authCache.set(cacheKey, user, 60);
         }
 
         req.user = user;
 
         // Fetch Tenant (cached for 5 minutes)
         if (user.tenant_id) {
-            const tenantCacheKey = `tenant:${user.tenant_id}`;
-            let tenant = tenantCache.get(tenantCacheKey);
+            const tenantCacheKey = `${user.tenant_id}`;
+            let tenant = await tenantCache.get(tenantCacheKey);
 
             if (!tenant) {
                 tenant = await tenantRepo.findById(user.tenant_id);
                 if (tenant) {
-                    tenantCache.set(tenantCacheKey, tenant, 300);
+                    await tenantCache.set(tenantCacheKey, tenant, 300);
                 }
             }
 

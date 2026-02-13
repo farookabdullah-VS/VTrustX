@@ -83,11 +83,212 @@ export function AppLayout({ onNavigate, viewTitles }) {
   }, [location.pathname, isMobile]);
 
   return (
-    <div className="App">
+    <div className="App" style={{ background: 'var(--deep-bg)', minHeight: '100vh' }}>
       {/* Skip to main content link for keyboard navigation */}
       <a href="#main-content" className="skip-link">
         {t('accessibility.skip_to_content') || 'Skip to main content'}
       </a>
+
+      {/* Top Header - Fixed Full Width */}
+      <header
+        role="banner"
+        className="glass-panel"
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          height: isMobile ? '56px' : '70px',
+          zIndex: 1100,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: isMobile ? '0 12px' : '0 24px',
+          background: 'var(--header-bg)',
+          borderBottom: '1px solid var(--header-border)',
+          borderLeft: 'none',
+          borderRight: 'none',
+          borderTop: 'none',
+          borderRadius: 0,
+        }}
+      >
+        <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+          {/* Logo Area */}
+          <div className="header-logo" style={{ display: 'flex', alignItems: 'center', gap: '12px', marginRight: '20px' }}>
+            <img
+              src="/rayix_v2.jpg"
+              alt="RAYI X"
+              style={{ height: '32px', width: 'auto', objectFit: 'contain' }}
+              onError={(e) => { e.target.style.display = 'none'; }}
+            />
+            {!isMobile && <span style={{ fontWeight: 800, fontSize: '1.2rem', color: 'var(--sidebar-text)' }}>RAYI X</span>}
+          </div>
+
+          {/* Hamburger menu for mobile */}
+          {isMobile && (
+            <HamburgerMenu
+              isOpen={isMobileSidebarOpen}
+              onClick={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
+            />
+          )}
+
+          {/* Toggle Sidebar Button (Desktop) */}
+          {!isMobile && (
+            <button
+              onClick={() => {
+                if (isSidebarHidden) {
+                  setIsSidebarHidden(false);
+                } else {
+                  setIsSidebarCollapsed(!isSidebarCollapsed);
+                }
+              }}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                padding: '8px',
+                cursor: 'pointer',
+                color: 'var(--sidebar-text)',
+                display: 'flex',
+                alignItems: 'center',
+                transition: 'background-color 0.2s',
+                borderRadius: '8px'
+              }}
+              onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'var(--sidebar-hover-bg)'}
+              onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+              title={isSidebarHidden ? "Show Sidebar" : (isSidebarCollapsed ? "Expand Sidebar" : "Collapse Sidebar")}
+            >
+              {isSidebarHidden ? <Menu size={20} /> : (isSidebarCollapsed ? <Menu size={20} /> : <Menu size={20} style={{ transform: 'rotate(90deg)' }} />)}
+              {/* Using Menu generally, or switch to PanelsTopLeft / Chevrons if preferred. Keeping Menu as generic toggle for now but ensuring it works for hidden state. */}
+            </button>
+          )}
+
+          <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: '700', color: 'var(--sidebar-text)' }}>
+            {viewTitle}
+          </h3>
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          {/* Dark Mode Toggle */}
+          <button
+            onClick={toggleDarkMode}
+            aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+            title={isDark ? 'Light mode' : 'Dark mode'}
+            style={{
+              background: isDark ? 'rgba(200, 160, 82, 0.12)' : 'rgba(0,0,0,0.05)',
+              border: `1px solid ${isDark ? 'rgba(200, 160, 82, 0.25)' : 'transparent'}`,
+              borderRadius: '50%',
+              width: '36px',
+              height: '36px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              color: isDark ? '#C8A052' : 'var(--sidebar-text)',
+              transition: 'all 0.2s ease',
+            }}
+          >
+            {isDark ? <Sun size={18} /> : <Moon size={18} />}
+          </button>
+          <Notifications />
+          <div style={{ position: 'relative' }}>
+            <div
+              role="button"
+              tabIndex={0}
+              aria-label="User profile menu"
+              aria-expanded={isProfileMenuOpen}
+              aria-haspopup="true"
+              onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setIsProfileMenuOpen(!isProfileMenuOpen); } }}
+              style={{
+                display: 'flex', alignItems: 'center', gap: '10px', paddingLeft: '20px',
+                borderLeft: '1px solid var(--divider-color)', cursor: 'pointer', userSelect: 'none',
+              }}
+            >
+              <div style={{
+                width: '36px', height: '36px', borderRadius: '50%', background: 'var(--avatar-bg)', color: isDark ? '#0A0E1A' : 'white',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold',
+              }}>
+                {user?.user?.username?.[0]?.toUpperCase() || 'U'}
+              </div>
+              {!isMobile && (
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                  <span style={{ fontWeight: '600', fontSize: '0.9em', color: 'var(--username-color)' }}>
+                    {user?.user?.username || 'User'}
+                    <span style={{ fontSize: '0.7em', marginLeft: '5px', color: 'var(--username-muted)' }}>&#9660;</span>
+                  </span>
+                  <span style={{ fontSize: '0.75em', color: 'var(--username-muted)' }}>
+                    {t(`users.role_${user?.user?.role}`) || user?.user?.role || t('users.role_user')}
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {isProfileMenuOpen && (
+              <div role="menu" aria-label="Profile options" style={{
+                position: 'absolute', top: '50px', [isRtl ? 'left' : 'right']: '0', width: '260px',
+                background: 'var(--profile-menu-bg)', border: `1px solid var(--profile-menu-border)`, borderRadius: '16px',
+                padding: '12px', boxShadow: 'var(--profile-menu-shadow)', zIndex: 1000,
+              }}>
+                <div
+                  role="menuitem"
+                  tabIndex={0}
+                  onClick={() => { onNavigate('profile'); setIsProfileMenuOpen(false); }}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onNavigate('profile'); setIsProfileMenuOpen(false); } }}
+                  style={{
+                    background: 'var(--profile-menu-item-bg)', padding: '12px 16px', borderRadius: '10px', marginBottom: '8px',
+                    display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer',
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.03)', border: '1px solid transparent', transition: 'border-color 0.2s',
+                  }}
+                  onMouseOver={e => e.currentTarget.style.borderColor = 'var(--profile-menu-hover)'}
+                  onMouseOut={e => e.currentTarget.style.borderColor = 'transparent'}
+                >
+                  <User size={18} style={{ color: 'var(--manage-profile-color)' }} />
+                  <span style={{ fontSize: '0.9em', fontWeight: '600', color: 'var(--manage-profile-color)', letterSpacing: '0.5px' }}>{t('header.manage_profile')}</span>
+                </div>
+
+                <div
+                  role="menuitem"
+                  tabIndex={0}
+                  onClick={() => { i18n.changeLanguage(i18n.language === 'en' ? 'ar' : 'en'); setIsProfileMenuOpen(false); }}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); i18n.changeLanguage(i18n.language === 'en' ? 'ar' : 'en'); setIsProfileMenuOpen(false); } }}
+                  style={{
+                    background: 'var(--profile-menu-item-bg)', padding: '12px 16px', borderRadius: '10px', marginBottom: '8px',
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer',
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.03)', border: '1px solid transparent', transition: 'border-color 0.2s',
+                  }}
+                  onMouseOver={e => e.currentTarget.style.borderColor = 'var(--profile-menu-hover)'}
+                  onMouseOut={e => e.currentTarget.style.borderColor = 'transparent'}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <Globe size={18} style={{ color: 'var(--manage-profile-color)' }} />
+                    <span style={{ fontSize: '0.9em', fontWeight: '600', color: 'var(--manage-profile-color)', letterSpacing: '0.5px' }}>{t('header.language')}</span>
+                  </div>
+                  <span style={{ fontSize: '0.7em', padding: '2px 8px', borderRadius: '4px', background: 'var(--profile-badge-bg)', color: 'var(--profile-badge-text)', border: '1px solid var(--profile-badge-border)', fontWeight: '600', textTransform: 'uppercase' }}>
+                    {i18n.language === 'en' ? 'English' : 'Arabic'}
+                  </span>
+                </div>
+
+                <div
+                  role="menuitem"
+                  tabIndex={0}
+                  onClick={() => { logout(); setIsProfileMenuOpen(false); }}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); logout(); setIsProfileMenuOpen(false); } }}
+                  style={{
+                    background: 'var(--profile-menu-item-bg)', padding: '12px 16px', borderRadius: '10px',
+                    display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer',
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.03)', border: '1px solid transparent', transition: 'border-color 0.2s',
+                  }}
+                  onMouseOver={e => e.currentTarget.style.borderColor = 'var(--logout-color)'}
+                  onMouseOut={e => e.currentTarget.style.borderColor = 'transparent'}
+                >
+                  <LogOut size={18} style={{ color: 'var(--logout-color)' }} />
+                  <span style={{ fontSize: '0.9em', fontWeight: '600', color: 'var(--logout-color)', letterSpacing: '0.5px' }}>{t('header.logout')}</span>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </header>
 
       {/* Mobile sidebar overlay */}
       <SidebarOverlay
@@ -96,8 +297,14 @@ export function AppLayout({ onNavigate, viewTitles }) {
       />
 
       {/* Sidebar */}
-      {(showSidebar || isMobile) && (
-        <div className={`sidebar ${isMobile && isMobileSidebarOpen ? 'mobile-open' : ''}`}>
+      {showSidebar && (
+        <div className={`sidebar-container ${isMobile && isMobileSidebarOpen ? 'mobile-open' : ''}`} style={{
+          position: 'fixed',
+          top: isMobile ? '56px' : '70px',
+          left: 0,
+          bottom: 0,
+          zIndex: 1050,
+        }}>
           <Sidebar
             user={user}
             view={currentView === 'viewer' ? 'form-viewer' : currentView === 'builder' ? 'create-normal' : currentView}
@@ -109,6 +316,7 @@ export function AppLayout({ onNavigate, viewTitles }) {
             isCollapsed={!isMobile && isSidebarCollapsed}
             toggleSidebar={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
             onHide={() => setIsSidebarHidden(true)}
+            isMobile={isMobile}
           />
         </div>
       )}
@@ -118,187 +326,19 @@ export function AppLayout({ onNavigate, viewTitles }) {
         className="main-content"
         role="main"
         style={{
-          marginLeft: isMobile ? 0 : (isRtl ? 0 : (isSidebarHidden ? '24px' : (isSidebarCollapsed ? '104px' : 'calc(var(--sidebar-width, 260px) + 24px)'))),
-          marginRight: isMobile ? 0 : (isRtl ? (isSidebarHidden ? '24px' : (isSidebarCollapsed ? '104px' : 'calc(var(--sidebar-width, 260px) + 24px)')) : 0),
-          transition: isSidebarCollapsed ? 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)' : 'none',
-          width: isMobile ? '100%' : `calc(100% - ${isSidebarHidden ? '48px' : (isSidebarCollapsed ? '104px' : 'calc(var(--sidebar-width, 260px) + 24px)')} - 12px)`,
-          minHeight: '100vh',
+          marginTop: isMobile ? '56px' : '70px',
+          marginLeft: isMobile ? 0 : (isRtl ? 0 : (isSidebarHidden ? '0' : (isSidebarCollapsed ? '80px' : 'var(--sidebar-width, 260px)'))),
+          marginRight: isMobile ? 0 : (isRtl ? (isSidebarHidden ? '0' : (isSidebarCollapsed ? '80px' : 'var(--sidebar-width, 260px)')) : 0),
+          transition: 'margin 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+          width: 'auto',
+          minHeight: 'calc(100vh - 70px)',
           boxSizing: 'border-box',
-          paddingTop: currentView === 'personas' ? '0' : '12px',
-          paddingBottom: isMobile ? '80px' : 0,
+          paddingTop: '20px',
+          paddingBottom: isMobile ? '80px' : '20px',
+          paddingLeft: '20px',
+          paddingRight: '20px',
         }}
       >
-        <header
-          role="banner"
-          className="glass-panel"
-          style={{
-            padding: isMobile ? '0 12px' : '0 24px',
-            marginBottom: currentView === 'personas' ? '0' : (isMobile ? '12px' : '24px'),
-            marginLeft: isMobile ? '8px' : 0,
-            marginRight: isMobile ? '8px' : 0,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            height: isMobile ? '56px' : '70px',
-            boxSizing: 'border-box',
-            borderRadius: isMobile ? '12px' : '16px',
-            background: 'var(--header-bg, #ecfdf5)',
-            border: '1px solid var(--header-border, rgba(6, 78, 59, 0.3))',
-          }}
-        >
-          <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
-            {/* Hamburger menu for mobile */}
-            {isMobile && (
-              <HamburgerMenu
-                isOpen={isMobileSidebarOpen}
-                onClick={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
-              />
-            )}
-
-            {/* Show sidebar button (desktop only) */}
-            {!isMobile && isSidebarHidden && (
-              <button
-                onClick={() => setIsSidebarHidden(false)}
-                style={{
-                  background: 'var(--card-bg)', border: '1px solid var(--input-border, #cbd5e1)', borderRadius: '8px', padding: '8px',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
-                  color: 'var(--sidebar-text, #064e3b)', backgroundImage: 'none', boxShadow: 'none', textTransform: 'none',
-                }}
-                title="Show Sidebar"
-                aria-label="Show Sidebar"
-              >
-                <Menu size={20} />
-              </button>
-            )}
-            <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: '700', color: 'var(--sidebar-text, #064e3b)' }}>
-              {viewTitle}
-            </h3>
-          </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            {/* Dark Mode Toggle */}
-            <button
-              onClick={toggleDarkMode}
-              aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-              title={isDark ? 'Light mode' : 'Dark mode'}
-              style={{
-                background: isDark ? 'rgba(200, 160, 82, 0.12)' : 'var(--input-bg)',
-                border: `1px solid ${isDark ? 'rgba(200, 160, 82, 0.25)' : 'var(--input-border)'}`,
-                borderRadius: '12px',
-                padding: '8px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                cursor: 'pointer',
-                color: isDark ? '#C8A052' : 'var(--sidebar-text, #064e3b)',
-                transition: 'all 0.2s ease',
-                backgroundImage: 'none',
-                boxShadow: 'none',
-                textTransform: 'none',
-              }}
-            >
-              {isDark ? <Sun size={18} /> : <Moon size={18} />}
-            </button>
-            <Notifications />
-            <div style={{ position: 'relative' }}>
-              <div
-                role="button"
-                tabIndex={0}
-                aria-label="User profile menu"
-                aria-expanded={isProfileMenuOpen}
-                aria-haspopup="true"
-                onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
-                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setIsProfileMenuOpen(!isProfileMenuOpen); } }}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: '10px', paddingLeft: '20px',
-                  borderLeft: '1px solid var(--divider-color, #e2e8f0)', cursor: 'pointer', userSelect: 'none',
-                }}
-              >
-                <div style={{
-                  width: '36px', height: '36px', borderRadius: '50%', background: 'var(--avatar-bg, var(--primary-color, #0f172a))', color: isDark ? '#0A0E1A' : 'white',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold',
-                }}>
-                  {user?.user?.username?.[0]?.toUpperCase() || 'U'}
-                </div>
-                {!isMobile && (
-                  <div style={{ display: 'flex', flexDirection: 'column' }}>
-                    <span style={{ fontWeight: '600', fontSize: '0.9em', color: 'var(--username-color, #334155)' }}>
-                      {user?.user?.username || 'User'}
-                      <span style={{ fontSize: '0.7em', marginLeft: '5px', color: 'var(--username-muted, #94a3b8)' }}>&#9660;</span>
-                    </span>
-                    <span style={{ fontSize: '0.75em', color: 'var(--username-muted, #94a3b8)' }}>
-                      {t(`users.role_${user?.user?.role}`) || user?.user?.role || t('users.role_user')}
-                    </span>
-                  </div>
-                )}
-              </div>
-
-              {isProfileMenuOpen && (
-                <div role="menu" aria-label="Profile options" style={{
-                  position: 'absolute', top: '50px', [isRtl ? 'left' : 'right']: '0', width: '260px',
-                  background: 'var(--profile-menu-bg, #f0fdf4)', border: `1px solid var(--profile-menu-border, #4ade80)`, borderRadius: '16px',
-                  padding: '12px', boxShadow: 'var(--profile-menu-shadow, 0 10px 30px -5px rgba(21, 128, 61, 0.15))', zIndex: 1000,
-                }}>
-                  <div
-                    role="menuitem"
-                    tabIndex={0}
-                    onClick={() => { onNavigate('profile'); setIsProfileMenuOpen(false); }}
-                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onNavigate('profile'); setIsProfileMenuOpen(false); } }}
-                    style={{
-                      background: 'var(--profile-menu-item-bg)', padding: '12px 16px', borderRadius: '10px', marginBottom: '8px',
-                      display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer',
-                      boxShadow: '0 2px 4px rgba(0,0,0,0.03)', border: '1px solid transparent', transition: 'border-color 0.2s',
-                    }}
-                    onMouseOver={e => e.currentTarget.style.borderColor = 'var(--profile-menu-hover)'}
-                    onMouseOut={e => e.currentTarget.style.borderColor = 'transparent'}
-                  >
-                    <User size={18} style={{ color: 'var(--manage-profile-color)' }} />
-                    <span style={{ fontSize: '0.9em', fontWeight: '600', color: 'var(--manage-profile-color)', letterSpacing: '0.5px' }}>{t('header.manage_profile')}</span>
-                  </div>
-
-                  <div
-                    role="menuitem"
-                    tabIndex={0}
-                    onClick={() => { i18n.changeLanguage(i18n.language === 'en' ? 'ar' : 'en'); setIsProfileMenuOpen(false); }}
-                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); i18n.changeLanguage(i18n.language === 'en' ? 'ar' : 'en'); setIsProfileMenuOpen(false); } }}
-                    style={{
-                      background: 'var(--profile-menu-item-bg)', padding: '12px 16px', borderRadius: '10px', marginBottom: '8px',
-                      display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer',
-                      boxShadow: '0 2px 4px rgba(0,0,0,0.03)', border: '1px solid transparent', transition: 'border-color 0.2s',
-                    }}
-                    onMouseOver={e => e.currentTarget.style.borderColor = 'var(--profile-menu-hover)'}
-                    onMouseOut={e => e.currentTarget.style.borderColor = 'transparent'}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      <Globe size={18} style={{ color: 'var(--manage-profile-color)' }} />
-                      <span style={{ fontSize: '0.9em', fontWeight: '600', color: 'var(--manage-profile-color)', letterSpacing: '0.5px' }}>{t('header.language')}</span>
-                    </div>
-                    <span style={{ fontSize: '0.7em', padding: '2px 8px', borderRadius: '4px', background: 'var(--profile-badge-bg)', color: 'var(--profile-badge-text)', border: '1px solid var(--profile-badge-border)', fontWeight: '600', textTransform: 'uppercase' }}>
-                      {i18n.language === 'en' ? 'English' : 'Arabic'}
-                    </span>
-                  </div>
-
-                  <div
-                    role="menuitem"
-                    tabIndex={0}
-                    onClick={() => { logout(); setIsProfileMenuOpen(false); }}
-                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); logout(); setIsProfileMenuOpen(false); } }}
-                    style={{
-                      background: 'var(--profile-menu-item-bg)', padding: '12px 16px', borderRadius: '10px',
-                      display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer',
-                      boxShadow: '0 2px 4px rgba(0,0,0,0.03)', border: '1px solid transparent', transition: 'border-color 0.2s',
-                    }}
-                    onMouseOver={e => e.currentTarget.style.borderColor = 'var(--logout-color)'}
-                    onMouseOut={e => e.currentTarget.style.borderColor = 'transparent'}
-                  >
-                    <LogOut size={18} style={{ color: 'var(--logout-color)' }} />
-                    <span style={{ fontSize: '0.9em', fontWeight: '600', color: 'var(--logout-color)', letterSpacing: '0.5px' }}>{t('header.logout')}</span>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </header>
 
         <main role="main" aria-label="Main content" style={{ padding: currentView === 'cx-ratings' ? 0 : '20px' }}>
           <PageTransition viewKey={currentView}>

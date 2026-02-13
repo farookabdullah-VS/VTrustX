@@ -3,6 +3,7 @@ import axios from 'axios';
 import { Mail, MessageSquare, Smartphone, QrCode, Plus, Users, Send, CheckCircle } from 'lucide-react';
 import { useToast } from './common/Toast';
 import { SkeletonTable } from './common/Skeleton';
+import { RichTemplateEditor } from './distributions/RichTemplateEditor';
 
 export function DistributionsView() {
     const toast = useToast();
@@ -21,7 +22,8 @@ export function DistributionsView() {
         surveyId: '',
         contacts: '', // Text area for manual entry or CSV
         subject: 'We want your feedback!',
-        body: 'Hi {{name}},\n\nWe value your opinion. Please take a moment to answer our survey:\n\n{{link}}\n\nThanks,\nThe Team'
+        body: 'Hi {{name}},\n\nWe value your opinion. Please take a moment to answer our survey:\n\n{{link}}\n\nThanks,\nThe Team',
+        mediaAttachments: [] // Media asset IDs for rich media
     });
 
     useEffect(() => {
@@ -45,24 +47,46 @@ export function DistributionsView() {
     };
 
     const handleCreate = async () => {
-        // Parse contacts
-        // Simple CSV parse: email,name
-        const lines = formData.contacts.split('\n');
+        // Parse contacts based on channel type
+        const lines = formData.contacts.split('\n').filter(l => l.trim());
         const contactsList = lines.map(l => {
-            const [email, name] = l.split(',');
-            if (email && email.includes('@')) return { email: email.trim(), name: name ? name.trim() : '' };
+            const [identifier, name] = l.split(',').map(s => s?.trim());
+
+            // Email validation
+            if (formData.type === 'email') {
+                if (identifier && identifier.includes('@')) {
+                    return { email: identifier, name: name || '' };
+                }
+            }
+            // Phone validation for SMS and WhatsApp
+            else if (formData.type === 'sms' || formData.type === 'whatsapp') {
+                if (identifier && identifier.startsWith('+')) {
+                    return { phone: identifier, name: name || '' };
+                }
+            }
+
             return null;
         }).filter(Boolean);
 
         if (contactsList.length === 0) {
-            toast.warning("Please add at least one valid recipient.");
+            const channelType = formData.type === 'email' ? 'email addresses' : 'phone numbers with + prefix';
+            toast.warning(`Please add at least one valid ${channelType}.`);
             return;
         }
+
+        // Extract media IDs from template (e.g., {{image:123}}, {{video:456}})
+        const mediaRegex = /{{(image|video|document|audio):(\d+)}}/g;
+        const mediaMatches = [...formData.body.matchAll(mediaRegex)];
+        const mediaAttachments = mediaMatches.map(match => ({
+            type: match[1],
+            id: parseInt(match[2])
+        }));
 
         try {
             await axios.post('/api/distributions', {
                 ...formData,
-                contacts: contactsList
+                contacts: contactsList,
+                mediaAttachments
             });
             toast.success("Campaign Scheduled!");
             setView('list');
@@ -122,7 +146,7 @@ export function DistributionsView() {
                         <div style={{ marginBottom: '15px' }}>
                             <label style={{ display: 'block', marginBottom: '5px' }}>Channel</label>
                             <div style={{ display: 'flex', gap: '10px' }}>
-                                {['email', 'sms', 'qr'].map(t => (
+                                {['email', 'sms', 'whatsapp', 'qr'].map(t => (
                                     <div key={t}
                                         onClick={() => setFormData({ ...formData, type: t })}
                                         style={{
@@ -155,14 +179,23 @@ export function DistributionsView() {
                     <div>
                         <h3>2. Audience</h3>
                         <div style={{ marginBottom: '15px' }}>
-                            <label style={{ display: 'block', marginBottom: '5px' }}>Recipients (CSV Format: email,name)</label>
+                            <label style={{ display: 'block', marginBottom: '5px' }}>
+                                Recipients (CSV Format: {formData.type === 'sms' || formData.type === 'whatsapp' ? 'phone,name' : 'email,name'})
+                            </label>
                             <textarea
                                 value={formData.contacts} onChange={e => setFormData({ ...formData, contacts: e.target.value })}
                                 style={{ width: '100%', minHeight: '200px', padding: '10px', border: '1px solid #cbd5e1', borderRadius: '8px', fontFamily: 'monospace' }}
-                                placeholder={`john@example.com, John Doe\nsarah@test.com, Sarah Smith`}
+                                placeholder={
+                                    formData.type === 'sms' || formData.type === 'whatsapp'
+                                        ? `+966501234567, John Doe\n+966509876543, Sarah Smith`
+                                        : `john@example.com, John Doe\nsarah@test.com, Sarah Smith`
+                                }
                             />
                             <p style={{ color: '#64748b', fontSize: '0.9em' }}>
-                                Tips: You can paste from Excel. Ensure each line has an email.
+                                {formData.type === 'sms' || formData.type === 'whatsapp'
+                                    ? 'Tips: Use international format with + prefix (e.g., +966501234567). You can paste from Excel.'
+                                    : 'Tips: You can paste from Excel. Ensure each line has an email.'
+                                }
                             </p>
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px' }}>
@@ -189,15 +222,13 @@ export function DistributionsView() {
                             />
                         </div>
                         <div style={{ marginBottom: '15px' }}>
-                            <label style={{ display: 'block', marginBottom: '5px' }}>Email Body</label>
-                            <textarea
-                                value={formData.body} onChange={e => setFormData({ ...formData, body: e.target.value })}
-                                style={{ width: '100%', minHeight: '200px', padding: '10px', border: '1px solid #cbd5e1', borderRadius: '8px', fontFamily: 'sans-serif' }}
+                            <label style={{ display: 'block', marginBottom: '5px' }}>Message Template</label>
+                            <RichTemplateEditor
+                                value={formData.body}
+                                onChange={(newBody) => setFormData({ ...formData, body: newBody })}
+                                channel={formData.type}
+                                showMediaButton={formData.type !== 'sms'}
                             />
-                            <div style={{ display: 'flex', gap: '10px', marginTop: '5px' }}>
-                                <span style={{ background: '#e2e8f0', padding: '2px 6px', borderRadius: '4px', fontSize: '0.8em', cursor: 'pointer' }} onClick={() => setFormData({ ...formData, body: formData.body + ' {{name}}' })}>+ Name</span>
-                                <span style={{ background: '#e2e8f0', padding: '2px 6px', borderRadius: '4px', fontSize: '0.8em', cursor: 'pointer' }} onClick={() => setFormData({ ...formData, body: formData.body + ' {{link}}' })}>+ Survey Link</span>
-                            </div>
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px' }}>
                             <button onClick={() => setStep(2)} style={{ padding: '12px 24px', background: 'transparent', border: '1px solid #cbd5e1', borderRadius: '8px', cursor: 'pointer' }}>Back</button>

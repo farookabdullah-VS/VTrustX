@@ -1,72 +1,59 @@
-const fs = require('fs');
+/**
+ * File Storage Wrapper
+ *
+ * This module provides backward-compatible interface for file storage operations.
+ * It delegates to StorageService which handles both GCS and local storage.
+ *
+ * Migration: All file operations now use StorageService (GCS-ready)
+ */
+
+const storageService = require('../infrastructure/storage/StorageService');
 const path = require('path');
-const crypto = require('crypto');
-const sharp = require('sharp');
 
-// Ensure uploads dir exists
-const UPLOAD_DIR = path.join(__dirname, '../../uploads');
-if (!fs.existsSync(UPLOAD_DIR)) {
-    fs.mkdirSync(UPLOAD_DIR, { recursive: true });
-}
+// Backward compatibility: UPLOAD_DIR
+const UPLOAD_DIR = storageService.getUploadDir() || path.join(__dirname, '../../uploads');
 
-// Encryption Config (Use ENV in production)
-const ALGORITHM = 'aes-256-cbc';
-const ENCRYPTION_KEY = (process.env.STORAGE_KEY || 'default_secret_key_32_chars_long').padEnd(32).slice(0, 32); // Must be 32 chars
-const IV_LENGTH = 16;
-
+/**
+ * Process and save file to storage (GCS or local)
+ * @param {Object} file - Multer file object
+ * @returns {Object} File metadata
+ */
 async function processAndSave(file) {
-    let buffer = file.buffer;
-    const filename = `${Date.now()}-${file.originalname}`;
-    const filepath = path.join(UPLOAD_DIR, filename + '.enc');
-
-    // 1. COMPRESSION (Images only)
-    if (file.mimetype.startsWith('image/')) {
-        try {
-            buffer = await sharp(buffer)
-                .resize(1920, 1080, { fit: 'inside', withoutEnlargement: true }) // reasonable max size
-                .jpeg({ quality: 80 })
-                .toBuffer();
-        } catch (e) {
-            console.warn("Image compression failed, using original:", e);
-        }
-    }
-
-    // 2. ENCRYPTION
-    const iv = crypto.randomBytes(IV_LENGTH);
-    const cipher = crypto.createCipheriv(ALGORITHM, Buffer.from(ENCRYPTION_KEY), iv);
-    let encrypted = Buffer.concat([cipher.update(buffer), cipher.final()]);
-
-    // Store IV + Encrypted Data
-    const params = Buffer.concat([iv, encrypted]);
-
-    // 3. WRITE TO DISK
-    fs.writeFileSync(filepath, params);
-
-    return {
-        filename: filename,
-        originalName: file.originalname,
-        mimetype: file.mimetype, // Store original mime
-        size: params.length,
-        path: `/api/files/${filename}` // Virtual path
-    };
+    return await storageService.processAndSave(file);
 }
 
+/**
+ * Retrieve and decrypt file from storage
+ * @param {string} filename - File name (without .enc extension)
+ * @returns {Buffer} Decrypted file buffer
+ */
 async function retrieveAndDecrypt(filename) {
-    const filepath = path.join(UPLOAD_DIR, filename + '.enc');
-
-    if (!fs.existsSync(filepath)) throw new Error('File not found');
-
-    const fileBuffer = fs.readFileSync(filepath);
-
-    // Extract IV and content
-    const iv = fileBuffer.slice(0, IV_LENGTH);
-    const encryptedContent = fileBuffer.slice(IV_LENGTH);
-
-    // Decrypt
-    const decipher = crypto.createDecipheriv(ALGORITHM, Buffer.from(ENCRYPTION_KEY), iv);
-    const decrypted = Buffer.concat([decipher.update(encryptedContent), decipher.final()]);
-
-    return decrypted;
+    return await storageService.retrieveAndDecrypt(filename);
 }
 
-module.exports = { processAndSave, retrieveAndDecrypt, UPLOAD_DIR };
+/**
+ * Delete file from storage
+ * @param {string} filename - File name (without .enc extension)
+ */
+async function deleteFile(filename) {
+    return await storageService.deleteFile(filename);
+}
+
+/**
+ * Get signed URL for file access (GCS) or API path (local)
+ * @param {string} filename - File name
+ * @param {number} expiresIn - Expiration in seconds
+ * @returns {string} URL
+ */
+async function getSignedUrl(filename, expiresIn = 3600) {
+    return await storageService.getSignedUrl(filename, expiresIn);
+}
+
+module.exports = {
+    processAndSave,
+    retrieveAndDecrypt,
+    deleteFile,
+    getSignedUrl,
+    UPLOAD_DIR,
+    storageService, // Export for direct access if needed
+};

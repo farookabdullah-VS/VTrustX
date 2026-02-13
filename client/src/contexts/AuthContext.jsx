@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useRef, useCallb
 import axios from 'axios';
 import { getCurrentUser, logout as logoutService } from '../services/authService';
 import { toast } from '../components/common/Toast';
+import { setUser as setSentryUser, clearUser as clearSentryUser } from '../config/sentry';
 
 const AuthContext = createContext(null);
 
@@ -19,6 +20,8 @@ export function AuthProvider({ children }) {
         const data = await getCurrentUser();
         if (!cancelled && data?.user) {
           setUser(data);
+          // Set user context in Sentry
+          setSentryUser(data.user);
         }
       } catch {
         // Not authenticated
@@ -31,11 +34,17 @@ export function AuthProvider({ children }) {
 
   const login = useCallback((userData) => {
     setUser(userData);
+    // Set user context in Sentry
+    if (userData?.user) {
+      setSentryUser(userData.user);
+    }
   }, []);
 
   const logout = useCallback(async () => {
     await logoutService();
     setUser(null);
+    // Clear user context in Sentry
+    clearSentryUser();
   }, []);
 
   // Fetch Settings for Idle Timeout

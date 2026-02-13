@@ -12,14 +12,18 @@ const { createFormSchema, updateFormSchema } = require('../schemas/forms.schemas
 const formRepo = new PostgresRepository('forms');
 
 // Rate limiter for password check (5 req/min/IP)
-const passwordCheckLimiter = (req, res, next) => {
+const passwordCheckLimiter = async (req, res, next) => {
     const key = `form_pw:${req.ip}`;
-    const current = rateLimitCache.get(key) || 0;
-    if (current >= 5) {
-        return res.status(429).json({ error: 'Too many password attempts. Try again later.' });
+    try {
+        const current = await rateLimitCache.incr(key, 60);
+        if (current > 5) {
+            return res.status(429).json({ error: 'Too many password attempts. Try again later.' });
+        }
+        next();
+    } catch (err) {
+        logger.error('Password check rate limiter error', { error: err.message });
+        next(); // Fail open
     }
-    rateLimitCache.set(key, current + 1, 60);
-    next();
 };
 
 // Helper to map DB to Entity

@@ -24,6 +24,7 @@ import { useToast } from './common/Toast';
 import { SkeletonCard } from './common/Skeleton';
 import { InlineHijriDate } from './common/HijriDate';
 import { WhatsAppShareButton } from './common/WhatsAppShare';
+import { trackSurveyViewed, trackSurveyStarted, trackSurveyCompleted, setupAbandonTracking } from '../utils/surveyTracking';
 
 const PREMIUM_GRADIENTS = [
     'linear-gradient(135deg, #FF9A9E 0%, #FECFEF 100%)',
@@ -450,6 +451,11 @@ export function FormViewer({ formId: propsFormId, submissionId: propsSubmissionI
                 const model = new Model(formDef.definition);
                 setupSurveyColors(model); // Apply colors
 
+                // Track survey viewed (only for public surveys)
+                if (isPublic) {
+                    trackSurveyViewed(resolvedId).catch(err => console.debug('Tracking error:', err));
+                }
+
                 if (formDef.definition && formDef.definition.theme) {
                     model.applyTheme(formDef.definition.theme);
                 } else {
@@ -537,8 +543,17 @@ export function FormViewer({ formId: propsFormId, submissionId: propsSubmissionI
                     .then(qRes => { activeQuotas = qRes.data.filter(q => q.is_active); })
                     .catch(qErr => console.error("Quota fetch failed:", qErr));
 
+                // Track "started" event (once, on first answer)
+                let hasTrackedStart = false;
+
                 model.onValueChanged.add((sender, options) => {
                     const data = sender.data;
+
+                    // Track survey started (only for public surveys, once)
+                    if (isPublic && !hasTrackedStart) {
+                        hasTrackedStart = true;
+                        trackSurveyStarted(resolvedId, sender.currentPageNo + 1).catch(err => console.debug('Tracking error:', err));
+                    }
 
                     // 1. Specific Quota Check (Immediate Exit)
                     for (const quota of activeQuotas) {
@@ -730,6 +745,15 @@ export function FormViewer({ formId: propsFormId, submissionId: propsSubmissionI
                         console.log("Submission Saved Successfully:", resp.data);
                         finalize();
                         options.showDataSavingSuccess("Feedback received!");
+
+                        // Track survey completed (only for public surveys)
+                        if (isPublic && status === 'completed') {
+                            trackSurveyCompleted(resolvedId, {
+                                submissionId: resp.data.id,
+                                durationSeconds
+                            }).catch(err => console.debug('Tracking error:', err));
+                        }
+
                         // Note: completedHtml is already set on the model, SurveyJS will show it now.
                     }).catch(err => {
                         finalize();
@@ -802,12 +826,28 @@ export function FormViewer({ formId: propsFormId, submissionId: propsSubmissionI
                 });
                 setSurvey(model);
                 startTimeRef.current = new Date();
+
+                // Setup abandon tracking (only for public surveys)
+                if (isPublic) {
+                    const cleanup = setupAbandonTracking(resolvedId, () => model.currentPageNo + 1);
+                    // Store cleanup function for later
+                    model._abandonTrackingCleanup = cleanup;
+                }
             })
             .catch(err => {
                 console.error(err);
                 setError("Form not found or inaccessible.");
             });
     }, [formId, submissionId, slug]);
+
+    // Cleanup abandon tracking on unmount
+    React.useEffect(() => {
+        return () => {
+            if (survey && survey._abandonTrackingCleanup) {
+                survey._abandonTrackingCleanup();
+            }
+        };
+    }, [survey]);
 
     // VIEW: Settings
     if (settingsViewId) {

@@ -1,0 +1,181 @@
+name: Docker Build & Push
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "client/**"
+      - "server/**"
+      - "ai-service/**"
+      - "Dockerfile"
+      - "**/Dockerfile"
+      - ".github/workflows/docker-build.yml"
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "client/**"
+      - "server/**"
+      - "ai-service/**"
+      - "Dockerfile"
+      - "**/Dockerfile"
+      - ".github/workflows/docker-build.yml"
+  workflow_dispatch:
+    inputs:
+      push_to_registry:
+        description: 'Push images to registry'
+        required: false
+        default: 'false'
+
+env:
+  REGISTRY: gcr.io
+  # Set this to your GCP project ID
+  GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  # Image names
+  SERVER_IMAGE: rayix-server
+  AI_SERVICE_IMAGE: rayix-ai-service
+
+jobs:
+  build-server:
+    name: Build Server Image
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Google Container Registry
+        if: github.event_name == 'push' || github.event.inputs.push_to_registry == 'true'
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: _json_key
+          password: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Extract metadata (tags, labels)
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.GCP_PROJECT_ID }}/${{ env.SERVER_IMAGE }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push Server image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: ${{ github.event_name == 'push' || github.event.inputs.push_to_registry == 'true' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          platforms: linux/amd64
+
+      - name: Output image tags
+        run: |
+          echo "Server image built with tags:"
+          echo "${{ steps.meta.outputs.tags }}"
+
+  build-ai-service:
+    name: Build AI Service Image
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Google Container Registry
+        if: github.event_name == 'push' || github.event.inputs.push_to_registry == 'true'
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: _json_key
+          password: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Extract metadata (tags, labels)
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.GCP_PROJECT_ID }}/${{ env.AI_SERVICE_IMAGE }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push AI Service image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./ai-service
+          file: ./ai-service/Dockerfile
+          push: ${{ github.event_name == 'push' || github.event.inputs.push_to_registry == 'true' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          platforms: linux/amd64
+
+      - name: Output image tags
+        run: |
+          echo "AI Service image built with tags:"
+          echo "${{ steps.meta.outputs.tags }}"
+
+  # Optional: Deploy to Cloud Run after successful build
+  # Uncomment this job when you're ready to enable automated deployments
+  # deploy:
+  #   name: Deploy to Cloud Run
+  #   needs: [build-server, build-ai-service]
+  #   runs-on: ubuntu-latest
+  #   if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+  #
+  #   steps:
+  #     - name: Checkout Code
+  #       uses: actions/checkout@v4
+  #
+  #     - name: Authenticate to Google Cloud
+  #       uses: google-github-actions/auth@v2
+  #       with:
+  #         credentials_json: ${{ secrets.GCP_SA_KEY }}
+  #
+  #     - name: Set up Cloud SDK
+  #       uses: google-github-actions/setup-gcloud@v2
+  #
+  #     - name: Deploy Server to Cloud Run
+  #       run: |
+  #         gcloud run deploy rayix-server \
+  #           --image ${{ env.REGISTRY }}/${{ env.GCP_PROJECT_ID }}/${{ env.SERVER_IMAGE }}:latest \
+  #           --region us-central1 \
+  #           --platform managed \
+  #           --allow-unauthenticated \
+  #           --set-env-vars="NODE_ENV=production" \
+  #           --memory 1Gi \
+  #           --cpu 1 \
+  #           --timeout 300 \
+  #           --max-instances 10
+  #
+  #     - name: Deploy AI Service to Cloud Run
+  #       run: |
+  #         gcloud run deploy rayix-ai-service \
+  #           --image ${{ env.REGISTRY }}/${{ env.GCP_PROJECT_ID }}/${{ env.AI_SERVICE_IMAGE }}:latest \
+  #           --region us-central1 \
+  #           --platform managed \
+  #           --allow-unauthenticated \
+  #           --memory 512Mi \
+  #           --cpu 1 \
+  #           --timeout 300 \
+  #           --max-instances 5

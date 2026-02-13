@@ -1,6 +1,7 @@
-console.log("[DEBUG] db.js loading...");
 const { Pool } = require('pg');
 const path = require('path');
+const logger = require('../logger');
+
 try {
     require('dotenv').config({ path: path.join(__dirname, '../../../.env') });
 } catch (e) { }
@@ -16,7 +17,7 @@ if (!config.user || !config.password || !config.database) {
     if (process.env.NODE_ENV === 'production') {
         throw new Error('Database credentials (DB_USER, DB_PASSWORD, DB_NAME) must be defined in production.');
     }
-    console.warn("WARNING: Missing DB credentials in environment. Using defaults for development.");
+    logger.warn("Missing DB credentials in environment. Using defaults for development.");
     config.user = config.user || 'postgres';
     config.password = config.password || process.env.DB_PASSWORD_DEV || 'change_me_in_env';
     config.database = config.database || 'rayix_db';
@@ -29,25 +30,25 @@ if (!config.user || !config.password || !config.database) {
 const isCloudRun = !!process.env.K_SERVICE;
 
 if (process.env.INSTANCE_CONNECTION_NAME && isCloudRun) {
-    console.log(`[DB] running in Cloud Run. Using Unix Socket: /cloudsql/${process.env.INSTANCE_CONNECTION_NAME}`);
+    logger.info(`Running in Cloud Run. Using Unix Socket: /cloudsql/${process.env.INSTANCE_CONNECTION_NAME}`);
     config.host = `/cloudsql/${process.env.INSTANCE_CONNECTION_NAME}`;
     delete config.port; // Port is irrelevant for Unix Sockets
 } else {
     // Local / TCP Fallback
     const host = process.env.DB_HOST || 'localhost';
     const port = process.env.DB_PORT || 5432;
-    console.log(`[DB] Using TCP Connection: ${host}:${port}`);
+    logger.info(`Using TCP Connection: ${host}:${port}`);
 
     // Warn if it looks like we wanted Cloud SQL but are forcing TCP (e.g. local proxy)
     if (process.env.INSTANCE_CONNECTION_NAME && !isCloudRun) {
-        console.log("[DB] Note: INSTANCE_CONNECTION_NAME found but not in Cloud Run. Defaulting to TCP (likely local Cloud SQL Proxy).");
+        logger.info("INSTANCE_CONNECTION_NAME found but not in Cloud Run. Defaulting to TCP (likely local Cloud SQL Proxy).");
     }
 
     config.host = host;
     config.port = port;
 }
 
-console.log("[DEBUG] DB Config:", { ...config, password: '***' });
+logger.debug("DB Config initialized", { host: config.host, database: config.database, port: config.port || 'unix-socket' });
 
 const pool = new Pool({
     ...config,
@@ -57,7 +58,8 @@ const pool = new Pool({
 });
 
 pool.on('error', (err) => {
-    console.error('[DB] Unexpected pool error:', err.message, {
+    logger.error('Unexpected pool error', {
+        error: err.message,
         totalCount: pool.totalCount,
         idleCount: pool.idleCount,
         waitingCount: pool.waitingCount,

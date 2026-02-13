@@ -3,6 +3,8 @@ const router = express.Router();
 const { query } = require('../../../infrastructure/database/db');
 const emailService = require('../../../services/emailService');
 const smsService = require('../../../services/smsService');
+const whatsappService = require('../../../services/whatsappService');
+const TemplateService = require('../../../services/TemplateService');
 const validate = require('../../middleware/validate');
 const { createDistributionSchema } = require('../../schemas/distributions.schemas');
 const logger = require('../../../infrastructure/logger');
@@ -150,21 +152,37 @@ router.get('/', async (req, res) => {
 // 3. Create Campaign
 router.post('/', validate(createDistributionSchema), async (req, res) => {
     try {
-        const { name, surveyId, type, subject, body, contacts } = req.body;
+        const { name, surveyId, type, subject, body, contacts, mediaAttachments = [] } = req.body;
 
         if (!name || !type || !contacts || !Array.isArray(contacts)) {
             return res.status(400).json({ error: 'name, type, and contacts array are required' });
         }
 
         logger.info(`[Distribution] Creating Campaign: ${name} (${type})`);
-        logger.info(`[Distribution] Contacts: ${contacts.length}`);
+        logger.info(`[Distribution] Contacts: ${contacts.length}, Media: ${mediaAttachments.length}`);
 
         const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+        const tenantId = req.user?.tenant_id || 1; // Get tenant from authenticated user
+
+        // Fetch media assets if there are any
+        let mediaAssets = [];
+        if (mediaAttachments && mediaAttachments.length > 0) {
+            const mediaIds = mediaAttachments.map(m => m.id);
+            const mediaResult = await query(
+                `SELECT id, filename, media_type, cdn_url, storage_path
+                 FROM media_assets
+                 WHERE id = ANY($1) AND tenant_id = $2`,
+                [mediaIds, tenantId]
+            );
+            mediaAssets = mediaResult.rows;
+        }
 
         if (type === 'email') {
-            sendBatch(contacts, subject, body, surveyId, 'email', frontendUrl);
+            sendBatch(contacts, subject, body, surveyId, 'email', frontendUrl, tenantId, null, mediaAssets);
         } else if (type === 'sms') {
-            sendBatch(contacts, subject, body, surveyId, 'sms', frontendUrl);
+            sendBatch(contacts, subject, body, surveyId, 'sms', frontendUrl, tenantId, null, mediaAssets);
+        } else if (type === 'whatsapp') {
+            sendBatch(contacts, subject, body, surveyId, 'whatsapp', frontendUrl, tenantId, null, mediaAssets);
         }
 
         res.status(201).json({ id: Date.now(), status: 'Scheduled' });
@@ -174,35 +192,303 @@ router.post('/', validate(createDistributionSchema), async (req, res) => {
     }
 });
 
-async function sendBatch(contacts, subject, body, surveyId, type, frontendUrl) {
-    logger.info(`Starting ${type.toUpperCase()} Batch Send...`);
+async function sendBatch(contacts, subject, body, surveyId, type, frontendUrl, tenantId, distributionId = null, mediaAssets = []) {
+    logger.info(`Starting ${type.toUpperCase()} Batch Send...`, { tenantId, contactCount: contacts.length, mediaCount: mediaAssets.length });
     let sent = 0;
+
     for (const contact of contacts) {
         try {
             const contactId = contact.email || contact.phone || 'unknown';
             const uniqueLink = `${frontendUrl}/s/${surveyId}?u=${encodeURIComponent(contactId)}`;
 
-            const personalizedBody = body
-                .replace('{{name}}', contact.name || 'Valued Customer')
-                .replace('{{link}}', uniqueLink);
+            // Prepare context for template rendering
+            const context = {
+                name: contact.name || 'Valued Customer',
+                email: contact.email || '',
+                phone: contact.phone || '',
+                link: uniqueLink,
+                company: contact.company || ''
+            };
+
+            // Render template with media using TemplateService
+            const rendered = await TemplateService.renderTemplate(
+                body,
+                context,
+                mediaAssets,
+                type,
+                { tenantId }
+            );
 
             if (type === 'email') {
-                await emailService.sendEmail(contact.email, subject, personalizedBody, personalizedBody);
+                await emailService.sendEmail(
+                    contact.email,
+                    subject,
+                    rendered.html || rendered.text,
+                    rendered.text,
+                    {
+                        tenantId,
+                        distributionId,
+                        recipientName: contact.name,
+                        attachments: rendered.attachments || []
+                    }
+                );
             } else if (type === 'sms') {
                 if (!contact.phone) {
                     logger.info(`Skipping SMS for ${contact.name} - No Phone`);
                     continue;
                 }
-                await smsService.sendSMS(contact.phone, personalizedBody);
+                await smsService.sendMessage(
+                    contact.phone,
+                    rendered.text,
+                    { tenantId, distributionId, recipientName: contact.name }
+                );
+            } else if (type === 'whatsapp') {
+                if (!contact.phone) {
+                    logger.info(`Skipping WhatsApp for ${contact.name || 'contact'} - No Phone`);
+                    continue;
+                }
+
+                // Use sendMediaMessage if there are media URLs, otherwise regular sendMessage
+                let result;
+                if (rendered.mediaUrls && rendered.mediaUrls.length > 0) {
+                    result = await whatsappService.sendMediaMessage(
+                        contact.phone,
+                        rendered.text,
+                        rendered.mediaUrls,
+                        { tenantId, distributionId, recipientName: contact.name }
+                    );
+                } else {
+                    result = await whatsappService.sendMessage(
+                        contact.phone,
+                        rendered.text,
+                        { tenantId, distributionId, recipientName: contact.name }
+                    );
+                }
+
+                if (!result.success) {
+                    logger.error(`Failed to send WhatsApp to ${contact.phone}`, { error: result.error });
+                    continue;
+                }
             }
 
             sent++;
             logger.info(`Sent ${type} to ${contactId}`);
         } catch (e) {
-            logger.error(`Failed to send to ${contact.email || contact.phone}`, { error: e.message });
+            logger.error(`Failed to send to ${contact.email || contact.phone}`, { error: e.message, stack: e.stack });
         }
     }
-    logger.info(`Batch Complete. Sent ${sent}/${contacts.length}`);
+    logger.info(`Batch Complete. Sent ${sent}/${contacts.length}`, { type, tenantId });
 }
+
+/**
+ * @swagger
+ * /api/distributions/{id}/messages:
+ *   get:
+ *     summary: Get all tracked messages for a distribution
+ *     tags: [Distributions]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Distribution ID
+ *     responses:
+ *       200:
+ *         description: Array of tracked messages
+ *       404:
+ *         description: Distribution not found
+ *       500:
+ *         description: Server error
+ */
+router.get('/:id/messages', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const tenantId = req.user?.tenant_id || 1;
+
+        // Get distribution to determine type
+        const distResult = await query(
+            "SELECT * FROM distributions WHERE id = $1 AND tenant_id = $2",
+            [id, tenantId]
+        );
+
+        if (distResult.rows.length === 0) {
+            return res.status(404).json({ error: 'Distribution not found' });
+        }
+
+        const distribution = distResult.rows[0];
+        let messages = [];
+
+        // Fetch messages based on distribution type
+        if (distribution.type === 'email') {
+            const result = await query(
+                `SELECT id, recipient_email AS recipient, recipient_name, message_id, status,
+                 error_code, error_message, sent_at, delivered_at, opened_at, clicked_at,
+                 bounced_at, failed_at, created_at
+                 FROM email_messages
+                 WHERE distribution_id = $1 AND tenant_id = $2
+                 ORDER BY created_at DESC`,
+                [id, tenantId]
+            );
+            messages = result.rows;
+        } else if (distribution.type === 'sms') {
+            const result = await query(
+                `SELECT id, recipient_phone AS recipient, recipient_name, message_sid AS message_id,
+                 status, error_code, error_message, sent_at, delivered_at, failed_at, created_at
+                 FROM sms_messages
+                 WHERE distribution_id = $1 AND tenant_id = $2
+                 ORDER BY created_at DESC`,
+                [id, tenantId]
+            );
+            messages = result.rows;
+        } else if (distribution.type === 'whatsapp') {
+            const result = await query(
+                `SELECT id, recipient_phone AS recipient, recipient_name, message_sid AS message_id,
+                 status, error_code, error_message, sent_at, delivered_at, read_at, failed_at, created_at
+                 FROM whatsapp_messages
+                 WHERE distribution_id = $1 AND tenant_id = $2
+                 ORDER BY created_at DESC`,
+                [id, tenantId]
+            );
+            messages = result.rows;
+        }
+
+        res.json({
+            distributionId: id,
+            type: distribution.type,
+            messages
+        });
+    } catch (err) {
+        logger.error('Failed to fetch distribution messages', { error: err.message });
+        res.status(500).json({ error: 'Failed to fetch messages' });
+    }
+});
+
+/**
+ * @swagger
+ * /api/distributions/{id}/stats:
+ *   get:
+ *     summary: Get aggregated delivery statistics for a distribution
+ *     tags: [Distributions]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Distribution ID
+ *     responses:
+ *       200:
+ *         description: Delivery statistics
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 distributionId:
+ *                   type: integer
+ *                 type:
+ *                   type: string
+ *                 stats:
+ *                   type: object
+ *       404:
+ *         description: Distribution not found
+ *       500:
+ *         description: Server error
+ */
+router.get('/:id/stats', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const tenantId = req.user?.tenant_id || 1;
+
+        // Get distribution to determine type
+        const distResult = await query(
+            "SELECT * FROM distributions WHERE id = $1 AND tenant_id = $2",
+            [id, tenantId]
+        );
+
+        if (distResult.rows.length === 0) {
+            return res.status(404).json({ error: 'Distribution not found' });
+        }
+
+        const distribution = distResult.rows[0];
+        let stats = {};
+
+        // Calculate stats based on distribution type
+        if (distribution.type === 'email') {
+            const result = await query(
+                `SELECT
+                    COUNT(*) as total,
+                    COUNT(*) FILTER (WHERE status = 'sent') as sent,
+                    COUNT(*) FILTER (WHERE status = 'delivered') as delivered,
+                    COUNT(*) FILTER (WHERE status = 'opened') as opened,
+                    COUNT(*) FILTER (WHERE status = 'clicked') as clicked,
+                    COUNT(*) FILTER (WHERE status = 'bounced') as bounced,
+                    COUNT(*) FILTER (WHERE status = 'failed') as failed,
+                    COUNT(*) FILTER (WHERE status = 'pending') as pending
+                 FROM email_messages
+                 WHERE distribution_id = $1 AND tenant_id = $2`,
+                [id, tenantId]
+            );
+            stats = result.rows[0];
+
+            // Calculate rates
+            const delivered = parseInt(stats.delivered) || 0;
+            const total = parseInt(stats.total) || 1;
+            stats.deliveryRate = ((delivered / total) * 100).toFixed(2);
+            stats.openRate = delivered > 0 ? (((parseInt(stats.opened) || 0) / delivered) * 100).toFixed(2) : '0.00';
+            stats.clickRate = (parseInt(stats.opened) || 0) > 0 ? (((parseInt(stats.clicked) || 0) / parseInt(stats.opened)) * 100).toFixed(2) : '0.00';
+            stats.bounceRate = ((parseInt(stats.bounced) || 0) / total * 100).toFixed(2);
+
+        } else if (distribution.type === 'sms') {
+            const result = await query(
+                `SELECT
+                    COUNT(*) as total,
+                    COUNT(*) FILTER (WHERE status = 'sent') as sent,
+                    COUNT(*) FILTER (WHERE status = 'delivered') as delivered,
+                    COUNT(*) FILTER (WHERE status = 'failed') as failed,
+                    COUNT(*) FILTER (WHERE status = 'pending') as pending
+                 FROM sms_messages
+                 WHERE distribution_id = $1 AND tenant_id = $2`,
+                [id, tenantId]
+            );
+            stats = result.rows[0];
+
+            // Calculate rates
+            const total = parseInt(stats.total) || 1;
+            stats.deliveryRate = (((parseInt(stats.delivered) || 0) / total) * 100).toFixed(2);
+
+        } else if (distribution.type === 'whatsapp') {
+            const result = await query(
+                `SELECT
+                    COUNT(*) as total,
+                    COUNT(*) FILTER (WHERE status = 'sent') as sent,
+                    COUNT(*) FILTER (WHERE status = 'delivered') as delivered,
+                    COUNT(*) FILTER (WHERE status = 'read') as read,
+                    COUNT(*) FILTER (WHERE status = 'failed') as failed,
+                    COUNT(*) FILTER (WHERE status = 'pending') as pending
+                 FROM whatsapp_messages
+                 WHERE distribution_id = $1 AND tenant_id = $2`,
+                [id, tenantId]
+            );
+            stats = result.rows[0];
+
+            // Calculate rates
+            const delivered = parseInt(stats.delivered) || 0;
+            const total = parseInt(stats.total) || 1;
+            stats.deliveryRate = ((delivered / total) * 100).toFixed(2);
+            stats.readRate = delivered > 0 ? (((parseInt(stats.read) || 0) / delivered) * 100).toFixed(2) : '0.00';
+        }
+
+        res.json({
+            distributionId: id,
+            type: distribution.type,
+            stats
+        });
+    } catch (err) {
+        logger.error('Failed to fetch distribution stats', { error: err.message });
+        res.status(500).json({ error: 'Failed to fetch stats' });
+    }
+});
 
 module.exports = router;

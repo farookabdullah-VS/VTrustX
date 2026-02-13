@@ -7,6 +7,10 @@
     "start": "node index.js",
     "dev": "node --watch index.js",
     "test": "jest --coverage",
+    "test:e2e": "cd ../e2e && npx playwright test",
+    "test:e2e:ui": "cd ../e2e && npx playwright test --ui",
+    "test:e2e:headed": "cd ../e2e && npx playwright test --headed",
+    "test:e2e:report": "cd ../e2e && npx playwright show-report",
     "db:init": "node scripts/initDb.js",
     "db:add-column": "node scripts/add-column.js",
     "migrate": "node-pg-migrate up --migrations-dir migrations",
@@ -22,8 +26,11 @@
   "license": "ISC",
   "dependencies": {
     "@codious/sav-reader-writer": "^1.1.4",
+    "@google-cloud/storage": "^7.19.0",
     "@google-cloud/vertexai": "^1.10.0",
     "@google/generative-ai": "^0.24.1",
+    "@sentry/node": "^10.38.0",
+    "@sentry/profiling-node": "^10.38.0",
     "archiver": "^7.0.1",
     "axios": "^1.13.2",
     "bcryptjs": "^3.0.3",
@@ -40,6 +47,7 @@
     "form-data": "^4.0.5",
     "helmet": "^7.2.0",
     "imap-simple": "^1.6.3",
+    "ioredis": "^5.9.3",
     "joi": "^18.0.2",
     "json2csv": "^6.0.0-alpha.2",
     "jsonwebtoken": "^9.0.3",
@@ -62,6 +70,7 @@
     "winston": "^3.19.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.58.2",
     "jest": "^30.2.0",
     "supertest": "^7.2.2"
   }

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import './Sidebar.css';
 import { useTranslation } from 'react-i18next';
 import { Notifications } from './Notifications';
@@ -6,7 +6,7 @@ import {
     LayoutDashboard, UserCircle, Contact, Fingerprint, Map, UserCog,
     BarChart3, Bot, ClipboardList, Library, Ticket, Settings, Plug,
     Shield, Users, CreditCard, Palette, Wrench, Globe, HelpCircle,
-    GripVertical, Star, PieChart, PhoneCall, Video, Share2, Target, Database, Megaphone, Smartphone, BookOpen
+    GripVertical, Star, PieChart, PhoneCall, Video, Share2, Target, Database, Megaphone, Smartphone, BookOpen, Menu
 } from 'lucide-react';
 
 const getInitialGroups = (user) => [
@@ -273,20 +273,31 @@ export function Sidebar({ user, view, onViewChange, onLogout, isCollapsed, toggl
                 </div>
             )}
 
-            <div className="sidebar-header">
-                {!isCollapsed ? (
-                    <img src="/rayix_v2.jpg" alt="RAYI X" className="sidebar-logo" onError={(e) => { e.target.style.display = 'none'; }} />
-                ) : (
-                    <h3 className="sidebar-logo-text" title="RAYI X">RX</h3>
+            {/* Sidebar Controls (Close/Collapse) */}
+            <div className="sidebar-controls" style={{
+                display: 'flex',
+                justifyContent: isCollapsed ? 'center' : 'flex-end',
+                padding: '8px 12px',
+                borderBottom: '1px solid var(--sidebar-border)',
+                marginBottom: '8px'
+            }}>
+                {!isCollapsed && (
+                    <button
+                        onClick={onHide}
+                        style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--sidebar-text)', opacity: 0.6, marginRight: 'auto' }}
+                        title="Close Sidebar"
+                    >
+                        <span style={{ fontSize: '18px', fontWeight: 'bold' }}>&times;</span>
+                    </button>
                 )}
-                <div className="sidebar-controls">
-                    <button className="toggle-btn" onClick={onHide} title="Hide Sidebar" aria-label="Hide Sidebar">
-                        ✕
-                    </button>
-                    <button className="toggle-btn" onClick={toggleSidebar} title={isCollapsed ? "Expand" : "Collapse"} aria-label={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}>
-                        {isCollapsed ? '☰' : '⬅'}
-                    </button>
-                </div>
+
+                <button
+                    onClick={toggleSidebar}
+                    style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--sidebar-text)', opacity: 0.7 }}
+                    title={isCollapsed ? "Expand" : "Collapse"}
+                >
+                    {isCollapsed ? <Menu size={16} /> : <span style={{ fontSize: '18px' }}>&larr;</span>}
+                </button>
             </div>
 
             <nav className="sidebar-nav">

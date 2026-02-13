@@ -5,9 +5,13 @@ import './index.css';
 import './axiosConfig';
 import './i18n';
 import App from './App.jsx';
+import { initSentry, ErrorBoundary as SentryErrorBoundary } from './config/sentry';
 
-// Error Boundary definition
-class ErrorBoundary extends React.Component {
+// Initialize Sentry as early as possible
+initSentry();
+
+// Fallback Error Boundary (used if Sentry is not configured)
+class FallbackErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
     this.state = { hasError: false, error: null, errorInfo: null };
@@ -43,6 +47,9 @@ class ErrorBoundary extends React.Component {
   }
 }
 
+// Use Sentry ErrorBoundary if configured, otherwise use fallback
+const ErrorBoundary = import.meta.env.VITE_SENTRY_DSN ? SentryErrorBoundary : FallbackErrorBoundary;
+
 const rootElement = document.getElementById('root');
 if (!rootElement) {
   document.body.textContent = 'Critical: Root element not found!';
@@ -50,7 +57,22 @@ if (!rootElement) {
   try {
     createRoot(rootElement).render(
       <StrictMode>
-        <ErrorBoundary>
+        <ErrorBoundary
+          fallback={({ error, componentStack, resetError }) => (
+            <div style={{ padding: '20px', color: 'red', fontFamily: 'monospace', background: 'white', minHeight: '100vh' }}>
+              <h1>Something went wrong.</h1>
+              <p>The error has been reported to our team.</p>
+              <details style={{ whiteSpace: 'pre-wrap', background: '#ffe6e6', padding: '10px', borderRadius: '5px' }}>
+                {error && error.toString()}
+                <br />
+                {componentStack}
+              </details>
+              <button onClick={resetError || (() => window.location.href = '/')} style={{ marginTop: '20px', padding: '10px 20px', cursor: 'pointer' }}>
+                Try Again
+              </button>
+            </div>
+          )}
+        >
           <App />
         </ErrorBoundary>
       </StrictMode>

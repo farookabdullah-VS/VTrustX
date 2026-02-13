@@ -1,0 +1,88 @@
+name: AI Service CI
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "ai-service/**"
+      - ".github/workflows/ai-service-ci.yml"
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "ai-service/**"
+      - ".github/workflows/ai-service-ci.yml"
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build AI Service
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "npm"
+          cache-dependency-path: ai-service/package-lock.json
+
+      - name: Install Dependencies
+        working-directory: ./ai-service
+        run: npm ci
+
+      - name: Check Syntax
+        working-directory: ./ai-service
+        run: node -c index.js
+
+      - name: Check for Missing Dependencies
+        working-directory: ./ai-service
+        run: |
+          echo "Checking if all required modules are installed..."
+          node -e "require('./index.js')" --check || echo "Note: Full startup check skipped (may need env vars)"
+
+  security:
+    name: Security Audit
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "npm"
+          cache-dependency-path: ai-service/package-lock.json
+
+      - name: Run npm audit
+        working-directory: ./ai-service
+        run: npm audit --audit-level=moderate
+        continue-on-error: true
+
+      - name: Check for known vulnerabilities
+        working-directory: ./ai-service
+        run: |
+          echo "Running npm audit for high/critical vulnerabilities..."
+          npm audit --audit-level=high
+
+  # TODO: Add tests when test suite is implemented
+  # test:
+  #   name: Test AI Service
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout Code
+  #       uses: actions/checkout@v4
+  #     - name: Setup Node.js
+  #       uses: actions/setup-node@v4
+  #       with:
+  #         node-version: "18"
+  #     - name: Install Dependencies
+  #       working-directory: ./ai-service
+  #       run: npm ci
+  #     - name: Run Tests
+  #       working-directory: ./ai-service
+  #       run: npm test

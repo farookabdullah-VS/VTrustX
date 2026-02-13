@@ -1,50 +1,31 @@
 /* RayiX FLIPPED Style: Dynamic Theme Support */
 .sidebar {
-    width: var(--sidebar-width);
-    height: calc(100vh - 24px);
+    width: 100%;
+    height: 100%;
     /* Dynamic Background */
-    background: var(--sidebar-bg, linear-gradient(180deg, #D9F8E5 0%, #ecfdf5 100%));
+    background: var(--sidebar-bg);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    color: var(--sidebar-text, #064e3b);
+    color: var(--sidebar-text);
     display: flex;
     flex-direction: column;
     transition: width 0.1s ease;
-    border: 1px solid var(--sidebar-border, rgba(6, 78, 59, 0.1));
-    position: fixed;
-    left: 12px;
-    top: 12px;
-    z-index: 1000;
-    border-radius: 20px;
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
+    border-right: 1px solid var(--sidebar-border);
+    /* Removed fixed positioning, handled by parent container */
+    /* Removed border-radius for attached look */
     overflow: hidden;
 }
 
-[dir="rtl"] .sidebar {
-    left: auto;
-    right: 12px;
-}
+/* RTL handling is done via parent container or direction prop */
 
 .sidebar.collapsed {
-    width: var(--sidebar-collapsed-width);
+    /* Width is controlled by parent container prop usually, 
+       but if we need internal styling for collapsed state: */
+    width: 100%;
 }
 
-.sidebar-header {
-    padding: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    height: 150px;
-    margin-bottom: 10px;
-    border-bottom: 1px solid var(--sidebar-border, rgba(6, 78, 59, 0.1));
-}
+/* Header styles removed */
 
-.sidebar.collapsed .sidebar-header {
-    flex-direction: column;
-    justify-content: center;
-    gap: 10px;
-    padding: 10px;
-}
 
 .sidebar-logo {
     height: 100px;
@@ -285,9 +266,4 @@
     opacity: 1;
 }
 
-/* Mobile: hide sidebar completely */
-@media (max-width: 768px) {
-    .sidebar {
-        display: none !important;
-    }
-}
+/* Mobile: handled by React rendering */

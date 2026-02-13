@@ -223,23 +223,64 @@ class ExportService {
      * Save export file (in production, use cloud storage)
      */
     async saveExportFile(jobId, fileName, buffer) {
-        const fs = require('fs').promises;
-        const path = require('path');
+        const storageService = require('../../infrastructure/storage/StorageService');
+        const storageType = storageService.getStorageType();
 
-        // Create exports directory if it doesn't exist
-        const exportsDir = path.join(__dirname, '../../../exports');
-        try {
-            await fs.mkdir(exportsDir, { recursive: true });
-        } catch (err) {
-            // Directory might already exist
+        if (storageType === 'gcs') {
+            // Upload to GCS directly (unencrypted exports)
+            const gcsPath = `exports/${jobId}_${fileName}`;
+            const gcsBucket = storageService.gcsBucket;
+
+            if (!gcsBucket) {
+                throw new Error('GCS bucket not initialized');
+            }
+
+            const file = gcsBucket.file(gcsPath);
+            await file.save(buffer, {
+                metadata: {
+                    contentType: this._getContentType(fileName),
+                },
+            });
+
+            // Generate signed URL (7 days expiration for exports)
+            const [url] = await file.getSignedUrl({
+                version: 'v4',
+                action: 'read',
+                expires: Date.now() + 7 * 24 * 60 * 60 * 1000, // 7 days
+            });
+
+            return url;
+        } else {
+            // Local storage fallback
+            const fs = require('fs').promises;
+            const path = require('path');
+
+            const exportsDir = path.join(__dirname, '../../../exports');
+            try {
+                await fs.mkdir(exportsDir, { recursive: true });
+            } catch (err) {
+                // Directory might already exist
+            }
+
+            const filePath = path.join(exportsDir, `${jobId}_${fileName}`);
+            await fs.writeFile(filePath, buffer);
+
+            return `/api/exports/download/${jobId}`;
         }
+    }
 
-        // Save file
-        const filePath = path.join(exportsDir, `${jobId}_${fileName}`);
-        await fs.writeFile(filePath, buffer);
-
-        // Return URL (in production, return cloud storage URL)
-        return `/api/exports/download/${jobId}`;
+    _getContentType(fileName) {
+        const ext = fileName.split('.').pop().toLowerCase();
+        const contentTypes = {
+            'csv': 'text/csv',
+            'xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'json': 'application/json',
+            'xml': 'application/xml',
+            'pdf': 'application/pdf',
+            'sav': 'application/x-spss-sav',
+            'sql': 'application/sql',
+        };
+        return contentTypes[ext] || 'application/octet-stream';
     }
 
     /**

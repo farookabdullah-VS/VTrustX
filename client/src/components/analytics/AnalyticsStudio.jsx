@@ -26,6 +26,7 @@ import { getReports, saveReport, deleteReport } from '../../services/reportServi
 import { SurveyAnalystChat } from './SurveyAnalystChat';
 import { useToast } from '../common/Toast';
 import { Skeleton } from '../common/Skeleton';
+import { DeliveryAnalyticsDashboard } from './DeliveryAnalyticsDashboard';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'];
 
@@ -2772,7 +2773,7 @@ const ReportDesigner = ({ report: initialReport, onBack }) => {
                                                             onFilterChange={handleFilterChange}
                                                             fields={dataset.fields}
                                                         />
-                                                    }
+                                                    )}
                                                 </div>
                                             </div>
                                         );
@@ -3168,6 +3169,7 @@ const CreateReportModal = ({ onClose, onSelect }) => {
 
 export const AnalyticsStudio = () => {
     const [view, setView] = useState('list'); // list, designer
+    const [activeTab, setActiveTab] = useState('surveys'); // surveys, delivery
     const [activeReport, setActiveReport] = useState(null);
     const [showCreateModal, setShowCreateModal] = useState(false);
 
@@ -3196,7 +3198,7 @@ export const AnalyticsStudio = () => {
     };
 
     useEffect(() => {
-        console.log("AnalyticsStudio v1.1 Loaded");
+        console.log("AnalyticsStudio v1.2 Loaded - Delivery Analytics Added");
     }, []);
 
     if (view === 'designer') {
@@ -3205,10 +3207,56 @@ export const AnalyticsStudio = () => {
 
     return (
         <div style={{ height: 'calc(100vh - 64px)', overflow: 'auto', background: '#f8fafc' }}>
-            <ReportList onCreateReport={handleCreateReport} onOpenReport={handleOpenReport} />
-            {showCreateModal && <CreateReportModal onClose={() => setShowCreateModal(false)} onSelect={handleSurveySelect} />}
+            {/* Tab Navigation */}
+            <div style={{
+                background: 'white',
+                borderBottom: '2px solid #e2e8f0',
+                padding: '0 30px',
+                display: 'flex',
+                gap: '8px'
+            }}>
+                <button
+                    onClick={() => setActiveTab('surveys')}
+                    style={{
+                        padding: '16px 24px',
+                        border: 'none',
+                        background: 'transparent',
+                        borderBottom: activeTab === 'surveys' ? '3px solid var(--primary)' : '3px solid transparent',
+                        color: activeTab === 'surveys' ? 'var(--primary)' : 'var(--text-muted)',
+                        fontWeight: activeTab === 'surveys' ? '600' : '400',
+                        cursor: 'pointer',
+                        fontSize: '0.95rem',
+                        transition: 'all 0.2s'
+                    }}
+                >
+                    📊 Survey Analytics
+                </button>
+                <button
+                    onClick={() => setActiveTab('delivery')}
+                    style={{
+                        padding: '16px 24px',
+                        border: 'none',
+                        background: 'transparent',
+                        borderBottom: activeTab === 'delivery' ? '3px solid var(--primary)' : '3px solid transparent',
+                        color: activeTab === 'delivery' ? 'var(--primary)' : 'var(--text-muted)',
+                        fontWeight: activeTab === 'delivery' ? '600' : '400',
+                        cursor: 'pointer',
+                        fontSize: '0.95rem',
+                        transition: 'all 0.2s'
+                    }}
+                >
+                    📬 Delivery Performance
+                </button>
+            </div>
 
-
+            {/* Tab Content */}
+            {activeTab === 'surveys' && (
+                <>
+                    <ReportList onCreateReport={handleCreateReport} onOpenReport={handleOpenReport} />
+                    {showCreateModal && <CreateReportModal onClose={() => setShowCreateModal(false)} onSelect={handleSurveySelect} />}
+                </>
+            )}
+            {activeTab === 'delivery' && <DeliveryAnalyticsDashboard />}
         </div>
     );
 };

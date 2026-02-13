@@ -227,7 +227,7 @@ router.post('/login', validate(loginSchema), async (req, res) => {
 
         // Account lockout check
         const lockoutKey = `login_attempts:${username}`;
-        const attempts = loginAttemptCache.get(lockoutKey) || 0;
+        const attempts = (await loginAttemptCache.get(lockoutKey)) || 0;
         if (attempts >= MAX_LOGIN_ATTEMPTS) {
             return res.status(429).json({
                 error: 'Account temporarily locked due to too many failed login attempts. Try again in 15 minutes.'
@@ -237,7 +237,7 @@ router.post('/login', validate(loginSchema), async (req, res) => {
         const user = await userRepo.findBy('username', username);
 
         if (!user) {
-            loginAttemptCache.set(lockoutKey, attempts + 1, 900);
+            await loginAttemptCache.set(lockoutKey, attempts + 1, 900);
             return res.status(401).json({ error: 'Invalid credentials' });
         }
 
@@ -255,12 +255,12 @@ router.post('/login', validate(loginSchema), async (req, res) => {
         }
 
         if (!isMatch) {
-            loginAttemptCache.set(lockoutKey, attempts + 1, 900);
+            await loginAttemptCache.set(lockoutKey, attempts + 1, 900);
             return res.status(401).json({ error: 'Invalid credentials' });
         }
 
         // Reset lockout counter on successful login
-        loginAttemptCache.del(lockoutKey);
+        await loginAttemptCache.del(lockoutKey);
 
         // Update last login timestamp
         await userRepo.update(user.id, { last_login_at: new Date() });

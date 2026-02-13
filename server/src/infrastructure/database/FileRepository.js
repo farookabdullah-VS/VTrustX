@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const logger = require('../logger');
 
 class FileRepository {
     constructor(entityName) {
@@ -25,7 +26,7 @@ class FileRepository {
                 this.currentId = parsed.length > 0 ? Math.max(...parsed.map(i => i.id)) + 1 : 1;
             }
         } catch (err) {
-            console.error(`Error loading ${this.entityName}:`, err);
+            logger.error(`Error loading ${this.entityName}`, { error: err.message });
         }
     }
 
@@ -34,7 +35,7 @@ class FileRepository {
             const data = Array.from(this.items.values());
             fs.writeFileSync(this.filePath, JSON.stringify(data, null, 2));
         } catch (err) {
-            console.error(`Error saving ${this.entityName}:`, err);
+            logger.error(`Error saving ${this.entityName}`, { error: err.message });
         }
     }
 
