@@ -8,6 +8,7 @@ const {
     calculateSampleSize,
     bayesianProbability
 } = require('../utils/statistics');
+const { emitAnalyticsUpdate } = require('../api/routes/analytics/sse');
 
 /**
  * A/B Testing Service
@@ -97,6 +98,14 @@ class ABTestService {
                 variantCount: createdVariants.length
             });
 
+            // Emit SSE event
+            emitAnalyticsUpdate(tenantId, 'ab_experiment_created', {
+                experimentId: experiment.id,
+                experimentName: experiment.name,
+                channel: experiment.channel,
+                variantCount: createdVariants.length
+            });
+
             return {
                 experiment,
                 variants: createdVariants
@@ -166,6 +175,14 @@ class ABTestService {
             );
 
             logger.info('[ABTestService] Variant assigned', {
+                experimentId,
+                variantId: selectedVariant.id,
+                variantName: selectedVariant.variant_name,
+                recipientId
+            });
+
+            // Emit SSE event (note: may want to batch these in high-volume scenarios)
+            emitAnalyticsUpdate(experiment.tenant_id, 'ab_variant_assigned', {
                 experimentId,
                 variantId: selectedVariant.id,
                 variantName: selectedVariant.variant_name,
@@ -504,8 +521,18 @@ class ABTestService {
             [experimentId]
         );
 
+        const experiment = result.rows[0];
+
         logger.info('[ABTestService] Experiment started', { experimentId });
-        return result.rows[0];
+
+        // Emit SSE event
+        emitAnalyticsUpdate(experiment.tenant_id, 'ab_experiment_started', {
+            experimentId: experiment.id,
+            experimentName: experiment.name,
+            channel: experiment.channel
+        });
+
+        return experiment;
     }
 
     /**
@@ -523,8 +550,17 @@ class ABTestService {
             [experimentId]
         );
 
+        const experiment = result.rows[0];
+
         logger.info('[ABTestService] Experiment paused', { experimentId });
-        return result.rows[0];
+
+        // Emit SSE event
+        emitAnalyticsUpdate(experiment.tenant_id, 'ab_experiment_paused', {
+            experimentId: experiment.id,
+            experimentName: experiment.name
+        });
+
+        return experiment;
     }
 
     /**
@@ -543,12 +579,21 @@ class ABTestService {
             [experimentId, winningVariantId]
         );
 
+        const experiment = result.rows[0];
+
         logger.info('[ABTestService] Experiment completed', {
             experimentId,
             winningVariantId
         });
 
-        return result.rows[0];
+        // Emit SSE event
+        emitAnalyticsUpdate(experiment.tenant_id, 'ab_experiment_completed', {
+            experimentId: experiment.id,
+            experimentName: experiment.name,
+            winningVariantId
+        });
+
+        return experiment;
     }
 
     /**
@@ -561,8 +606,21 @@ class ABTestService {
         const results = await this.calculateResults(experimentId);
 
         if (results.comparison.significant && results.comparison.winner) {
+            // Get winner variant details
+            const winnerVariant = results.variants.find(v => v.variantId === results.comparison.winner);
+
             // Auto-complete experiment
-            await this.completeExperiment(experimentId, results.comparison.winner);
+            const completedExperiment = await this.completeExperiment(experimentId, results.comparison.winner);
+
+            // Emit SSE event for winner declared
+            emitAnalyticsUpdate(completedExperiment.tenant_id, 'ab_winner_declared', {
+                experimentId,
+                experimentName: completedExperiment.name,
+                winningVariantId: results.comparison.winner,
+                winnerName: winnerVariant?.variantName || 'Unknown',
+                lift: results.comparison.details?.lift || 0,
+                pValue: results.comparison.details?.pValue || 0
+            });
 
             return {
                 shouldStop: true,
@@ -641,6 +699,301 @@ class ABTestService {
 
         const result = await query(queryText, params);
         return result.rows;
+    }
+
+    /**
+     * Create experiment with advanced statistical method
+     *
+     * @param {number} tenantId - Tenant ID
+     * @param {object} experimentData - Experiment configuration
+     * @param {array} variants - Array of variant definitions
+     * @param {object} options - Advanced options
+     * @returns {Promise<object>} Created experiment with method-specific initialization
+     */
+    async createExperimentAdvanced(tenantId, experimentData, variants, options = {}) {
+        const {
+            method = 'frequentist',  // 'frequentist', 'bayesian', 'sequential', 'bandit'
+            priors = null,           // Bayesian priors
+            sequentialChecks = 5,    // Number of interim analyses
+            plannedSampleSize = null, // For sequential analysis
+            banditAlgorithm = 'thompson' // 'thompson', 'ucb', 'epsilon_greedy'
+        } = options;
+
+        // Create base experiment with statistical method
+        const baseData = {
+            ...experimentData,
+            statistical_method: method
+        };
+
+        const result = await this.createExperiment(tenantId, baseData, variants);
+        const experimentId = result.experiment.id;
+
+        // Initialize method-specific components
+        try {
+            switch (method) {
+                case 'bayesian': {
+                    const BayesianABTestService = require('./BayesianABTestService');
+                    await BayesianABTestService.initializeBayesian(
+                        experimentId,
+                        result.variants,
+                        priors
+                    );
+                    logger.info('[ABTestService] Initialized Bayesian experiment', { experimentId });
+                    break;
+                }
+
+                case 'sequential': {
+                    const SequentialAnalysisService = require('./SequentialAnalysisService');
+                    if (!plannedSampleSize) {
+                        throw new Error('plannedSampleSize required for sequential analysis');
+                    }
+                    await SequentialAnalysisService.initializeSequential(
+                        experimentId,
+                        plannedSampleSize,
+                        sequentialChecks
+                    );
+                    logger.info('[ABTestService] Initialized sequential experiment', { experimentId });
+                    break;
+                }
+
+                case 'bandit': {
+                    const MultiArmedBanditService = require('./MultiArmedBanditService');
+                    const banditVariants = result.variants.map(v => ({
+                        id: v.id,
+                        name: v.variant_name,
+                        initialAllocation: experimentData.trafficAllocation[v.variant_name]
+                    }));
+                    await MultiArmedBanditService.initializeBandit(
+                        experimentId,
+                        banditVariants,
+                        banditAlgorithm
+                    );
+                    logger.info('[ABTestService] Initialized bandit experiment', { experimentId });
+                    break;
+                }
+
+                case 'frequentist':
+                default:
+                    // No additional initialization needed
+                    break;
+            }
+
+            return result;
+        } catch (error) {
+            logger.error('[ABTestService] Failed to initialize advanced method', {
+                error: error.message,
+                experimentId,
+                method
+            });
+            throw error;
+        }
+    }
+
+    /**
+     * Assign variant using smart allocation (bandit if enabled, otherwise standard)
+     *
+     * @param {number} experimentId - Experiment ID
+     * @param {string} recipientId - Recipient identifier
+     * @param {string} recipientName - Recipient name (optional)
+     * @returns {Promise<object>} Assigned variant
+     */
+    async assignVariantSmart(experimentId, recipientId, recipientName = null) {
+        // Get experiment to check statistical method
+        const expResult = await query(
+            'SELECT statistical_method, bandit_algorithm FROM ab_experiments WHERE id = $1',
+            [experimentId]
+        );
+
+        if (expResult.rows.length === 0) {
+            throw new Error(`Experiment ${experimentId} not found`);
+        }
+
+        const experiment = expResult.rows[0];
+
+        // Use bandit selection if method is 'bandit'
+        if (experiment.statistical_method === 'bandit') {
+            const MultiArmedBanditService = require('./MultiArmedBanditService');
+            const selected = await MultiArmedBanditService.selectVariant(experimentId);
+
+            // Get variant details
+            const variantResult = await query(
+                'SELECT * FROM ab_variants WHERE id = $1',
+                [selected.variantId]
+            );
+
+            const variant = variantResult.rows[0];
+
+            // Create assignment record
+            await query(
+                `INSERT INTO ab_assignments
+                (experiment_id, variant_id, recipient_id, recipient_name, assigned_at)
+                VALUES ($1, $2, $3, $4, NOW())`,
+                [experimentId, selected.variantId, recipientId, recipientName]
+            );
+
+            logger.info('[ABTestService] Bandit variant assigned', {
+                experimentId,
+                variantId: selected.variantId,
+                variantName: selected.variantName,
+                algorithm: selected.algorithm
+            });
+
+            return variant;
+        }
+
+        // Otherwise use standard allocation
+        return await this.assignVariant(experimentId, recipientId, recipientName);
+    }
+
+    /**
+     * Check and stop experiment using appropriate method
+     *
+     * @param {number} experimentId - Experiment ID
+     * @returns {Promise<object>} Stopping decision
+     */
+    async checkAndStopAdvanced(experimentId) {
+        // Get experiment method
+        const expResult = await query(
+            'SELECT statistical_method, tenant_id FROM ab_experiments WHERE id = $1',
+            [experimentId]
+        );
+
+        if (expResult.rows.length === 0) {
+            throw new Error(`Experiment ${experimentId} not found`);
+        }
+
+        const experiment = expResult.rows[0];
+        const method = experiment.statistical_method;
+
+        try {
+            switch (method) {
+                case 'bayesian': {
+                    const BayesianABTestService = require('./BayesianABTestService');
+                    const result = await BayesianABTestService.shouldStopBayesian(experimentId);
+
+                    if (result.shouldStop) {
+                        await this.completeExperiment(experimentId, result.winner);
+                    }
+
+                    return result;
+                }
+
+                case 'sequential': {
+                    const SequentialAnalysisService = require('./SequentialAnalysisService');
+                    const result = await SequentialAnalysisService.performInterimAnalysis(experimentId);
+
+                    if (result.shouldStop) {
+                        // Determine winner if stopped for efficacy
+                        let winnerId = null;
+                        if (result.decision === 'stop_winner') {
+                            // Use standard winner detection
+                            const standardResult = await this.checkAndStopExperiment(experimentId);
+                            winnerId = standardResult.winner;
+                        }
+                        // Don't set winner if stopped for futility
+                    }
+
+                    return {
+                        shouldStop: result.shouldStop,
+                        winner: null,  // Sequential doesn't directly identify winner
+                        reason: result.reason,
+                        details: result
+                    };
+                }
+
+                case 'frequentist':
+                default:
+                    // Use standard frequentist method
+                    return await this.checkAndStopExperiment(experimentId);
+            }
+        } catch (error) {
+            logger.error('[ABTestService] Failed to check stopping condition', {
+                error: error.message,
+                experimentId,
+                method
+            });
+            throw error;
+        }
+    }
+
+    /**
+     * Get advanced results based on statistical method
+     *
+     * @param {number} experimentId - Experiment ID
+     * @returns {Promise<object>} Method-specific results
+     */
+    async getAdvancedResults(experimentId) {
+        // Get experiment method
+        const expResult = await query(
+            'SELECT statistical_method FROM ab_experiments WHERE id = $1',
+            [experimentId]
+        );
+
+        if (expResult.rows.length === 0) {
+            throw new Error(`Experiment ${experimentId} not found`);
+        }
+
+        const method = expResult.rows[0].statistical_method;
+
+        // Get base results
+        const baseResults = await this.calculateResults(experimentId);
+
+        // Add method-specific results
+        try {
+            switch (method) {
+                case 'bayesian': {
+                    const BayesianABTestService = require('./BayesianABTestService');
+                    const bayesianResults = await BayesianABTestService.getResults(experimentId);
+
+                    return {
+                        ...baseResults,
+                        method: 'bayesian',
+                        bayesian: bayesianResults
+                    };
+                }
+
+                case 'sequential': {
+                    const SequentialAnalysisService = require('./SequentialAnalysisService');
+                    const sequentialResults = await SequentialAnalysisService.getResults(experimentId);
+
+                    return {
+                        ...baseResults,
+                        method: 'sequential',
+                        sequential: sequentialResults
+                    };
+                }
+
+                case 'bandit': {
+                    const MultiArmedBanditService = require('./MultiArmedBanditService');
+                    const banditResults = await MultiArmedBanditService.getResults(experimentId);
+
+                    return {
+                        ...baseResults,
+                        method: 'bandit',
+                        bandit: banditResults
+                    };
+                }
+
+                case 'frequentist':
+                default:
+                    return {
+                        ...baseResults,
+                        method: 'frequentist'
+                    };
+            }
+        } catch (error) {
+            logger.error('[ABTestService] Failed to get advanced results', {
+                error: error.message,
+                experimentId,
+                method
+            });
+            // Return base results if advanced results fail
+            return {
+                ...baseResults,
+                method,
+                error: 'Failed to load advanced results'
+            };
+        }
     }
 }
 

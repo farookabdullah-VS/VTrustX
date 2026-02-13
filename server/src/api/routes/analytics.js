@@ -18,6 +18,10 @@ router.use('/sse', sseRouter);
 const sentimentRouter = require('./analytics/sentiment');
 router.use('/sentiment', sentimentRouter);
 
+// Import power analysis routes
+const powerAnalysisRouter = require('./analytics/power-analysis');
+router.use('/power-analysis', powerAnalysisRouter);
+
 const STOP_WORDS = new Set(['the', 'and', 'a', 'to', 'of', 'in', 'i', 'is', 'that', 'it', 'on', 'you', 'this', 'for', 'but', 'with', 'are', 'have', 'be', 'at', 'or', 'as', 'was', 'so', 'if', 'out', 'not', 'an', 'very', 'my', 'me', 'we']);
 
 // Helper to extract questions (similar to reports.js)

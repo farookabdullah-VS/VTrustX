@@ -216,6 +216,56 @@ router.get('/:id/results', async (req, res) => {
 
 /**
  * @swagger
+ * /api/ab-tests/{id}/advanced-results:
+ *   get:
+ *     summary: Get advanced statistical results (Bayesian, Sequential, Bandit)
+ *     tags: [A/B Testing]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Advanced results based on statistical method
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 bayesian:
+ *                   type: object
+ *                 sequential:
+ *                   type: object
+ *                 bandit:
+ *                   type: object
+ *       404:
+ *         description: Experiment not found or not using advanced methods
+ *       500:
+ *         description: Server error
+ */
+router.get('/:id/advanced-results', async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const results = await ABTestService.getAdvancedResults(id);
+
+        if (!results) {
+            return res.status(404).json({
+                error: 'No advanced results available. Experiment may not be using advanced statistical methods.'
+            });
+        }
+
+        res.json(results);
+    } catch (error) {
+        logger.error('[ABTestRoutes] Failed to get advanced results', { error: error.message });
+        res.status(500).json({ error: error.message });
+    }
+});
+
+/**
+ * @swagger
  * /api/ab-tests/{id}/start:
  *   post:
  *     summary: Start experiment (change status to running)
