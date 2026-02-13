@@ -9,7 +9,7 @@ const logger = require('../infrastructure/logger');
  * Cron job that checks running experiments every 5 minutes
  * and automatically declares winners when statistical significance is achieved.
  *
- * Schedule: */5 * * * * (every 5 minutes)
+ * Schedule: Every 5 minutes (cron: "* /5 * * * *" without the space)
  *
  * Enable/Disable: Set ENABLE_AB_AUTO_WINNER=false to disable
  */

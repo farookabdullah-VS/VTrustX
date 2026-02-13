@@ -295,7 +295,11 @@ if (process.env.ENABLE_AB_AUTO_WINNER !== 'false') {
         require('./src/jobs/abTestMonitor');
         logger.info('[Cron] A/B test auto-winner detection enabled');
     } catch (err) {
-        logger.error('[Cron] Failed to start A/B test monitor', { error: err.message });
+        logger.error('[Cron] Failed to start A/B test monitor', {
+            error: err.message,
+            stack: err.stack,
+            name: err.name
+        });
     }
 }
 
