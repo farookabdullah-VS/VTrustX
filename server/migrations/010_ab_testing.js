@@ -61,9 +61,8 @@ exports.up = async (pgm) => {
             comment: 'Statistical confidence level (e.g., 95.00 for 95%)'
         },
         winning_variant_id: {
-            type: 'integer',
-            references: 'ab_variants(id)',
-            onDelete: 'SET NULL'
+            type: 'integer'
+            // Foreign key added after ab_variants table creation
         },
         started_at: {
             type: 'timestamp'
@@ -188,6 +187,15 @@ exports.up = async (pgm) => {
     pgm.createIndex('ab_assignments', 'variant_id');
     pgm.createIndex('ab_assignments', ['experiment_id', 'recipient_id'], { unique: true });
     pgm.createIndex('ab_assignments', 'message_id');
+
+    // Add foreign key constraint for winning_variant_id (after ab_variants table exists)
+    pgm.addConstraint('ab_experiments', 'ab_experiments_winning_variant_id_fkey', {
+        foreignKeys: {
+            columns: 'winning_variant_id',
+            references: 'ab_variants(id)',
+            onDelete: 'SET NULL'
+        }
+    });
 
     // Add experiment_id to distributions table
     pgm.addColumns('distributions', {

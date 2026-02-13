@@ -77,6 +77,7 @@ CREATE TABLE IF NOT EXISTS crm_accounts (
 CREATE TABLE IF NOT EXISTS crm_contacts (
     id SERIAL PRIMARY KEY,
     account_id INTEGER REFERENCES crm_accounts(id),
+    tenant_id INTEGER REFERENCES tenants(id),
     name VARCHAR(255) NOT NULL,
     email VARCHAR(255),
     phone VARCHAR(50),
@@ -215,6 +216,30 @@ CREATE TABLE IF NOT EXISTS submissions (
     tenant_id INTEGER REFERENCES tenants(id),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP
+);
+
+-- 9a. Contacts Directory
+CREATE TABLE IF NOT EXISTS contacts (
+    id SERIAL PRIMARY KEY,
+    tenant_id INTEGER REFERENCES tenants(id),
+    name VARCHAR(255) NOT NULL,
+    email VARCHAR(255),
+    mobile VARCHAR(50),
+    address TEXT,
+    designation VARCHAR(100),
+    department VARCHAR(100),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 9b. Form-Contact Associations (Survey Audience)
+CREATE TABLE IF NOT EXISTS form_contacts (
+    id SERIAL PRIMARY KEY,
+    form_id INTEGER REFERENCES forms(id),
+    contact_id INTEGER REFERENCES contacts(id),
+    status VARCHAR(50) DEFAULT 'white_listed',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(form_id, contact_id)
 );
 
 -- 10. Subscription Engine (New Version)

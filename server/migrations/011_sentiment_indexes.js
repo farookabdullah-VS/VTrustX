@@ -16,7 +16,7 @@ exports.up = (pgm) => {
     // Note: Using expression index for numeric score extraction
     pgm.sql(`
         CREATE INDEX IF NOT EXISTS idx_submissions_sentiment_score
-        ON submissions ((analysis->'sentiment'->'aggregate'->>'score')::numeric)
+        ON submissions (CAST((analysis->'sentiment'->'aggregate'->>'score') AS numeric))
         WHERE analysis->'sentiment' IS NOT NULL
     `);
 
@@ -37,7 +37,7 @@ exports.up = (pgm) => {
     // Index for flagged sentiment queries
     pgm.sql(`
         CREATE INDEX IF NOT EXISTS idx_submissions_sentiment_flagged
-        ON submissions (((analysis->'sentiment'->>'flagged')::boolean))
+        ON submissions (CAST((analysis->'sentiment'->>'flagged') AS boolean))
         WHERE analysis->'sentiment' IS NOT NULL
     `);
 };

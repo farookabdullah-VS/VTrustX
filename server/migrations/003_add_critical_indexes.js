@@ -20,8 +20,8 @@ exports.up = (pgm) => {
     // Subscriptions — tenant subscription checks
     pgm.createIndex('subscriptions', ['tenant_id', 'status'], { ifNotExists: true });
 
-    // CJM maps — tenant listing
-    pgm.createIndex('cjm_maps', 'tenant_id', { ifNotExists: true });
+    // CJM maps index moved to migration 004 (after table creation)
+    // pgm.createIndex('cjm_maps', 'tenant_id', { ifNotExists: true });
 
     // Submissions — composite for common form+tenant+date pattern
     pgm.createIndex('submissions', ['form_id', 'tenant_id', 'created_at'], {
@@ -49,7 +49,7 @@ exports.down = (pgm) => {
     pgm.dropIndex('users', 'tenant_id', { ifExists: true });
     pgm.dropIndex('users', 'email', { ifExists: true });
     pgm.dropIndex('subscriptions', ['tenant_id', 'status'], { ifExists: true });
-    pgm.dropIndex('cjm_maps', 'tenant_id', { ifExists: true });
+    // pgm.dropIndex('cjm_maps', 'tenant_id', { ifExists: true });
     pgm.dropIndex('submissions', ['form_id', 'tenant_id', 'created_at'], {
         ifExists: true,
         name: 'idx_submissions_form_tenant_created',
