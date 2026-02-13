@@ -37,7 +37,7 @@
     "react-router-dom": "6.28.0",
     "react-window": "^2.2.6",
     "reactflow": "^11.11.4",
-    "recharts": "^2.10.3",
+    "recharts": "^3.7.0",
     "survey-analytics": "^2.5.3",
     "survey-core": "^2.5.8",
     "survey-creator-core": "^2.5.8",
