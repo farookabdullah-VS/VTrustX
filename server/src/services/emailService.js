@@ -1,7 +1,9 @@
 const imaps = require('imap-simple');
 const simpleParser = require('mailparser').simpleParser;
-const { pool } = require('../infrastructure/database/db');
+const { pool, query } = require('../infrastructure/database/db');
 const PostgresRepository = require('../infrastructure/database/PostgresRepository');
+const logger = require('../infrastructure/logger');
+const { emitAnalyticsUpdate } = require('../api/routes/analytics/sse');
 
 const ticketRepo = new PostgresRepository('tickets');
 const messageRepo = new PostgresRepository('ticket_messages');
@@ -55,15 +57,82 @@ class EmailService {
         }
     }
 
-    async sendEmail(to, subject, html, text) {
-        const mailOptions = {
-            from: process.env.SMTP_FROM || '"RayiX Support" <support@rayix.com>',
-            to,
-            subject,
-            text,
-            html
-        };
-        await this.transporter.sendMail(mailOptions);
+    async sendEmail(to, subject, html, text, options = {}) {
+        const { tenantId, distributionId, recipientName, attachments = [] } = options;
+
+        try {
+            const mailOptions = {
+                from: process.env.SMTP_FROM || '"RayiX Support" <support@rayix.com>',
+                to,
+                subject,
+                text,
+                html
+            };
+
+            // Add attachments if provided
+            if (attachments && attachments.length > 0) {
+                mailOptions.attachments = attachments;
+            }
+
+            const info = await this.transporter.sendMail(mailOptions);
+            const messageId = info.messageId;
+
+            logger.info('[EmailService] Email sent successfully', {
+                to,
+                messageId,
+                subject
+            });
+
+            // Track message in database if tenantId provided
+            if (tenantId) {
+                await this.trackMessage({
+                    tenantId,
+                    distributionId,
+                    recipientEmail: to,
+                    recipientName,
+                    messageId,
+                    status: 'sent',
+                    sentAt: new Date()
+                });
+
+                // Emit real-time analytics event
+                emitAnalyticsUpdate(tenantId, 'message_sent', {
+                    channel: 'email',
+                    distributionId,
+                    recipientEmail: to,
+                    messageId,
+                    status: 'sent'
+                });
+            }
+
+            return {
+                success: true,
+                messageId,
+                email: to
+            };
+
+        } catch (error) {
+            logger.error('[EmailService] Failed to send email', {
+                to,
+                error: error.message
+            });
+
+            // Track failed message
+            if (tenantId) {
+                await this.trackMessage({
+                    tenantId,
+                    distributionId,
+                    recipientEmail: to,
+                    recipientName,
+                    status: 'failed',
+                    errorCode: error.code || 'SEND_FAILED',
+                    errorMessage: error.message,
+                    failedAt: new Date()
+                });
+            }
+
+            throw error;
+        }
     }
     async processAllChannels() {
         try {
@@ -224,6 +293,159 @@ class EmailService {
             });
             // -------------------------------------------
         }
+    }
+
+    /**
+     * Track email message in database
+     */
+    async trackMessage(data) {
+        try {
+            const {
+                tenantId,
+                distributionId,
+                recipientEmail,
+                recipientName,
+                messageId,
+                status,
+                errorCode,
+                errorMessage,
+                sentAt,
+                failedAt
+            } = data;
+
+            await query(
+                `INSERT INTO email_messages
+                (tenant_id, distribution_id, recipient_email, recipient_name, message_id, status, error_code, error_message, sent_at, failed_at)
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
+                [tenantId, distributionId || null, recipientEmail, recipientName || null, messageId || null, status, errorCode || null, errorMessage || null, sentAt || null, failedAt || null]
+            );
+        } catch (error) {
+            logger.error('[EmailService] Failed to track message', { error: error.message });
+        }
+    }
+
+    /**
+     * Process email provider webhook status update
+     * Supports SendGrid, Mailgun, AWS SES webhook formats
+     * @param {object} webhookData - Webhook payload from email provider
+     * @param {string} provider - Email provider name ('sendgrid', 'mailgun', 'ses')
+     */
+    async processStatusUpdate(webhookData, provider = 'sendgrid') {
+        try {
+            let messageId, event, timestamp, errorCode, errorMessage;
+
+            // Parse webhook data based on provider
+            if (provider === 'sendgrid') {
+                messageId = webhookData.smtp_id || webhookData.sg_message_id;
+                event = webhookData.event; // 'delivered', 'bounce', 'open', 'click', etc.
+                timestamp = webhookData.timestamp ? new Date(webhookData.timestamp * 1000) : new Date();
+                errorCode = webhookData.reason;
+                errorMessage = webhookData.reason;
+            } else if (provider === 'mailgun') {
+                messageId = webhookData['message-headers']?.find(h => h[0] === 'Message-Id')?.[1];
+                event = webhookData.event; // 'delivered', 'failed', 'opened', 'clicked'
+                timestamp = webhookData.timestamp ? new Date(webhookData.timestamp * 1000) : new Date();
+                errorCode = webhookData['delivery-status']?.code;
+                errorMessage = webhookData['delivery-status']?.message;
+            } else if (provider === 'ses') {
+                messageId = webhookData.mail?.messageId;
+                event = webhookData.eventType?.toLowerCase(); // 'Delivery', 'Bounce', 'Open', 'Click'
+                timestamp = webhookData.mail?.timestamp ? new Date(webhookData.mail.timestamp) : new Date();
+                errorCode = webhookData.bounce?.bounceType;
+                errorMessage = webhookData.bounce?.bouncedRecipients?.[0]?.diagnosticCode;
+            }
+
+            if (!messageId) {
+                logger.warn('[EmailService] Webhook missing message ID', { provider });
+                return;
+            }
+
+            const status = this.mapEmailStatus(event);
+
+            // Build update query based on status
+            let updateQuery = 'UPDATE email_messages SET status = $1, updated_at = $2';
+            const params = [status, timestamp];
+            let paramIndex = 3;
+
+            if (status === 'delivered') {
+                updateQuery += `, delivered_at = $${paramIndex}`;
+                params.push(timestamp);
+                paramIndex++;
+            } else if (status === 'opened') {
+                updateQuery += `, opened_at = $${paramIndex}`;
+                params.push(timestamp);
+                paramIndex++;
+            } else if (status === 'clicked') {
+                updateQuery += `, clicked_at = $${paramIndex}`;
+                params.push(timestamp);
+                paramIndex++;
+            } else if (status === 'bounced') {
+                updateQuery += `, bounced_at = $${paramIndex}, error_code = $${paramIndex + 1}, error_message = $${paramIndex + 2}`;
+                params.push(timestamp, errorCode || null, errorMessage || null);
+                paramIndex += 3;
+            } else if (status === 'failed') {
+                updateQuery += `, failed_at = $${paramIndex}, error_code = $${paramIndex + 1}, error_message = $${paramIndex + 2}`;
+                params.push(timestamp, errorCode || null, errorMessage || null);
+                paramIndex += 3;
+            }
+
+            updateQuery += ` WHERE message_id = $${paramIndex}`;
+            params.push(messageId);
+
+            const result = await query(updateQuery, params);
+
+            if (result.rowCount > 0) {
+                logger.info('[EmailService] Status updated', {
+                    messageId,
+                    status,
+                    provider
+                });
+
+                // Get tenant ID and distribution ID for the message to emit event
+                const msgResult = await query(
+                    'SELECT tenant_id, distribution_id FROM email_messages WHERE message_id = $1',
+                    [messageId]
+                );
+
+                if (msgResult.rows.length > 0) {
+                    const { tenant_id, distribution_id } = msgResult.rows[0];
+                    emitAnalyticsUpdate(tenant_id, 'message_status_updated', {
+                        channel: 'email',
+                        distributionId: distribution_id,
+                        messageId,
+                        status,
+                        provider
+                    });
+                }
+            } else {
+                logger.warn('[EmailService] Message not found for status update', { messageId, provider });
+            }
+
+        } catch (error) {
+            logger.error('[EmailService] Failed to process status update', { error: error.message });
+        }
+    }
+
+    /**
+     * Map email provider event to internal status
+     * @param {string} event - Email provider event name
+     * @returns {string} Internal status
+     */
+    mapEmailStatus(event) {
+        const statusMap = {
+            'delivered': 'delivered',
+            'delivery': 'delivered',
+            'bounce': 'bounced',
+            'bounced': 'bounced',
+            'failed': 'failed',
+            'dropped': 'failed',
+            'open': 'opened',
+            'opened': 'opened',
+            'click': 'clicked',
+            'clicked': 'clicked',
+            'sent': 'sent'
+        };
+        return statusMap[event?.toLowerCase()] || 'pending';
     }
 }
 

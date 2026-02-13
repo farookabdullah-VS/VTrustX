@@ -6,6 +6,14 @@ const logger = require('../../infrastructure/logger');
 const NodeCache = require('node-cache');
 const analyticsCache = new NodeCache({ stdTTL: 600, maxKeys: 500 }); // 10 minutes cache, max 500 entries
 
+// Import delivery analytics routes
+const deliveryRouter = require('./analytics/delivery');
+router.use(deliveryRouter);
+
+// Import SSE routes
+const { router: sseRouter } = require('./analytics/sse');
+router.use('/sse', sseRouter);
+
 const STOP_WORDS = new Set(['the', 'and', 'a', 'to', 'of', 'in', 'i', 'is', 'that', 'it', 'on', 'you', 'this', 'for', 'but', 'with', 'are', 'have', 'be', 'at', 'or', 'as', 'was', 'so', 'if', 'out', 'not', 'an', 'very', 'my', 'me', 'we']);
 
 // Helper to extract questions (similar to reports.js)

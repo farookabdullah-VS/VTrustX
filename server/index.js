@@ -3,6 +3,9 @@ try {
     dotenv.config();
 } catch (e) { /* dotenv optional */ }
 
+// Initialize Sentry as early as possible
+const { initSentry, getSentryErrorHandler } = require('./src/config/sentry');
+
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
@@ -24,18 +27,30 @@ const helmet = require('helmet');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Initialize Sentry request handlers (must be before other middleware)
+initSentry(app);
+
 // --- Rate Limiting using CacheService ---
 const createRateLimiter = (limit = 100, windowSec = 60) => {
-    return (req, res, next) => {
-        const key = `rl:${req.ip || req.headers['x-forwarded-for'] || 'unknown'}`;
-        const current = rateLimitCache.get(key) || 0;
-        if (current >= limit) {
-            res.setHeader('Retry-After', String(windowSec));
-            logger.warn('Rate limit exceeded', { ip: req.ip, limit });
-            return res.status(429).json({ error: 'Too many requests. Please try again later.' });
+    return async (req, res, next) => {
+        const key = `${req.ip || req.headers['x-forwarded-for'] || 'unknown'}`;
+
+        try {
+            // Use atomic increment for accurate rate limiting
+            const current = await rateLimitCache.incr(key, windowSec);
+
+            if (current > limit) {
+                res.setHeader('Retry-After', String(windowSec));
+                logger.warn('Rate limit exceeded', { ip: req.ip, limit, current });
+                return res.status(429).json({ error: 'Too many requests. Please try again later.' });
+            }
+
+            next();
+        } catch (err) {
+            // If rate limiting fails, log and allow request through (fail open)
+            logger.error('Rate limiter error', { error: err.message, ip: req.ip });
+            next();
         }
-        rateLimitCache.set(key, current + 1, windowSec);
-        next();
     };
 };
 
@@ -113,6 +128,9 @@ app.use((req, res, next) => {
         '/api/submissions',  // Public form submissions
         '/api/crm/webhooks/',
         '/api/crm/public/',
+        '/api/webhooks/whatsapp/', // Twilio WhatsApp webhooks
+        '/api/webhooks/email/',    // Email provider webhooks
+        '/api/webhooks/sms/',      // SMS provider webhooks
         '/health',
         '/ready',
     ];
@@ -214,6 +232,11 @@ app.use('/api/v1/smm', require('./src/api/routes/smm'));
 app.use('/api/actions', require('./src/api/routes/actions'));
 app.use('/api/close-loop', require('./src/api/routes/close_loop'));
 app.use('/api/distributions', require('./src/api/routes/distributions/index'));
+app.use('/api/media', require('./src/api/routes/media/index'));
+app.use('/api/ab-tests', require('./src/api/routes/ab-testing/index'));
+app.use('/api/webhooks/whatsapp', require('./src/api/routes/webhooks/whatsapp'));
+app.use('/api/webhooks/email', require('./src/api/routes/webhooks/email-webhooks'));
+app.use('/api/webhooks/sms', require('./src/api/routes/webhooks/sms-webhooks'));
 app.use('/api/reputation', require('./src/api/routes/reputation/index'));
 app.use('/api/directory', require('./src/api/routes/directory/index'));
 app.use('/api/textiq', require('./src/api/routes/textiq/index'));
@@ -231,6 +254,9 @@ app.use('/uploads', express.static(uploadDir));
 app.get('*', (req, res) => {
     res.sendFile(path.resolve(__dirname, '../client/dist/index.html'));
 });
+
+// --- Sentry Error Handler (before global error handler) ---
+app.use(getSentryErrorHandler());
 
 // --- Global Error Handler ---
 app.use(errorHandler);
