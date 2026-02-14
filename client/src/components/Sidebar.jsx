@@ -6,7 +6,7 @@ import {
     LayoutDashboard, UserCircle, Contact, Fingerprint, Map, UserCog,
     BarChart3, Bot, ClipboardList, Library, Ticket, Settings, Plug,
     Shield, Users, CreditCard, Palette, Wrench, Globe, HelpCircle,
-    GripVertical, Star, PieChart, PhoneCall, Video, Share2, Target, Database, Megaphone, Smartphone, BookOpen, Menu, FlaskConical, Zap
+    GripVertical, Star, PieChart, PhoneCall, Video, Share2, Target, Database, Megaphone, Smartphone, BookOpen, Menu, FlaskConical, Zap, Key, Webhook
 } from 'lucide-react';
 
 const getInitialGroups = (user) => [
@@ -115,7 +115,9 @@ const getInitialGroups = (user) => [
         id: 'integrations',
         title: "sidebar.group.integrations",
         items: [
-            { id: 'integrations', label: 'sidebar.item.integrations', icon: <Plug size={16} /> }
+            { id: 'integrations', label: 'sidebar.item.integrations', icon: <Plug size={16} /> },
+            { id: 'api-keys', label: 'API Keys', icon: <Key size={16} /> },
+            { id: 'webhooks', label: 'Webhooks', icon: <Webhook size={16} /> }
         ]
     },
     {

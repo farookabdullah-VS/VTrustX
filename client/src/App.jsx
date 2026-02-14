@@ -80,6 +80,10 @@ const DripCampaignBuilder = React.lazy(() => import('./components/drip-campaigns
 const DripCampaignDetails = React.lazy(() => import('./components/drip-campaigns/DripCampaignDetails'));
 const WorkflowAutomationList = React.lazy(() => import('./components/workflows/WorkflowAutomationList'));
 const WorkflowAutomationBuilder = React.lazy(() => import('./components/workflows/WorkflowAutomationBuilder'));
+const APIKeysList = React.lazy(() => import('./components/api-keys/APIKeysList'));
+const APIKeyBuilder = React.lazy(() => import('./components/api-keys/APIKeyBuilder'));
+const WebhooksList = React.lazy(() => import('./components/webhooks/WebhooksList'));
+const WebhookBuilder = React.lazy(() => import('./components/webhooks/WebhookBuilder'));
 
 // --- View title mapping ---
 const VIEW_TITLES = {
@@ -136,6 +140,8 @@ const VIEW_TITLES = {
   'teams-config': 'Microsoft Teams Bot',
   'drip-campaigns': 'Drip Campaigns',
   'workflows-automation': 'Workflow Automations',
+  'api-keys': 'API Keys',
+  'webhooks': 'Webhooks',
 };
 
 // --- Protected Route Wrapper ---
@@ -412,6 +418,12 @@ function AppRoutes() {
               <Route path="drip-campaigns/:id" element={<DripCampaignDetails />} />
               <Route path="workflows-automation" element={<WorkflowAutomationList />} />
               <Route path="workflows-automation/new" element={<WorkflowAutomationBuilder />} />
+
+              {/* API Keys & Webhooks Routes */}
+              <Route path="api-keys" element={<APIKeysList />} />
+              <Route path="api-keys/new" element={<APIKeyBuilder />} />
+              <Route path="webhooks" element={<WebhooksList />} />
+              <Route path="webhooks/new" element={<WebhookBuilder />} />
 
               {/* Backward Compatibility Redirects */}
               <Route path="form-viewer" element={<Navigate to="/surveys" replace />} />
