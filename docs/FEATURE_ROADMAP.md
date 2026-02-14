@@ -1047,13 +1047,21 @@ CREATE TABLE telegram_messages (
     - `SSOService.js` (650+ lines) - Provider management
     - `samlStrategy.js` (150+ lines) - SAML strategy
     - `oidcStrategy.js` (130+ lines) - OIDC/OAuth2 strategy
+    - `ldapStrategy.js` (250+ lines) - LDAP/AD strategy
   - **Frontend Implementation**:
     - `SSOProvidersList.jsx` - Provider management dashboard
-    - `SSOProviderWizard.jsx` - 4-step configuration wizard
+    - `SSOProviderWizard.jsx` - 4-step configuration wizard with LDAP support
     - Dynamic SSO buttons on login page
+    - LDAP modal for username/password input
     - SAML metadata download
-  - **Database**: `sso_providers`, `sso_connections`, `sso_login_sessions`
-  - **Supported Providers**: Okta, Azure AD, Google Workspace, OneLogin, Auth0, PingIdentity, any SAML 2.0/OIDC provider
+  - **Database**:
+    - `sso_providers` (migration 1771105000000 added LDAP fields)
+    - `sso_connections`
+    - `sso_login_sessions`
+  - **Supported Protocols**:
+    - SAML 2.0 - Okta, Azure AD, Google Workspace, OneLogin, Auth0, PingIdentity
+    - OAuth2/OIDC - Google, Auth0, any OIDC provider
+    - LDAP/AD - Active Directory, OpenLDAP, ApacheDS, any LDAP v3 server
 
 **Remaining Features**:
 - ⏳ Field-level encryption for sensitive data (partially implemented - have encryption infrastructure)
