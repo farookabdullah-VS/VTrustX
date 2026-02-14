@@ -727,27 +727,68 @@ CREATE TABLE telegram_messages (
 
 ---
 
-### 16. Public API & Webhooks
-**Priority**: HIGH | **Effort**: HIGH | **Impact**: HIGH
+### 16. Public API & Webhooks ✅ COMPLETED
+**Priority**: HIGH | **Effort**: HIGH | **Impact**: HIGH | **Status**: ✅ COMPLETED (Feb 14, 2026)
 
-**Description**: RESTful API for third-party integrations and custom applications.
+**Description**: Comprehensive API key management and webhook subscription system for third-party integrations and custom applications.
 
-**API Capabilities**:
-- Create/read/update/delete surveys
-- Manage distributions
-- Send individual surveys
-- Fetch responses and analytics
-- Webhook subscriptions (response received, distribution sent)
-- Rate limiting and authentication (API keys + OAuth2)
+**Implemented Features**:
 
-**Webhook Events**:
-- `response.received`
-- `response.completed`
-- `distribution.sent`
-- `distribution.completed`
-- `workflow.triggered`
+**✅ API Key Management**:
+- ✅ Secure key generation (vx_live_* / vx_test_* format)
+- ✅ SHA-256 hashing (never store plaintext)
+- ✅ Scope-based permissions (forms:read, forms:write, responses:*, distributions:*, contacts:*, webhooks:manage, analytics:read)
+- ✅ Rate limiting (configurable per key, default 1000 req/hour)
+- ✅ Key validation, rotation, and expiration
+- ✅ Usage tracking and statistics
+- ✅ Return plaintext key only once on creation
 
-**Documentation**: Auto-generated OpenAPI/Swagger docs
+**✅ Webhook Management**:
+- ✅ Subscription CRUD operations
+- ✅ Event triggering and delivery
+- ✅ HMAC-SHA256 signatures for payload verification
+- ✅ Exponential backoff retry logic (configurable max attempts)
+- ✅ Delivery status tracking (pending → retrying → success/failed)
+- ✅ Async delivery queue (fire-and-forget pattern)
+- ✅ Delivery logs and statistics
+
+**✅ Webhook Events Implemented**:
+- ✅ `response.received` - Triggered when submission created
+- ✅ `response.completed` - Triggered when submission completed
+- ✅ `distribution.sent` - Triggered when distribution created
+- ✅ `distribution.completed` - Triggered when batch sending completes
+- ✅ `workflow.triggered` - Triggered when workflow executes
+- ✅ `form.created` - Event type defined
+- ✅ `form.updated` - Event type defined
+
+**✅ Frontend Components**:
+- ✅ API Keys List - View, manage, revoke, delete keys
+- ✅ API Key Builder - Create keys with scope selection
+- ✅ Webhooks List - View, manage, test webhooks
+- ✅ Webhook Builder - Create webhook subscriptions
+
+**✅ Security Features**:
+- ✅ API keys stored as SHA-256 hashes
+- ✅ HMAC-SHA256 webhook signatures with timestamp (replay attack prevention)
+- ✅ Scoped permissions (granular access control)
+- ✅ Rate limiting per API key with X-RateLimit headers
+- ✅ Webhook secret validation
+- ✅ Tenant isolation on all queries
+
+**Technical Implementation**:
+- Database: 3 tables (api_keys, webhook_subscriptions, webhook_deliveries) - Migration 1771099212045
+- Backend Services: `APIKeyService.js` (400+ lines), `WebhookService.js` (550+ lines)
+- Middleware: `apiAuth.js` (Bearer token authentication, scope checking)
+- API Routes: `/api/api-keys/*` (6 endpoints), `/api/webhooks/*` (7 endpoints)
+- Frontend: 4 React components (List + Builder for each) + 4 CSS files (~2000 LOC)
+- Event Integration: submissions.js, distributions/index.js, WorkflowService.js
+
+**Future Enhancements**:
+- ⏳ OpenAPI/Swagger documentation
+- ⏳ Public API documentation page
+- ⏳ OAuth2 authentication (client credentials flow)
+- ⏳ Webhook delivery dashboard with real-time updates
+- ⏳ API usage analytics and billing integration
 
 ---
 
