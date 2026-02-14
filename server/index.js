@@ -243,6 +243,7 @@ app.use('/api/reputation', require('./src/api/routes/reputation/index'));
 app.use('/api/directory', require('./src/api/routes/directory/index'));
 app.use('/api/textiq', require('./src/api/routes/textiq/index'));
 app.use('/api/workflows', require('./src/api/routes/workflows/index'));
+app.use('/api/scheduled-exports', require('./src/api/routes/scheduled-exports'));
 logger.info('All routes loaded');
 
 // Serve static files from the React app
@@ -344,6 +345,21 @@ if (process.env.ENABLE_ALERT_MONITOR !== 'false') {
         logger.info('[Cron] Alert monitor enabled');
     } catch (err) {
         logger.error('[Cron] Failed to start alert monitor', {
+            error: err.message,
+            stack: err.stack,
+            name: err.name
+        });
+    }
+}
+
+// Scheduled Export Processor (optional - can be disabled via env var)
+if (process.env.ENABLE_SCHEDULED_EXPORTS !== 'false') {
+    try {
+        const scheduledExportProcessor = require('./src/jobs/scheduledExportProcessor');
+        scheduledExportProcessor.start();
+        logger.info('[Cron] Scheduled export processor enabled');
+    } catch (err) {
+        logger.error('[Cron] Failed to start scheduled export processor', {
             error: err.message,
             stack: err.stack,
             name: err.name
