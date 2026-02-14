@@ -256,6 +256,7 @@ app.use('/api/slack', require('./src/api/routes/slack'));
 app.use('/api/teams', require('./src/api/routes/teams'));
 app.use('/api/drip-campaigns', require('./src/api/routes/drip-campaigns'));
 app.use('/api/advanced-contacts', require('./src/api/routes/advanced-contacts'));
+app.use('/api/quality', require('./src/api/routes/quality'));
 logger.info('All routes loaded');
 
 // Serve static files from the React app

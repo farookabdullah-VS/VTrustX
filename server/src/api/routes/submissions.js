@@ -559,6 +559,57 @@ router.post('/', validate(createSubmissionSchema), async (req, res) => {
             });
         }
 
+        // Response Quality Scoring (fire-and-forget)
+        if (savedEntity.metadata?.status === 'completed') {
+            try {
+                const ResponseQualityService = require('../../services/ResponseQualityService');
+
+                // Get form details
+                const formCheck = await query('SELECT tenant_id FROM forms WHERE id = $1', [savedEntity.formId]);
+                const tenantId = formCheck.rows[0]?.tenant_id;
+
+                if (tenantId) {
+                    // Get answers for quality analysis
+                    const answersResult = await query(
+                        'SELECT * FROM answers WHERE submission_id = $1',
+                        [savedEntity.id]
+                    );
+
+                    // Prepare submission data for quality scoring
+                    const submissionData = {
+                        ...savedEntity,
+                        answers: answersResult.rows,
+                        started_at: savedEntity.createdAt,
+                        completed_at: savedEntity.submittedAt || savedEntity.createdAt
+                    };
+
+                    // Calculate quality score asynchronously
+                    ResponseQualityService.calculateQualityScore(
+                        savedEntity.id,
+                        tenantId,
+                        savedEntity.formId,
+                        submissionData
+                    ).then(result => {
+                        logger.info('[Submissions] Quality score calculated', {
+                            submissionId: savedEntity.id,
+                            qualityScore: result.quality_score,
+                            isSuspicious: result.is_suspicious
+                        });
+                    }).catch(err => {
+                        logger.error('[Submissions] Quality scoring failed (non-critical)', {
+                            submissionId: savedEntity.id,
+                            error: err.message
+                        });
+                    });
+                }
+            } catch (qualityErr) {
+                // Non-critical, don't block submission
+                logger.warn('[Quality] Quality scoring setup failed (non-critical)', {
+                    error: qualityErr.message
+                });
+            }
+        }
+
         res.status(201).json(savedEntity);
     } catch (error) {
         logger.error('Submission create error', { error: error.message });
