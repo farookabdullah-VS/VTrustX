@@ -409,6 +409,27 @@ class WorkflowService {
                 duration
             });
 
+            // Trigger webhook: workflow.triggered
+            try {
+                const WebhookService = require('./WebhookService');
+                WebhookService.triggerEvent(tenantId, 'workflow.triggered', {
+                    workflow_id: workflowId,
+                    execution_id: executionId,
+                    submission_id: submissionId,
+                    status: 'completed',
+                    actions_count: actionResults.length,
+                    duration_ms: duration,
+                    executed_at: new Date().toISOString()
+                }).catch(err => {
+                    logger.error('[Webhooks] Failed to trigger workflow.triggered', {
+                        error: err.message,
+                        workflowId
+                    });
+                });
+            } catch (err) {
+                logger.warn('[Webhooks] workflow.triggered trigger setup failed', { error: err.message });
+            }
+
             return {
                 executionId,
                 status: 'completed',

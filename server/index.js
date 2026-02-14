@@ -260,6 +260,8 @@ app.use('/api/advanced-contacts', require('./src/api/routes/advanced-contacts'))
 app.use('/api/quality', require('./src/api/routes/quality'));
 app.use('/api/qr-codes', require('./src/api/routes/qr-codes'));
 app.use('/api/qr', require('./src/api/routes/qr-codes')); // Public redirect endpoint
+app.use('/api/api-keys', require('./src/api/routes/api-keys'));
+app.use('/api/webhooks', require('./src/api/routes/webhooks-api'));
 logger.info('All routes loaded');
 
 // Serve static files from the React app

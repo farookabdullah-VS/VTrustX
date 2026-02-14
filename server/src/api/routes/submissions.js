@@ -660,6 +660,51 @@ router.post('/', validate(createSubmissionSchema), async (req, res) => {
             }
         }
 
+        // Webhook Event Triggers (fire-and-forget)
+        try {
+            const WebhookService = require('../../services/WebhookService');
+
+            // Get form and tenant details
+            const formCheck = await query('SELECT tenant_id FROM forms WHERE id = $1', [savedEntity.formId]);
+            const tenantId = formCheck.rows[0]?.tenant_id;
+
+            if (tenantId) {
+                // Trigger response.received event
+                WebhookService.triggerEvent(tenantId, 'response.received', {
+                    submission_id: savedEntity.id,
+                    form_id: savedEntity.formId,
+                    status: savedEntity.metadata?.status || 'in_progress',
+                    created_at: savedEntity.created_at,
+                    metadata: savedEntity.metadata
+                }).catch(err => {
+                    logger.error('[Webhooks] Failed to trigger response.received', {
+                        error: err.message,
+                        submissionId: savedEntity.id
+                    });
+                });
+
+                // Trigger response.completed event if submission is complete
+                if (savedEntity.metadata?.status === 'completed') {
+                    WebhookService.triggerEvent(tenantId, 'response.completed', {
+                        submission_id: savedEntity.id,
+                        form_id: savedEntity.formId,
+                        completed_at: new Date().toISOString(),
+                        metadata: savedEntity.metadata
+                    }).catch(err => {
+                        logger.error('[Webhooks] Failed to trigger response.completed', {
+                            error: err.message,
+                            submissionId: savedEntity.id
+                        });
+                    });
+                }
+            }
+        } catch (webhookErr) {
+            // Non-critical, don't block submission
+            logger.warn('[Webhooks] Webhook trigger setup failed (non-critical)', {
+                error: webhookErr.message
+            });
+        }
+
         res.status(201).json(savedEntity);
     } catch (error) {
         logger.error('Submission create error', { error: error.message });

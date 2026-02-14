@@ -203,6 +203,27 @@ router.post('/', validate(createDistributionSchema), async (req, res) => {
             sendBatch(contacts, subject, body, surveyId, 'teams', frontendUrl, tenantId, distributionId, mediaAssets, experimentId);
         }
 
+        // Trigger webhook: distribution.sent
+        try {
+            const WebhookService = require('../../../services/WebhookService');
+            WebhookService.triggerEvent(tenantId, 'distribution.sent', {
+                distribution_id: distributionId,
+                name: name,
+                type: type,
+                contacts_count: contacts.length,
+                survey_id: surveyId,
+                experiment_id: experimentId || null,
+                sent_at: new Date().toISOString()
+            }).catch(err => {
+                logger.error('[Webhooks] Failed to trigger distribution.sent', {
+                    error: err.message,
+                    distributionId
+                });
+            });
+        } catch (err) {
+            logger.warn('[Webhooks] distribution.sent trigger setup failed', { error: err.message });
+        }
+
         res.status(201).json({ id: distributionId, status: 'Scheduled' });
     } catch (err) {
         logger.error('Failed to create distribution campaign', { error: err.message });
@@ -422,6 +443,30 @@ async function sendBatch(contacts, subject, body, surveyId, type, frontendUrl, t
             logger.error(`Failed to send to ${contact.email || contact.phone}`, { error: e.message, stack: e.stack });
         }
     }
+
+    // Trigger webhook: distribution.completed
+    if (distributionId) {
+        try {
+            const WebhookService = require('../../../services/WebhookService');
+            WebhookService.triggerEvent(tenantId, 'distribution.completed', {
+                distribution_id: distributionId,
+                type: type,
+                total_contacts: contacts.length,
+                successful_sends: sent,
+                failed_sends: contacts.length - sent,
+                success_rate: ((sent / contacts.length) * 100).toFixed(2),
+                completed_at: new Date().toISOString()
+            }).catch(err => {
+                logger.error('[Webhooks] Failed to trigger distribution.completed', {
+                    error: err.message,
+                    distributionId
+                });
+            });
+        } catch (err) {
+            logger.warn('[Webhooks] distribution.completed trigger setup failed', { error: err.message });
+        }
+    }
+
     logger.info(`Batch Complete. Sent ${sent}/${contacts.length}`, { type, tenantId });
 }
 
