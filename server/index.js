@@ -193,6 +193,7 @@ const authenticate = require('./src/api/middleware/auth');
 app.use('/api/auth', require('./src/api/routes/auth'));
 app.use('/api/auth/2fa', require('./src/api/routes/two-factor-auth'));
 app.use('/api/audit-logs', require('./src/api/routes/audit-logs'));
+app.use('/api/ip-whitelist', require('./src/api/routes/ip-whitelist'));
 app.use('/api/plans', require('./src/api/routes/plans'));
 app.use('/api/subscriptions', require('./src/api/routes/subscriptions'));
 app.use('/api/admin/discounts', require('./src/api/routes/admin_discounts'));
