@@ -369,6 +369,21 @@ if (process.env.ENABLE_SCHEDULED_EXPORTS !== 'false') {
     }
 }
 
+// Workflow Retry Processor (optional - can be disabled via env var)
+if (process.env.ENABLE_WORKFLOW_RETRIES !== 'false') {
+    try {
+        const workflowRetryProcessor = require('./src/jobs/workflowRetryProcessor');
+        workflowRetryProcessor.start();
+        logger.info('[Cron] Workflow retry processor enabled');
+    } catch (err) {
+        logger.error('[Cron] Failed to start workflow retry processor', {
+            error: err.message,
+            stack: err.stack,
+            name: err.name
+        });
+    }
+}
+
 // --- Graceful Shutdown ---
 const gracefulShutdown = (signal) => {
     logger.info(`${signal} received, shutting down gracefully...`);
