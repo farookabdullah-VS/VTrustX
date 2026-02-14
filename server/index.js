@@ -246,6 +246,7 @@ app.use('/api/textiq', require('./src/api/routes/textiq/index'));
 app.use('/api/workflows', require('./src/api/routes/workflows/index'));
 app.use('/api/workflow-executions', require('./src/api/routes/workflow-executions'));
 app.use('/api/workflow-templates', require('./src/api/routes/workflow-templates'));
+app.use('/api/workflows-automation', require('./src/api/routes/workflows-automation'));
 app.use('/api/scheduled-exports', require('./src/api/routes/scheduled-exports'));
 app.use('/api/custom-reports', require('./src/api/routes/custom-reports'));
 app.use('/api/crm-connections', require('./src/api/routes/crm-connections'));

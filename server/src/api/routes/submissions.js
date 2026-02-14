@@ -610,6 +610,56 @@ router.post('/', validate(createSubmissionSchema), async (req, res) => {
             }
         }
 
+        // Workflow Automation (fire-and-forget)
+        if (savedEntity.metadata?.status === 'completed') {
+            try {
+                const WorkflowService = require('../../services/WorkflowService');
+
+                // Get form details
+                const formCheck = await query('SELECT tenant_id FROM forms WHERE id = $1', [savedEntity.formId]);
+                const tenantId = formCheck.rows[0]?.tenant_id;
+
+                if (tenantId) {
+                    // Get answers for workflow evaluation
+                    const answersResult = await query(
+                        'SELECT * FROM answers WHERE submission_id = $1',
+                        [savedEntity.id]
+                    );
+
+                    // Convert answers to submission data object
+                    const submissionData = {};
+                    answersResult.rows.forEach(answer => {
+                        submissionData[`question_${answer.question_id}`] = answer.answer_data;
+                    });
+
+                    // Evaluate and execute workflows asynchronously
+                    WorkflowService.evaluateAndExecute(
+                        savedEntity.id,
+                        submissionData,
+                        tenantId,
+                        savedEntity.formId
+                    ).then(workflows => {
+                        if (workflows.length > 0) {
+                            logger.info('[Submissions] Workflows executed', {
+                                submissionId: savedEntity.id,
+                                workflowCount: workflows.length
+                            });
+                        }
+                    }).catch(err => {
+                        logger.error('[Submissions] Workflow execution failed (non-critical)', {
+                            submissionId: savedEntity.id,
+                            error: err.message
+                        });
+                    });
+                }
+            } catch (workflowErr) {
+                // Non-critical, don't block submission
+                logger.warn('[Workflow] Workflow evaluation setup failed (non-critical)', {
+                    error: workflowErr.message
+                });
+            }
+        }
+
         res.status(201).json(savedEntity);
     } catch (error) {
         logger.error('Submission create error', { error: error.message });
