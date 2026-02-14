@@ -88,6 +88,8 @@ const AuditLogViewer = React.lazy(() => import('./components/audit-logs/AuditLog
 const RetentionPolicySettings = React.lazy(() => import('./components/audit-logs/RetentionPolicySettings'));
 const IPWhitelistManager = React.lazy(() => import('./components/ip-whitelist/IPWhitelistManager'));
 const TwoFactorSettings = React.lazy(() => import('./components/settings/TwoFactorSettings'));
+const SSOProvidersList = React.lazy(() => import('./components/sso/SSOProvidersList'));
+const SSOProviderWizard = React.lazy(() => import('./components/sso/SSOProviderWizard'));
 
 // --- View title mapping ---
 const VIEW_TITLES = {
@@ -150,6 +152,7 @@ const VIEW_TITLES = {
   'retention-policy': 'Retention Policy',
   'ip-whitelist': 'IP Whitelisting',
   '2fa-settings': 'Two-Factor Authentication',
+  'sso-providers': 'SSO Providers',
 };
 
 // --- Protected Route Wrapper ---
@@ -442,6 +445,11 @@ function AppRoutes() {
 
               {/* Security Settings Routes */}
               <Route path="2fa-settings" element={<TwoFactorSettings />} />
+
+              {/* SSO Provider Routes */}
+              <Route path="sso-providers" element={<SSOProvidersList />} />
+              <Route path="sso-providers/new" element={<SSOProviderWizard />} />
+              <Route path="sso-providers/:id/edit" element={<SSOProviderWizard />} />
 
               {/* Backward Compatibility Redirects */}
               <Route path="form-viewer" element={<Navigate to="/surveys" replace />} />
