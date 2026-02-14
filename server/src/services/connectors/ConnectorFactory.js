@@ -10,6 +10,7 @@ const InstagramConnector = require('./InstagramConnector');
 const RedditConnector = require('./RedditConnector');
 const LinkedInConnector = require('./LinkedInConnector');
 const YouTubeConnector = require('./YouTubeConnector');
+const TikTokConnector = require('./TikTokConnector');
 const logger = require('../../infrastructure/logger');
 
 class ConnectorFactory {
@@ -40,8 +41,7 @@ class ConnectorFactory {
         return new YouTubeConnector(config);
 
       case 'tiktok':
-        // TODO: Implement TikTokConnector
-        throw new Error('TikTok connector not yet implemented');
+        return new TikTokConnector(config);
 
       case 'reddit':
         return new RedditConnector(config);
@@ -95,9 +95,9 @@ class ConnectorFactory {
       {
         id: 'tiktok',
         name: 'TikTok',
-        implemented: false,
+        implemented: true,
         requiresOAuth: true,
-        features: ['mentions', 'hashtags', 'videos']
+        features: ['mentions', 'hashtags', 'videos', 'comments']
       },
       {
         id: 'reddit',
@@ -115,7 +115,7 @@ class ConnectorFactory {
    * @returns {boolean} True if supported
    */
   static isSupported(platform) {
-    const supported = ['twitter', 'x', 'facebook', 'instagram', 'reddit', 'linkedin', 'youtube'];
+    const supported = ['twitter', 'x', 'facebook', 'instagram', 'reddit', 'linkedin', 'youtube', 'tiktok'];
     return supported.includes(platform.toLowerCase());
   }
 }
