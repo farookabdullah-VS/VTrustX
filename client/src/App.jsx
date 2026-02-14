@@ -74,6 +74,7 @@ const CRMConnectionWizard = React.lazy(() => import('./components/crm/CRMConnect
 const CRMSyncDashboard = React.lazy(() => import('./components/crm/CRMSyncDashboard'));
 const TelegramConfig = React.lazy(() => import('./components/telegram/TelegramConfig'));
 const SlackConfig = React.lazy(() => import('./components/slack/SlackConfig'));
+const TeamsConfig = React.lazy(() => import('./components/teams/TeamsConfig'));
 const DripCampaignsDashboard = React.lazy(() => import('./components/drip-campaigns/DripCampaignsDashboard'));
 const DripCampaignBuilder = React.lazy(() => import('./components/drip-campaigns/DripCampaignBuilder'));
 const DripCampaignDetails = React.lazy(() => import('./components/drip-campaigns/DripCampaignDetails'));
@@ -130,6 +131,7 @@ const VIEW_TITLES = {
   'crm-connections': 'CRM Integrations',
   'telegram-config': 'Telegram Bot',
   'slack-config': 'Slack Bot',
+  'teams-config': 'Microsoft Teams Bot',
   'drip-campaigns': 'Drip Campaigns',
 };
 
@@ -397,6 +399,9 @@ function AppRoutes() {
 
               {/* Slack Bot Configuration */}
               <Route path="slack-config" element={<SlackConfig />} />
+
+              {/* Microsoft Teams Bot Configuration */}
+              <Route path="teams-config" element={<TeamsConfig />} />
 
               {/* Drip Campaigns Routes */}
               <Route path="drip-campaigns" element={<DripCampaignsDashboard />} />

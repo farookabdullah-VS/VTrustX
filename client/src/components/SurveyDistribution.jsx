@@ -177,6 +177,9 @@ export function SurveyDistribution({ formId, onBack, onNavigate }) {
                     <div style={sidebarItemStyle(activeSidebar === 'slack')} onClick={() => setActiveSidebar('slack')}>
                         <span style={{ color: '#611f69', fontWeight: 'bold' }}>#</span> Slack
                     </div>
+                    <div style={sidebarItemStyle(activeSidebar === 'teams')} onClick={() => setActiveSidebar('teams')}>
+                        <span style={{ color: '#5059C9', fontWeight: 'bold' }}>T</span> Microsoft Teams
+                    </div>
                     <div style={sidebarItemStyle(activeSidebar === 'social')} onClick={() => setActiveSidebar('social')}>
                         <span>📱</span> Social Media
                     </div>
@@ -402,6 +405,111 @@ export function SurveyDistribution({ formId, onBack, onNavigate }) {
                                     >
                                         <span>#</span>
                                         Copy Message for Slack
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Microsoft Teams-dedicated tab */}
+                    {activeSidebar === 'teams' && formMetadata && (
+                        <div>
+                            <h2 style={{ color: '#1e293b', marginBottom: '8px' }}>Microsoft Teams Distribution</h2>
+                            <p style={{ color: '#64748b', marginBottom: '24px' }}>Send survey invitations directly to Microsoft Teams via Bot Framework messaging.</p>
+
+                            <div style={{ background: '#fff8f3', padding: '20px', borderRadius: '12px', border: '1px solid #ffd9b3', marginBottom: '24px' }}>
+                                <h3 style={{ color: '#1e293b', marginBottom: '12px', fontSize: '1.1em', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <span>⚙️</span> Setup Required
+                                </h3>
+                                <p style={{ color: '#475569', margin: '0 0 12px', fontSize: '0.9em' }}>
+                                    To send surveys via Microsoft Teams, you need to configure a Teams Bot. Once configured, you can send survey invitations to channels, teams, and direct messages.
+                                </p>
+                                <button
+                                    onClick={() => {
+                                        const newPath = '/dashboard/teams-config';
+                                        if (window.location.pathname !== newPath) {
+                                            window.location.href = newPath;
+                                        }
+                                    }}
+                                    style={{
+                                        padding: '10px 20px',
+                                        background: '#5059C9',
+                                        color: 'white',
+                                        border: 'none',
+                                        borderRadius: '8px',
+                                        cursor: 'pointer',
+                                        fontWeight: '600',
+                                        fontSize: '0.9em'
+                                    }}
+                                >
+                                    Configure Teams Bot →
+                                </button>
+                            </div>
+
+                            <div style={{ background: 'white', padding: '30px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+                                <h3 style={{ margin: '0 0 16px', fontSize: '1.05em', color: '#334155' }}>How to Share Your Survey on Microsoft Teams</h3>
+
+                                <div style={{ marginBottom: '30px' }}>
+                                    <div style={{ fontSize: '0.9em', fontWeight: 'bold', color: '#475569', marginBottom: '10px' }}>Public Link</div>
+                                    <div style={{ display: 'flex', gap: '10px' }}>
+                                        <input
+                                            readOnly
+                                            value={`${window.location.origin}/s/${formMetadata.slug || formMetadata.id}`}
+                                            onClick={(e) => e.target.select()}
+                                            style={{
+                                                flex: 1,
+                                                padding: '12px',
+                                                border: '1px solid #cbd5e1',
+                                                borderRadius: '8px',
+                                                background: '#f8fafc',
+                                                cursor: 'text'
+                                            }}
+                                        />
+                                        <button onClick={() => copyLink()} style={{ ...primaryButtonStyle }}>
+                                            Copy Link
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div style={{ marginBottom: '30px' }}>
+                                    <h4 style={{ color: '#334155', fontSize: '0.95em', marginBottom: '12px' }}>Sharing Options:</h4>
+                                    <ul style={{ color: '#64748b', fontSize: '0.9em', lineHeight: '1.8', paddingLeft: '20px' }}>
+                                        <li><strong>Manual Sharing:</strong> Copy the link above and share it in your Teams channels or chats</li>
+                                        <li><strong>Bot Distribution:</strong> Import contacts with Teams User IDs or Channel IDs and send personalized invitations via your configured bot</li>
+                                        <li><strong>Teams Channels:</strong> Post the survey link in your team channels for organization-wide access</li>
+                                        <li><strong>Adaptive Cards:</strong> Surveys are sent with rich formatting and interactive buttons for better engagement</li>
+                                    </ul>
+                                </div>
+
+                                <div style={{ marginTop: '30px', padding: '20px', background: '#f8fafc', borderRadius: '8px' }}>
+                                    <p style={{ color: '#475569', fontSize: '0.85em', margin: '0' }}>
+                                        <strong>Tip:</strong> User IDs are Azure AD UPNs (e.g., user@company.com) and Conversation IDs look like 19:xxxxx@thread.tacv2. You can get these from the Teams admin center or via bot activities.
+                                    </p>
+                                </div>
+
+                                <div style={{ marginTop: '30px' }}>
+                                    <button
+                                        onClick={() => {
+                                            const teamsMessage = `Check out this survey: ${formMetadata.title}\n${window.location.origin}/s/${formMetadata.slug || formMetadata.id}`;
+                                            navigator.clipboard.writeText(teamsMessage);
+                                            toast.success("Message copied! Paste it in Teams.");
+                                        }}
+                                        style={{
+                                            padding: '12px 20px',
+                                            background: 'white',
+                                            color: '#5059C9',
+                                            border: '2px solid #5059C9',
+                                            borderRadius: '8px',
+                                            cursor: 'pointer',
+                                            fontWeight: '600',
+                                            fontSize: '0.9em',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '8px'
+                                        }}
+                                    >
+                                        <span>T</span>
+                                        Copy Message for Teams
                                     </button>
                                 </div>
                             </div>

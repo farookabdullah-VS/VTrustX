@@ -6,6 +6,7 @@ const smsService = require('../../../services/smsService');
 const whatsappService = require('../../../services/whatsappService');
 const TelegramService = require('../../../services/TelegramService');
 const SlackService = require('../../../services/SlackService');
+const TeamsService = require('../../../services/TeamsService');
 const TemplateService = require('../../../services/TemplateService');
 const validate = require('../../middleware/validate');
 const { createDistributionSchema } = require('../../schemas/distributions.schemas');
@@ -198,6 +199,8 @@ router.post('/', validate(createDistributionSchema), async (req, res) => {
             sendBatch(contacts, subject, body, surveyId, 'telegram', frontendUrl, tenantId, distributionId, mediaAssets, experimentId);
         } else if (type === 'slack') {
             sendBatch(contacts, subject, body, surveyId, 'slack', frontendUrl, tenantId, distributionId, mediaAssets, experimentId);
+        } else if (type === 'teams') {
+            sendBatch(contacts, subject, body, surveyId, 'teams', frontendUrl, tenantId, distributionId, mediaAssets, experimentId);
         }
 
         res.status(201).json({ id: distributionId, status: 'Scheduled' });
@@ -380,6 +383,35 @@ async function sendBatch(contacts, subject, body, surveyId, type, frontendUrl, t
 
                 if (!result.success) {
                     logger.error(`Failed to send Slack to ${channel}`, { error: result.error });
+                    continue;
+                }
+            } else if (type === 'teams') {
+                if (!contact.teams_user_id && !contact.teams_channel_id) {
+                    logger.info(`Skipping Teams for ${contact.name || 'contact'} - No User ID or Channel ID`);
+                    continue;
+                }
+
+                const conversationId = contact.teams_user_id || contact.teams_channel_id;
+
+                // Send survey invitation via Microsoft Teams
+                const result = await TeamsService.sendSurveyInvitation(
+                    tenantId,
+                    conversationId,
+                    {
+                        title: finalSubject,
+                        description: rendered.text,
+                        surveyUrl: uniqueLink
+                    },
+                    {
+                        channelId: contact.teams_channel_id,
+                        userId: contact.teams_user_id,
+                        distributionId,
+                        recipientName: contact.name
+                    }
+                );
+
+                if (!result.success) {
+                    logger.error(`Failed to send Teams to ${conversationId}`, { error: result.error });
                     continue;
                 }
             }

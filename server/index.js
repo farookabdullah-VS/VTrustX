@@ -131,6 +131,7 @@ app.use((req, res, next) => {
         '/api/webhooks/whatsapp/', // Twilio WhatsApp webhooks
         '/api/webhooks/email/',    // Email provider webhooks
         '/api/webhooks/sms/',      // SMS provider webhooks
+        '/api/teams/messaging',    // Microsoft Teams Bot Framework webhooks
         '/health',
         '/ready',
     ];
@@ -252,6 +253,7 @@ app.use('/api/translations', require('./src/api/routes/translations'));
 app.use('/api/survey-logic', require('./src/api/routes/survey-logic'));
 app.use('/api/telegram', require('./src/api/routes/telegram'));
 app.use('/api/slack', require('./src/api/routes/slack'));
+app.use('/api/teams', require('./src/api/routes/teams'));
 app.use('/api/drip-campaigns', require('./src/api/routes/drip-campaigns'));
 app.use('/api/advanced-contacts', require('./src/api/routes/advanced-contacts'));
 logger.info('All routes loaded');
