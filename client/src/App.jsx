@@ -70,6 +70,9 @@ const CRMConnectionsDashboard = React.lazy(() => import('./components/crm/CRMCon
 const CRMConnectionWizard = React.lazy(() => import('./components/crm/CRMConnectionWizard'));
 const CRMSyncDashboard = React.lazy(() => import('./components/crm/CRMSyncDashboard'));
 const TelegramConfig = React.lazy(() => import('./components/telegram/TelegramConfig'));
+const DripCampaignsDashboard = React.lazy(() => import('./components/drip-campaigns/DripCampaignsDashboard'));
+const DripCampaignBuilder = React.lazy(() => import('./components/drip-campaigns/DripCampaignBuilder'));
+const DripCampaignDetails = React.lazy(() => import('./components/drip-campaigns/DripCampaignDetails'));
 
 // --- View title mapping ---
 const VIEW_TITLES = {
@@ -119,6 +122,7 @@ const VIEW_TITLES = {
   'custom-reports': 'Custom Reports',
   'crm-connections': 'CRM Integrations',
   'telegram-config': 'Telegram Bot',
+  'drip-campaigns': 'Drip Campaigns',
 };
 
 // --- Protected Route Wrapper ---
@@ -379,6 +383,11 @@ function AppRoutes() {
 
               {/* Telegram Bot Configuration */}
               <Route path="telegram-config" element={<TelegramConfig />} />
+
+              {/* Drip Campaigns Routes */}
+              <Route path="drip-campaigns" element={<DripCampaignsDashboard />} />
+              <Route path="drip-campaigns/new" element={<DripCampaignBuilder />} />
+              <Route path="drip-campaigns/:id" element={<DripCampaignDetails />} />
 
               {/* Backward Compatibility Redirects */}
               <Route path="form-viewer" element={<Navigate to="/surveys" replace />} />
