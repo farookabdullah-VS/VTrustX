@@ -84,6 +84,8 @@ const APIKeysList = React.lazy(() => import('./components/api-keys/APIKeysList')
 const APIKeyBuilder = React.lazy(() => import('./components/api-keys/APIKeyBuilder'));
 const WebhooksList = React.lazy(() => import('./components/webhooks/WebhooksList'));
 const WebhookBuilder = React.lazy(() => import('./components/webhooks/WebhookBuilder'));
+const AuditLogViewer = React.lazy(() => import('./components/audit-logs/AuditLogViewer'));
+const RetentionPolicySettings = React.lazy(() => import('./components/audit-logs/RetentionPolicySettings'));
 
 // --- View title mapping ---
 const VIEW_TITLES = {
@@ -142,6 +144,8 @@ const VIEW_TITLES = {
   'workflows-automation': 'Workflow Automations',
   'api-keys': 'API Keys',
   'webhooks': 'Webhooks',
+  'audit-logs': 'Audit Logs',
+  'retention-policy': 'Retention Policy',
 };
 
 // --- Protected Route Wrapper ---
@@ -424,6 +428,10 @@ function AppRoutes() {
               <Route path="api-keys/new" element={<APIKeyBuilder />} />
               <Route path="webhooks" element={<WebhooksList />} />
               <Route path="webhooks/new" element={<WebhookBuilder />} />
+
+              {/* Audit Logs Routes */}
+              <Route path="audit-logs" element={<AuditLogViewer />} />
+              <Route path="retention-policy" element={<RetentionPolicySettings />} />
 
               {/* Backward Compatibility Redirects */}
               <Route path="form-viewer" element={<Navigate to="/surveys" replace />} />
