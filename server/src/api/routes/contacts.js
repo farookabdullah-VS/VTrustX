@@ -251,4 +251,296 @@ router.put('/:id', authenticate, validate(updateContactSchema), async (req, res)
     }
 });
 
+// ============================================
+// CONTACT IMPORT/EXPORT ROUTES
+// ============================================
+
+const multer = require('multer');
+const path = require('path');
+const ContactImportExportService = require('../../services/ContactImportExportService');
+const fs = require('fs').promises;
+
+// Configure multer for file uploads
+const storage = multer.diskStorage({
+    destination: async (req, file, cb) => {
+        const uploadDir = process.env.K_SERVICE ? '/tmp/uploads' : path.join(__dirname, '../../../uploads');
+        try {
+            await fs.mkdir(uploadDir, { recursive: true });
+            cb(null, uploadDir);
+        } catch (error) {
+            cb(error);
+        }
+    },
+    filename: (req, file, cb) => {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, 'contact-import-' + uniqueSuffix + path.extname(file.originalname));
+    }
+});
+
+const upload = multer({
+    storage,
+    limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
+    fileFilter: (req, file, cb) => {
+        const allowedTypes = ['.csv', '.xlsx', '.xls'];
+        const ext = path.extname(file.originalname).toLowerCase();
+        if (allowedTypes.includes(ext)) {
+            cb(null, true);
+        } else {
+            cb(new Error('Invalid file type. Only CSV and Excel files are allowed.'));
+        }
+    }
+});
+
+/**
+ * POST /api/contacts/import/preview
+ * Preview import and validate data
+ */
+router.post('/import/preview', authenticate, upload.single('file'), async (req, res) => {
+    let filePath;
+
+    try {
+        if (!req.file) {
+            return res.status(400).json({ error: 'No file uploaded' });
+        }
+
+        filePath = req.file.path;
+        const tenantId = req.user.tenant_id;
+        const fieldMapping = JSON.parse(req.body.fieldMapping || '{}');
+
+        // Parse file based on type
+        const ext = path.extname(req.file.originalname).toLowerCase();
+        let contacts;
+
+        if (ext === '.csv') {
+            contacts = await ContactImportExportService.parseCSV(filePath);
+        } else if (ext === '.xlsx' || ext === '.xls') {
+            contacts = await ContactImportExportService.parseExcel(filePath);
+        } else {
+            return res.status(400).json({ error: 'Unsupported file type' });
+        }
+
+        // Validate and check for duplicates
+        const validation = await ContactImportExportService.validateImport(
+            contacts,
+            fieldMapping,
+            tenantId
+        );
+
+        // Clean up file
+        await fs.unlink(filePath);
+
+        return res.json({
+            success: true,
+            preview: {
+                total: validation.total,
+                valid: validation.valid,
+                invalid: validation.invalid,
+                duplicates_in_file: validation.duplicates_in_file,
+                duplicates_in_db: validation.duplicates_in_db,
+                sample_contacts: validation.valid_contacts.slice(0, 10), // First 10
+                errors: validation.errors.slice(0, 20) // First 20 errors
+            }
+        });
+    } catch (error) {
+        logger.error('[Contact Import API] Preview failed', {
+            error: error.message
+        });
+
+        // Clean up file on error
+        if (filePath) {
+            await fs.unlink(filePath).catch(() => {});
+        }
+
+        return res.status(500).json({
+            error: error.message || 'Failed to preview import'
+        });
+    }
+});
+
+/**
+ * POST /api/contacts/import
+ * Import contacts to database
+ */
+router.post('/import', authenticate, upload.single('file'), async (req, res) => {
+    let filePath;
+
+    try {
+        if (!req.file) {
+            return res.status(400).json({ error: 'No file uploaded' });
+        }
+
+        filePath = req.file.path;
+        const tenantId = req.user.tenant_id;
+        const fieldMapping = JSON.parse(req.body.fieldMapping || '{}');
+        const skipDuplicates = req.body.skipDuplicates === 'true';
+        const updateExisting = req.body.updateExisting === 'true';
+        const tags = req.body.tags ? req.body.tags.split(',').map(t => t.trim()) : [];
+
+        // Parse file
+        const ext = path.extname(req.file.originalname).toLowerCase();
+        let contacts;
+
+        if (ext === '.csv') {
+            contacts = await ContactImportExportService.parseCSV(filePath);
+        } else if (ext === '.xlsx' || ext === '.xls') {
+            contacts = await ContactImportExportService.parseExcel(filePath);
+        } else {
+            return res.status(400).json({ error: 'Unsupported file type' });
+        }
+
+        // Validate
+        const validation = await ContactImportExportService.validateImport(
+            contacts,
+            fieldMapping,
+            tenantId
+        );
+
+        if (validation.valid === 0) {
+            await fs.unlink(filePath);
+            return res.status(400).json({
+                error: 'No valid contacts found in file',
+                errors: validation.errors
+            });
+        }
+
+        // Import contacts
+        const result = await ContactImportExportService.importContacts(
+            validation.valid_contacts,
+            tenantId,
+            {
+                skipDuplicates,
+                updateExisting,
+                tags
+            }
+        );
+
+        // Clean up file
+        await fs.unlink(filePath);
+
+        return res.json({
+            success: true,
+            imported: result.imported,
+            updated: result.updated,
+            skipped: result.skipped,
+            errors: result.errors,
+            total: validation.total
+        });
+    } catch (error) {
+        logger.error('[Contact Import API] Import failed', {
+            error: error.message
+        });
+
+        // Clean up file on error
+        if (filePath) {
+            await fs.unlink(filePath).catch(() => {});
+        }
+
+        return res.status(500).json({
+            error: error.message || 'Failed to import contacts'
+        });
+    }
+});
+
+/**
+ * GET /api/contacts/export/csv
+ * Export contacts to CSV
+ */
+router.get('/export/csv', authenticate, async (req, res) => {
+    try {
+        const tenantId = req.user.tenant_id;
+        const filters = {
+            tags: req.query.tags ? req.query.tags.split(',') : undefined,
+            lifecycle_stage: req.query.lifecycle_stage
+        };
+
+        const csv = await ContactImportExportService.exportToCSV(tenantId, { filters });
+
+        res.setHeader('Content-Type', 'text/csv');
+        res.setHeader('Content-Disposition', `attachment; filename="contacts-${Date.now()}.csv"`);
+        return res.send(csv);
+    } catch (error) {
+        logger.error('[Contact Export API] CSV export failed', {
+            error: error.message
+        });
+        return res.status(500).json({
+            error: 'Failed to export contacts'
+        });
+    }
+});
+
+/**
+ * GET /api/contacts/export/excel
+ * Export contacts to Excel
+ */
+router.get('/export/excel', authenticate, async (req, res) => {
+    try {
+        const tenantId = req.user.tenant_id;
+        const filters = {
+            tags: req.query.tags ? req.query.tags.split(',') : undefined,
+            lifecycle_stage: req.query.lifecycle_stage
+        };
+
+        const buffer = await ContactImportExportService.exportToExcel(tenantId, { filters });
+
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader('Content-Disposition', `attachment; filename="contacts-${Date.now()}.xlsx"`);
+        return res.send(buffer);
+    } catch (error) {
+        logger.error('[Contact Export API] Excel export failed', {
+            error: error.message
+        });
+        return res.status(500).json({
+            error: 'Failed to export contacts'
+        });
+    }
+});
+
+/**
+ * GET /api/contacts/export/json
+ * Export contacts to JSON
+ */
+router.get('/export/json', authenticate, async (req, res) => {
+    try {
+        const tenantId = req.user.tenant_id;
+        const filters = {
+            tags: req.query.tags ? req.query.tags.split(',') : undefined,
+            lifecycle_stage: req.query.lifecycle_stage
+        };
+
+        const json = await ContactImportExportService.exportToJSON(tenantId, { filters });
+
+        res.setHeader('Content-Type', 'application/json');
+        res.setHeader('Content-Disposition', `attachment; filename="contacts-${Date.now()}.json"`);
+        return res.send(json);
+    } catch (error) {
+        logger.error('[Contact Export API] JSON export failed', {
+            error: error.message
+        });
+        return res.status(500).json({
+            error: 'Failed to export contacts'
+        });
+    }
+});
+
+/**
+ * GET /api/contacts/import/template
+ * Download import template CSV
+ */
+router.get('/import/template', authenticate, (req, res) => {
+    try {
+        const template = ContactImportExportService.getImportTemplate();
+
+        res.setHeader('Content-Type', 'text/csv');
+        res.setHeader('Content-Disposition', 'attachment; filename="contact-import-template.csv"');
+        return res.send(template);
+    } catch (error) {
+        logger.error('[Contact Import API] Template download failed', {
+            error: error.message
+        });
+        return res.status(500).json({
+            error: 'Failed to generate template'
+        });
+    }
+});
+
 module.exports = router;

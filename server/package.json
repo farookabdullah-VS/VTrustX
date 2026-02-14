@@ -58,6 +58,7 @@
     "node-cron": "^3.0.3",
     "node-pg-migrate": "^8.0.4",
     "nodemailer": "^7.0.12",
+    "papaparse": "^5.5.3",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
     "passport-microsoft": "^2.1.0",
