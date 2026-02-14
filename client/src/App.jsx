@@ -87,6 +87,7 @@ const WebhookBuilder = React.lazy(() => import('./components/webhooks/WebhookBui
 const AuditLogViewer = React.lazy(() => import('./components/audit-logs/AuditLogViewer'));
 const RetentionPolicySettings = React.lazy(() => import('./components/audit-logs/RetentionPolicySettings'));
 const IPWhitelistManager = React.lazy(() => import('./components/ip-whitelist/IPWhitelistManager'));
+const TwoFactorSettings = React.lazy(() => import('./components/settings/TwoFactorSettings'));
 
 // --- View title mapping ---
 const VIEW_TITLES = {
@@ -148,6 +149,7 @@ const VIEW_TITLES = {
   'audit-logs': 'Audit Logs',
   'retention-policy': 'Retention Policy',
   'ip-whitelist': 'IP Whitelisting',
+  '2fa-settings': 'Two-Factor Authentication',
 };
 
 // --- Protected Route Wrapper ---
@@ -437,6 +439,9 @@ function AppRoutes() {
 
               {/* IP Whitelisting Routes */}
               <Route path="ip-whitelist" element={<IPWhitelistManager />} />
+
+              {/* Security Settings Routes */}
+              <Route path="2fa-settings" element={<TwoFactorSettings />} />
 
               {/* Backward Compatibility Redirects */}
               <Route path="form-viewer" element={<Navigate to="/surveys" replace />} />

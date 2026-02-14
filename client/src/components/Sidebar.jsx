@@ -125,6 +125,7 @@ const getInitialGroups = (user) => [
         title: "sidebar.group.governance",
         items: [
             { id: 'role-master', label: 'sidebar.item.access_control', icon: <Shield size={16} /> },
+            { id: '2fa-settings', label: 'Two-Factor Auth', icon: <Fingerprint size={16} /> },
             { id: 'audit-logs', label: 'Audit Logs', icon: <ClipboardList size={16} /> },
             { id: 'retention-policy', label: 'Retention Policy', icon: <Database size={16} /> },
             { id: 'ip-whitelist', label: 'IP Whitelisting', icon: <Globe size={16} /> }
