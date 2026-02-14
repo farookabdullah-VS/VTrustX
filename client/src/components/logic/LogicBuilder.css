@@ -1,0 +1,478 @@
+/**
+ * Logic Builder Styles
+ */
+
+.logic-builder {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    max-height: 90vh;
+}
+
+/* Header */
+.logic-builder-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 25px 30px;
+    border-bottom: 2px solid #E5E7EB;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.header-left h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #1F2937;
+    margin: 0 0 5px 0;
+}
+
+.header-left p {
+    color: #6B7280;
+    font-size: 0.95rem;
+    margin: 0;
+}
+
+.btn-close {
+    background: none;
+    border: none;
+    color: #6B7280;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 6px;
+    transition: all 0.2s;
+}
+
+.btn-close:hover {
+    background: #F3F4F6;
+    color: #1F2937;
+}
+
+/* Tabs */
+.logic-builder-tabs {
+    display: flex;
+    border-bottom: 2px solid #E5E7EB;
+    padding: 0 30px;
+}
+
+.tab {
+    padding: 15px 25px;
+    background: none;
+    border: none;
+    border-bottom: 3px solid transparent;
+    color: #6B7280;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: -2px;
+}
+
+.tab:hover {
+    color: #1F2937;
+}
+
+.tab.active {
+    color: #3B82F6;
+    border-bottom-color: #3B82F6;
+}
+
+/* Body */
+.logic-builder-body {
+    padding: 30px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.logic-tab {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.tab-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.tab-header h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #1F2937;
+    margin: 0;
+}
+
+.btn-add-rule {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #3B82F6;
+    color: white;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-add-rule:hover {
+    background: #2563EB;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+/* Loading & Empty States */
+.loading-state,
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+}
+
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid #E5E7EB;
+    border-top-color: #3B82F6;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 20px;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.loading-state p,
+.empty-state p {
+    color: #6B7280;
+    font-size: 1rem;
+    margin: 0;
+}
+
+.empty-state h4 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #1F2937;
+    margin: 15px 0 5px;
+}
+
+/* Rules List */
+.rules-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.rule-card {
+    background: white;
+    border: 2px solid #E5E7EB;
+    border-radius: 12px;
+    padding: 20px;
+    transition: all 0.3s;
+}
+
+.rule-card:hover {
+    border-color: #D1D5DB;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.rule-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.rule-question {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #1F2937;
+}
+
+.btn-delete-rule {
+    background: none;
+    border: none;
+    color: #EF4444;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 6px;
+    transition: all 0.2s;
+}
+
+.btn-delete-rule:hover {
+    background: #FEE2E2;
+}
+
+.rule-conditions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 15px;
+    padding-left: 26px;
+}
+
+.condition {
+    padding: 10px 15px;
+    background: #F9FAFB;
+    border-radius: 8px;
+}
+
+.condition-text {
+    color: #4B5563;
+    font-size: 0.95rem;
+}
+
+.condition-text strong {
+    color: #1F2937;
+    font-weight: 600;
+}
+
+.rule-action {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 15px;
+    background: #EFF6FF;
+    border-radius: 8px;
+    margin-left: 26px;
+}
+
+.action-text {
+    color: #1E40AF;
+    font-size: 0.95rem;
+}
+
+.action-text strong {
+    font-weight: 600;
+}
+
+/* Modal */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal {
+    background: white;
+    border-radius: 12px;
+    max-width: 700px;
+    width: 90%;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 25px;
+    border-bottom: 2px solid #E5E7EB;
+}
+
+.modal-header h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #1F2937;
+    margin: 0;
+}
+
+.modal-header button {
+    background: none;
+    border: none;
+    color: #6B7280;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 6px;
+    transition: all 0.2s;
+}
+
+.modal-header button:hover {
+    background: #F3F4F6;
+}
+
+.modal-body {
+    padding: 25px;
+    overflow-y: auto;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 8px;
+}
+
+.form-group select,
+.form-group input {
+    width: 100%;
+    padding: 10px 14px;
+    border: 2px solid #E5E7EB;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    transition: all 0.2s;
+}
+
+.form-group select:focus,
+.form-group input:focus {
+    outline: none;
+    border-color: #3B82F6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.condition-builder {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+    align-items: center;
+}
+
+.condition-builder select,
+.condition-builder input {
+    flex: 1;
+}
+
+.btn-remove-condition {
+    background: white;
+    border: 2px solid #EF4444;
+    color: #EF4444;
+    padding: 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+
+.btn-remove-condition:hover {
+    background: #FEE2E2;
+}
+
+.btn-add-condition {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: white;
+    border: 2px solid #3B82F6;
+    color: #3B82F6;
+    padding: 8px 14px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 10px;
+}
+
+.btn-add-condition:hover {
+    background: #EFF6FF;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding: 20px 25px;
+    border-top: 2px solid #E5E7EB;
+}
+
+.btn-secondary,
+.btn-primary {
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+}
+
+.btn-secondary {
+    background: white;
+    color: #6B7280;
+    border: 2px solid #E5E7EB;
+}
+
+.btn-secondary:hover {
+    background: #F9FAFB;
+}
+
+.btn-primary {
+    background: #3B82F6;
+    color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+    background: #2563EB;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.btn-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .logic-builder {
+        max-height: 100vh;
+        border-radius: 0;
+    }
+
+    .logic-builder-header {
+        padding: 20px;
+    }
+
+    .logic-builder-tabs {
+        padding: 0 20px;
+        overflow-x: auto;
+    }
+
+    .logic-builder-body {
+        padding: 20px;
+    }
+
+    .modal {
+        width: 95%;
+        max-height: 90vh;
+    }
+
+    .condition-builder {
+        flex-direction: column;
+    }
+
+    .condition-builder select,
+    .condition-builder input {
+        width: 100%;
+    }
+}

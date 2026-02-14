@@ -249,6 +249,7 @@ app.use('/api/scheduled-exports', require('./src/api/routes/scheduled-exports'))
 app.use('/api/custom-reports', require('./src/api/routes/custom-reports'));
 app.use('/api/crm-connections', require('./src/api/routes/crm-connections'));
 app.use('/api/translations', require('./src/api/routes/translations'));
+app.use('/api/survey-logic', require('./src/api/routes/survey-logic'));
 logger.info('All routes loaded');
 
 // Serve static files from the React app
