@@ -1,0 +1,593 @@
+/* Custom Report Builder Styles */
+
+.custom-report-builder {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    background: #F9FAFB;
+}
+
+/* Header */
+.builder-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 24px;
+    background: white;
+    border-bottom: 1px solid #E5E7EB;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.report-name-input {
+    font-size: 20px;
+    font-weight: 600;
+    border: none;
+    border-bottom: 2px solid transparent;
+    padding: 8px;
+    min-width: 300px;
+    transition: all 0.2s;
+}
+
+.report-name-input:focus {
+    outline: none;
+    border-bottom-color: #3B82F6;
+}
+
+.report-status {
+    font-size: 13px;
+    color: #6B7280;
+    padding: 4px 12px;
+    background: #F3F4F6;
+    border-radius: 12px;
+}
+
+.header-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.btn-icon {
+    width: 40px;
+    height: 40px;
+    border: none;
+    background: #F3F4F6;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: #6B7280;
+}
+
+.btn-icon:hover {
+    background: #E5E7EB;
+    color: #374151;
+}
+
+.btn-primary {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: #3B82F6;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-primary:hover {
+    background: #2563EB;
+}
+
+.btn-primary:disabled {
+    background: #9CA3AF;
+    cursor: not-allowed;
+}
+
+.btn-secondary {
+    padding: 10px 20px;
+    background: #F3F4F6;
+    color: #374151;
+    border: none;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-secondary:hover {
+    background: #E5E7EB;
+}
+
+/* Main Content */
+.builder-content {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+/* Widget Library */
+.widget-library {
+    width: 300px;
+    background: white;
+    border-right: 1px solid #E5E7EB;
+    display: flex;
+    flex-direction: column;
+}
+
+.library-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px;
+    border-bottom: 1px solid #E5E7EB;
+}
+
+.library-header h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #111827;
+    margin: 0;
+}
+
+.library-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+}
+
+.widget-type-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    background: white;
+    border: 1px solid #E5E7EB;
+    border-left-width: 4px;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.widget-type-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+.widget-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.widget-info h4 {
+    font-size: 15px;
+    font-weight: 600;
+    color: #111827;
+    margin: 0 0 4px 0;
+}
+
+.widget-info p {
+    font-size: 13px;
+    color: #6B7280;
+    margin: 0;
+}
+
+/* Report Canvas */
+.report-canvas {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px;
+}
+
+.empty-canvas {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    text-align: center;
+}
+
+.empty-canvas h3 {
+    font-size: 24px;
+    font-weight: 600;
+    color: #111827;
+    margin: 16px 0 8px 0;
+}
+
+.empty-canvas p {
+    font-size: 16px;
+    color: #6B7280;
+    margin: 0 0 24px 0;
+}
+
+/* Grid Layout */
+.grid-layout {
+    min-height: 600px;
+}
+
+.grid-item {
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+/* Widget Base Styles */
+.widget {
+    height: 100%;
+    background: white;
+    border: 2px solid #E5E7EB;
+    border-radius: 8px;
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    flex-direction: column;
+}
+
+.widget:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.widget.selected {
+    border-color: #3B82F6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.widget-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.widget-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #111827;
+    margin: 0;
+}
+
+.widget-remove {
+    width: 24px;
+    height: 24px;
+    border: none;
+    background: transparent;
+    color: #9CA3AF;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.widget-remove:hover {
+    background: #FEE2E2;
+    color: #EF4444;
+}
+
+.widget-subtitle {
+    font-size: 13px;
+    color: #6B7280;
+    margin-top: 8px;
+}
+
+/* Metric Widget */
+.metric-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.metric-value {
+    font-size: 48px;
+    font-weight: 700;
+    color: #111827;
+    line-height: 1;
+}
+
+.metric-change {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 12px;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.metric-change.positive {
+    color: #10B981;
+}
+
+.metric-change.negative {
+    color: #EF4444;
+}
+
+/* Chart Widget */
+.chart-content {
+    flex: 1;
+    min-height: 200px;
+}
+
+.chart-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: #9CA3AF;
+}
+
+/* Table Widget */
+.table-content {
+    flex: 1;
+    overflow: auto;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.data-table thead {
+    background: #F9FAFB;
+    position: sticky;
+    top: 0;
+}
+
+.data-table th {
+    padding: 8px;
+    text-align: left;
+    font-weight: 600;
+    color: #6B7280;
+    border-bottom: 2px solid #E5E7EB;
+}
+
+.data-table td {
+    padding: 8px;
+    border-bottom: 1px solid #E5E7EB;
+    color: #374151;
+}
+
+.table-pagination {
+    padding: 12px 0;
+    text-align: center;
+    font-size: 13px;
+    color: #6B7280;
+}
+
+.table-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: #9CA3AF;
+}
+
+/* Text Widget */
+.text-content {
+    flex: 1;
+    padding: 8px;
+    color: #374151;
+    line-height: 1.6;
+}
+
+/* Funnel Widget */
+.funnel-content {
+    flex: 1;
+}
+
+.funnel-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.funnel-step {
+    position: relative;
+}
+
+.step-bar {
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    color: white;
+    font-weight: 500;
+    border-radius: 8px;
+}
+
+.step-label {
+    font-size: 14px;
+}
+
+.step-value {
+    font-size: 13px;
+    opacity: 0.9;
+}
+
+.funnel-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: #9CA3AF;
+}
+
+/* Gauge Widget */
+.gauge-content {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.gauge-circle {
+    position: relative;
+}
+
+.gauge-value {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+}
+
+.gauge-percentage {
+    font-size: 32px;
+    font-weight: 700;
+    color: #111827;
+}
+
+.gauge-label {
+    font-size: 13px;
+    color: #6B7280;
+    margin-top: 4px;
+}
+
+/* Widget Config Panel */
+.widget-config-panel {
+    width: 350px;
+    background: white;
+    border-left: 1px solid #E5E7EB;
+    display: flex;
+    flex-direction: column;
+}
+
+.panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px;
+    border-bottom: 1px solid #E5E7EB;
+}
+
+.panel-header h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #111827;
+    margin: 0;
+}
+
+.panel-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+}
+
+.config-section {
+    margin-bottom: 24px;
+}
+
+.config-section h4 {
+    font-size: 14px;
+    font-weight: 600;
+    color: #111827;
+    margin: 0 0 12px 0;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.config-field {
+    margin-bottom: 16px;
+}
+
+.config-field label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: #374151;
+    margin-bottom: 6px;
+}
+
+.config-field input,
+.config-field select,
+.config-field textarea {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #D1D5DB;
+    border-radius: 6px;
+    font-size: 14px;
+    color: #111827;
+    transition: border-color 0.2s;
+}
+
+.config-field input:focus,
+.config-field select:focus,
+.config-field textarea:focus {
+    outline: none;
+    border-color: #3B82F6;
+}
+
+.panel-footer {
+    display: flex;
+    gap: 12px;
+    padding: 20px;
+    border-top: 1px solid #E5E7EB;
+}
+
+.panel-footer button {
+    flex: 1;
+}
+
+/* Loading */
+.report-builder-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+}
+
+.spinner {
+    width: 48px;
+    height: 48px;
+    border: 4px solid #E5E7EB;
+    border-top-color: #3B82F6;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 16px;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+    .widget-library,
+    .widget-config-panel {
+        position: absolute;
+        top: 64px;
+        bottom: 0;
+        z-index: 100;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .widget-library {
+        left: 0;
+    }
+
+    .widget-config-panel {
+        right: 0;
+    }
+}

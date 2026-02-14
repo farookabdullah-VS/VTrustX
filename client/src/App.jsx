@@ -64,6 +64,8 @@ const ABExperimentBuilder = React.lazy(() => import('./components/ab-testing/ABE
 const ABStatsComparison = React.lazy(() => import('./components/ab-testing/ABStatsComparison'));
 const SocialListeningDashboard = React.lazy(() => import('./components/social-listening/SocialListeningDashboard'));
 const WorkflowsPage = React.lazy(() => import('./pages/WorkflowsPage'));
+const CustomReportsDashboard = React.lazy(() => import('./components/reports/CustomReportsDashboard'));
+const CustomReportBuilder = React.lazy(() => import('./components/reports/CustomReportBuilder'));
 
 // --- View title mapping ---
 const VIEW_TITLES = {
@@ -110,6 +112,7 @@ const VIEW_TITLES = {
   collect: 'Distribution',
   'ab-tests': 'A/B Testing',
   'social-listening': 'Social Listening',
+  'custom-reports': 'Custom Reports',
 };
 
 // --- Protected Route Wrapper ---
@@ -356,6 +359,12 @@ function AppRoutes() {
 
               {/* Social Listening Route */}
               <Route path="social-listening" element={<SocialListeningDashboard />} />
+
+              {/* Custom Reports Routes */}
+              <Route path="custom-reports" element={<CustomReportsDashboard />} />
+              <Route path="custom-reports/new" element={<CustomReportBuilder />} />
+              <Route path="custom-reports/:id" element={<CustomReportBuilder />} />
+              <Route path="custom-reports/:id/edit" element={<CustomReportBuilder />} />
 
               {/* Backward Compatibility Redirects */}
               <Route path="form-viewer" element={<Navigate to="/surveys" replace />} />
