@@ -26,6 +26,7 @@ const RoleMaster = React.lazy(() => import('./components/RoleMaster').then(m => 
 const ContactMaster = React.lazy(() => import('./components/ContactMaster').then(m => ({ default: m.ContactMaster })));
 const ContactSegments = React.lazy(() => import('./components/contacts/ContactSegments'));
 const CustomFieldsManager = React.lazy(() => import('./components/contacts/CustomFieldsManager'));
+const TagsManager = React.lazy(() => import('./components/contacts/TagsManager'));
 const TicketListView = React.lazy(() => import('./components/TicketListView').then(m => ({ default: m.TicketListView })));
 const TicketDetailView = React.lazy(() => import('./components/TicketDetailView').then(m => ({ default: m.TicketDetailView })));
 const CrmDashboard = React.lazy(() => import('./components/CrmDashboard').then(m => ({ default: m.CrmDashboard })));
@@ -96,6 +97,7 @@ const VIEW_TITLES = {
   'contact-master': 'Contacts',
   'contact-segments': 'Contact Segments',
   'custom-fields': 'Custom Fields',
+  'contact-tags': 'Contact Tags',
   'role-master': 'Roles',
   subscription: 'Subscription',
   customer360: 'Unified Customer Profile',
@@ -325,6 +327,7 @@ function AppRoutes() {
               <Route path="contact-master" element={<ContactMaster />} />
               <Route path="contact-segments" element={<ContactSegments />} />
               <Route path="custom-fields" element={<CustomFieldsManager />} />
+              <Route path="contact-tags" element={<TagsManager />} />
               <Route path="customer360" element={<Customer360 />} />
               <Route path="personas" element={<CxPersonaBuilder onNavigate={(v) => navigate(`/${v}`)} />} />
               <Route path="journeys" element={<JourneyBuilder />} />
