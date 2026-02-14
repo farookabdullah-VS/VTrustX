@@ -5,6 +5,7 @@ const emailService = require('../../../services/emailService');
 const smsService = require('../../../services/smsService');
 const whatsappService = require('../../../services/whatsappService');
 const TelegramService = require('../../../services/TelegramService');
+const SlackService = require('../../../services/SlackService');
 const TemplateService = require('../../../services/TemplateService');
 const validate = require('../../middleware/validate');
 const { createDistributionSchema } = require('../../schemas/distributions.schemas');
@@ -195,6 +196,8 @@ router.post('/', validate(createDistributionSchema), async (req, res) => {
             sendBatch(contacts, subject, body, surveyId, 'whatsapp', frontendUrl, tenantId, distributionId, mediaAssets, experimentId);
         } else if (type === 'telegram') {
             sendBatch(contacts, subject, body, surveyId, 'telegram', frontendUrl, tenantId, distributionId, mediaAssets, experimentId);
+        } else if (type === 'slack') {
+            sendBatch(contacts, subject, body, surveyId, 'slack', frontendUrl, tenantId, distributionId, mediaAssets, experimentId);
         }
 
         res.status(201).json({ id: distributionId, status: 'Scheduled' });
@@ -353,6 +356,30 @@ async function sendBatch(contacts, subject, body, surveyId, type, frontendUrl, t
 
                 if (!result.success) {
                     logger.error(`Failed to send Telegram to ${chatId}`, { error: result.error });
+                    continue;
+                }
+            } else if (type === 'slack') {
+                if (!contact.slack_user_id && !contact.slack_channel_id) {
+                    logger.info(`Skipping Slack for ${contact.name || 'contact'} - No User ID or Channel ID`);
+                    continue;
+                }
+
+                const channel = contact.slack_user_id || contact.slack_channel_id;
+
+                // Send survey invitation via Slack
+                const result = await SlackService.sendSurveyInvitation(
+                    tenantId,
+                    channel,
+                    {
+                        title: finalSubject,
+                        description: rendered.text,
+                        surveyUrl: uniqueLink
+                    },
+                    { distributionId, recipientName: contact.name }
+                );
+
+                if (!result.success) {
+                    logger.error(`Failed to send Slack to ${channel}`, { error: result.error });
                     continue;
                 }
             }
