@@ -251,6 +251,7 @@ app.use('/api/crm-connections', require('./src/api/routes/crm-connections'));
 app.use('/api/translations', require('./src/api/routes/translations'));
 app.use('/api/survey-logic', require('./src/api/routes/survey-logic'));
 app.use('/api/telegram', require('./src/api/routes/telegram'));
+app.use('/api/drip-campaigns', require('./src/api/routes/drip-campaigns'));
 logger.info('All routes loaded');
 
 // Serve static files from the React app
@@ -382,6 +383,20 @@ if (process.env.ENABLE_WORKFLOW_RETRIES !== 'false') {
         logger.info('[Cron] Workflow retry processor enabled');
     } catch (err) {
         logger.error('[Cron] Failed to start workflow retry processor', {
+            error: err.message,
+            stack: err.stack,
+            name: err.name
+        });
+    }
+}
+
+// Drip Campaign Processor (optional - can be disabled via env var)
+if (process.env.ENABLE_DRIP_CAMPAIGNS !== 'false') {
+    try {
+        require('./src/jobs/dripCampaignProcessor');
+        logger.info('[Cron] Drip campaign processor enabled');
+    } catch (err) {
+        logger.error('[Cron] Failed to start drip campaign processor', {
             error: err.message,
             stack: err.stack,
             name: err.name

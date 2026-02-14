@@ -538,6 +538,27 @@ router.post('/', validate(createSubmissionSchema), async (req, res) => {
             }
         }
 
+        // Mark drip campaign enrollments as responded (if applicable)
+        try {
+            const DripCampaignService = require('../../services/DripCampaignService');
+            const recipientIdentifier = clientMetadata.u || savedEntity.metadata?.u || 'unknown';
+
+            if (recipientIdentifier !== 'unknown') {
+                DripCampaignService.markAsResponded(savedEntity.formId, recipientIdentifier).catch(err => {
+                    logger.warn('[DripCampaign] Failed to mark as responded (non-critical)', {
+                        error: err.message,
+                        formId: savedEntity.formId,
+                        recipient: recipientIdentifier
+                    });
+                });
+            }
+        } catch (dripErr) {
+            // Non-critical, don't block submission
+            logger.warn('[DripCampaign] Mark as responded failed (non-critical)', {
+                error: dripErr.message
+            });
+        }
+
         res.status(201).json(savedEntity);
     } catch (error) {
         logger.error('Submission create error', { error: error.message });
