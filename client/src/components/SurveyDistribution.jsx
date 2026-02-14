@@ -171,6 +171,9 @@ export function SurveyDistribution({ formId, onBack, onNavigate }) {
                     <div style={sidebarItemStyle(activeSidebar === 'whatsapp')} onClick={() => setActiveSidebar('whatsapp')}>
                         <span style={{ color: '#25D366', fontWeight: 'bold' }}>◉</span> WhatsApp
                     </div>
+                    <div style={sidebarItemStyle(activeSidebar === 'telegram')} onClick={() => setActiveSidebar('telegram')}>
+                        <span style={{ color: '#0088cc', fontWeight: 'bold' }}>✈</span> Telegram
+                    </div>
                     <div style={sidebarItemStyle(activeSidebar === 'social')} onClick={() => setActiveSidebar('social')}>
                         <span>📱</span> Social Media
                     </div>
@@ -208,6 +211,99 @@ export function SurveyDistribution({ formId, onBack, onNavigate }) {
                                 <p style={{ color: '#94a3b8', fontSize: '0.85em', marginTop: '16px' }}>
                                     Tip: In Saudi Arabia, WhatsApp has 98%+ penetration. Sharing via WhatsApp typically yields 3-5x higher response rates than email.
                                 </p>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Telegram-dedicated tab */}
+                    {activeSidebar === 'telegram' && formMetadata && (
+                        <div>
+                            <h2 style={{ color: '#1e293b', marginBottom: '8px' }}>Telegram Distribution</h2>
+                            <p style={{ color: '#64748b', marginBottom: '24px' }}>Send survey invitations directly to your Telegram contacts via bot messaging.</p>
+
+                            <div style={{ background: '#f1f9ff', padding: '20px', borderRadius: '12px', border: '1px solid #bfe3ff', marginBottom: '24px' }}>
+                                <h3 style={{ margin: '0 0 12px', fontSize: '1em', color: '#0088cc', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <span>ℹ️</span> Setup Required
+                                </h3>
+                                <p style={{ color: '#475569', margin: '0 0 12px', fontSize: '0.9em' }}>
+                                    To send surveys via Telegram, you need to configure a Telegram Bot. Once configured, you can send survey invitations to contacts with Telegram Chat IDs.
+                                </p>
+                                <button
+                                    onClick={() => window.location.href = '/telegram-config'}
+                                    style={{
+                                        background: '#0088cc',
+                                        color: 'white',
+                                        border: 'none',
+                                        padding: '10px 20px',
+                                        borderRadius: '6px',
+                                        cursor: 'pointer',
+                                        fontWeight: 'bold',
+                                        fontSize: '0.9em'
+                                    }}
+                                >
+                                    Configure Telegram Bot →
+                                </button>
+                            </div>
+
+                            <div style={{ background: 'white', padding: '30px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+                                <h3 style={{ margin: '0 0 16px', fontSize: '1.05em', color: '#334155' }}>How to Share Your Survey on Telegram</h3>
+
+                                <div style={{ marginBottom: '30px' }}>
+                                    <div style={{ fontSize: '0.9em', fontWeight: 'bold', color: '#475569', marginBottom: '10px' }}>Survey Link</div>
+                                    <div style={{ display: 'flex', gap: '10px' }}>
+                                        <input
+                                            readOnly
+                                            value={`${window.location.origin}/s/${formMetadata.slug || formMetadata.id}`}
+                                            style={{ flex: 1, padding: '10px', borderRadius: '6px', border: '1px solid #cbd5e1', background: '#f8fafc', color: '#334155' }}
+                                        />
+                                        <button
+                                            onClick={() => {
+                                                navigator.clipboard.writeText(`${window.location.origin}/s/${formMetadata.slug || formMetadata.id}`);
+                                                toast.success("Link copied!");
+                                            }}
+                                            style={{ background: '#0088cc', color: 'white', border: 'none', padding: '0 20px', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}
+                                        >
+                                            Copy
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div style={{ marginTop: '30px' }}>
+                                    <h4 style={{ color: '#334155', fontSize: '0.95em', marginBottom: '12px' }}>Sharing Options:</h4>
+                                    <ul style={{ color: '#64748b', fontSize: '0.9em', lineHeight: '1.8', paddingLeft: '20px' }}>
+                                        <li><strong>Manual Sharing:</strong> Copy the link above and share it in your Telegram groups, channels, or direct messages</li>
+                                        <li><strong>Bot Distribution:</strong> Import contacts with Telegram Chat IDs and send personalized invitations via your configured bot</li>
+                                        <li><strong>Telegram Channels:</strong> Post the survey link in your Telegram channel for public access</li>
+                                    </ul>
+                                </div>
+
+                                <div style={{ marginTop: '30px', padding: '20px', background: '#f8fafc', borderRadius: '8px' }}>
+                                    <p style={{ color: '#475569', fontSize: '0.85em', margin: '0' }}>
+                                        <strong>Tip:</strong> To get a contact's Chat ID, have them send a message to your bot. You can then retrieve their Chat ID from the bot updates and add it to your contact list.
+                                    </p>
+                                </div>
+
+                                <div style={{ marginTop: '24px' }}>
+                                    <a
+                                        href={`https://t.me/share/url?url=${encodeURIComponent(`${window.location.origin}/s/${formMetadata.slug || formMetadata.id}`)}&text=${encodeURIComponent(formMetadata.title)}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        style={{
+                                            display: 'inline-flex',
+                                            alignItems: 'center',
+                                            gap: '10px',
+                                            padding: '12px 24px',
+                                            background: '#0088cc',
+                                            color: 'white',
+                                            textDecoration: 'none',
+                                            borderRadius: '8px',
+                                            fontWeight: 'bold'
+                                        }}
+                                    >
+                                        <span>✈</span>
+                                        Share on Telegram
+                                    </a>
+                                </div>
                             </div>
                         </div>
                     )}
