@@ -66,6 +66,9 @@ const SocialListeningDashboard = React.lazy(() => import('./components/social-li
 const WorkflowsPage = React.lazy(() => import('./pages/WorkflowsPage'));
 const CustomReportsDashboard = React.lazy(() => import('./components/reports/CustomReportsDashboard'));
 const CustomReportBuilder = React.lazy(() => import('./components/reports/CustomReportBuilder'));
+const CRMConnectionsDashboard = React.lazy(() => import('./components/crm/CRMConnectionsDashboard'));
+const CRMConnectionWizard = React.lazy(() => import('./components/crm/CRMConnectionWizard'));
+const CRMSyncDashboard = React.lazy(() => import('./components/crm/CRMSyncDashboard'));
 
 // --- View title mapping ---
 const VIEW_TITLES = {
@@ -113,6 +116,7 @@ const VIEW_TITLES = {
   'ab-tests': 'A/B Testing',
   'social-listening': 'Social Listening',
   'custom-reports': 'Custom Reports',
+  'crm-connections': 'CRM Integrations',
 };
 
 // --- Protected Route Wrapper ---
@@ -365,6 +369,11 @@ function AppRoutes() {
               <Route path="custom-reports/new" element={<CustomReportBuilder />} />
               <Route path="custom-reports/:id" element={<CustomReportBuilder />} />
               <Route path="custom-reports/:id/edit" element={<CustomReportBuilder />} />
+
+              {/* CRM Integrations Routes */}
+              <Route path="crm-connections" element={<CRMConnectionsDashboard />} />
+              <Route path="crm-connections/new" element={<CRMConnectionWizard />} />
+              <Route path="crm-connections/:id/sync" element={<CRMSyncDashboard />} />
 
               {/* Backward Compatibility Redirects */}
               <Route path="form-viewer" element={<Navigate to="/surveys" replace />} />

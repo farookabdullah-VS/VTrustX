@@ -247,6 +247,7 @@ app.use('/api/workflow-executions', require('./src/api/routes/workflow-execution
 app.use('/api/workflow-templates', require('./src/api/routes/workflow-templates'));
 app.use('/api/scheduled-exports', require('./src/api/routes/scheduled-exports'));
 app.use('/api/custom-reports', require('./src/api/routes/custom-reports'));
+app.use('/api/crm-connections', require('./src/api/routes/crm-connections'));
 logger.info('All routes loaded');
 
 // Serve static files from the React app
