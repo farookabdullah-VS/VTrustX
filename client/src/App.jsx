@@ -69,6 +69,7 @@ const CustomReportBuilder = React.lazy(() => import('./components/reports/Custom
 const CRMConnectionsDashboard = React.lazy(() => import('./components/crm/CRMConnectionsDashboard'));
 const CRMConnectionWizard = React.lazy(() => import('./components/crm/CRMConnectionWizard'));
 const CRMSyncDashboard = React.lazy(() => import('./components/crm/CRMSyncDashboard'));
+const TelegramConfig = React.lazy(() => import('./components/telegram/TelegramConfig'));
 
 // --- View title mapping ---
 const VIEW_TITLES = {
@@ -117,6 +118,7 @@ const VIEW_TITLES = {
   'social-listening': 'Social Listening',
   'custom-reports': 'Custom Reports',
   'crm-connections': 'CRM Integrations',
+  'telegram-config': 'Telegram Bot',
 };
 
 // --- Protected Route Wrapper ---
@@ -374,6 +376,9 @@ function AppRoutes() {
               <Route path="crm-connections" element={<CRMConnectionsDashboard />} />
               <Route path="crm-connections/new" element={<CRMConnectionWizard />} />
               <Route path="crm-connections/:id/sync" element={<CRMSyncDashboard />} />
+
+              {/* Telegram Bot Configuration */}
+              <Route path="telegram-config" element={<TelegramConfig />} />
 
               {/* Backward Compatibility Redirects */}
               <Route path="form-viewer" element={<Navigate to="/surveys" replace />} />

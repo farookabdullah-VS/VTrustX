@@ -1,0 +1,391 @@
+/**
+ * Telegram Configuration Styles
+ */
+
+.telegram-config {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 30px;
+}
+
+/* Header */
+.telegram-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid #E5E7EB;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.telegram-icon {
+    color: #0088CC;
+}
+
+.telegram-header h1 {
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: #1F2937;
+    margin: 0 0 5px 0;
+}
+
+.telegram-header p {
+    color: #6B7280;
+    font-size: 1rem;
+    margin: 0;
+}
+
+.status-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+.status-badge.active {
+    background: #10B98115;
+    border: 2px solid #10B981;
+    color: #10B981;
+}
+
+/* Info Card */
+.info-card {
+    background: #EFF6FF;
+    border: 2px solid #DBEAFE;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 30px;
+}
+
+.info-card h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #1E40AF;
+    margin: 0 0 15px 0;
+}
+
+.info-card ol {
+    margin: 0 0 15px 0;
+    padding-left: 20px;
+    color: #1F2937;
+}
+
+.info-card ol li {
+    margin-bottom: 8px;
+    line-height: 1.6;
+}
+
+.info-card code {
+    background: #DBEAFE;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: 0.9rem;
+    color: #1E40AF;
+}
+
+.external-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: #3B82F6;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.external-link:hover {
+    color: #2563EB;
+    gap: 8px;
+}
+
+/* Configuration Form */
+.config-form {
+    background: white;
+    border: 2px solid #E5E7EB;
+    border-radius: 12px;
+    padding: 0;
+    overflow: hidden;
+}
+
+.form-section {
+    padding: 25px 30px;
+    border-bottom: 2px solid #E5E7EB;
+}
+
+.form-section:last-child {
+    border-bottom: none;
+}
+
+.form-section h3 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #1F2937;
+    margin: 0 0 20px 0;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group:last-child {
+    margin-bottom: 0;
+}
+
+.form-group label {
+    display: block;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 8px;
+}
+
+.form-group label .optional {
+    font-weight: 400;
+    color: #6B7280;
+    font-size: 0.9rem;
+    margin-left: 8px;
+}
+
+.form-group input[type="password"],
+.form-group input[type="url"],
+.form-group input[type="text"],
+.form-group textarea {
+    width: 100%;
+    padding: 10px 14px;
+    border: 2px solid #E5E7EB;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    transition: all 0.2s;
+    font-family: inherit;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: #3B82F6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.input-with-button {
+    display: flex;
+    gap: 10px;
+}
+
+.input-with-button input {
+    flex: 1;
+}
+
+.btn-test {
+    padding: 10px 20px;
+    background: white;
+    border: 2px solid #3B82F6;
+    color: #3B82F6;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.btn-test:hover:not(:disabled) {
+    background: #EFF6FF;
+}
+
+.btn-test:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.help-text {
+    display: block;
+    color: #6B7280;
+    font-size: 0.85rem;
+    margin-top: 6px;
+}
+
+/* Test Result */
+.test-result {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.test-result.success {
+    background: #ECFDF5;
+    border: 2px solid #10B981;
+    color: #065F46;
+}
+
+.test-result.error {
+    background: #FEF2F2;
+    border: 2px solid #EF4444;
+    color: #991B1B;
+}
+
+.test-result strong {
+    display: block;
+    margin-bottom: 4px;
+}
+
+.test-result p {
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+/* Checkbox Group */
+.checkbox-group {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.checkbox-group label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    font-weight: 400;
+}
+
+.checkbox-group input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+/* Form Actions */
+.form-actions {
+    padding: 20px 30px;
+    background: #F9FAFB;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.btn-primary {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #3B82F6;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-primary:hover:not(:disabled) {
+    background: #2563EB;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.btn-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Test Message Section */
+.test-message-section {
+    background: white;
+    border: 2px solid #E5E7EB;
+    border-radius: 12px;
+    padding: 25px 30px;
+    margin-top: 30px;
+}
+
+.test-message-section h3 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #1F2937;
+    margin: 0 0 8px 0;
+}
+
+.test-message-section > p {
+    color: #6B7280;
+    margin: 0 0 20px 0;
+}
+
+/* Loading State */
+.loading-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+}
+
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid #E5E7EB;
+    border-top-color: #0088CC;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 20px;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.loading-state p {
+    color: #6B7280;
+    font-size: 1rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .telegram-config {
+        padding: 20px;
+    }
+
+    .telegram-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+
+    .header-left {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .form-section {
+        padding: 20px;
+    }
+
+    .form-actions {
+        padding: 15px 20px;
+    }
+
+    .input-with-button {
+        flex-direction: column;
+    }
+
+    .btn-test {
+        width: 100%;
+    }
+}

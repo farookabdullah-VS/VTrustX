@@ -4,6 +4,7 @@ const { query } = require('../../../infrastructure/database/db');
 const emailService = require('../../../services/emailService');
 const smsService = require('../../../services/smsService');
 const whatsappService = require('../../../services/whatsappService');
+const TelegramService = require('../../../services/TelegramService');
 const TemplateService = require('../../../services/TemplateService');
 const validate = require('../../middleware/validate');
 const { createDistributionSchema } = require('../../schemas/distributions.schemas');
@@ -192,6 +193,8 @@ router.post('/', validate(createDistributionSchema), async (req, res) => {
             sendBatch(contacts, subject, body, surveyId, 'sms', frontendUrl, tenantId, distributionId, mediaAssets, experimentId);
         } else if (type === 'whatsapp') {
             sendBatch(contacts, subject, body, surveyId, 'whatsapp', frontendUrl, tenantId, distributionId, mediaAssets, experimentId);
+        } else if (type === 'telegram') {
+            sendBatch(contacts, subject, body, surveyId, 'telegram', frontendUrl, tenantId, distributionId, mediaAssets, experimentId);
         }
 
         res.status(201).json({ id: distributionId, status: 'Scheduled' });
@@ -326,6 +329,30 @@ async function sendBatch(contacts, subject, body, surveyId, type, frontendUrl, t
 
                 if (!result.success) {
                     logger.error(`Failed to send WhatsApp to ${contact.phone}`, { error: result.error });
+                    continue;
+                }
+            } else if (type === 'telegram') {
+                if (!contact.telegram_chat_id && !contact.phone) {
+                    logger.info(`Skipping Telegram for ${contact.name || 'contact'} - No Chat ID or Phone`);
+                    continue;
+                }
+
+                const chatId = contact.telegram_chat_id || contact.phone;
+
+                // Send survey invitation via Telegram
+                const result = await TelegramService.sendSurveyInvitation(
+                    tenantId,
+                    chatId,
+                    {
+                        title: finalSubject,
+                        description: rendered.text,
+                        surveyUrl: uniqueLink
+                    },
+                    { distributionId, recipientName: contact.name, recipientUsername: contact.telegram_username }
+                );
+
+                if (!result.success) {
+                    logger.error(`Failed to send Telegram to ${chatId}`, { error: result.error });
                     continue;
                 }
             }
