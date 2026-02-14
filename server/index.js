@@ -252,6 +252,7 @@ app.use('/api/translations', require('./src/api/routes/translations'));
 app.use('/api/survey-logic', require('./src/api/routes/survey-logic'));
 app.use('/api/telegram', require('./src/api/routes/telegram'));
 app.use('/api/drip-campaigns', require('./src/api/routes/drip-campaigns'));
+app.use('/api/advanced-contacts', require('./src/api/routes/advanced-contacts'));
 logger.info('All routes loaded');
 
 // Serve static files from the React app
