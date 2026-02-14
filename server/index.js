@@ -244,6 +244,7 @@ app.use('/api/directory', require('./src/api/routes/directory/index'));
 app.use('/api/textiq', require('./src/api/routes/textiq/index'));
 app.use('/api/workflows', require('./src/api/routes/workflows/index'));
 app.use('/api/workflow-executions', require('./src/api/routes/workflow-executions'));
+app.use('/api/workflow-templates', require('./src/api/routes/workflow-templates'));
 app.use('/api/scheduled-exports', require('./src/api/routes/scheduled-exports'));
 logger.info('All routes loaded');
 
@@ -408,6 +409,12 @@ setTimeout(() => {
     if (process.env.NODE_ENV !== 'test') {
         emailService.processAllChannels();
         runMigrations();
+
+        // Seed default workflow templates
+        const WorkflowTemplateService = require('./src/services/WorkflowTemplateService');
+        WorkflowTemplateService.seedDefaultTemplates().catch(err => {
+            logger.error('[Startup] Failed to seed workflow templates', { error: err.message });
+        });
     }
 }, 5000);
 
