@@ -191,6 +191,7 @@ app.use('/api/ai-providers', require('./src/api/routes/ai-providers'));
 const authenticate = require('./src/api/middleware/auth');
 // Debug routes removed for security — arbitrary SQL execution is not safe in production
 app.use('/api/auth', require('./src/api/routes/auth'));
+app.use('/api/auth', require('./src/api/routes/auth-sso'));
 app.use('/api/auth/2fa', require('./src/api/routes/two-factor-auth'));
 app.use('/api/audit-logs', require('./src/api/routes/audit-logs'));
 app.use('/api/ip-whitelist', require('./src/api/routes/ip-whitelist'));

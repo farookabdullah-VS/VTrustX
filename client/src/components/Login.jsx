@@ -14,6 +14,7 @@ export function Login({ onLogin }) {
 
     const [isRegistering, setIsRegistering] = useState(false);
     const [error, setError] = useState('');
+    const [ssoProviders, setSsoProviders] = useState([]);
 
     const form = useFormValidation({
         initialValues: { username: '', password: '' },
@@ -44,6 +45,22 @@ export function Login({ onLogin }) {
         },
     });
 
+    // Fetch enabled SSO providers
+    useEffect(() => {
+        fetch('/api/sso/enabled', {
+            headers: { 'Content-Type': 'application/json' }
+        })
+            .then(r => r.ok ? r.json() : Promise.reject(new Error('Failed to fetch SSO providers')))
+            .then(data => {
+                if (data.providers && Array.isArray(data.providers)) {
+                    setSsoProviders(data.providers);
+                }
+            })
+            .catch(e => {
+                console.error("Failed to fetch SSO providers", e);
+            });
+    }, []);
+
     useEffect(() => {
         const params = new URLSearchParams(window.location.search);
         const oauthSuccess = params.get('oauth');
@@ -68,7 +85,17 @@ export function Login({ onLogin }) {
                     window.history.replaceState({}, document.title, '/login');
                 });
         } else if (errorType) {
-            setError(t('login.error.auth_failed'));
+            // Map error codes to user-friendly messages
+            const errorMessages = {
+                sso_failed: 'SSO authentication failed',
+                sso_error: 'An error occurred during SSO login',
+                sso_provider_disabled: 'This SSO provider is disabled',
+                sso_authentication_failed: 'Authentication failed',
+                sso_no_user: 'User not found or JIT provisioning is disabled',
+                token_error: 'Failed to create session',
+                unsupported_provider: 'Unsupported provider type'
+            };
+            setError(errorMessages[errorType] || t('login.error.auth_failed'));
             window.history.replaceState({}, document.title, '/login');
         }
     }, [onLogin, t]);
@@ -196,6 +223,39 @@ export function Login({ onLogin }) {
                                 </svg>
                                 Microsoft
                             </button>
+
+                            {/* Dynamic SSO Providers */}
+                            {ssoProviders.map(provider => (
+                                <button
+                                    key={provider.id}
+                                    type="button"
+                                    aria-label={`Sign in with ${provider.name}`}
+                                    onClick={() => window.location.href = `/api/auth/sso/${provider.id}`}
+                                    style={{
+                                        width: '100%', padding: '14px', background: 'var(--input-bg)', color: 'var(--text-color)',
+                                        border: '1px solid var(--input-border)', borderRadius: '12px', cursor: 'pointer',
+                                        fontSize: '15px', fontWeight: '600', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px',
+                                        transition: 'background 0.2s'
+                                    }}
+                                    onMouseOver={(e) => e.currentTarget.style.background = 'var(--sidebar-hover-bg)'}
+                                    onMouseOut={(e) => e.currentTarget.style.background = 'var(--input-bg)'}
+                                >
+                                    {/* Icon based on provider type */}
+                                    {provider.provider_type === 'saml' ? (
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
+                                            <path d="M2 17L12 22L22 17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                            <path d="M2 12L12 17L22 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                        </svg>
+                                    ) : (
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M15 7C15 9.20914 13.2091 11 11 11C8.79086 11 7 9.20914 7 7C7 4.79086 8.79086 3 11 3C13.2091 3 15 4.79086 15 7Z" stroke="currentColor" strokeWidth="2"/>
+                                            <path d="M3 21V19C3 16.2386 5.23858 14 8 14H12C13.1046 14 14 14.8954 14 16M16 11L18 13L22 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                        </svg>
+                                    )}
+                                    {provider.name}
+                                </button>
+                            ))}
                         </div>
                     </>
                 )}
