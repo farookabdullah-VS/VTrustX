@@ -404,6 +404,40 @@
     border-radius: 10px;
 }
 
+/* Add Row Button */
+.cjm-add-row-container {
+    display: flex;
+    justify-content: center;
+    padding: 15px 20px;
+    background: #fafafa;
+    border-top: 1px solid #e2e8f0;
+}
+
+.cjm-add-row-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border: 2px dashed #cbd5e1;
+    background: #ffffff;
+    color: #475569;
+    font-size: 0.9rem;
+    font-weight: 500;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.cjm-add-row-btn:hover {
+    background: #f1f5f9;
+    border-color: #94a3b8;
+    color: #1e293b;
+}
+
+.cjm-add-row-btn:active {
+    transform: translateY(1px);
+}
+
 .cjm-drag-overlay {
     background: rgba(44, 155, 173, 0.9);
     color: white;

@@ -68,7 +68,7 @@ function StageHeader({ stage, onUpdate, onDelete }) {
     );
 }
 
-export function CJMGrid({ stages, sections, onUpdateCell, onAddStage, onUpdateStage, onUpdateSection, onDeleteSection, onDeleteStage, comments }) {
+export function CJMGrid({ stages, sections, onUpdateCell, onAddStage, onAddSection, onUpdateStage, onUpdateSection, onDeleteSection, onDeleteStage, comments }) {
     return (
         <div className="cjm-grid">
             <div className="cjm-stages-row">
@@ -101,11 +101,17 @@ export function CJMGrid({ stages, sections, onUpdateCell, onAddStage, onUpdateSt
                     ))}
                     {sections.length === 0 && (
                         <div className="cjm-empty-state">
-                            Drag tools from the left sidebar to add sections
+                            Drag tools from the left sidebar to add sections or click the button below
                         </div>
                     )}
                 </div>
             </SortableContext>
+
+            <div className="cjm-add-row-container">
+                <button className="cjm-add-row-btn" onClick={() => onAddSection && onAddSection('text')}>
+                    <Plus size={16} /> Add Row
+                </button>
+            </div>
         </div>
     );
 }

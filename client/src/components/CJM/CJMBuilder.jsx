@@ -278,6 +278,7 @@ export function CJMBuilder({ mapId, onBack }) {
                                 sections={mapData.sections}
                                 onUpdateCell={updateCell}
                                 onAddStage={addStage}
+                                onAddSection={addSection}
                                 onDeleteStage={deleteStage}
                                 onUpdateStage={(id, val) => {
                                     setMapData(p => ({
