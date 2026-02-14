@@ -210,6 +210,7 @@ app.use('/api/form-audience', require('./src/api/routes/form_contacts'));
 app.use('/api/calls', require('./src/api/routes/calls'));
 app.use('/api/ai-service', require('./src/api/routes/ai_proxy'));
 app.use('/api/analytics', require('./src/api/routes/analytics'));
+app.use('/api/sentiment', require('./src/api/routes/sentiment'));
 
 const agentChatRouter = require('./src/api/routes/agent_chat');
 app.get('/api/agent-chat/test-inline', (req, res) => res.json([{ id: 1, title: 'Inline Survey' }]));

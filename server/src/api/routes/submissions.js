@@ -474,6 +474,63 @@ router.post('/', validate(createSubmissionSchema), async (req, res) => {
             }
         }
 
+        // New AI-Powered Sentiment Analysis for Survey Responses
+        // This uses the dedicated SurveySentimentService for more detailed analysis
+        if (savedEntity.data && savedEntity.metadata?.status === 'completed') {
+            try {
+                const SurveySentimentService = require('../../services/SurveySentimentService');
+
+                // Get form details to retrieve tenant_id
+                const formCheck = await query('SELECT tenant_id FROM forms WHERE id = $1', [savedEntity.formId]);
+                const tenantId = formCheck.rows[0]?.tenant_id;
+
+                if (tenantId) {
+                    // Get form questions to match responses
+                    const questionsResult = await query(
+                        'SELECT id, text FROM questions WHERE form_id = $1',
+                        [savedEntity.formId]
+                    );
+
+                    // Build responses array from submission data
+                    const responses = [];
+                    for (const [key, value] of Object.entries(savedEntity.data)) {
+                        // Extract question ID from key (e.g., "q_123" -> 123)
+                        const questionIdMatch = key.match(/q[_-]?(\d+)/);
+                        if (questionIdMatch && value && typeof value === 'string') {
+                            responses.push({
+                                question_id: parseInt(questionIdMatch[1]),
+                                answer: value
+                            });
+                        }
+                    }
+
+                    // Analyze submission asynchronously (fire-and-forget)
+                    if (responses.length > 0) {
+                        SurveySentimentService.analyzeSubmission(
+                            tenantId,
+                            savedEntity.id,
+                            responses
+                        ).then(results => {
+                            logger.info('[Submissions] Survey sentiment analysis completed', {
+                                submissionId: savedEntity.id,
+                                analyzedCount: results.length
+                            });
+                        }).catch(err => {
+                            logger.error('[Submissions] Survey sentiment analysis failed', {
+                                submissionId: savedEntity.id,
+                                error: err.message
+                            });
+                        });
+                    }
+                }
+            } catch (sentimentErr) {
+                logger.error('[Submissions] Failed to trigger survey sentiment analysis', {
+                    submissionId: savedEntity.id,
+                    error: sentimentErr.message
+                });
+            }
+        }
+
         res.status(201).json(savedEntity);
     } catch (error) {
         logger.error('Submission create error', { error: error.message });

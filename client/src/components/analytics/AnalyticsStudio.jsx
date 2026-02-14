@@ -28,6 +28,7 @@ import { useToast } from '../common/Toast';
 import { Skeleton } from '../common/Skeleton';
 import { DeliveryAnalyticsDashboard } from './DeliveryAnalyticsDashboard';
 import { SentimentDashboard } from './SentimentDashboard';
+import SentimentAnalyticsDashboard from './SentimentAnalyticsDashboard';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'];
 
@@ -3265,6 +3266,22 @@ export const AnalyticsStudio = () => {
                 >
                     😊 Sentiment Analysis
                 </button>
+                <button
+                    onClick={() => setActiveTab('ai-sentiment')}
+                    style={{
+                        padding: '16px 24px',
+                        border: 'none',
+                        background: 'transparent',
+                        borderBottom: activeTab === 'ai-sentiment' ? '3px solid var(--primary)' : '3px solid transparent',
+                        color: activeTab === 'ai-sentiment' ? 'var(--primary)' : 'var(--text-muted)',
+                        fontWeight: activeTab === 'ai-sentiment' ? '600' : '400',
+                        cursor: 'pointer',
+                        fontSize: '0.95rem',
+                        transition: 'all 0.2s'
+                    }}
+                >
+                    🤖 AI Sentiment
+                </button>
             </div>
 
             {/* Tab Content */}
@@ -3276,6 +3293,7 @@ export const AnalyticsStudio = () => {
             )}
             {activeTab === 'delivery' && <DeliveryAnalyticsDashboard />}
             {activeTab === 'sentiment' && <SentimentDashboard formId={selectedForm?.id} />}
+            {activeTab === 'ai-sentiment' && <SentimentAnalyticsDashboard formId={selectedForm?.id} />}
         </div>
     );
 };
