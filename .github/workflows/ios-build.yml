@@ -1,0 +1,98 @@
+name: Build iOS App
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'client/**'
+      - '.github/workflows/ios-build.yml'
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:  # Allows manual trigger from GitHub UI
+
+env:
+  NODE_VERSION: '18'
+  XCODE_VERSION: '15.2'
+
+jobs:
+  build-ios:
+    name: Build iOS App
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: client/package-lock.json
+
+      - name: Select Xcode version
+        run: sudo xcode-select -s /Applications/Xcode_${{ env.XCODE_VERSION }}.app/Contents/Developer
+
+      - name: Show Xcode version
+        run: xcodebuild -version
+
+      - name: Install dependencies
+        working-directory: ./client
+        run: npm ci
+
+      - name: Build web app
+        working-directory: ./client
+        run: npm run build
+
+      - name: Sync Capacitor
+        working-directory: ./client
+        run: npx cap sync ios
+
+      - name: Install CocoaPods dependencies
+        working-directory: ./client/ios/App
+        run: |
+          gem install cocoapods
+          pod install
+
+      - name: Build iOS app (Debug)
+        working-directory: ./client/ios/App
+        run: |
+          xcodebuild \
+            -workspace App.xcworkspace \
+            -scheme App \
+            -configuration Debug \
+            -sdk iphonesimulator \
+            -destination 'platform=iOS Simulator,name=iPhone 15 Pro,OS=latest' \
+            -derivedDataPath ./build \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            clean build
+
+      - name: Create IPA (Debug)
+        working-directory: ./client/ios/App
+        run: |
+          mkdir -p ./build/ipa
+          cd ./build/Build/Products/Debug-iphonesimulator
+          mkdir -p Payload
+          cp -r App.app Payload/
+          zip -r ../../../../ipa/RayiX-debug.ipa Payload/
+          cd ../../../../ipa
+          ls -lh
+
+      - name: Upload iOS App Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: RayiX-iOS-Debug
+          path: client/ios/App/build/ipa/RayiX-debug.ipa
+          retention-days: 30
+
+      - name: Build Summary
+        run: |
+          echo "### ✅ iOS Build Successful! 🎉" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "📱 **App Name:** RayiX" >> $GITHUB_STEP_SUMMARY
+          echo "🔨 **Build Type:** Debug (Simulator)" >> $GITHUB_STEP_SUMMARY
+          echo "📦 **Artifact:** RayiX-iOS-Debug.ipa" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Download the IPA from the **Artifacts** section above." >> $GITHUB_STEP_SUMMARY
