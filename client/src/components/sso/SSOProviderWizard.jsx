@@ -45,6 +45,14 @@ function SSOProviderWizard() {
         oauth_userinfo_url: '',
         oauth_scopes: ['openid', 'email', 'profile'],
 
+        // LDAP fields
+        ldap_url: '',
+        ldap_bind_dn: '',
+        ldap_bind_password: '',
+        ldap_search_base: '',
+        ldap_search_filter: '(uid={{username}})',
+        ldap_verify_cert: true,
+
         // User provisioning
         jit_provisioning: true,
         email_claim: 'email',
@@ -122,6 +130,11 @@ function SSOProviderWizard() {
                     setError('SAML Entity ID and SSO URL are required');
                     return;
                 }
+            } else if (formData.provider_type === 'ldap') {
+                if (!formData.ldap_url || !formData.ldap_bind_dn || !formData.ldap_bind_password || !formData.ldap_search_base) {
+                    setError('LDAP URL, Bind DN, Bind Password, and Search Base are required');
+                    return;
+                }
             } else {
                 if (!formData.oauth_client_id || !formData.oauth_authorization_url || !formData.oauth_token_url) {
                     setError('OAuth Client ID, Authorization URL, and Token URL are required');
@@ -147,6 +160,13 @@ function SSOProviderWizard() {
                 ...(formData.provider_type === 'saml' ? {
                     saml_entity_id: formData.saml_entity_id,
                     saml_sso_url: formData.saml_sso_url
+                } : formData.provider_type === 'ldap' ? {
+                    ldap_url: formData.ldap_url,
+                    ldap_bind_dn: formData.ldap_bind_dn,
+                    ldap_bind_password: formData.ldap_bind_password,
+                    ldap_search_base: formData.ldap_search_base,
+                    ldap_search_filter: formData.ldap_search_filter,
+                    ldap_verify_cert: formData.ldap_verify_cert
                 } : {
                     oauth_client_id: formData.oauth_client_id,
                     oauth_authorization_url: formData.oauth_authorization_url,
@@ -270,6 +290,14 @@ function SSOProviderWizard() {
                                     <h3>OAuth2 / OIDC</h3>
                                     <p>Modern authentication protocol. Used by Google, Auth0, and others.</p>
                                 </div>
+                                <div
+                                    className={`type-card ${formData.provider_type === 'ldap' ? 'selected' : ''}`}
+                                    onClick={() => handleChange('provider_type', 'ldap')}
+                                >
+                                    <Users size={32} />
+                                    <h3>LDAP / Active Directory</h3>
+                                    <p>Direct directory authentication. Common in on-premises environments.</p>
+                                </div>
                             </div>
                         </div>
 
@@ -289,7 +317,11 @@ function SSOProviderWizard() {
                 {/* Step 2: Configuration */}
                 {currentStep === 2 && (
                     <div className="step-panel">
-                        <h2>{formData.provider_type === 'saml' ? 'SAML Configuration' : 'OAuth2/OIDC Configuration'}</h2>
+                        <h2>
+                            {formData.provider_type === 'saml' ? 'SAML Configuration' :
+                             formData.provider_type === 'ldap' ? 'LDAP Configuration' :
+                             'OAuth2/OIDC Configuration'}
+                        </h2>
                         <p>Enter the configuration details from your identity provider</p>
 
                         {formData.provider_type === 'saml' ? (
@@ -417,7 +449,81 @@ function SSOProviderWizard() {
                                     <span className="field-help">Space-separated OAuth2 scopes to request</span>
                                 </div>
                             </>
-                        )}
+                        ) : formData.provider_type === 'ldap' ? (
+                            <>
+                                <div className="form-group">
+                                    <label>LDAP Server URL *</label>
+                                    <input
+                                        type="text"
+                                        placeholder="ldap://ldap.example.com:389 or ldaps://ldap.example.com:636"
+                                        value={formData.ldap_url}
+                                        onChange={(e) => handleChange('ldap_url', e.target.value)}
+                                    />
+                                    <span className="field-help">Use ldaps:// for secure connections (recommended)</span>
+                                </div>
+
+                                <div className="form-group">
+                                    <label>Bind DN (Service Account) *</label>
+                                    <input
+                                        type="text"
+                                        placeholder="cn=admin,dc=example,dc=com"
+                                        value={formData.ldap_bind_dn}
+                                        onChange={(e) => handleChange('ldap_bind_dn', e.target.value)}
+                                    />
+                                    <span className="field-help">Distinguished Name for LDAP bind authentication</span>
+                                </div>
+
+                                <div className="form-group">
+                                    <label>Bind Password *</label>
+                                    <input
+                                        type="password"
+                                        placeholder="Service account password"
+                                        value={formData.ldap_bind_password}
+                                        onChange={(e) => handleChange('ldap_bind_password', e.target.value)}
+                                    />
+                                    <span className="field-help">Password for the service account</span>
+                                </div>
+
+                                <div className="form-group">
+                                    <label>Search Base *</label>
+                                    <input
+                                        type="text"
+                                        placeholder="ou=users,dc=example,dc=com"
+                                        value={formData.ldap_search_base}
+                                        onChange={(e) => handleChange('ldap_search_base', e.target.value)}
+                                    />
+                                    <span className="field-help">Base DN where users are located</span>
+                                </div>
+
+                                <div className="form-group">
+                                    <label>Search Filter *</label>
+                                    <input
+                                        type="text"
+                                        placeholder="(uid={{username}})"
+                                        value={formData.ldap_search_filter}
+                                        onChange={(e) => handleChange('ldap_search_filter', e.target.value)}
+                                    />
+                                    <span className="field-help">
+                                        LDAP filter with &#123;&#123;username&#125;&#125; placeholder. Examples:
+                                        <br/>• Active Directory: (sAMAccountName=&#123;&#123;username&#125;&#125;)
+                                        <br/>• OpenLDAP: (uid=&#123;&#123;username&#125;&#125;)
+                                        <br/>• Email-based: (mail=&#123;&#123;username&#125;&#125;)
+                                    </span>
+                                </div>
+
+                                <div className="form-group">
+                                    <label className="checkbox-label">
+                                        <input
+                                            type="checkbox"
+                                            checked={formData.ldap_verify_cert}
+                                            onChange={(e) => handleChange('ldap_verify_cert', e.target.checked)}
+                                        />
+                                        <span>Verify TLS/SSL Certificate</span>
+                                    </label>
+                                    <span className="field-help">Disable only for self-signed certificates (not recommended for production)</span>
+                                </div>
+                            </>
+                        ) : null}
                     </div>
                 )}
 
@@ -524,6 +630,25 @@ function SSOProviderWizard() {
                                         <div className="review-item">
                                             <strong>SSO URL:</strong>
                                             <span className="text-truncate">{formData.saml_sso_url}</span>
+                                        </div>
+                                    </>
+                                ) : formData.provider_type === 'ldap' ? (
+                                    <>
+                                        <div className="review-item">
+                                            <strong>Server URL:</strong>
+                                            <span className="text-truncate">{formData.ldap_url}</span>
+                                        </div>
+                                        <div className="review-item">
+                                            <strong>Bind DN:</strong>
+                                            <span className="text-truncate">{formData.ldap_bind_dn}</span>
+                                        </div>
+                                        <div className="review-item">
+                                            <strong>Search Base:</strong>
+                                            <span className="text-truncate">{formData.ldap_search_base}</span>
+                                        </div>
+                                        <div className="review-item">
+                                            <strong>Search Filter:</strong>
+                                            <span className="text-truncate">{formData.ldap_search_filter}</span>
                                         </div>
                                     </>
                                 ) : (

@@ -15,6 +15,9 @@ export function Login({ onLogin }) {
     const [isRegistering, setIsRegistering] = useState(false);
     const [error, setError] = useState('');
     const [ssoProviders, setSsoProviders] = useState([]);
+    const [ldapModal, setLdapModal] = useState(null);
+    const [ldapCredentials, setLdapCredentials] = useState({ username: '', password: '' });
+    const [ldapLoading, setLdapLoading] = useState(false);
 
     const form = useFormValidation({
         initialValues: { username: '', password: '' },
@@ -99,6 +102,39 @@ export function Login({ onLogin }) {
             window.history.replaceState({}, document.title, '/login');
         }
     }, [onLogin, t]);
+
+    // LDAP Login Handler
+    const handleLdapLogin = async (providerId) => {
+        try {
+            setLdapLoading(true);
+            setError('');
+
+            const response = await fetch(`/api/auth/sso/${providerId}/ldap`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify(ldapCredentials)
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'LDAP authentication failed');
+            }
+
+            const data = await response.json();
+
+            // Refresh CSRF token for new session
+            await fetchCsrfToken();
+
+            // Close modal and login
+            setLdapModal(null);
+            setLdapCredentials({ username: '', password: '' });
+            onLogin(data);
+        } catch (err) {
+            setError(err.message || 'LDAP authentication failed');
+            setLdapLoading(false);
+        }
+    };
 
     // State for Component
 
@@ -230,7 +266,13 @@ export function Login({ onLogin }) {
                                     key={provider.id}
                                     type="button"
                                     aria-label={`Sign in with ${provider.name}`}
-                                    onClick={() => window.location.href = `/api/auth/sso/${provider.id}`}
+                                    onClick={() => {
+                                        if (provider.provider_type === 'ldap') {
+                                            setLdapModal(provider);
+                                        } else {
+                                            window.location.href = `/api/auth/sso/${provider.id}`;
+                                        }
+                                    }}
                                     style={{
                                         width: '100%', padding: '14px', background: 'var(--input-bg)', color: 'var(--text-color)',
                                         border: '1px solid var(--input-border)', borderRadius: '12px', cursor: 'pointer',
@@ -246,6 +288,11 @@ export function Login({ onLogin }) {
                                             <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
                                             <path d="M2 17L12 22L22 17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                                             <path d="M2 12L12 17L22 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                        </svg>
+                                    ) : provider.provider_type === 'ldap' ? (
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <circle cx="9" cy="7" r="4" stroke="currentColor" strokeWidth="2"/>
+                                            <path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2M16 3.13a4 4 0 0 1 0 7.75M21 21v-2a4 4 0 0 0-3-3.85" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                                         </svg>
                                     ) : (
                                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -270,6 +317,103 @@ export function Login({ onLogin }) {
                     </span>
                 </div>
             </div>
+
+            {/* LDAP Login Modal */}
+            {ldapModal && (
+                <div style={{
+                    position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
+                    background: 'rgba(0, 0, 0, 0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    zIndex: 10000
+                }}>
+                    <div style={{
+                        background: 'var(--card-bg, #ffffff)', padding: '32px', borderRadius: '16px',
+                        boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)', width: '90%', maxWidth: '400px'
+                    }}>
+                        <h3 style={{ margin: '0 0 8px 0', fontSize: '20px', fontWeight: '600', color: 'var(--text-color)' }}>
+                            Sign in with {ldapModal.name}
+                        </h3>
+                        <p style={{ margin: '0 0 24px 0', fontSize: '14px', color: 'var(--text-muted)' }}>
+                            Enter your directory credentials
+                        </p>
+
+                        {error && (
+                            <div role="alert" style={{
+                                color: 'var(--status-error)', marginBottom: '16px', fontSize: '0.9em',
+                                background: 'rgba(239, 68, 68, 0.1)', padding: '12px', borderRadius: '8px',
+                                border: '1px solid var(--status-error)'
+                            }}>
+                                {error}
+                            </div>
+                        )}
+
+                        <div style={{ marginBottom: '16px' }}>
+                            <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', fontWeight: '500', color: 'var(--text-color)' }}>
+                                Username
+                            </label>
+                            <input
+                                type="text"
+                                value={ldapCredentials.username}
+                                onChange={(e) => setLdapCredentials({ ...ldapCredentials, username: e.target.value })}
+                                onKeyPress={(e) => e.key === 'Enter' && handleLdapLogin(ldapModal.id)}
+                                placeholder="Enter your username"
+                                autoFocus
+                                style={{
+                                    width: '100%', padding: '12px', border: '1px solid var(--input-border)',
+                                    borderRadius: '8px', fontSize: '14px', background: 'var(--input-bg)',
+                                    color: 'var(--input-text)', boxSizing: 'border-box'
+                                }}
+                            />
+                        </div>
+
+                        <div style={{ marginBottom: '24px' }}>
+                            <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', fontWeight: '500', color: 'var(--text-color)' }}>
+                                Password
+                            </label>
+                            <input
+                                type="password"
+                                value={ldapCredentials.password}
+                                onChange={(e) => setLdapCredentials({ ...ldapCredentials, password: e.target.value })}
+                                onKeyPress={(e) => e.key === 'Enter' && handleLdapLogin(ldapModal.id)}
+                                placeholder="Enter your password"
+                                style={{
+                                    width: '100%', padding: '12px', border: '1px solid var(--input-border)',
+                                    borderRadius: '8px', fontSize: '14px', background: 'var(--input-bg)',
+                                    color: 'var(--input-text)', boxSizing: 'border-box'
+                                }}
+                            />
+                        </div>
+
+                        <div style={{ display: 'flex', gap: '12px' }}>
+                            <button
+                                onClick={() => {
+                                    setLdapModal(null);
+                                    setLdapCredentials({ username: '', password: '' });
+                                    setError('');
+                                }}
+                                disabled={ldapLoading}
+                                style={{
+                                    flex: 1, padding: '12px', background: 'var(--input-bg)', color: 'var(--text-color)',
+                                    border: '1px solid var(--input-border)', borderRadius: '8px', cursor: ldapLoading ? 'not-allowed' : 'pointer',
+                                    fontSize: '14px', fontWeight: '600', opacity: ldapLoading ? 0.5 : 1
+                                }}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={() => handleLdapLogin(ldapModal.id)}
+                                disabled={ldapLoading || !ldapCredentials.username || !ldapCredentials.password}
+                                style={{
+                                    flex: 1, padding: '12px', background: 'var(--primary-gradient)', color: 'var(--button-text)',
+                                    border: 'none', borderRadius: '8px', cursor: (ldapLoading || !ldapCredentials.username || !ldapCredentials.password) ? 'not-allowed' : 'pointer',
+                                    fontSize: '14px', fontWeight: '600', opacity: (ldapLoading || !ldapCredentials.username || !ldapCredentials.password) ? 0.5 : 1
+                                }}
+                            >
+                                {ldapLoading ? 'Signing in...' : 'Sign In'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
