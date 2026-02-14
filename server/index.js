@@ -243,6 +243,7 @@ app.use('/api/reputation', require('./src/api/routes/reputation/index'));
 app.use('/api/directory', require('./src/api/routes/directory/index'));
 app.use('/api/textiq', require('./src/api/routes/textiq/index'));
 app.use('/api/workflows', require('./src/api/routes/workflows/index'));
+app.use('/api/workflow-executions', require('./src/api/routes/workflow-executions'));
 app.use('/api/scheduled-exports', require('./src/api/routes/scheduled-exports'));
 logger.info('All routes loaded');
 

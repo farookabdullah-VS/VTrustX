@@ -5,7 +5,7 @@ const { query, transaction } = require('../../infrastructure/database/db');
 const { getPeriodKey, matchesCriteria } = require('../../core/quotaUtils');
 const logger = require('../../infrastructure/logger');
 
-const workflowEngine = require('../../core/workflowEngine');
+const WorkflowEngineService = require('../../services/WorkflowEngineService');
 const { classifySubmission } = require('../../core/ctlClassifier');
 const sentimentService = require('../../services/sentimentService');
 
@@ -353,7 +353,15 @@ router.post('/', validate(createSubmissionSchema), async (req, res) => {
         }
 
         // Fire-and-forget: workflow engine + AI + CTL (outside transaction)
-        workflowEngine.processSubmission(savedEntity.formId, savedEntity);
+        const formCheck = await query('SELECT tenant_id FROM forms WHERE id = $1', [savedEntity.formId]);
+        const tenantId = formCheck.rows[0]?.tenant_id;
+        if (tenantId) {
+            WorkflowEngineService.executeTriggeredWorkflows(
+                'submission_completed',
+                { formId: savedEntity.formId, submission: savedEntity },
+                tenantId
+            ).catch(err => logger.error('[Submissions] Workflow execution failed', { error: err.message }));
+        }
 
         // CTL auto-classify (fire-and-forget)
         try {
