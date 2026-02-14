@@ -312,7 +312,11 @@ router.post('/test-connection', authenticate, requireRole('admin', 'tenant_admin
             saml_sso_url,
             oauth_client_id,
             oauth_authorization_url,
-            oauth_token_url
+            oauth_token_url,
+            ldap_url,
+            ldap_bind_dn,
+            ldap_bind_password,
+            ldap_search_base
         } = req.body;
 
         const errors = [];
@@ -338,6 +342,37 @@ router.post('/test-connection', authenticate, requireRole('admin', 'tenant_admin
             }
             if (oauth_token_url && !oauth_token_url.startsWith('https://')) {
                 errors.push('OAuth Token URL must use HTTPS');
+            }
+        }
+
+        if (provider_type === 'ldap') {
+            if (!ldap_url) errors.push('LDAP Server URL is required');
+            if (!ldap_bind_dn) errors.push('LDAP Bind DN is required');
+            if (!ldap_bind_password) errors.push('LDAP Bind Password is required');
+            if (!ldap_search_base) errors.push('LDAP Search Base is required');
+
+            // Validate URL format
+            if (ldap_url && !ldap_url.match(/^ldaps?:\/\//)) {
+                errors.push('LDAP URL must start with ldap:// or ldaps://');
+            }
+
+            // If no validation errors, test actual LDAP connection
+            if (errors.length === 0) {
+                try {
+                    const { testLDAPConnection } = require('../strategies/ldapStrategy');
+                    const testResult = await testLDAPConnection(req.body);
+
+                    return res.json({
+                        valid: true,
+                        message: 'LDAP connection successful',
+                        details: testResult
+                    });
+                } catch (ldapError) {
+                    return res.status(400).json({
+                        valid: false,
+                        errors: [ldapError.message]
+                    });
+                }
             }
         }
 

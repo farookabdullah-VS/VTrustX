@@ -5,6 +5,7 @@ const logger = require('../../infrastructure/logger');
 const SSOService = require('../../services/SSOService');
 const { createSAMLStrategy, generateSAMLMetadata } = require('../strategies/samlStrategy');
 const { createOIDCStrategy } = require('../strategies/oidcStrategy');
+const { createLDAPStrategy } = require('../strategies/ldapStrategy');
 const { query } = require('../../infrastructure/database/db');
 
 // Helper to get callback URL for a provider
@@ -416,6 +417,114 @@ router.post('/sso/:providerId/logout', async (req, res) => {
             stack: error.stack
         });
         res.redirect('/login');
+    }
+});
+
+/**
+ * @swagger
+ * /api/auth/sso/{providerId}/ldap:
+ *   post:
+ *     tags: [SSO]
+ *     summary: Authenticate with LDAP
+ *     description: Direct LDAP authentication with username and password
+ *     parameters:
+ *       - in: path
+ *         name: providerId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: SSO provider ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - username
+ *               - password
+ *             properties:
+ *               username:
+ *                 type: string
+ *               password:
+ *                 type: string
+ */
+router.post('/sso/:providerId/ldap', async (req, res, next) => {
+    try {
+        const { providerId } = req.params;
+        const { username, password } = req.body;
+
+        if (!username || !password) {
+            return res.status(400).json({ error: 'Username and password are required' });
+        }
+
+        // Get provider configuration
+        const provider = await SSOService.getProviderById(parseInt(providerId));
+
+        if (!provider || !provider.enabled) {
+            return res.status(404).json({ error: 'SSO provider not found or disabled' });
+        }
+
+        if (provider.provider_type !== 'ldap') {
+            return res.status(400).json({ error: 'Provider is not an LDAP provider' });
+        }
+
+        logger.info('[LDAP] Authenticating user', {
+            providerId: provider.id,
+            providerName: provider.name,
+            username
+        });
+
+        // Create and register strategy dynamically
+        const strategy = createLDAPStrategy(provider);
+        passport.use(`ldap-${providerId}`, strategy);
+
+        // Use passport to authenticate
+        passport.authenticate(`ldap-${providerId}`, async (err, user, info) => {
+            if (err) {
+                logger.error('[LDAP] Authentication error', { error: err.message });
+                return res.status(500).json({ error: 'Authentication failed', message: err.message });
+            }
+
+            if (!user) {
+                logger.warn('[LDAP] Authentication failed', { info });
+                return res.status(401).json({ error: 'Invalid credentials or user not found' });
+            }
+
+            try {
+                // Issue tokens
+                await issueTokens(res, user);
+
+                logger.info('[LDAP] Login successful', {
+                    userId: user.id,
+                    username: user.username,
+                    providerId: provider.id,
+                    isNewUser: user.isNewUser
+                });
+
+                // Return success with user info
+                res.json({
+                    success: true,
+                    user: {
+                        id: user.id,
+                        username: user.username,
+                        email: user.email,
+                        role: user.role,
+                        tenant_id: user.tenant_id
+                    },
+                    isNewUser: user.isNewUser
+                });
+            } catch (tokenError) {
+                logger.error('[LDAP] Token issuance error', { error: tokenError.message });
+                res.status(500).json({ error: 'Failed to create session' });
+            }
+        })(req, res, next);
+    } catch (error) {
+        logger.error('[LDAP] Login error', {
+            error: error.message,
+            stack: error.stack
+        });
+        res.status(500).json({ error: 'LDAP authentication failed' });
     }
 });
 
