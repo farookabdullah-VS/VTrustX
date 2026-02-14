@@ -1,0 +1,363 @@
+/**
+ * Influencers Tab Styles
+ */
+
+.influencers-tab {
+  width: 100%;
+}
+
+/* Sort Selector */
+.sort-selector {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sort-selector label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #6c757d;
+}
+
+.sort-selector select {
+  padding: 8px 12px;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #495057;
+  background: white;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+.sort-selector select:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+/* Influencers Grid */
+.influencers-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 24px;
+}
+
+.influencer-card {
+  position: relative;
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.influencer-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+}
+
+/* Rank Badge */
+.rank-badge {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 50%;
+  font-size: 14px;
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+/* Influencer Header */
+.influencer-header {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.influencer-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 700;
+  font-size: 24px;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+}
+
+.influencer-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.influencer-name {
+  font-size: 18px;
+  font-weight: 700;
+  color: #212529;
+  margin-bottom: 4px;
+}
+
+.influencer-handle {
+  font-size: 14px;
+  color: #6c757d;
+  margin-bottom: 8px;
+}
+
+.platform-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.platform-tag {
+  padding: 3px 8px;
+  background: #e0e7ff;
+  color: #667eea;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+/* Metrics Grid */
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.metric-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  transition: background-color 0.2s ease;
+}
+
+.metric-box:hover {
+  background: #e9ecef;
+}
+
+.metric-icon {
+  color: #667eea;
+  margin-bottom: 8px;
+}
+
+.metric-value {
+  font-size: 20px;
+  font-weight: 700;
+  color: #212529;
+  margin-bottom: 4px;
+}
+
+.metric-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #6c757d;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Latest Mention */
+.latest-mention {
+  padding: 12px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  border-left: 3px solid #667eea;
+}
+
+.mention-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #6c757d;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+
+.mention-text {
+  font-size: 13px;
+  line-height: 1.5;
+  color: #495057;
+  margin-bottom: 6px;
+  font-style: italic;
+}
+
+.mention-date {
+  font-size: 11px;
+  color: #adb5bd;
+}
+
+/* Actions */
+.influencer-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.action-btn-primary,
+.action-btn-secondary {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.action-btn-primary {
+  background: #667eea;
+  color: white;
+}
+
+.action-btn-primary:hover:not(:disabled) {
+  background: #5568d3;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
+}
+
+.action-btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.action-btn-secondary {
+  background: #f8f9fa;
+  color: #495057;
+  border: 1px solid #dee2e6;
+}
+
+.action-btn-secondary:hover {
+  background: #e9ecef;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+  .influencers-grid {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .influencers-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .influencer-card {
+    padding: 20px;
+  }
+
+  .influencer-header {
+    gap: 12px;
+  }
+
+  .influencer-avatar {
+    width: 56px;
+    height: 56px;
+    font-size: 20px;
+  }
+
+  .influencer-name {
+    font-size: 16px;
+  }
+
+  .metrics-grid {
+    gap: 8px;
+  }
+
+  .metric-box {
+    padding: 10px;
+  }
+
+  .metric-value {
+    font-size: 18px;
+  }
+
+  .influencer-actions {
+    flex-direction: column;
+  }
+}
+
+/* Dark mode */
+@media (prefers-color-scheme: dark) {
+  .sort-selector label {
+    color: #adb5bd;
+  }
+
+  .sort-selector select {
+    background: #25282e;
+    border-color: #404550;
+    color: #e9ecef;
+  }
+
+  .influencer-card {
+    background: #25282e;
+  }
+
+  .influencer-name {
+    color: #f8f9fa;
+  }
+
+  .influencer-handle {
+    color: #adb5bd;
+  }
+
+  .metric-box {
+    background: #2d3139;
+  }
+
+  .metric-box:hover {
+    background: #383c45;
+  }
+
+  .metric-value {
+    color: #f8f9fa;
+  }
+
+  .metric-label {
+    color: #adb5bd;
+  }
+
+  .latest-mention {
+    background: #2d3139;
+    border-left-color: #8b9dff;
+  }
+
+  .mention-text {
+    color: #e9ecef;
+  }
+
+  .mention-date {
+    color: #6c757d;
+  }
+
+  .action-btn-secondary {
+    background: #2d3139;
+    border-color: #404550;
+    color: #e9ecef;
+  }
+
+  .action-btn-secondary:hover {
+    background: #383c45;
+  }
+}

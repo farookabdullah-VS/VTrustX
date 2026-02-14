@@ -1,0 +1,270 @@
+/**
+ * Competitors Tab Styles
+ */
+
+.competitors-tab {
+  width: 100%;
+}
+
+/* Share of Voice Chart */
+.sov-chart {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.sov-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sov-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sov-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: #212529;
+}
+
+.sov-percentage {
+  font-size: 18px;
+  font-weight: 700;
+  color: #667eea;
+}
+
+.sov-bar {
+  height: 32px;
+  background: #e9ecef;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.sov-fill {
+  height: 100%;
+  transition: width 0.5s ease;
+  border-radius: 8px;
+}
+
+.sov-stats {
+  display: flex;
+  gap: 16px;
+  font-size: 13px;
+  color: #6c757d;
+}
+
+/* Competitors List */
+.competitors-list {
+  display: grid;
+  gap: 12px;
+}
+
+.competitor-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  transition: background-color 0.2s ease;
+}
+
+.competitor-card:hover {
+  background: #e9ecef;
+}
+
+.competitor-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.competitor-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: #212529;
+  margin-bottom: 6px;
+}
+
+.competitor-keywords {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.keyword-chip {
+  padding: 3px 10px;
+  background: white;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  font-size: 12px;
+  color: #495057;
+}
+
+.delete-btn {
+  padding: 8px;
+  background: none;
+  border: none;
+  color: #dc3545;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.delete-btn:hover {
+  background: #fee;
+  transform: scale(1.1);
+}
+
+/* Modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 12px;
+  padding: 32px;
+  max-width: 500px;
+  width: 100%;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+.modal-content h3 {
+  margin: 0 0 24px 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: #212529;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #495057;
+  margin-bottom: 8px;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #495057;
+  transition: border-color 0.2s ease;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 24px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .sov-stats {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .competitor-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .delete-btn {
+    align-self: flex-end;
+  }
+
+  .modal-content {
+    padding: 24px;
+  }
+
+  .modal-actions {
+    flex-direction: column-reverse;
+  }
+
+  .modal-actions button {
+    width: 100%;
+  }
+}
+
+/* Dark mode */
+@media (prefers-color-scheme: dark) {
+  .sov-name {
+    color: #f8f9fa;
+  }
+
+  .sov-percentage {
+    color: #8b9dff;
+  }
+
+  .sov-bar {
+    background: #2d3139;
+  }
+
+  .sov-stats {
+    color: #adb5bd;
+  }
+
+  .competitor-card {
+    background: #2d3139;
+  }
+
+  .competitor-card:hover {
+    background: #383c45;
+  }
+
+  .competitor-name {
+    color: #f8f9fa;
+  }
+
+  .keyword-chip {
+    background: #25282e;
+    border-color: #404550;
+    color: #e9ecef;
+  }
+
+  .modal-content {
+    background: #25282e;
+  }
+
+  .modal-content h3 {
+    color: #f8f9fa;
+  }
+
+  .form-group label {
+    color: #e9ecef;
+  }
+
+  .form-group input {
+    background: #2d3139;
+    border-color: #404550;
+    color: #e9ecef;
+  }
+}

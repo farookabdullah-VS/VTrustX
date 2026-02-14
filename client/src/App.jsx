@@ -62,6 +62,7 @@ const Notifications = React.lazy(() => import('./components/Notifications').then
 const ABTestingDashboard = React.lazy(() => import('./components/ab-testing/ABTestingDashboard'));
 const ABExperimentBuilder = React.lazy(() => import('./components/ab-testing/ABExperimentBuilder'));
 const ABStatsComparison = React.lazy(() => import('./components/ab-testing/ABStatsComparison'));
+const SocialListeningDashboard = React.lazy(() => import('./components/social-listening/SocialListeningDashboard'));
 
 // --- View title mapping ---
 const VIEW_TITLES = {
@@ -107,6 +108,7 @@ const VIEW_TITLES = {
   'persona-templates': 'Persona Templates',
   collect: 'Distribution',
   'ab-tests': 'A/B Testing',
+  'social-listening': 'Social Listening',
 };
 
 // --- Protected Route Wrapper ---
@@ -350,6 +352,9 @@ function AppRoutes() {
               <Route path="ab-tests" element={<ABTestingDashboard />} />
               <Route path="ab-tests/new" element={<ABExperimentBuilder />} />
               <Route path="ab-tests/:id" element={<ABStatsComparison />} />
+
+              {/* Social Listening Route */}
+              <Route path="social-listening" element={<SocialListeningDashboard />} />
 
               {/* Backward Compatibility Redirects */}
               <Route path="form-viewer" element={<Navigate to="/surveys" replace />} />

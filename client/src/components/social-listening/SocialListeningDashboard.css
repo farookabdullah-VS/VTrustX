@@ -1,0 +1,272 @@
+/**
+ * Social Listening Dashboard Styles
+ */
+
+.social-listening-dashboard {
+  width: 100%;
+  min-height: 100vh;
+  background-color: #f8f9fa;
+  padding: 0;
+}
+
+/* Header */
+.sl-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 32px 40px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.sl-header-content {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.sl-title-section {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.sl-icon {
+  color: white;
+  opacity: 0.9;
+}
+
+.sl-header h1 {
+  margin: 0;
+  font-size: 32px;
+  font-weight: 700;
+  color: white;
+}
+
+.sl-subtitle {
+  margin: 8px 0 0 0;
+  font-size: 16px;
+  opacity: 0.9;
+  color: white;
+}
+
+/* Tabs */
+.sl-tabs {
+  display: flex;
+  gap: 4px;
+  background-color: white;
+  border-bottom: 2px solid #e9ecef;
+  padding: 0 40px;
+  max-width: 1400px;
+  margin: 0 auto;
+  overflow-x: auto;
+}
+
+.sl-tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 24px;
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  color: #6c757d;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.sl-tab:hover {
+  color: #495057;
+  background-color: #f8f9fa;
+}
+
+.sl-tab.active {
+  color: #667eea;
+  border-bottom-color: #667eea;
+  background-color: #f0f3ff;
+}
+
+.sl-tab svg {
+  flex-shrink: 0;
+}
+
+/* Content */
+.sl-content {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 32px 40px;
+}
+
+.sl-loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+}
+
+/* Tab Sections */
+.sl-tab-section {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  margin-bottom: 24px;
+}
+
+.sl-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.sl-section-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #212529;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Empty State */
+.sl-empty-state {
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.sl-empty-icon {
+  color: #adb5bd;
+  margin-bottom: 16px;
+}
+
+.sl-empty-state h3 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #495057;
+  margin: 0 0 8px 0;
+}
+
+.sl-empty-state p {
+  font-size: 15px;
+  color: #6c757d;
+  margin: 0 0 24px 0;
+}
+
+/* Buttons */
+.sl-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background-color: #667eea;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.sl-button:hover {
+  background-color: #5568d3;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
+}
+
+.sl-button:active {
+  transform: translateY(0);
+}
+
+.sl-button-secondary {
+  background-color: #f8f9fa;
+  color: #495057;
+  border: 1px solid #dee2e6;
+}
+
+.sl-button-secondary:hover {
+  background-color: #e9ecef;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.sl-button-danger {
+  background-color: #dc3545;
+}
+
+.sl-button-danger:hover {
+  background-color: #c82333;
+}
+
+.sl-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .sl-header {
+    padding: 24px 20px;
+  }
+
+  .sl-header h1 {
+    font-size: 24px;
+  }
+
+  .sl-subtitle {
+    font-size: 14px;
+  }
+
+  .sl-tabs {
+    padding: 0 20px;
+  }
+
+  .sl-tab {
+    padding: 12px 16px;
+    font-size: 14px;
+  }
+
+  .sl-content {
+    padding: 20px;
+  }
+
+  .sl-tab-section {
+    padding: 16px;
+  }
+}
+
+/* Dark mode support (optional) */
+@media (prefers-color-scheme: dark) {
+  .social-listening-dashboard {
+    background-color: #1a1d23;
+  }
+
+  .sl-tab-section {
+    background: #25282e;
+    color: #e9ecef;
+  }
+
+  .sl-section-title {
+    color: #f8f9fa;
+  }
+
+  .sl-tabs {
+    background-color: #25282e;
+    border-bottom-color: #404550;
+  }
+
+  .sl-tab {
+    color: #adb5bd;
+  }
+
+  .sl-tab:hover {
+    background-color: #2d3139;
+    color: #e9ecef;
+  }
+
+  .sl-tab.active {
+    background-color: #1e2836;
+  }
+}

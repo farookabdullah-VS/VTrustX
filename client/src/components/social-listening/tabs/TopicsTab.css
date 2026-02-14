@@ -1,0 +1,278 @@
+/**
+ * Topics Tab Styles
+ */
+
+.topics-tab {
+  width: 100%;
+}
+
+/* Topic Cloud */
+.topic-cloud {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 24px;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+}
+
+.topic-tag {
+  display: inline-block;
+  padding: 6px 14px;
+  color: #667eea;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-radius: 6px;
+}
+
+.topic-tag:hover {
+  background-color: #f0f3ff;
+  transform: scale(1.05);
+}
+
+/* Topics Table */
+.topics-table {
+  width: 100%;
+}
+
+.topics-table-header {
+  display: grid;
+  grid-template-columns: 2fr 120px 150px 150px;
+  gap: 16px;
+  padding: 12px 16px;
+  background: #f8f9fa;
+  border-radius: 8px 8px 0 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: #6c757d;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.topics-table-row {
+  display: grid;
+  grid-template-columns: 2fr 120px 150px 150px;
+  gap: 16px;
+  padding: 16px;
+  border-bottom: 1px solid #e9ecef;
+  align-items: center;
+  transition: background-color 0.2s ease;
+}
+
+.topics-table-row:hover {
+  background-color: #f8f9fa;
+}
+
+.topics-table-row:last-child {
+  border-bottom: none;
+}
+
+.col-topic {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.topic-rank {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #e0e7ff;
+  color: #667eea;
+  border-radius: 50%;
+  font-size: 13px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.topic-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.topic-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: #212529;
+  margin-bottom: 4px;
+}
+
+.topic-keywords {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.keyword-tag {
+  display: inline-block;
+  padding: 2px 8px;
+  background: #f1f3f5;
+  color: #6c757d;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.col-mentions {
+  text-align: center;
+}
+
+.mention-count {
+  font-size: 18px;
+  font-weight: 700;
+  color: #495057;
+}
+
+.col-sentiment {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.sentiment-badge {
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.sentiment-score {
+  font-size: 11px;
+  color: #adb5bd;
+}
+
+.col-trend {
+  text-align: center;
+}
+
+.trend-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.trend-icon {
+  font-size: 18px;
+}
+
+.trend-label {
+  font-size: 12px;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .topics-table-header,
+  .topics-table-row {
+    grid-template-columns: 2fr 100px 120px 120px;
+    gap: 12px;
+    padding: 12px;
+  }
+
+  .topic-name {
+    font-size: 14px;
+  }
+
+  .mention-count {
+    font-size: 16px;
+  }
+
+  .trend-label {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .topic-cloud {
+    padding: 16px;
+    gap: 12px;
+  }
+
+  .topic-tag {
+    font-size: 14px !important; /* Override inline styles */
+  }
+
+  .topics-table-header {
+    display: none;
+  }
+
+  .topics-table-row {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    padding: 16px;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    background: white;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  }
+
+  .col-topic,
+  .col-mentions,
+  .col-sentiment,
+  .col-trend {
+    justify-content: flex-start;
+  }
+
+  .col-mentions,
+  .col-sentiment,
+  .col-trend {
+    text-align: left;
+  }
+}
+
+/* Dark mode */
+@media (prefers-color-scheme: dark) {
+  .topic-tag {
+    color: #8b9dff;
+  }
+
+  .topic-tag:hover {
+    background-color: #2d3139;
+  }
+
+  .topics-table-header {
+    background: #2d3139;
+    color: #adb5bd;
+  }
+
+  .topics-table-row:hover {
+    background-color: #2d3139;
+  }
+
+  .topics-table-row {
+    border-bottom-color: #404550;
+  }
+
+  .topic-rank {
+    background: #1e2836;
+    color: #8b9dff;
+  }
+
+  .topic-name {
+    color: #f8f9fa;
+  }
+
+  .keyword-tag {
+    background: #2d3139;
+    color: #adb5bd;
+  }
+
+  .mention-count {
+    color: #e9ecef;
+  }
+
+  @media (max-width: 768px) {
+    .topics-table-row {
+      background: #25282e;
+    }
+  }
+}

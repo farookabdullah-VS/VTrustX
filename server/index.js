@@ -228,6 +228,7 @@ app.use('/api/email', require('./src/api/routes/email'));
 app.use('/v1/persona', require('./src/api/routes/persona_engine'));
 app.use('/api/master', require('./src/api/routes/master_data'));
 app.use('/api/v1/social-media', require('./src/api/routes/social_media'));
+app.use('/api/v1/social-listening', require('./src/api/routes/social_listening/index'));
 app.use('/api/v1/smm', require('./src/api/routes/smm'));
 app.use('/api/actions', require('./src/api/routes/actions'));
 app.use('/api/close-loop', require('./src/api/routes/close_loop'));
@@ -270,6 +271,7 @@ async function runMigrations() {
         { name: 'cjm', fn: require('./src/scripts/ensure_cjm_tables') },
         { name: 'indexes', fn: require('./src/scripts/ensure_indexes') },
         { name: 'refresh_tokens', fn: require('./src/scripts/ensure_refresh_tokens_table') },
+        { name: 'social_listening', fn: require('./src/scripts/ensure_social_listening_tables') },
     ];
 
     for (const script of scripts) {
@@ -296,6 +298,51 @@ if (process.env.ENABLE_AB_AUTO_WINNER !== 'false') {
         logger.info('[Cron] A/B test auto-winner detection enabled');
     } catch (err) {
         logger.error('[Cron] Failed to start A/B test monitor', {
+            error: err.message,
+            stack: err.stack,
+            name: err.name
+        });
+    }
+}
+
+// Social Listening AI Processor (optional - can be disabled via env var)
+if (process.env.ENABLE_SOCIAL_LISTENING_AI !== 'false') {
+    try {
+        const socialListeningProcessor = require('./src/jobs/socialListeningProcessor');
+        socialListeningProcessor.start();
+        logger.info('[Cron] Social listening AI processor enabled');
+    } catch (err) {
+        logger.error('[Cron] Failed to start social listening processor', {
+            error: err.message,
+            stack: err.stack,
+            name: err.name
+        });
+    }
+}
+
+// Data Sync Scheduler (optional - can be disabled via env var)
+if (process.env.ENABLE_DATA_SYNC !== 'false') {
+    try {
+        const dataSyncScheduler = require('./src/jobs/dataSyncScheduler');
+        dataSyncScheduler.start();
+        logger.info('[Cron] Data sync scheduler enabled');
+    } catch (err) {
+        logger.error('[Cron] Failed to start data sync scheduler', {
+            error: err.message,
+            stack: err.stack,
+            name: err.name
+        });
+    }
+}
+
+// Alert Monitor (optional - can be disabled via env var)
+if (process.env.ENABLE_ALERT_MONITOR !== 'false') {
+    try {
+        const alertMonitor = require('./src/jobs/alertMonitor');
+        alertMonitor.start();
+        logger.info('[Cron] Alert monitor enabled');
+    } catch (err) {
+        logger.error('[Cron] Failed to start alert monitor', {
             error: err.message,
             stack: err.stack,
             name: err.name
@@ -345,3 +392,4 @@ setTimeout(() => {
         runMigrations();
     }
 }, 5000);
+

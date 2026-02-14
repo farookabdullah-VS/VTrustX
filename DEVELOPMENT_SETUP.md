@@ -41,24 +41,7 @@ createdb rayix_db
 # Tables are auto-created on first server start via migration scripts
 ```
 
-### 4. Running Locally
 
-```bash
-# Terminal 1: Start the server
-cd server && npm run dev
-
-# Terminal 2: Start the client
-cd client && npm run dev
-```
-
-- Server runs on `http://localhost:3000`
-- Client runs on `http://localhost:5173` (Vite proxy forwards `/api` to server)
-
-### 5. Running Tests
-
-```bash
-# Server tests (with coverage)
-cd server && npm test
 
 # Client tests
 cd client && npm test
