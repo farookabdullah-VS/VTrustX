@@ -63,6 +63,7 @@ const ABTestingDashboard = React.lazy(() => import('./components/ab-testing/ABTe
 const ABExperimentBuilder = React.lazy(() => import('./components/ab-testing/ABExperimentBuilder'));
 const ABStatsComparison = React.lazy(() => import('./components/ab-testing/ABStatsComparison'));
 const SocialListeningDashboard = React.lazy(() => import('./components/social-listening/SocialListeningDashboard'));
+const WorkflowsPage = React.lazy(() => import('./pages/WorkflowsPage'));
 
 // --- View title mapping ---
 const VIEW_TITLES = {
@@ -299,7 +300,7 @@ function AppRoutes() {
               <Route path="ai-video-agent" element={<AIVideoAgentPage />} />
               <Route path="profile" element={<UserProfile user={user} onUpdateUser={(updatedUser) => setUser(prev => ({ ...prev, user: updatedUser }))} />} />
               <Route path="integrations" element={<IntegrationsView />} />
-              <Route path="workflows" element={<RulesEngine />} />
+              <Route path="workflows" element={<WorkflowsPage />} />
               <Route path="user-management" element={<UserManagement />} />
               <Route path="role-master" element={<RoleMaster />} />
               <Route path="subscription" element={<SubscriptionManagement />} />
