@@ -1,0 +1,278 @@
+.workflow-automation-container {
+    padding: 24px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.workflow-automation-loading {
+    text-align: center;
+    padding: 60px 20px;
+    color: #6B7280;
+    font-size: 16px;
+}
+
+.workflow-automation-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
+}
+
+.workflow-automation-title-section {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.workflow-automation-icon {
+    color: #F59E0B;
+}
+
+.workflow-automation-header h1 {
+    margin: 0;
+    font-size: 28px;
+    color: #111827;
+}
+
+.workflow-automation-header p {
+    margin: 4px 0 0 0;
+    color: #6B7280;
+    font-size: 14px;
+}
+
+.workflow-automation-create-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: #3B82F6;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.workflow-automation-create-btn:hover {
+    background: #2563EB;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.workflow-automation-filters {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.filter-btn {
+    padding: 8px 16px;
+    background: white;
+    border: 1px solid #E5E7EB;
+    border-radius: 6px;
+    font-size: 14px;
+    color: #6B7280;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.filter-btn:hover {
+    border-color: #3B82F6;
+    color: #3B82F6;
+}
+
+.filter-btn.active {
+    background: #3B82F6;
+    border-color: #3B82F6;
+    color: white;
+}
+
+.workflow-automation-empty {
+    text-align: center;
+    padding: 80px 20px;
+}
+
+.workflow-automation-empty .empty-icon {
+    color: #D1D5DB;
+    margin-bottom: 24px;
+}
+
+.workflow-automation-empty h2 {
+    margin: 0 0 12px 0;
+    font-size: 24px;
+    color: #111827;
+}
+
+.workflow-automation-empty p {
+    margin: 0 0 24px 0;
+    color: #6B7280;
+    font-size: 16px;
+}
+
+.workflow-automation-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+    gap: 24px;
+}
+
+.workflow-automation-card {
+    background: white;
+    border: 1px solid #E5E7EB;
+    border-radius: 12px;
+    padding: 20px;
+    transition: all 0.2s;
+}
+
+.workflow-automation-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    transform: translateY(-2px);
+}
+
+.workflow-automation-card.inactive {
+    opacity: 0.6;
+}
+
+.workflow-automation-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+}
+
+.workflow-automation-card-title {
+    flex: 1;
+}
+
+.workflow-automation-card-title h3 {
+    margin: 0 0 8px 0;
+    font-size: 18px;
+    color: #111827;
+}
+
+.workflow-automation-status-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.workflow-automation-status-badge.active {
+    background: #D1FAE5;
+    color: #065F46;
+}
+
+.workflow-automation-status-badge.inactive {
+    background: #F3F4F6;
+    color: #6B7280;
+}
+
+.workflow-automation-card-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.icon-btn {
+    padding: 6px;
+    background: transparent;
+    border: 1px solid #E5E7EB;
+    border-radius: 6px;
+    cursor: pointer;
+    color: #6B7280;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.icon-btn:hover {
+    background: #F9FAFB;
+    border-color: #3B82F6;
+    color: #3B82F6;
+}
+
+.icon-btn.danger:hover {
+    border-color: #EF4444;
+    color: #EF4444;
+    background: #FEF2F2;
+}
+
+.workflow-automation-description {
+    margin: 0 0 16px 0;
+    color: #6B7280;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.workflow-automation-trigger-info {
+    background: #F9FAFB;
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+}
+
+.trigger-label {
+    font-size: 13px;
+    color: #111827;
+    margin-bottom: 4px;
+}
+
+.trigger-description {
+    font-size: 13px;
+    color: #6B7280;
+}
+
+.workflow-automation-stats {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-top: 1px solid #F3F4F6;
+    border-bottom: 1px solid #F3F4F6;
+    margin-bottom: 16px;
+}
+
+.workflow-automation-stats .stat {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: #6B7280;
+}
+
+.workflow-automation-stats .stat svg {
+    color: #9CA3AF;
+}
+
+.workflow-automation-stats .stat-label {
+    font-weight: 500;
+}
+
+.workflow-automation-card-footer {
+    display: flex;
+    gap: 8px;
+}
+
+.workflow-automation-view-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: white;
+    border: 1px solid #E5E7EB;
+    border-radius: 6px;
+    font-size: 13px;
+    color: #6B7280;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.workflow-automation-view-btn:hover {
+    background: #F9FAFB;
+    border-color: #3B82F6;
+    color: #3B82F6;
+}

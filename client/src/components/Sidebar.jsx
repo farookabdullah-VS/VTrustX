@@ -6,7 +6,7 @@ import {
     LayoutDashboard, UserCircle, Contact, Fingerprint, Map, UserCog,
     BarChart3, Bot, ClipboardList, Library, Ticket, Settings, Plug,
     Shield, Users, CreditCard, Palette, Wrench, Globe, HelpCircle,
-    GripVertical, Star, PieChart, PhoneCall, Video, Share2, Target, Database, Megaphone, Smartphone, BookOpen, Menu, FlaskConical
+    GripVertical, Star, PieChart, PhoneCall, Video, Share2, Target, Database, Megaphone, Smartphone, BookOpen, Menu, FlaskConical, Zap
 } from 'lucide-react';
 
 const getInitialGroups = (user) => [
@@ -107,6 +107,7 @@ const getInitialGroups = (user) => [
         title: "sidebar.group.ai",
         items: [
             { id: 'workflows', label: 'sidebar.item.rules', icon: <Bot size={16} /> },
+            { id: 'workflows-automation', label: 'Workflow Automations', icon: <Zap size={16} /> },
             { id: 'ai-settings', label: 'sidebar.item.ai_models', icon: <Settings size={16} /> }
         ]
     },

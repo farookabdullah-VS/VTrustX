@@ -78,6 +78,8 @@ const TeamsConfig = React.lazy(() => import('./components/teams/TeamsConfig'));
 const DripCampaignsDashboard = React.lazy(() => import('./components/drip-campaigns/DripCampaignsDashboard'));
 const DripCampaignBuilder = React.lazy(() => import('./components/drip-campaigns/DripCampaignBuilder'));
 const DripCampaignDetails = React.lazy(() => import('./components/drip-campaigns/DripCampaignDetails'));
+const WorkflowAutomationList = React.lazy(() => import('./components/workflows/WorkflowAutomationList'));
+const WorkflowAutomationBuilder = React.lazy(() => import('./components/workflows/WorkflowAutomationBuilder'));
 
 // --- View title mapping ---
 const VIEW_TITLES = {
@@ -133,6 +135,7 @@ const VIEW_TITLES = {
   'slack-config': 'Slack Bot',
   'teams-config': 'Microsoft Teams Bot',
   'drip-campaigns': 'Drip Campaigns',
+  'workflows-automation': 'Workflow Automations',
 };
 
 // --- Protected Route Wrapper ---
@@ -407,6 +410,8 @@ function AppRoutes() {
               <Route path="drip-campaigns" element={<DripCampaignsDashboard />} />
               <Route path="drip-campaigns/new" element={<DripCampaignBuilder />} />
               <Route path="drip-campaigns/:id" element={<DripCampaignDetails />} />
+              <Route path="workflows-automation" element={<WorkflowAutomationList />} />
+              <Route path="workflows-automation/new" element={<WorkflowAutomationBuilder />} />
 
               {/* Backward Compatibility Redirects */}
               <Route path="form-viewer" element={<Navigate to="/surveys" replace />} />
