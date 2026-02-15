@@ -83,7 +83,7 @@
 /* Fields Table */
 .fields-table {
     background: white;
-    border: 1px solid var(--border-light);
+    border: var(--space-0-25, 1px) solid var(--border-light);
     border-radius: var(--radius-lg, 12px);
     overflow: hidden;
 }
@@ -101,7 +101,7 @@
 .fields-table th {
     padding: var(--space-3, 12px) var(--space-4, 16px);
     text-align: left;
-    font-size: 12px;
+    font-size: var(--text-xs, 12px);
     font-weight: 600;
     color: var(--text-muted);
     text-transform: uppercase;
@@ -179,8 +179,8 @@
     padding: var(--space-1, 4px) var(--space-2-5, 10px);
     background: var(--bg-tertiary, #F3F4F6);
     color: var(--text-muted);
-    border-radius: 6px;
-    font-size: 12px;
+    border-radius: var(--radius-sm-alt, 6px);
+    font-size: var(--text-xs, 12px);
     font-weight: 500;
 }
 
@@ -211,9 +211,9 @@
 
 .btn-icon {
     background: var(--bg-secondary, #F9FAFB);
-    border: 1px solid var(--border-light);
+    border: var(--space-0-25, 1px) solid var(--border-light);
     padding: var(--space-1-5, 6px);
-    border-radius: 6px;
+    border-radius: var(--radius-sm-alt, 6px);
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -253,7 +253,7 @@
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--shadow-xl, 0 var(--space-5, 20px) var(--space-6-25, 25px) -5px rgba(0, 0, 0, 0.1));
 }
 
 .modal-header {
@@ -283,7 +283,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 6px;
+    border-radius: var(--radius-sm-alt, 6px);
     transition: all 0.2s;
 }
 
@@ -328,7 +328,7 @@
 .form-group select {
     width: 100%;
     padding: var(--space-2-5, 10px) var(--space-3, 12px);
-    border: 1px solid var(--border-medium);
+    border: var(--space-0-25, 1px) solid var(--border-medium);
     border-radius: var(--radius-md, 8px);
     font-size: var(--text-sm, 14px);
     color: var(--text-primary);
@@ -340,14 +340,14 @@
 .form-group select:focus {
     outline: none;
     border-color: var(--status-info);
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    box-shadow: 0 0 0 var(--space-0-75, 3px) rgba(59, 130, 246, 0.1);
 }
 
 .form-group small {
     display: block;
     margin-top: var(--space-1-5, 6px);
     color: var(--text-muted);
-    font-size: 12px;
+    font-size: var(--text-xs, 12px);
 }
 
 /* Options Input */
@@ -356,7 +356,7 @@
     flex-wrap: wrap;
     gap: var(--space-2, 8px);
     padding: var(--space-2-5, 10px);
-    border: 1px solid var(--border-medium);
+    border: var(--space-0-25, 1px) solid var(--border-medium);
     border-radius: var(--radius-md, 8px);
     min-height: var(--space-12, 48px);
     align-items: center;
@@ -369,7 +369,7 @@
     padding: var(--space-1, 4px) var(--space-2-5, 10px);
     background: var(--status-info);
     color: white;
-    border-radius: 6px;
+    border-radius: var(--radius-sm-alt, 6px);
     font-size: var(--text-sm, 13px);
 }
 
@@ -405,7 +405,7 @@
 
 .btn-add-option {
     background: var(--bg-tertiary, #F3F4F6);
-    border: 1px solid var(--border-medium);
+    border: var(--space-0-25, 1px) solid var(--border-medium);
     color: var(--text-secondary, #4B5563);
     padding: var(--space-1, 4px) var(--space-2, 8px);
     border-radius: var(--radius-sm, 4px);
@@ -449,7 +449,7 @@
 .btn-secondary {
     background: white;
     color: var(--text-secondary, #4B5563);
-    border: 1px solid var(--border-medium);
+    border: var(--space-0-25, 1px) solid var(--border-medium);
     padding: var(--space-2-5, 10px) var(--space-5, 20px);
     border-radius: var(--radius-md, 8px);
     font-size: var(--text-sm, 14px);
