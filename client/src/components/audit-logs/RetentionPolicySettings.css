@@ -117,7 +117,7 @@
 .form-group input:focus {
     outline: none;
     border-color: var(--status-info, #3B82F6);
-    box-shadow: var(--shadow-outline, 0 0 0 var(--space-0-75, 3px) rgba(59, 130, 246, 0.1));
+    box-shadow: var(--shadow-outline, 0 0 0 var(--space-0-75, 3px) rgba(59, 130, 246, var(--opacity-10, 0.1)));
 }
 
 .field-help {
