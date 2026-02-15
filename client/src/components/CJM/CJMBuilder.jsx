@@ -34,6 +34,7 @@ export function CJMBuilder({ mapId, onBack }) {
     const [selectedPersonaId, setSelectedPersonaId] = useState(null);
 
     // Panel visibility
+    const [showToolbox, setShowToolbox] = useState(false); // Closed by default
     const [showComments, setShowComments] = useState(false);
     const [showShare, setShowShare] = useState(false);
     const [showVersions, setShowVersions] = useState(false);
@@ -268,7 +269,48 @@ export function CJMBuilder({ mapId, onBack }) {
 
             <DndContext sensors={sensors} collisionDetection={closestCenter} onDragStart={e => setActiveDragId(e.active.id)} onDragEnd={handleDragEnd}>
                 <div className="cjm-workspace">
-                    <SidebarToolbox />
+                    {showToolbox && <SidebarToolbox onClose={() => setShowToolbox(false)} />}
+
+                    {/* Show Toolbox Button when hidden */}
+                    {!showToolbox && (
+                        <button
+                            onClick={() => setShowToolbox(true)}
+                            style={{
+                                position: 'fixed',
+                                left: '16px',
+                                top: '80px',
+                                zIndex: 100,
+                                padding: '8px 12px',
+                                background: '#ffffff',
+                                border: '1px solid #e2e8f0',
+                                borderRadius: '6px',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '6px',
+                                fontSize: '13px',
+                                fontWeight: '500',
+                                color: '#475569',
+                                boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+                                transition: 'all 0.2s'
+                            }}
+                            onMouseEnter={(e) => {
+                                e.currentTarget.style.background = '#f8fafc';
+                                e.currentTarget.style.borderColor = '#cbd5e1';
+                            }}
+                            onMouseLeave={(e) => {
+                                e.currentTarget.style.background = '#ffffff';
+                                e.currentTarget.style.borderColor = '#e2e8f0';
+                            }}
+                            title="Show Toolbox"
+                        >
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
+                            </svg>
+                            Show Toolbox
+                        </button>
+                    )}
+
                     <div className="cjm-canvas-wrapper" id="canvas_droppable" style={{ flex: 1 }}>
                         {showAnalytics ? (
                             <CJMAnalytics mapData={mapData} mapId={currentMapId} />

@@ -4,7 +4,7 @@ import {
     Type, Activity, Image, FileText, MousePointer, MoreHorizontal,
     BarChart3, Lightbulb, AlertTriangle, CheckSquare, User, TrendingUp,
     Target, Brain, ShieldAlert, Zap, Play, PieChart, Eye, Cog, HeadphonesIcon,
-    Code, Minus, Radio, ChevronDown, ChevronRight
+    Code, Minus, Radio, ChevronDown, ChevronRight, X
 } from 'lucide-react';
 
 const ToolItem = ({ type, label, icon: Icon, color }) => {
@@ -34,10 +34,45 @@ const ToolGroup = ({ title, children, defaultOpen = true }) => {
     );
 };
 
-export function SidebarToolbox() {
+export function SidebarToolbox({ onClose }) {
     return (
         <div className="cjm-sidebar">
-            <h3>Toolbox</h3>
+            <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                marginBottom: '12px'
+            }}>
+                <h3 style={{ margin: 0 }}>Toolbox</h3>
+                {onClose && (
+                    <button
+                        onClick={onClose}
+                        style={{
+                            background: 'transparent',
+                            border: 'none',
+                            cursor: 'pointer',
+                            padding: '4px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            borderRadius: '4px',
+                            color: '#64748b',
+                            transition: 'all 0.2s'
+                        }}
+                        onMouseEnter={(e) => {
+                            e.currentTarget.style.background = '#f1f5f9';
+                            e.currentTarget.style.color = '#0f172a';
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.background = 'transparent';
+                            e.currentTarget.style.color = '#64748b';
+                        }}
+                        title="Hide Toolbox"
+                    >
+                        <X size={18} />
+                    </button>
+                )}
+            </div>
 
             <ToolGroup title="Customer Experience">
                 <ToolItem type="text" label="Rich Text" icon={Type} color="#64748b" />
