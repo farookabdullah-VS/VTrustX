@@ -30,14 +30,14 @@
     align-items: center;
     gap: var(--space-2, 8px);
     background: var(--card-bg);
-    border: 2px solid var(--border-light);
+    border: var(--space-0-5, 2px) solid var(--border-light);
     padding: var(--space-2-5, 10px) var(--space-4, 16px);
     border-radius: var(--radius-md, 8px);
     font-size: var(--text-sm, 14px);
     font-weight: 500;
     color: var(--text-muted);
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all var(--transition-fast, 0.2s);
 }
 
 .btn-back:hover {
@@ -87,12 +87,12 @@
     font-size: var(--text-sm, 14px);
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s;
-    border: 2px solid;
+    transition: all var(--transition-fast, 0.2s);
+    border: var(--space-0-5, 2px) solid;
 }
 
 .btn-sync:disabled {
-    opacity: 0.5;
+    opacity: var(--opacity-50, 0.5);
     cursor: not-allowed;
 }
 
@@ -119,14 +119,14 @@
 /* Stats Grid */
 .stats-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(var(--space-62-5, 250px), 1fr));
     gap: var(--space-5, 20px);
     margin-bottom: var(--space-7, 30px);
 }
 
 .stat-card {
     background: var(--card-bg);
-    border: 2px solid var(--border-light);
+    border: var(--space-0-5, 2px) solid var(--border-light);
     border-radius: var(--radius-lg, 12px);
     padding: var(--space-5, 20px);
     display: flex;
@@ -168,7 +168,7 @@
     gap: var(--space-3, 12px);
     padding: var(--space-5, 20px);
     background: var(--card-bg);
-    border: 2px solid var(--border-light);
+    border: var(--space-0-5, 2px) solid var(--border-light);
     border-radius: var(--radius-lg, 12px);
     margin-bottom: var(--space-5, 20px);
     flex-wrap: wrap;
@@ -184,12 +184,12 @@
 
 .sync-filters select {
     padding: var(--space-2, 8px) var(--space-3-5, 14px);
-    border: 2px solid var(--border-light);
+    border: var(--space-0-5, 2px) solid var(--border-light);
     border-radius: var(--radius-sm-alt, 6px);
     font-size: var(--text-sm, 14px);
     background: var(--card-bg);
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all var(--transition-fast, 0.2s);
 }
 
 .sync-filters select:focus {
@@ -202,14 +202,14 @@
     align-items: center;
     gap: var(--space-1-5, 6px);
     background: var(--card-bg);
-    border: 2px solid var(--border-light);
+    border: var(--space-0-5, 2px) solid var(--border-light);
     padding: var(--space-2, 8px) var(--space-4, 16px);
     border-radius: var(--radius-sm-alt, 6px);
     font-size: var(--text-sm, 14px);
     font-weight: 500;
     color: var(--text-muted);
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all var(--transition-fast, 0.2s);
     margin-left: auto;
 }
 
@@ -221,7 +221,7 @@
 /* Sync Logs Container */
 .sync-logs-container {
     background: var(--card-bg);
-    border: 2px solid var(--border-light);
+    border: var(--space-0-5, 2px) solid var(--border-light);
     border-radius: var(--radius-lg, 12px);
     overflow: hidden;
 }
@@ -241,12 +241,12 @@
     border: var(--space-1, 4px) solid var(--border-light, #E5E7EB);
     border-top-color: var(--status-info);
     border-radius: 50%;
-    animation: spin 1s linear infinite;
+    animation: spin var(--duration-1000, 1s) linear infinite;
     margin-bottom: var(--space-5, 20px);
 }
 
 @keyframes spin {
-    to { transform: rotate(360deg); }
+    to { transform: rotate(var(--angle-360, 360deg)); }
 }
 
 .loading-state p {
@@ -273,7 +273,7 @@
 
 .sync-logs-table thead {
     background: var(--input-bg);
-    border-bottom: 2px solid var(--border-light);
+    border-bottom: var(--space-0-5, 2px) solid var(--border-light);
 }
 
 .sync-logs-table th {
@@ -283,12 +283,12 @@
     font-weight: 600;
     color: var(--text-muted);
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: var(--space-0-125, 0.5px);
 }
 
 .sync-logs-table tbody tr {
-    border-bottom: 1px solid var(--border-light);
-    transition: all 0.2s;
+    border-bottom: var(--space-0-25, 1px) solid var(--border-light);
+    transition: all var(--transition-fast, 0.2s);
 }
 
 .sync-logs-table tbody tr:hover {
@@ -368,15 +368,15 @@
 
 /* Log Row States */
 .log-row.success td {
-    border-left: 3px solid var(--status-success);
+    border-left: var(--space-0-75, 3px) solid var(--status-success);
 }
 
 .log-row.failed td {
-    border-left: 3px solid var(--status-error);
+    border-left: var(--space-0-75, 3px) solid var(--status-error);
 }
 
 .log-row.pending td {
-    border-left: 3px solid var(--status-warning);
+    border-left: var(--space-0-75, 3px) solid var(--status-warning);
 }
 
 .log-row.success:first-child td:first-child {
@@ -412,7 +412,7 @@
 
     .sync-logs-table tbody tr {
         margin-bottom: var(--space-4, 16px);
-        border: 2px solid var(--border-light);
+        border: var(--space-0-5, 2px) solid var(--border-light);
         border-radius: var(--radius-md, 8px);
         padding: var(--space-4, 16px);
     }
@@ -421,14 +421,14 @@
         padding: var(--space-2, 8px) 0;
         text-align: left;
         position: relative;
-        padding-left: 50%;
+        padding-left: var(--width-50, 50%);
     }
 
     .sync-logs-table td::before {
         content: attr(data-label);
         position: absolute;
         left: 0;
-        width: 45%;
+        width: var(--width-45, 45%);
         padding-right: var(--space-2-5, 10px);
         font-weight: 600;
         color: var(--text-muted);
