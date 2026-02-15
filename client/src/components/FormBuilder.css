@@ -10,7 +10,7 @@
     display: flex;
     align-items: center;
     background: transparent;
-    font-size: 14px;
+    font-size: var(--text-sm, 14px);
     transition: all 0.2s ease;
 }
 
