@@ -1,5 +1,5 @@
 .retention-policy-settings {
-    padding: 24px;
+    padding: var(--space-6, 24px);
     max-width: 1200px;
     margin: 0 auto;
 }
@@ -8,25 +8,25 @@
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    margin-bottom: 24px;
+    margin-bottom: var(--space-6, 24px);
 }
 
 .header-left {
     display: flex;
     align-items: flex-start;
-    gap: 16px;
+    gap: var(--space-4, 16px);
 }
 
 .header-left h1 {
-    margin: 0 0 4px 0;
-    font-size: 24px;
+    margin: 0 0 var(--space-1, 4px) 0;
+    font-size: var(--text-2xl, 24px);
     font-weight: 600;
     color: var(--text-primary);
 }
 
 .header-left p {
     margin: 0;
-    font-size: 14px;
+    font-size: var(--text-sm, 14px);
     color: var(--text-muted);
 }
 
@@ -34,11 +34,11 @@
 .alert {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 16px;
-    border-radius: 8px;
-    margin-bottom: 24px;
-    font-size: 14px;
+    gap: var(--space-3, 12px);
+    padding: var(--space-4, 16px);
+    border-radius: var(--radius-md, 8px);
+    margin-bottom: var(--space-6, 24px);
+    font-size: var(--text-sm, 14px);
 }
 
 .alert-error {
@@ -57,13 +57,13 @@
 .policy-form {
     background: var(--card-bg);
     border: 1px solid var(--border-light);
-    border-radius: 8px;
-    padding: 24px;
-    margin-bottom: 24px;
+    border-radius: var(--radius-md, 8px);
+    padding: var(--space-6, 24px);
+    margin-bottom: var(--space-6, 24px);
 }
 
 .form-section {
-    margin-bottom: 32px;
+    margin-bottom: var(--space-8, 32px);
 }
 
 .form-section:last-child {
@@ -71,45 +71,45 @@
 }
 
 .form-section h2 {
-    margin: 0 0 8px 0;
-    font-size: 18px;
+    margin: 0 0 var(--space-2, 8px) 0;
+    font-size: var(--text-lg, 18px);
     font-weight: 600;
     color: var(--text-primary);
 }
 
 .section-description {
-    margin: 0 0 20px 0;
-    font-size: 14px;
+    margin: 0 0 var(--space-5, 20px) 0;
+    font-size: var(--text-sm, 14px);
     color: var(--text-muted);
 }
 
 .form-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 20px;
+    gap: var(--space-5, 20px);
 }
 
 .form-group {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: var(--space-2, 8px);
 }
 
 .form-group label {
     display: flex;
     align-items: center;
-    gap: 8px;
-    font-size: 14px;
+    gap: var(--space-2, 8px);
+    font-size: var(--text-sm, 14px);
     font-weight: 500;
     color: #374151;
 }
 
 .form-group input[type="number"],
 .form-group input[type="text"] {
-    padding: 10px 14px;
+    padding: var(--space-2-5, 10px) var(--space-3-5, 14px);
     border: 1px solid #D1D5DB;
-    border-radius: 6px;
-    font-size: 14px;
+    border-radius: var(--radius-sm-alt, 6px);
+    font-size: var(--text-sm, 14px);
     color: var(--text-primary);
     background: var(--card-bg);
 }
@@ -121,7 +121,7 @@
 }
 
 .field-help {
-    font-size: 12px;
+    font-size: var(--text-xs, 12px);
     color: var(--text-muted);
     line-height: 1.4;
 }
@@ -129,14 +129,14 @@
 .checkbox-label {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: var(--space-2-5, 10px);
     cursor: pointer;
     font-weight: 500;
 }
 
 .checkbox-label input[type="checkbox"] {
-    width: 18px;
-    height: 18px;
+    width: var(--space-4-5, 18px);
+    height: var(--space-4-5, 18px);
     cursor: pointer;
 }
 
@@ -144,12 +144,12 @@
 .retention-preview {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 16px;
-    margin-top: 20px;
-    padding: 20px;
+    gap: var(--space-4, 16px);
+    margin-top: var(--space-5, 20px);
+    padding: var(--space-5, 20px);
     background: #F9FAFB;
     border: 1px solid var(--border-light);
-    border-radius: 8px;
+    border-radius: var(--radius-md, 8px);
 }
 
 .preview-item {
@@ -157,16 +157,16 @@
 }
 
 .preview-label {
-    font-size: 12px;
+    font-size: var(--text-xs, 12px);
     font-weight: 500;
     color: var(--text-muted);
     text-transform: uppercase;
     letter-spacing: 0.025em;
-    margin-bottom: 6px;
+    margin-bottom: var(--space-1-5, 6px);
 }
 
 .preview-value {
-    font-size: 20px;
+    font-size: var(--text-xl, 20px);
     font-weight: 700;
     color: var(--text-primary);
 }
@@ -175,20 +175,20 @@
 .form-actions {
     display: flex;
     justify-content: flex-end;
-    padding-top: 20px;
+    padding-top: var(--space-5, 20px);
     border-top: 1px solid var(--border-light);
 }
 
 .btn-save {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 10px 20px;
+    gap: var(--space-2, 8px);
+    padding: var(--space-2-5, 10px) var(--space-5, 20px);
     background: #3B82F6;
     color: var(--card-bg);
     border: none;
-    border-radius: 6px;
-    font-size: 14px;
+    border-radius: var(--radius-sm-alt, 6px);
+    font-size: var(--text-sm, 14px);
     font-weight: 500;
     cursor: pointer;
     transition: background 0.2s;
@@ -207,41 +207,41 @@
 .cleanup-section {
     background: var(--card-bg);
     border: 1px solid var(--border-light);
-    border-radius: 8px;
-    padding: 24px;
-    margin-bottom: 24px;
+    border-radius: var(--radius-md, 8px);
+    padding: var(--space-6, 24px);
+    margin-bottom: var(--space-6, 24px);
 }
 
 .cleanup-header {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    margin-bottom: 20px;
+    margin-bottom: var(--space-5, 20px);
 }
 
 .cleanup-header h2 {
-    margin: 0 0 4px 0;
-    font-size: 18px;
+    margin: 0 0 var(--space-1, 4px) 0;
+    font-size: var(--text-lg, 18px);
     font-weight: 600;
     color: var(--text-primary);
 }
 
 .cleanup-header p {
     margin: 0;
-    font-size: 14px;
+    font-size: var(--text-sm, 14px);
     color: var(--text-muted);
 }
 
 .btn-cleanup {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 10px 16px;
+    gap: var(--space-2, 8px);
+    padding: var(--space-2-5, 10px) var(--space-4, 16px);
     background: #EF4444;
     color: var(--card-bg);
     border: none;
-    border-radius: 6px;
-    font-size: 14px;
+    border-radius: var(--radius-sm-alt, 6px);
+    font-size: var(--text-sm, 14px);
     font-weight: 500;
     cursor: pointer;
     transition: background 0.2s;
@@ -254,54 +254,54 @@
 .cleanup-result {
     display: flex;
     align-items: flex-start;
-    gap: 12px;
-    padding: 16px;
+    gap: var(--space-3, 12px);
+    padding: var(--space-4, 16px);
     background: #F0FDF4;
     border: 1px solid #DCFCE7;
-    border-radius: 8px;
-    margin-bottom: 16px;
+    border-radius: var(--radius-md, 8px);
+    margin-bottom: var(--space-4, 16px);
     color: #166534;
 }
 
 .cleanup-result strong {
     display: block;
-    margin-bottom: 4px;
+    margin-bottom: var(--space-1, 4px);
 }
 
 .cleanup-result p {
     margin: 0;
-    font-size: 14px;
+    font-size: var(--text-sm, 14px);
 }
 
 .cleanup-warning {
     display: flex;
     align-items: flex-start;
-    gap: 12px;
-    padding: 16px;
+    gap: var(--space-3, 12px);
+    padding: var(--space-4, 16px);
     background: #FEF3C7;
     border: 1px solid #FDE68A;
-    border-radius: 8px;
+    border-radius: var(--radius-md, 8px);
     color: #92400E;
-    font-size: 14px;
+    font-size: var(--text-sm, 14px);
 }
 
 .cleanup-warning strong {
     display: block;
-    margin-bottom: 4px;
+    margin-bottom: var(--space-1, 4px);
 }
 
 /* Info Section */
 .info-section {
     background: var(--card-bg);
     border: 1px solid var(--border-light);
-    border-radius: 8px;
-    padding: 24px;
-    margin-bottom: 24px;
+    border-radius: var(--radius-md, 8px);
+    padding: var(--space-6, 24px);
+    margin-bottom: var(--space-6, 24px);
 }
 
 .info-section h2 {
-    margin: 0 0 16px 0;
-    font-size: 18px;
+    margin: 0 0 var(--space-4, 16px) 0;
+    font-size: var(--text-lg, 18px);
     font-weight: 600;
     color: var(--text-primary);
 }
@@ -309,22 +309,22 @@
 .guidelines-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 16px;
+    gap: var(--space-4, 16px);
 }
 
 .guideline-item {
-    padding: 16px;
+    padding: var(--space-4, 16px);
     background: #F9FAFB;
     border: 1px solid var(--border-light);
-    border-radius: 6px;
+    border-radius: var(--radius-sm-alt, 6px);
 }
 
 .guideline-item strong {
     display: block;
-    font-size: 14px;
+    font-size: var(--text-sm, 14px);
     font-weight: 600;
     color: var(--text-primary);
-    margin-bottom: 4px;
+    margin-bottom: var(--space-1, 4px);
 }
 
 .guideline-item p {
@@ -338,13 +338,13 @@
 .default-notice {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 16px;
+    gap: var(--space-3, 12px);
+    padding: var(--space-4, 16px);
     background: #EFF6FF;
     border: 1px solid #DBEAFE;
-    border-radius: 8px;
+    border-radius: var(--radius-md, 8px);
     color: #1E40AF;
-    font-size: 14px;
+    font-size: var(--text-sm, 14px);
 }
 
 /* Loading */
@@ -353,15 +353,15 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 60px 20px;
+    padding: var(--space-15, 60px) var(--space-5, 20px);
     background: var(--card-bg);
     border: 1px solid var(--border-light);
-    border-radius: 8px;
+    border-radius: var(--radius-md, 8px);
 }
 
 .spinner {
-    width: 40px;
-    height: 40px;
+    width: var(--space-10, 40px);
+    height: var(--space-10, 40px);
     border: 4px solid var(--border-light);
     border-top-color: #3B82F6;
     border-radius: 50%;
@@ -373,7 +373,7 @@
 }
 
 .loading-container p {
-    margin-top: 16px;
+    margin-top: var(--space-4, 16px);
     color: var(--text-muted);
 }
 
@@ -381,12 +381,12 @@
 @media (max-width: 768px) {
     .settings-header {
         flex-direction: column;
-        gap: 16px;
+        gap: var(--space-4, 16px);
     }
 
     .header-left {
         flex-direction: column;
-        gap: 12px;
+        gap: var(--space-3, 12px);
     }
 
     .form-grid,
@@ -397,7 +397,7 @@
 
     .cleanup-header {
         flex-direction: column;
-        gap: 12px;
+        gap: var(--space-3, 12px);
     }
 
     .btn-cleanup {
