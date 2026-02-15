@@ -70,12 +70,12 @@
     border-radius: 50%;
     width: var(--space-10, 40px);
     height: var(--space-10, 40px);
-    animation: spin 1s linear infinite;
+    animation: spin var(--duration-1000, 1s) linear infinite;
 }
 
 @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% { transform: rotate(var(--angle-0, 0deg)); }
+    100% { transform: rotate(var(--angle-360, 360deg)); }
 }
 
 /* Empty State */
@@ -119,11 +119,11 @@
     border: var(--space-0-25, 1px) solid var(--border-light);
     border-radius: var(--radius-lg, 12px);
     padding: var(--space-5, 20px);
-    transition: all 0.2s ease;
+    transition: all var(--transition-fast, 0.2s) ease;
 }
 
 .tag-card:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 var(--space-1, 4px) var(--space-3, 12px) rgba(0, 0, 0, var(--opacity-10, 0.1));
     border-color: var(--status-info);
 }
 
@@ -166,9 +166,9 @@
 .tag-stats {
     display: flex;
     gap: var(--space-4, 16px);
-    padding: 12px 0;
-    border-top: 1px solid var(--border-light);
-    border-bottom: 1px solid var(--border-light);
+    padding: var(--space-3, 12px) 0;
+    border-top: var(--space-0-25, 1px) solid var(--border-light);
+    border-bottom: var(--space-0-25, 1px) solid var(--border-light);
     margin-bottom: var(--space-4, 16px);
 }
 
@@ -186,7 +186,7 @@
 }
 
 .stat-badge {
-    padding: 2px 8px;
+    padding: var(--space-0-5, 2px) var(--space-2, 8px);
     border-radius: var(--space-1, 4px);
     font-size: var(--text-xxs, 11px);
     font-weight: 600;
@@ -203,7 +203,7 @@
 
 .preview-tag {
     display: inline-block;
-    padding: 6px 12px;
+    padding: var(--space-1-5, 6px) var(--space-3, 12px);
     border-radius: var(--space-1-5, 6px);
     font-size: var(--text-xs-alt, 13px);
     font-weight: 500;
@@ -219,7 +219,7 @@
 }
 
 .tags-stats-section h2 {
-    margin: 0 0 20px 0;
+    margin: 0 0 var(--space-5, 20px) 0;
     font-size: var(--text-xl, 20px);
     color: var(--text-primary);
 }
@@ -251,7 +251,7 @@
 }
 
 .stat-content h3 {
-    margin: 0 0 4px 0;
+    margin: 0 0 var(--space-1, 4px) 0;
     font-size: var(--space-6, 24px);
     color: var(--text-primary);
     font-weight: 700;
@@ -270,7 +270,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(0, 0, 0, var(--opacity-50, 0.5));
     display: flex;
     align-items: center;
     justify-content: center;
@@ -295,8 +295,8 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 20px 24px;
-    border-bottom: 1px solid var(--border-light);
+    padding: var(--space-5, 20px) var(--space-6, 24px);
+    border-bottom: var(--space-0-25, 1px) solid var(--border-light);
 }
 
 .modal-header h3 {
@@ -319,7 +319,7 @@
     align-items: center;
     justify-content: center;
     border-radius: var(--space-1-5, 6px);
-    transition: all 0.2s;
+    transition: all var(--transition-fast, 0.2s);
 }
 
 .modal-header button:hover {
@@ -336,8 +336,8 @@
 .modal-footer {
     display: flex;
     gap: var(--space-3, 12px);
-    padding: 16px 24px;
-    border-top: 1px solid var(--border-light);
+    padding: var(--space-4, 16px) var(--space-6, 24px);
+    border-top: var(--space-0-25, 1px) solid var(--border-light);
     justify-content: flex-end;
 }
 
@@ -357,19 +357,19 @@
 .form-group input[type="text"],
 .form-group textarea {
     width: 100%;
-    padding: 10px 12px;
+    padding: var(--space-2-5, 10px) var(--space-3, 12px);
     border: var(--space-0-25, 1px) solid var(--border-medium, #D1D5DB);
     border-radius: var(--space-2, 8px);
     font-size: var(--text-sm, 14px);
     color: var(--text-primary);
-    transition: border-color 0.2s;
+    transition: border-color var(--transition-fast, 0.2s);
 }
 
 .form-group input:focus,
 .form-group textarea:focus {
     outline: none;
     border-color: var(--status-info);
-    box-shadow: 0 0 0 var(--space-0-75, 3px) rgba(59, 130, 246, 0.1);
+    box-shadow: 0 0 0 var(--space-0-75, 3px) rgba(59, 130, 246, var(--opacity-10, 0.1));
 }
 
 .form-group textarea {
@@ -390,23 +390,23 @@
     border-radius: var(--space-2, 8px);
     border: var(--space-0-75, 3px) solid transparent;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all var(--transition-fast, 0.2s);
 }
 
 .color-option:hover {
-    transform: scale(1.1);
+    transform: scale(var(--scale-110, 1.1));
 }
 
 .color-option.selected {
     border-color: var(--text-primary);
-    box-shadow: 0 0 0 2px white;
+    box-shadow: 0 0 0 var(--space-0-5, 2px) white;
 }
 
 /* Tag Preview Section */
 .tag-preview-section {
     margin-top: var(--space-5, 20px);
     padding-top: var(--space-5, 20px);
-    border-top: 1px solid var(--border-light);
+    border-top: var(--space-0-25, 1px) solid var(--border-light);
 }
 
 .tag-preview-section label {
@@ -422,7 +422,7 @@
     background: var(--status-info);
     color: white;
     border: none;
-    padding: 10px 20px;
+    padding: var(--space-2-5, 10px) var(--space-5, 20px);
     border-radius: var(--space-2, 8px);
     font-size: var(--text-sm, 14px);
     font-weight: 500;
@@ -430,7 +430,7 @@
     display: flex;
     align-items: center;
     gap: var(--space-2, 8px);
-    transition: background 0.2s;
+    transition: background var(--transition-fast, 0.2s);
 }
 
 .btn-primary:hover {
@@ -446,7 +446,7 @@
     background: var(--card-bg, white);
     color: var(--text-secondary, #4B5563);
     border: var(--space-0-25, 1px) solid var(--border-medium, #D1D5DB);
-    padding: 10px 20px;
+    padding: var(--space-2-5, 10px) var(--space-5, 20px);
     border-radius: var(--space-2, 8px);
     font-size: var(--text-sm, 14px);
     font-weight: 500;
@@ -454,7 +454,7 @@
     display: flex;
     align-items: center;
     gap: var(--space-2, 8px);
-    transition: all 0.2s;
+    transition: all var(--transition-fast, 0.2s);
 }
 
 .btn-secondary:hover:not(:disabled) {
@@ -463,7 +463,7 @@
 }
 
 .btn-secondary:disabled {
-    opacity: 0.6;
+    opacity: var(--opacity-60, 0.6);
     cursor: not-allowed;
 }
 
