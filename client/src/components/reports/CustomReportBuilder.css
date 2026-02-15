@@ -12,7 +12,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 16px 24px;
+    padding: var(--space-4, 16px) 24px;
     background: var(--card-bg);
     border-bottom: 1px solid var(--border-light);
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
@@ -21,16 +21,16 @@
 .header-left {
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: var(--space-4, 16px);
 }
 
 .report-name-input {
-    font-size: 20px;
+    font-size: var(--space-5, 20px);
     font-weight: 600;
     border: none;
     border-bottom: 2px solid transparent;
-    padding: 8px;
-    min-width: 300px;
+    padding: var(--space-2, 8px);
+    min-width: var(--space-75, 300px);
     transition: all 0.2s;
 }
 
@@ -40,24 +40,24 @@
 }
 
 .report-status {
-    font-size: 13px;
+    font-size: var(--text-sm, 13px);
     color: var(--text-muted);
-    padding: 4px 12px;
+    padding: var(--space-1, 4px) 12px;
     background: var(--border-light);
-    border-radius: 12px;
+    border-radius: var(--space-3, 12px);
 }
 
 .header-actions {
     display: flex;
-    gap: 12px;
+    gap: var(--space-3, 12px);
 }
 
 .btn-icon {
-    width: 40px;
-    height: 40px;
+    width: var(--space-10, 40px);
+    height: var(--space-10, 40px);
     border: none;
     background: var(--border-light);
-    border-radius: 8px;
+    border-radius: var(--space-2, 8px);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -74,12 +74,12 @@
 .btn-primary {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 10px 20px;
+    gap: var(--space-2, 8px);
+    padding: var(--space-2-5, 10px) 20px;
     background: var(--status-info);
     color: var(--card-bg);
     border: none;
-    border-radius: 8px;
+    border-radius: var(--space-2, 8px);
     font-weight: 500;
     cursor: pointer;
     transition: background 0.2s;
@@ -90,16 +90,16 @@
 }
 
 .btn-primary:disabled {
-    background: #9CA3AF;
+    background: var(--text-disabled);
     cursor: not-allowed;
 }
 
 .btn-secondary {
-    padding: 10px 20px;
+    padding: var(--space-2-5, 10px) 20px;
     background: var(--border-light);
     color: var(--text-secondary);
     border: none;
-    border-radius: 8px;
+    border-radius: var(--space-2, 8px);
     font-weight: 500;
     cursor: pointer;
     transition: background 0.2s;
@@ -118,7 +118,7 @@
 
 /* Widget Library */
 .widget-library {
-    width: 300px;
+    width: var(--space-75, 300px);
     background: var(--card-bg);
     border-right: 1px solid var(--border-light);
     display: flex;
@@ -129,12 +129,12 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 20px;
+    padding: var(--space-5, 20px);
     border-bottom: 1px solid var(--border-light);
 }
 
 .library-header h3 {
-    font-size: 18px;
+    font-size: var(--text-lg, 18px);
     font-weight: 600;
     color: var(--text-primary);
     margin: 0;
@@ -143,19 +143,19 @@
 .library-content {
     flex: 1;
     overflow-y: auto;
-    padding: 16px;
+    padding: var(--space-4, 16px);
 }
 
 .widget-type-card {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 16px;
+    gap: var(--space-3, 12px);
+    padding: var(--space-4, 16px);
     background: var(--card-bg);
     border: 1px solid var(--border-light);
-    border-left-width: 4px;
-    border-radius: 8px;
-    margin-bottom: 12px;
+    border-left-width: var(--space-1, 4px);
+    border-radius: var(--space-2, 8px);
+    margin-bottom: var(--space-3, 12px);
     cursor: pointer;
     transition: all 0.2s;
 }
@@ -166,23 +166,23 @@
 }
 
 .widget-icon {
-    width: 48px;
-    height: 48px;
-    border-radius: 8px;
+    width: var(--space-12, 48px);
+    height: var(--space-12, 48px);
+    border-radius: var(--space-2, 8px);
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
 .widget-info h4 {
-    font-size: 15px;
+    font-size: var(--text-base, 15px);
     font-weight: 600;
     color: var(--text-primary);
     margin: 0 0 4px 0;
 }
 
 .widget-info p {
-    font-size: 13px;
+    font-size: var(--text-sm, 13px);
     color: var(--text-muted);
     margin: 0;
 }
@@ -191,7 +191,7 @@
 .report-canvas {
     flex: 1;
     overflow-y: auto;
-    padding: 24px;
+    padding: var(--space-6, 24px);
 }
 
 .empty-canvas {
@@ -204,14 +204,14 @@
 }
 
 .empty-canvas h3 {
-    font-size: 24px;
+    font-size: var(--space-6, 24px);
     font-weight: 600;
     color: var(--text-primary);
-    margin: 16px 0 8px 0;
+    margin: var(--space-4, 16px) 0 8px 0;
 }
 
 .empty-canvas p {
-    font-size: 16px;
+    font-size: var(--space-4, 16px);
     color: var(--text-muted);
     margin: 0 0 24px 0;
 }
@@ -222,7 +222,7 @@
 }
 
 .grid-item {
-    border-radius: 8px;
+    border-radius: var(--space-2, 8px);
     overflow: hidden;
 }
 
@@ -231,8 +231,8 @@
     height: 100%;
     background: var(--card-bg);
     border: 2px solid var(--border-light);
-    border-radius: 8px;
-    padding: 16px;
+    border-radius: var(--space-2, 8px);
+    padding: var(--space-4, 16px);
     cursor: pointer;
     transition: all 0.2s;
     display: flex;
@@ -252,19 +252,19 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 12px;
+    margin-bottom: var(--space-3, 12px);
 }
 
 .widget-title {
-    font-size: 16px;
+    font-size: var(--space-4, 16px);
     font-weight: 600;
     color: var(--text-primary);
     margin: 0;
 }
 
 .widget-remove {
-    width: 24px;
-    height: 24px;
+    width: var(--space-6, 24px);
+    height: var(--space-6, 24px);
     border: none;
     background: transparent;
     color: var(--text-disabled);
@@ -272,19 +272,19 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 4px;
+    border-radius: var(--space-1, 4px);
     transition: all 0.2s;
 }
 
 .widget-remove:hover {
-    background: #FEE2E2;
-    color: #EF4444;
+    background: var(--toast-error-bg, #FEE2E2);
+    color: var(--status-error, #EF4444);
 }
 
 .widget-subtitle {
-    font-size: 13px;
+    font-size: var(--text-sm, 13px);
     color: var(--text-muted);
-    margin-top: 8px;
+    margin-top: var(--space-2, 8px);
 }
 
 /* Metric Widget */
@@ -306,18 +306,18 @@
 .metric-change {
     display: flex;
     align-items: center;
-    gap: 4px;
-    margin-top: 12px;
-    font-size: 16px;
+    gap: var(--space-1, 4px);
+    margin-top: var(--space-3, 12px);
+    font-size: var(--space-4, 16px);
     font-weight: 500;
 }
 
 .metric-change.positive {
-    color: #10B981;
+    color: var(--status-success, #10B981);
 }
 
 .metric-change.negative {
-    color: #EF4444;
+    color: var(--status-error, #EF4444);
 }
 
 /* Chart Widget */
@@ -343,7 +343,7 @@
 .data-table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 13px;
+    font-size: var(--text-sm, 13px);
 }
 
 .data-table thead {
@@ -353,7 +353,7 @@
 }
 
 .data-table th {
-    padding: 8px;
+    padding: var(--space-2, 8px);
     text-align: left;
     font-weight: 600;
     color: var(--text-muted);
@@ -361,15 +361,15 @@
 }
 
 .data-table td {
-    padding: 8px;
+    padding: var(--space-2, 8px);
     border-bottom: 1px solid var(--border-light);
     color: var(--text-secondary);
 }
 
 .table-pagination {
-    padding: 12px 0;
+    padding: var(--space-3, 12px) 0;
     text-align: center;
-    font-size: 13px;
+    font-size: var(--text-sm, 13px);
     color: var(--text-muted);
 }
 
@@ -384,7 +384,7 @@
 /* Text Widget */
 .text-content {
     flex: 1;
-    padding: 8px;
+    padding: var(--space-2, 8px);
     color: var(--text-secondary);
     line-height: 1.6;
 }
@@ -397,7 +397,7 @@
 .funnel-steps {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: var(--space-2, 8px);
 }
 
 .funnel-step {
@@ -412,15 +412,15 @@
     padding: 0 16px;
     color: var(--card-bg);
     font-weight: 500;
-    border-radius: 8px;
+    border-radius: var(--space-2, 8px);
 }
 
 .step-label {
-    font-size: 14px;
+    font-size: var(--text-sm, 14px);
 }
 
 .step-value {
-    font-size: 13px;
+    font-size: var(--text-sm, 13px);
     opacity: 0.9;
 }
 
@@ -459,16 +459,16 @@
 }
 
 .gauge-label {
-    font-size: 13px;
+    font-size: var(--text-sm, 13px);
     color: var(--text-muted);
-    margin-top: 4px;
+    margin-top: var(--space-1, 4px);
 }
 
 /* Widget Config Panel */
 .widget-config-panel {
-    width: 350px;
+    width: var(--space-87-5, 350px);
     background: var(--card-bg);
-    border-left: 1px solid #E5E7EB;
+    border-left: 1px solid var(--border-light, #E5E7EB);
     display: flex;
     flex-direction: column;
 }
@@ -477,12 +477,12 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 20px;
+    padding: var(--space-5, 20px);
     border-bottom: 1px solid var(--border-light);
 }
 
 .panel-header h3 {
-    font-size: 18px;
+    font-size: var(--text-lg, 18px);
     font-weight: 600;
     color: var(--text-primary);
     margin: 0;
@@ -491,15 +491,15 @@
 .panel-content {
     flex: 1;
     overflow-y: auto;
-    padding: 20px;
+    padding: var(--space-5, 20px);
 }
 
 .config-section {
-    margin-bottom: 24px;
+    margin-bottom: var(--space-6, 24px);
 }
 
 .config-section h4 {
-    font-size: 14px;
+    font-size: var(--text-sm, 14px);
     font-weight: 600;
     color: var(--text-primary);
     margin: 0 0 12px 0;
@@ -508,25 +508,25 @@
 }
 
 .config-field {
-    margin-bottom: 16px;
+    margin-bottom: var(--space-4, 16px);
 }
 
 .config-field label {
     display: block;
-    font-size: 13px;
+    font-size: var(--text-sm, 13px);
     font-weight: 500;
     color: var(--text-secondary);
-    margin-bottom: 6px;
+    margin-bottom: var(--space-1-5, 6px);
 }
 
 .config-field input,
 .config-field select,
 .config-field textarea {
     width: 100%;
-    padding: 8px 12px;
+    padding: var(--space-2, 8px) 12px;
     border: 1px solid var(--border-medium);
-    border-radius: 6px;
-    font-size: 14px;
+    border-radius: var(--space-1-5, 6px);
+    font-size: var(--text-sm, 14px);
     color: var(--text-primary);
     transition: border-color 0.2s;
 }
@@ -540,9 +540,9 @@
 
 .panel-footer {
     display: flex;
-    gap: 12px;
-    padding: 20px;
-    border-top: 1px solid #E5E7EB;
+    gap: var(--space-3, 12px);
+    padding: var(--space-5, 20px);
+    border-top: 1px solid var(--border-light, #E5E7EB);
 }
 
 .panel-footer button {
@@ -559,13 +559,13 @@
 }
 
 .spinner {
-    width: 48px;
-    height: 48px;
-    border: 4px solid #E5E7EB;
+    width: var(--space-12, 48px);
+    height: var(--space-12, 48px);
+    border: var(--space-1, 4px) solid var(--border-light, #E5E7EB);
     border-top-color: var(--status-info);
     border-radius: 50%;
     animation: spin 1s linear infinite;
-    margin-bottom: 16px;
+    margin-bottom: var(--space-4, 16px);
 }
 
 @keyframes spin {
