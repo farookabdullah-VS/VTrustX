@@ -1,7 +1,7 @@
 .power-analysis-calculator {
     background: var(--card-bg);
     border-radius: var(--radius-lg, 12px);
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 var(--space-1, 4px) var(--space-1-5, 6px) rgba(0, 0, 0, 0.05);
     overflow: hidden;
 }
 
@@ -26,7 +26,7 @@
 
 .header-description {
     font-size: var(--text-base, 15px);
-    opacity: 0.9;
+    opacity: var(--opacity-90, 0.9);
     margin: 0;
 }
 
@@ -75,18 +75,18 @@
 .calc-select {
     flex: 1;
     padding: var(--space-3, 12px) var(--space-4, 16px);
-    border: 1px solid var(--border-medium);
+    border: var(--space-0-25, 1px) solid var(--border-medium);
     border-radius: var(--radius-md, 8px);
     font-size: var(--text-base, 15px);
     font-family: inherit;
-    transition: border-color 0.2s, box-shadow 0.2s;
+    transition: border-color var(--transition-fast, 0.2s), box-shadow var(--transition-fast, 0.2s);
 }
 
 .calc-input:focus,
 .calc-select:focus {
     outline: none;
     border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    box-shadow: 0 0 0 var(--space-0-75, 3px) rgba(99, 102, 241, 0.1);
 }
 
 .input-unit {
@@ -121,25 +121,25 @@
     align-items: center;
     justify-content: center;
     gap: var(--space-2-5, 10px);
-    transition: all 0.2s;
+    transition: all var(--transition-fast, 0.2s);
     margin-top: var(--space-2, 8px);
 }
 
 .btn-calculate:hover:not(:disabled) {
     background: var(--primary-hover);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+    transform: translateY(var(--space--0-25, -1px));
+    box-shadow: 0 var(--space-1, 4px) var(--space-3, 12px) rgba(99, 102, 241, 0.3);
 }
 
 .btn-calculate:disabled {
-    opacity: 0.6;
+    opacity: var(--opacity-60, 0.6);
     cursor: not-allowed;
 }
 
 /* Error Box */
 .error-box {
     background: var(--toast-error-bg, #FEE2E2);
-    border: 1px solid var(--status-error, #EF4444);
+    border: var(--space-0-25, 1px) solid var(--status-error, #EF4444);
     border-radius: var(--radius-md, 8px);
     padding: var(--space-4, 16px) var(--space-5, 20px);
     color: var(--toast-error-text, #991B1B);
@@ -152,7 +152,7 @@
 
 /* Results Section */
 .results-section {
-    border-top: 2px solid var(--border-light, #E5E7EB);
+    border-top: var(--space-0-5, 2px) solid var(--border-light, #E5E7EB);
     padding-top: var(--space-8, 32px);
 }
 
@@ -167,7 +167,7 @@
     font-size: var(--text-base, 16px);
     font-weight: 600;
     color: var(--text-secondary);
-    margin: 0 0 12px 0;
+    margin: 0 0 var(--space-3, 12px) 0;
 }
 
 .results-cards {
@@ -179,7 +179,7 @@
 
 .result-card {
     background: var(--input-bg, #F9FAFB);
-    border: 2px solid var(--border-light, #E5E7EB);
+    border: var(--space-0-5, 2px) solid var(--border-light, #E5E7EB);
     border-radius: var(--radius-lg, 12px);
     padding: var(--space-5, 20px);
     text-align: center;
@@ -195,7 +195,7 @@
     font-weight: 600;
     color: var(--text-muted);
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: var(--space-0-125, 0.5px);
     margin-bottom: var(--space-2, 8px);
 }
 
@@ -228,7 +228,7 @@
 /* Recommendations */
 .recommendations {
     background: var(--toast-info-bg, #EFF6FF);
-    border: 1px solid var(--status-info, #3B82F6);
+    border: var(--space-0-25, 1px) solid var(--status-info, #3B82F6);
     border-radius: var(--radius-md, 8px);
     padding: var(--space-5, 20px);
     margin-bottom: var(--space-8, 32px);
@@ -286,13 +286,13 @@
     font-size: var(--text-base, 16px);
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all var(--transition-fast, 0.2s);
 }
 
 .btn-use-results:hover {
     background: var(--status-success-dark, #059669);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    transform: translateY(var(--space--0-25, -1px));
+    box-shadow: 0 var(--space-1, 4px) var(--space-3, 12px) rgba(16, 185, 129, 0.3);
 }
 
 /* Responsive */
@@ -306,6 +306,6 @@
     }
 
     .result-value {
-        font-size: 28px;
+        font-size: var(--text-2xl-alt, 28px);
     }
 }
