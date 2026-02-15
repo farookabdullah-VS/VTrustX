@@ -1,12 +1,12 @@
 .workflow-automation-container {
-    padding: 24px;
+    padding: var(--space-6, 24px);
     max-width: 1400px;
     margin: 0 auto;
 }
 
 .workflow-automation-loading {
     text-align: center;
-    padding: 60px 20px;
+    padding: var(--space-15, 60px) var(--space-5, 20px);
     color: var(--text-muted);
     font-size: 16px;
 }
@@ -44,38 +44,38 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 10px 20px;
+    padding: var(--space-2-5, 10px) var(--space-5, 20px);
     background: var(--status-info);
     color: var(--card-bg);
     border: none;
-    border-radius: 8px;
+    border-radius: var(--radius-md, 8px);
     font-size: 14px;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all var(--transition-fast, 0.2s);
 }
 
 .workflow-automation-create-btn:hover {
     background: #2563EB;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    transform: translateY(var(--space--0-25, -1px));
+    box-shadow: 0 var(--space-1, 4px) var(--space-3, 12px) rgba(59, 130, 246, var(--opacity-30, 0.3));
 }
 
 .workflow-automation-filters {
     display: flex;
     gap: 12px;
-    margin-bottom: 24px;
+    margin-bottom: var(--space-6, 24px);
 }
 
 .filter-btn {
-    padding: 8px 16px;
+    padding: var(--space-2, 8px) var(--space-4, 16px);
     background: var(--card-bg);
-    border: 1px solid var(--border-light);
-    border-radius: 6px;
+    border: var(--space-0-25, 1px) solid var(--border-light);
+    border-radius: var(--radius-sm-alt, 6px);
     font-size: 14px;
     color: var(--text-muted);
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all var(--transition-fast, 0.2s);
 }
 
 .filter-btn:hover {
@@ -91,17 +91,17 @@
 
 .workflow-automation-empty {
     text-align: center;
-    padding: 80px 20px;
+    padding: var(--space-20, 80px) var(--space-5, 20px);
 }
 
 .workflow-automation-empty .empty-icon {
     color: #D1D5DB;
-    margin-bottom: 24px;
+    margin-bottom: var(--space-6, 24px);
 }
 
 .workflow-automation-empty h2 {
-    margin: 0 0 12px 0;
-    font-size: 24px;
+    margin: 0 0 var(--space-3, 12px) 0;
+    font-size: var(--text-2xl, 24px);
     color: var(--text-primary);
 }
 
@@ -119,26 +119,26 @@
 
 .workflow-automation-card {
     background: var(--card-bg);
-    border: 1px solid var(--border-light);
-    border-radius: 12px;
-    padding: 20px;
-    transition: all 0.2s;
+    border: var(--space-0-25, 1px) solid var(--border-light);
+    border-radius: var(--radius-lg, 12px);
+    padding: var(--space-5, 20px);
+    transition: all var(--transition-fast, 0.2s);
 }
 
 .workflow-automation-card:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    transform: translateY(-2px);
+    box-shadow: 0 var(--space-1, 4px) var(--space-3, 12px) rgba(0, 0, 0, var(--opacity-8, 0.08));
+    transform: translateY(var(--space--0-5, -2px));
 }
 
 .workflow-automation-card.inactive {
-    opacity: 0.6;
+    opacity: var(--opacity-60, 0.6);
 }
 
 .workflow-automation-card-header {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    margin-bottom: 12px;
+    margin-bottom: var(--space-3, 12px);
 }
 
 .workflow-automation-card-title {
@@ -146,15 +146,15 @@
 }
 
 .workflow-automation-card-title h3 {
-    margin: 0 0 8px 0;
-    font-size: 18px;
+    margin: 0 0 var(--space-2, 8px) 0;
+    font-size: var(--text-lg, 18px);
     color: var(--text-primary);
 }
 
 .workflow-automation-status-badge {
     display: inline-block;
     padding: 4px 12px;
-    border-radius: 12px;
+    border-radius: var(--radius-lg, 12px);
     font-size: 12px;
     font-weight: 500;
 }
@@ -177,11 +177,11 @@
 .icon-btn {
     padding: 6px;
     background: transparent;
-    border: 1px solid var(--border-light);
-    border-radius: 6px;
+    border: var(--space-0-25, 1px) solid var(--border-light);
+    border-radius: var(--radius-sm-alt, 6px);
     cursor: pointer;
     color: var(--text-muted);
-    transition: all 0.2s;
+    transition: all var(--transition-fast, 0.2s);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -209,7 +209,7 @@
 .workflow-automation-trigger-info {
     background: var(--input-bg);
     padding: 12px;
-    border-radius: 8px;
+    border-radius: var(--radius-md, 8px);
     margin-bottom: 16px;
 }
 
@@ -261,14 +261,14 @@
     align-items: center;
     justify-content: center;
     gap: 8px;
-    padding: 8px 16px;
+    padding: var(--space-2, 8px) var(--space-4, 16px);
     background: var(--card-bg);
-    border: 1px solid var(--border-light);
-    border-radius: 6px;
+    border: var(--space-0-25, 1px) solid var(--border-light);
+    border-radius: var(--radius-sm-alt, 6px);
     font-size: 13px;
     color: var(--text-muted);
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all var(--transition-fast, 0.2s);
 }
 
 .workflow-automation-view-btn:hover {
