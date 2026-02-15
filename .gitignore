@@ -44,3 +44,11 @@ build_output.txt
 # Temp files
 *.tmp
 *.temp
+
+# Android signing keys and credentials (NEVER COMMIT THESE!)
+*.keystore
+*.jks
+client/android/SIGNING_CREDENTIALS.txt
+client/android/app/release/
+client/android/app/build/outputs/bundle/
+client/android/app/build/outputs/apk/release/

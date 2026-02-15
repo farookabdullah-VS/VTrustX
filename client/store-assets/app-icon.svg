@@ -1,0 +1,43 @@
+<svg width="512" height="512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background gradient -->
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#10B981;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#059669;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="accentGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#34D399;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#10B981;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Rounded background -->
+  <rect width="512" height="512" rx="80" fill="url(#bgGradient)"/>
+
+  <!-- Survey/Form icon representation -->
+  <!-- Main document/form shape -->
+  <rect x="120" y="100" width="272" height="340" rx="12" fill="white" opacity="0.95"/>
+
+  <!-- Header bar -->
+  <rect x="120" y="100" width="272" height="60" rx="12" fill="white" opacity="0.95"/>
+  <rect x="120" y="140" width="272" height="20" fill="url(#accentGradient)"/>
+
+  <!-- Form lines (representing questions) -->
+  <rect x="150" y="190" width="212" height="16" rx="8" fill="#10B981" opacity="0.3"/>
+  <rect x="150" y="225" width="180" height="16" rx="8" fill="#10B981" opacity="0.3"/>
+  <rect x="150" y="260" width="200" height="16" rx="8" fill="#10B981" opacity="0.3"/>
+
+  <!-- Checkboxes -->
+  <rect x="150" y="310" width="32" height="32" rx="6" fill="white" stroke="#10B981" stroke-width="3"/>
+  <path d="M 158 326 L 168 334 L 178 316" stroke="#10B981" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <rect x="150" y="355" width="32" height="32" rx="6" fill="white" stroke="#10B981" stroke-width="3"/>
+  <rect x="230" y="355" width="32" height="32" rx="6" fill="white" stroke="#10B981" stroke-width="3"/>
+
+  <!-- Decorative corner elements -->
+  <circle cx="430" cy="82" r="25" fill="white" opacity="0.2"/>
+  <circle cx="82" cy="430" r="30" fill="white" opacity="0.2"/>
+
+  <!-- RX text/logo element -->
+  <text x="256" y="470" font-family="Arial, sans-serif" font-size="48" font-weight="bold" fill="white" text-anchor="middle" opacity="0.9">RX</text>
+</svg>
