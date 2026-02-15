@@ -1,7 +1,7 @@
 /* Custom Reports Dashboard Styles */
 
 .custom-reports-dashboard {
-    padding: 24px;
+    padding: var(--space-6, 24px);
     max-width: 1400px;
     margin: 0 auto;
     background: var(--input-bg);
@@ -12,18 +12,18 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 32px;
+    margin-bottom: var(--space-8, 32px);
 }
 
 .dashboard-header h1 {
-    font-size: 32px;
+    font-size: var(--space-8, 32px);
     font-weight: 700;
     color: var(--text-primary);
     margin: 0 0 8px 0;
 }
 
 .dashboard-header p {
-    font-size: 16px;
+    font-size: var(--space-4, 16px);
     color: var(--text-muted);
     margin: 0;
 }
@@ -31,13 +31,13 @@
 .btn-create-report {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 12px 24px;
+    gap: var(--space-2, 8px);
+    padding: var(--space-3, 12px) 24px;
     background: var(--status-info);
     color: var(--card-bg);
     border: none;
-    border-radius: 8px;
-    font-size: 15px;
+    border-radius: var(--space-2, 8px);
+    font-size: var(--text-base, 15px);
     font-weight: 500;
     cursor: pointer;
     transition: background 0.2s;
@@ -50,16 +50,16 @@
 /* Filters */
 .dashboard-filters {
     display: flex;
-    gap: 12px;
-    margin-bottom: 32px;
+    gap: var(--space-3, 12px);
+    margin-bottom: var(--space-8, 32px);
 }
 
 .filter-btn {
-    padding: 10px 20px;
+    padding: var(--space-2-5, 10px) 20px;
     background: var(--card-bg);
     border: 1px solid var(--border-light);
-    border-radius: 8px;
-    font-size: 14px;
+    border-radius: var(--space-2, 8px);
+    font-size: var(--text-sm, 14px);
     font-weight: 500;
     color: var(--text-muted);
     cursor: pointer;
@@ -81,18 +81,18 @@
 .reports-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-    gap: 24px;
+    gap: var(--space-6, 24px);
 }
 
 .report-card {
     background: var(--card-bg);
-    border-radius: 12px;
-    padding: 24px;
+    border-radius: var(--space-3, 12px);
+    padding: var(--space-6, 24px);
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     transition: all 0.2s;
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: var(--space-4, 16px);
 }
 
 .report-card:hover {
@@ -104,11 +104,11 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 12px;
+    gap: var(--space-3, 12px);
 }
 
 .card-header h3 {
-    font-size: 18px;
+    font-size: var(--text-lg, 18px);
     font-weight: 600;
     color: var(--text-primary);
     margin: 0;
@@ -116,16 +116,16 @@
 }
 
 .widget-count {
-    padding: 4px 12px;
-    background: #DBEAFE;
-    color: #1E40AF;
-    border-radius: 12px;
-    font-size: 12px;
+    padding: var(--space-1, 4px) 12px;
+    background: var(--toast-info-bg, #DBEAFE);
+    color: var(--toast-info-text, #1E40AF);
+    border-radius: var(--space-3, 12px);
+    font-size: var(--space-3, 12px);
     font-weight: 500;
 }
 
 .card-description {
-    font-size: 14px;
+    font-size: var(--text-sm, 14px);
     color: var(--text-muted);
     line-height: 1.5;
     margin: 0;
@@ -133,36 +133,36 @@
 
 .card-meta {
     display: flex;
-    gap: 16px;
+    gap: var(--space-4, 16px);
     flex-wrap: wrap;
 }
 
 .meta-item {
     display: flex;
     align-items: center;
-    gap: 6px;
-    font-size: 13px;
+    gap: var(--space-1-5, 6px);
+    font-size: var(--text-sm, 13px);
     color: var(--text-muted);
 }
 
 .card-tags {
     display: flex;
-    gap: 8px;
+    gap: var(--space-2, 8px);
     flex-wrap: wrap;
 }
 
 .tag {
-    padding: 4px 10px;
+    padding: var(--space-1, 4px) 10px;
     background: var(--border-light);
-    border-radius: 6px;
-    font-size: 12px;
+    border-radius: var(--space-1-5, 6px);
+    font-size: var(--space-3, 12px);
     color: var(--text-muted);
 }
 
 .card-actions {
     display: flex;
-    gap: 8px;
-    padding-top: 12px;
+    gap: var(--space-2, 8px);
+    padding-top: var(--space-3, 12px);
     border-top: 1px solid var(--border-light);
 }
 
@@ -171,16 +171,16 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 8px;
+    padding: var(--space-2, 8px);
     border: none;
-    border-radius: 6px;
+    border-radius: var(--space-1-5, 6px);
     cursor: pointer;
     transition: all 0.2s;
 }
 
 .action-btn.view {
-    background: #DBEAFE;
-    color: #1E40AF;
+    background: var(--toast-info-bg, #DBEAFE);
+    color: var(--toast-info-text, #1E40AF);
 }
 
 .action-btn.view:hover {
@@ -189,22 +189,22 @@
 }
 
 .action-btn.edit {
-    background: #E0E7FF;
-    color: #3730A3;
+    background: var(--bg-tertiary, #E0E7FF);
+    color: var(--text-secondary, #3730A3);
 }
 
 .action-btn.edit:hover {
-    background: #6366F1;
+    background: var(--primary, #6366F1);
     color: var(--card-bg);
 }
 
 .action-btn.delete {
-    background: #FEE2E2;
-    color: #991B1B;
+    background: var(--toast-error-bg, #FEE2E2);
+    color: var(--toast-error-text, #991B1B);
 }
 
 .action-btn.delete:hover {
-    background: #EF4444;
+    background: var(--status-error, #EF4444);
     color: var(--card-bg);
 }
 
@@ -220,14 +220,14 @@
 }
 
 .empty-state h3 {
-    font-size: 24px;
+    font-size: var(--space-6, 24px);
     font-weight: 600;
     color: var(--text-primary);
-    margin: 16px 0 8px 0;
+    margin: var(--space-4, 16px) 0 8px 0;
 }
 
 .empty-state p {
-    font-size: 16px;
+    font-size: var(--space-4, 16px);
     color: var(--text-muted);
     margin: 0 0 24px 0;
 }
@@ -235,11 +235,11 @@
 .spinner {
     width: 48px;
     height: 48px;
-    border: 4px solid #E5E7EB;
+    border: var(--space-1, 4px) solid var(--border-light, #E5E7EB);
     border-top-color: var(--status-info);
     border-radius: 50%;
     animation: spin 1s linear infinite;
-    margin-bottom: 16px;
+    margin-bottom: var(--space-4, 16px);
 }
 
 @keyframes spin {
@@ -249,13 +249,13 @@
 /* Responsive */
 @media (max-width: 768px) {
     .custom-reports-dashboard {
-        padding: 16px;
+        padding: var(--space-4, 16px);
     }
 
     .dashboard-header {
         flex-direction: column;
         align-items: flex-start;
-        gap: 16px;
+        gap: var(--space-4, 16px);
     }
 
     .reports-grid {
