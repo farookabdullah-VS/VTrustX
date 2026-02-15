@@ -3,7 +3,7 @@
 }
 
 .step-container h2 {
-    font-size: 24px;
+    font-size: var(--text-2xl, 24px);
     font-weight: 700;
     color: var(--text-primary);
     margin: 0 0 8px 0;
@@ -12,27 +12,27 @@
 .step-description {
     color: var(--text-muted);
     margin: 0 0 32px 0;
-    font-size: 15px;
+    font-size: var(--text-base, 15px);
 }
 
 .step-header-with-action {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    margin-bottom: 32px;
+    margin-bottom: var(--space-8, 32px);
 }
 
 /* Form elements */
 .form-group {
-    margin-bottom: 24px;
+    margin-bottom: var(--space-6, 24px);
 }
 
 .form-group label {
     display: block;
     font-weight: 600;
     color: var(--text-secondary);
-    margin-bottom: 8px;
-    font-size: 14px;
+    margin-bottom: var(--space-2, 8px);
+    font-size: var(--text-sm, 14px);
 }
 
 .required {
@@ -45,8 +45,8 @@
     width: 100%;
     padding: 12px 16px;
     border: 1px solid var(--border-medium);
-    border-radius: 8px;
-    font-size: 15px;
+    border-radius: var(--radius-md, 8px);
+    font-size: var(--text-base, 15px);
     font-family: inherit;
     transition: border-color 0.2s, box-shadow 0.2s;
 }
@@ -62,45 +62,45 @@
 .form-textarea {
     resize: vertical;
     font-family: 'Courier New', monospace;
-    font-size: 14px;
+    font-size: var(--text-sm, 14px);
     line-height: 1.6;
 }
 
 .field-hint {
-    font-size: 13px;
+    font-size: var(--text-sm, 13px);
     color: var(--text-muted);
-    margin-top: 6px;
+    margin-top: var(--space-1-5, 6px);
     margin-bottom: 0;
 }
 
 .field-hint code {
     background: var(--border-light);
-    padding: 2px 6px;
-    border-radius: 4px;
-    font-size: 12px;
+    padding: var(--space-0-5, 2px) var(--space-1-5, 6px);
+    border-radius: var(--radius-sm, 4px);
+    font-size: var(--text-xs, 12px);
     color: var(--primary);
 }
 
 .loading-select {
     padding: 12px 16px;
     border: 1px solid var(--border-medium);
-    border-radius: 8px;
+    border-radius: var(--radius-md, 8px);
     color: var(--text-muted);
 }
 
 /* Radio group */
 .radio-group {
     display: flex;
-    gap: 12px;
+    gap: var(--space-3, 12px);
 }
 
 .radio-option {
     flex: 1;
     display: flex;
     align-items: center;
-    padding: 16px;
+    padding: var(--space-4, 16px);
     border: 2px solid var(--border-light);
-    border-radius: 8px;
+    border-radius: var(--radius-md, 8px);
     cursor: pointer;
     transition: all 0.2s;
 }
@@ -111,7 +111,7 @@
 }
 
 .radio-option input[type="radio"] {
-    margin-right: 12px;
+    margin-right: var(--space-3, 12px);
     cursor: pointer;
 }
 
@@ -123,23 +123,23 @@
 .radio-label {
     display: flex;
     align-items: center;
-    gap: 8px;
-    font-size: 15px;
+    gap: var(--space-2, 8px);
+    font-size: var(--text-base, 15px);
 }
 
 .channel-icon {
-    font-size: 18px;
+    font-size: var(--text-lg, 18px);
 }
 
 /* Variants */
 .btn-add-variant {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 10px 20px;
+    gap: var(--space-2, 8px);
+    padding: var(--space-2-5, 10px) var(--space-5, 20px);
     background: var(--card-bg);
     border: 1px solid var(--primary);
-    border-radius: 8px;
+    border-radius: var(--radius-md, 8px);
     color: var(--primary);
     font-weight: 600;
     cursor: pointer;
@@ -159,13 +159,13 @@
 .variants-list {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: var(--space-5, 20px);
 }
 
 .variant-card {
     border: 2px solid var(--border-light);
-    border-radius: 12px;
-    padding: 20px;
+    border-radius: var(--radius-lg, 12px);
+    padding: var(--space-5, 20px);
     background: var(--input-bg);
 }
 
@@ -173,26 +173,26 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
+    margin-bottom: var(--space-5, 20px);
 }
 
 .variant-badge {
     font-weight: 700;
-    font-size: 16px;
+    font-size: var(--text-base, 16px);
     color: var(--primary);
-    padding: 6px 12px;
+    padding: var(--space-1-5, 6px) var(--space-3, 12px);
     background: var(--primary-light);
-    border-radius: 6px;
+    border-radius: var(--radius-sm-alt, 6px);
 }
 
 .btn-remove-variant {
     display: flex;
     align-items: center;
-    gap: 4px;
-    padding: 8px 12px;
+    gap: var(--space-1, 4px);
+    padding: var(--space-2, 8px) var(--space-3, 12px);
     background: var(--card-bg);
     border: 1px solid var(--status-error);
-    border-radius: 6px;
+    border-radius: var(--radius-sm-alt, 6px);
     color: var(--status-error);
     font-weight: 600;
     cursor: pointer;
@@ -207,18 +207,18 @@
 .media-placeholder {
     padding: 12px 16px;
     border: 1px dashed var(--border-medium);
-    border-radius: 8px;
+    border-radius: var(--radius-md, 8px);
     color: var(--text-disabled);
     text-align: center;
-    font-size: 14px;
+    font-size: var(--text-sm, 14px);
 }
 
 /* Traffic allocation */
 .btn-secondary-small {
-    padding: 8px 16px;
+    padding: var(--space-2, 8px) var(--space-4, 16px);
     background: var(--card-bg);
     border: 1px solid var(--border-medium);
-    border-radius: 6px;
+    border-radius: var(--radius-sm-alt, 6px);
     color: var(--text-secondary);
     font-weight: 600;
     cursor: pointer;
@@ -234,14 +234,14 @@
 .allocation-sliders {
     display: flex;
     flex-direction: column;
-    gap: 24px;
-    margin-bottom: 24px;
+    gap: var(--space-6, 24px);
+    margin-bottom: var(--space-6, 24px);
 }
 
 .slider-group {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: var(--space-2, 8px);
 }
 
 .slider-header {
@@ -258,13 +258,13 @@
 .allocation-value {
     font-weight: 700;
     color: var(--primary);
-    font-size: 18px;
+    font-size: var(--text-lg, 18px);
 }
 
 .allocation-slider {
     width: 100%;
-    height: 8px;
-    border-radius: 4px;
+    height: var(--space-2, 8px);
+    border-radius: var(--radius-sm, 4px);
     outline: none;
     -webkit-appearance: none;
     appearance: none;
@@ -273,32 +273,32 @@
 .allocation-slider::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
-    width: 20px;
-    height: 20px;
+    width: var(--space-5, 20px);
+    height: var(--space-5, 20px);
     border-radius: 50%;
     background: var(--primary);
     cursor: pointer;
-    border: 3px solid var(--card-bg);
+    border: var(--space-0-75, 3px) solid var(--card-bg);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .allocation-slider::-moz-range-thumb {
-    width: 20px;
-    height: 20px;
+    width: var(--space-5, 20px);
+    height: var(--space-5, 20px);
     border-radius: 50%;
     background: var(--primary);
     cursor: pointer;
-    border: 3px solid var(--card-bg);
+    border: var(--space-0-75, 3px) solid var(--card-bg);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .total-indicator {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: var(--space-3, 12px);
     padding: 16px 20px;
-    border-radius: 8px;
-    margin-bottom: 32px;
+    border-radius: var(--radius-md, 8px);
+    margin-bottom: var(--space-8, 32px);
     font-weight: 600;
 }
 
@@ -315,57 +315,57 @@
 }
 
 .total-label {
-    font-size: 14px;
+    font-size: var(--text-sm, 14px);
 }
 
 .total-value {
-    font-size: 20px;
+    font-size: var(--text-xl, 20px);
 }
 
 .status-icon {
-    font-size: 20px;
+    font-size: var(--text-xl, 20px);
     margin-left: auto;
 }
 
 .chart-container {
-    margin-bottom: 32px;
+    margin-bottom: var(--space-8, 32px);
 }
 
 .chart-container h3 {
-    font-size: 18px;
+    font-size: var(--text-lg, 18px);
     font-weight: 600;
     color: var(--text-primary);
-    margin-bottom: 16px;
+    margin-bottom: var(--space-4, 16px);
 }
 
 .recommendations-box {
     background: var(--primary-light);
     border: 1px solid var(--status-info);
-    border-radius: 8px;
+    border-radius: var(--radius-md, 8px);
     padding: 16px 20px;
 }
 
 .recommendations-box h4 {
-    font-size: 16px;
+    font-size: var(--text-base, 16px);
     color: var(--toast-info-text);
     margin: 0 0 12px 0;
 }
 
 .recommendations-box ul {
     margin: 0;
-    padding-left: 20px;
+    padding-left: var(--space-5, 20px);
     color: var(--toast-info-text);
 }
 
 .recommendations-box li {
-    margin-bottom: 8px;
+    margin-bottom: var(--space-2, 8px);
     line-height: 1.5;
 }
 
 /* Review step */
 .review-section {
-    margin-bottom: 32px;
-    padding-bottom: 24px;
+    margin-bottom: var(--space-8, 32px);
+    padding-bottom: var(--space-6, 24px);
     border-bottom: 1px solid var(--border-light);
 }
 
@@ -374,26 +374,26 @@
 }
 
 .review-section h3 {
-    font-size: 18px;
+    font-size: var(--text-lg, 18px);
     font-weight: 600;
     color: var(--text-primary);
-    margin-bottom: 16px;
+    margin-bottom: var(--space-4, 16px);
 }
 
 .review-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 16px;
+    gap: var(--space-4, 16px);
 }
 
 .review-item {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: var(--space-1, 4px);
 }
 
 .review-label {
-    font-size: 13px;
+    font-size: var(--text-sm, 13px);
     font-weight: 600;
     color: var(--text-muted);
     text-transform: uppercase;
@@ -401,102 +401,102 @@
 }
 
 .review-value {
-    font-size: 15px;
+    font-size: var(--text-base, 15px);
     color: var(--text-primary);
 }
 
 .variants-review {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: var(--space-4, 16px);
 }
 
 .variant-review-card {
     background: var(--input-bg);
     border: 1px solid var(--border-light);
-    border-radius: 8px;
-    padding: 16px;
+    border-radius: var(--radius-md, 8px);
+    padding: var(--space-4, 16px);
 }
 
 .variant-review-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 12px;
+    margin-bottom: var(--space-3, 12px);
 }
 
 .traffic-badge {
-    font-size: 13px;
+    font-size: var(--text-sm, 13px);
     font-weight: 600;
     color: var(--primary);
-    padding: 4px 10px;
+    padding: var(--space-1, 4px) var(--space-2-5, 10px);
     background: var(--primary-light);
-    border-radius: 12px;
+    border-radius: var(--radius-lg, 12px);
 }
 
 .variant-detail {
-    margin-bottom: 8px;
+    margin-bottom: var(--space-2, 8px);
 }
 
 .detail-label {
-    font-size: 13px;
+    font-size: var(--text-sm, 13px);
     font-weight: 600;
     color: var(--text-muted);
     display: block;
-    margin-bottom: 4px;
+    margin-bottom: var(--space-1, 4px);
 }
 
 .detail-value {
-    font-size: 14px;
+    font-size: var(--text-sm, 14px);
     color: var(--text-primary);
 }
 
 .body-preview {
-    font-size: 14px;
+    font-size: var(--text-sm, 14px);
     color: var(--text-secondary);
     line-height: 1.5;
     white-space: pre-wrap;
     background: var(--card-bg);
-    padding: 12px;
-    border-radius: 6px;
+    padding: var(--space-3, 12px);
+    border-radius: var(--radius-sm-alt, 6px);
     font-family: 'Courier New', monospace;
 }
 
 .info-box {
     background: var(--toast-success-bg);
     border: 1px solid var(--status-success);
-    border-radius: 8px;
+    border-radius: var(--radius-md, 8px);
     padding: 16px 20px;
-    margin-bottom: 24px;
+    margin-bottom: var(--space-6, 24px);
 }
 
 .info-box h4 {
-    font-size: 16px;
+    font-size: var(--text-base, 16px);
     color: var(--toast-success-text);
     margin: 0 0 12px 0;
 }
 
 .info-box ul {
     margin: 0;
-    padding-left: 20px;
+    padding-left: var(--space-5, 20px);
     color: var(--toast-success-text);
 }
 
 .info-box li {
-    margin-bottom: 8px;
+    margin-bottom: var(--space-2, 8px);
     line-height: 1.5;
 }
 
 .checklist-box {
     background: var(--primary-light);
     border: 1px solid var(--status-info);
-    border-radius: 8px;
+    border-radius: var(--radius-md, 8px);
     padding: 16px 20px;
-    margin-bottom: 24px;
+    margin-bottom: var(--space-6, 24px);
 }
 
 .checklist-box h4 {
-    font-size: 16px;
+    font-size: var(--text-base, 16px);
     color: var(--toast-info-text);
     margin: 0 0 12px 0;
 }
@@ -508,7 +508,7 @@
 }
 
 .checklist li {
-    padding: 8px 0;
+    padding: var(--space-2, 8px) 0;
     color: var(--toast-info-text);
     line-height: 1.5;
 }
@@ -517,18 +517,18 @@
     content: '✓ ';
     color: var(--status-success);
     font-weight: 700;
-    margin-right: 8px;
+    margin-right: var(--space-2, 8px);
 }
 
 .warning-box {
     background: var(--toast-warning-bg);
     border: 1px solid var(--status-warning);
-    border-radius: 8px;
+    border-radius: var(--radius-md, 8px);
     padding: 16px 20px;
 }
 
 .warning-box h4 {
-    font-size: 16px;
+    font-size: var(--text-base, 16px);
     color: var(--toast-warning-text);
     margin: 0 0 12px 0;
 }
@@ -547,15 +547,15 @@
 .method-cards {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 16px;
-    margin-bottom: 24px;
+    gap: var(--space-4, 16px);
+    margin-bottom: var(--space-6, 24px);
 }
 
 .method-card {
     background: var(--card-bg);
     border: 2px solid var(--border-light);
-    border-radius: 12px;
-    padding: 20px;
+    border-radius: var(--radius-lg, 12px);
+    padding: var(--space-5, 20px);
     cursor: pointer;
     transition: all 0.2s;
     position: relative;
@@ -574,19 +574,19 @@
 }
 
 .method-icon {
-    font-size: 36px;
-    margin-bottom: 12px;
+    font-size: var(--text-4xl, 36px);
+    margin-bottom: var(--space-3, 12px);
 }
 
 .method-name {
-    font-size: 18px;
+    font-size: var(--text-lg, 18px);
     font-weight: 700;
     color: var(--text-primary);
     margin: 0 0 8px 0;
 }
 
 .method-description {
-    font-size: 14px;
+    font-size: var(--text-sm, 14px);
     color: var(--text-muted);
     line-height: 1.5;
     margin: 0 0 12px 0;
@@ -595,10 +595,10 @@
 
 .method-badge {
     display: inline-block;
-    font-size: 12px;
+    font-size: var(--text-xs, 12px);
     font-weight: 600;
-    padding: 4px 10px;
-    border-radius: 12px;
+    padding: var(--space-1, 4px) var(--space-2-5, 10px);
+    border-radius: var(--radius-lg, 12px);
     background: var(--border-medium);
     color: var(--text-secondary);
 }
@@ -611,13 +611,13 @@
 .method-options {
     background: var(--input-bg);
     border: 1px solid var(--border-light);
-    border-radius: 8px;
-    padding: 20px;
-    margin-top: 16px;
+    border-radius: var(--radius-md, 8px);
+    padding: var(--space-5, 20px);
+    margin-top: var(--space-4, 16px);
 }
 
 .method-options .form-group {
-    margin-bottom: 20px;
+    margin-bottom: var(--space-5, 20px);
 }
 
 .method-options .form-group:last-child {
@@ -625,6 +625,6 @@
 }
 
 .method-options .info-box {
-    margin-top: 16px;
+    margin-top: var(--space-4, 16px);
     margin-bottom: 0;
 }
