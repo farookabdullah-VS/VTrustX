@@ -4,8 +4,8 @@
 
 .translation-manager {
     background: white;
-    border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    border-radius: var(--radius-lg, 12px);
+    box-shadow: 0 var(--space-1, 4px) var(--space-5, 20px) rgba(0, 0, 0, var(--opacity-10, 0.1));
     max-width: 1200px;
     margin: 0 auto;
     display: flex;
@@ -18,8 +18,8 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 25px 30px;
-    border-bottom: 2px solid #E5E7EB;
+    padding: var(--space-6-25, 25px) var(--space-7-5, 30px);
+    border-bottom: var(--space-0-5, 2px) solid var(--border-light, #E5E7EB);
 }
 
 .header-left {
@@ -32,7 +32,7 @@
     font-size: 1.5rem;
     font-weight: 600;
     color: #1F2937;
-    margin: 0 0 5px 0;
+    margin: 0 0 var(--space-1-25, 5px) 0;
 }
 
 .header-left p {
@@ -46,9 +46,9 @@
     border: none;
     color: #6B7280;
     cursor: pointer;
-    padding: 8px;
-    border-radius: 6px;
-    transition: all 0.2s;
+    padding: var(--space-2, 8px);
+    border-radius: var(--radius-sm-alt, 6px);
+    transition: all var(--transition-fast, 0.2s);
 }
 
 .btn-close:hover {
@@ -74,26 +74,26 @@
 .btn-add-translation {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: var(--space-2, 8px);
     background: #3B82F6;
     color: white;
     border: none;
-    padding: 12px 20px;
-    border-radius: 8px;
+    padding: var(--space-3, 12px) var(--space-5, 20px);
+    border-radius: var(--radius-md, 8px);
     font-size: 1rem;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all var(--transition-fast, 0.2s);
 }
 
 .btn-add-translation:hover:not(:disabled) {
     background: #2563EB;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    transform: translateY(var(--space--0-5, -2px));
+    box-shadow: 0 var(--space-1, 4px) var(--space-3, 12px) rgba(59, 130, 246, var(--opacity-30, 0.3));
 }
 
 .btn-add-translation:disabled {
-    opacity: 0.5;
+    opacity: var(--opacity-50, 0.5);
     cursor: not-allowed;
 }
 
@@ -109,21 +109,21 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 60px 20px;
+    padding: var(--space-15, 60px) var(--space-5, 20px);
 }
 
 .spinner {
-    width: 50px;
-    height: 50px;
-    border: 4px solid #E5E7EB;
+    width: var(--space-12-5, 50px);
+    height: var(--space-12-5, 50px);
+    border: var(--space-1, 4px) solid #E5E7EB;
     border-top-color: #3B82F6;
     border-radius: 50%;
-    animation: spin 1s linear infinite;
+    animation: spin var(--duration-1000, 1s) linear infinite;
     margin-bottom: var(--space-5, 20px);
 }
 
 @keyframes spin {
-    to { transform: rotate(360deg); }
+    to { transform: rotate(var(--angle-360, 360deg)); }
 }
 
 .loading-state p,
@@ -136,7 +136,7 @@
     font-size: 1.25rem;
     font-weight: 600;
     color: #1F2937;
-    margin: 15px 0 5px;
+    margin: var(--space-3-75, 15px) 0 var(--space-1-25, 5px);
 }
 
 /* Translations Grid */
@@ -148,15 +148,15 @@
 
 .translation-card {
     background: white;
-    border: 2px solid #E5E7EB;
-    border-radius: 12px;
+    border: var(--space-0-5, 2px) solid var(--border-light, #E5E7EB);
+    border-radius: var(--radius-lg, 12px);
     padding: var(--space-5, 20px);
-    transition: all 0.3s;
+    transition: all var(--transition-normal, 0.3s);
 }
 
 .translation-card:hover {
     border-color: #D1D5DB;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 var(--space-1-5, 6px) var(--space-5, 20px) rgba(0, 0, 0, var(--opacity-8, 0.08));
 }
 
 /* Translation Header */
@@ -170,7 +170,7 @@
 .language-info {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: var(--space-3, 12px);
 }
 
 .language-flag {
@@ -202,7 +202,7 @@
     background: #FEF3C7;
     color: #92400E;
     padding: 4px 10px;
-    border-radius: 12px;
+    border-radius: var(--radius-lg, 12px);
     font-size: 0.75rem;
     font-weight: 500;
 }
@@ -211,7 +211,7 @@
 .translation-meta {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: var(--space-2, 8px);
     margin-bottom: var(--space-3-75, 15px);
 }
 
@@ -229,7 +229,7 @@
 
 .status-badge {
     padding: 4px 10px;
-    border-radius: 12px;
+    border-radius: var(--radius-lg, 12px);
     font-size: 0.8rem;
     font-weight: 500;
     text-transform: capitalize;
@@ -258,9 +258,9 @@
 /* Translation Actions */
 .translation-actions {
     display: flex;
-    gap: 8px;
-    padding-top: 15px;
-    border-top: 1px solid #E5E7EB;
+    gap: var(--space-2, 8px);
+    padding-top: var(--space-3-75, 15px);
+    border-top: var(--space-0-25, 1px) solid var(--border-light, #E5E7EB);
 }
 
 .action-btn {
@@ -270,12 +270,12 @@
     justify-content: center;
     gap: 6px;
     padding: 8px 12px;
-    border-radius: 6px;
+    border-radius: var(--radius-sm-alt, 6px);
     font-size: 0.85rem;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s;
-    border: 1px solid;
+    transition: all var(--transition-fast, 0.2s);
+    border: var(--space-0-25, 1px) solid;
 }
 
 .action-btn.preview {
@@ -324,7 +324,7 @@
 
 .dialog {
     background: white;
-    border-radius: 12px;
+    border-radius: var(--radius-lg, 12px);
     max-width: 600px;
     width: 90%;
     max-height: 80vh;
@@ -353,9 +353,9 @@
     border: none;
     color: #6B7280;
     cursor: pointer;
-    padding: 8px;
-    border-radius: 6px;
-    transition: all 0.2s;
+    padding: var(--space-2, 8px);
+    border-radius: var(--radius-sm-alt, 6px);
+    transition: all var(--transition-fast, 0.2s);
 }
 
 .dialog-header button:hover {
@@ -385,10 +385,10 @@
     align-items: center;
     gap: var(--space-3-75, 15px);
     padding: var(--space-3-75, 15px);
-    border: 2px solid #E5E7EB;
-    border-radius: 10px;
+    border: var(--space-0-5, 2px) solid var(--border-light, #E5E7EB);
+    border-radius: var(--space-2-5, 10px);
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all var(--transition-fast, 0.2s);
 }
 
 .language-option:hover {
@@ -424,7 +424,7 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    border-radius: 8px;
+    border-radius: var(--radius-md, 8px);
 }
 
 .translating-overlay p {
@@ -444,8 +444,8 @@
 
 .preview-content {
     padding: var(--space-5, 20px);
-    border: 2px solid #E5E7EB;
-    border-radius: 8px;
+    border: var(--space-0-5, 2px) solid var(--border-light, #E5E7EB);
+    border-radius: var(--radius-md, 8px);
 }
 
 .preview-content.rtl {
@@ -468,7 +468,7 @@
 .welcome-message {
     background: #F3F4F6;
     padding: var(--space-3-75, 15px);
-    border-radius: 8px;
+    border-radius: var(--radius-md, 8px);
     margin-bottom: var(--space-5, 20px);
     color: #4B5563;
 }
@@ -482,7 +482,7 @@
 .question-preview {
     padding: var(--space-3-75, 15px);
     background: #F9FAFB;
-    border-radius: 8px;
+    border-radius: var(--radius-md, 8px);
 }
 
 .question-preview strong {
