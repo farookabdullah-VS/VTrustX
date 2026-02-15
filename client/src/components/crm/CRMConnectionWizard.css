@@ -40,7 +40,7 @@
     top: var(--space-5, 20px);
     left: var(--space-12, 50px);
     right: var(--space-12, 50px);
-    height: 2px;
+    height: var(--space-0-5, 2px);
     background: var(--border-medium);
     z-index: 0;
 }
@@ -59,13 +59,13 @@
     height: var(--space-10, 40px);
     border-radius: 50%;
     background: var(--card-bg);
-    border: 2px solid var(--border-light);
+    border: var(--space-0-5, 2px) solid var(--border-light);
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: 600;
     color: var(--text-muted);
-    transition: all 0.3s;
+    transition: all var(--transition-normal, 0.3s);
 }
 
 .progress-step.active .step-number {
@@ -93,7 +93,7 @@
 /* Step Content */
 .wizard-content {
     background: var(--card-bg);
-    border: 2px solid var(--border-light);
+    border: var(--space-0-5, 2px) solid var(--border-light);
     border-radius: var(--radius-lg, 12px);
     padding: var(--space-10, 40px);
     min-height: var(--space-100, 400px);
@@ -116,19 +116,19 @@
 /* Platform Selection */
 .platform-selection {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(var(--space-62-5, 250px), 1fr));
     gap: var(--space-5, 20px);
     margin-bottom: var(--space-7, 30px);
 }
 
 .platform-option {
     background: var(--card-bg);
-    border: 2px solid var(--border-light);
+    border: var(--space-0-5, 2px) solid var(--border-light);
     border-radius: var(--radius-lg, 12px);
     padding: var(--space-7, 30px);
     text-align: center;
     cursor: pointer;
-    transition: all 0.3s;
+    transition: all var(--transition-normal, 0.3s);
     position: relative;
 }
 
@@ -143,7 +143,7 @@
 }
 
 .platform-icon-large {
-    font-size: 4rem;
+    font-size: var(--text-4xl, 4rem);
     margin-bottom: var(--space-4, 16px);
 }
 
@@ -184,17 +184,17 @@
 .form-group select {
     width: 100%;
     padding: var(--space-3, 12px) var(--space-4, 16px);
-    border: 2px solid var(--border-light);
+    border: var(--space-0-5, 2px) solid var(--border-light);
     border-radius: var(--radius-md, 8px);
     font-size: var(--text-base, 16px);
-    transition: all 0.2s;
+    transition: all var(--transition-fast, 0.2s);
 }
 
 .form-group input:focus,
 .form-group select:focus {
     outline: none;
     border-color: var(--status-info);
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    box-shadow: var(--shadow-outline, 0 0 0 var(--space-0-75, 3px) rgba(59, 130, 246, 0.1));
 }
 
 .form-group small {
@@ -253,13 +253,13 @@
     font-size: var(--text-lg, 18px);
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all var(--transition-fast, 0.2s);
 }
 
 .btn-oauth-connect:hover {
     background: var(--status-info-dark);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    transform: translateY(var(--space--0-5, -2px));
+    box-shadow: var(--shadow-md, 0 var(--space-1, 4px) var(--space-3, 12px) rgba(59, 130, 246, 0.3));
 }
 
 /* Settings Grid */
@@ -270,7 +270,7 @@
 
 .setting-item {
     background: var(--input-bg);
-    border: 1px solid var(--border-light);
+    border: var(--space-0-25, 1px) solid var(--border-light);
     border-radius: var(--radius-md, 8px);
     padding: var(--space-5, 20px);
 }
@@ -303,7 +303,7 @@
 .setting-item input[type="number"] {
     width: 100%;
     padding: var(--space-2-5, 10px) var(--space-3-5, 14px);
-    border: 2px solid var(--border-light);
+    border: var(--space-0-5, 2px) solid var(--border-light);
     border-radius: var(--radius-sm-alt, 6px);
     margin-top: var(--space-2-5, 10px);
 }
@@ -338,17 +338,17 @@
     font-size: var(--text-lg, 18px);
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all var(--transition-fast, 0.2s);
 }
 
 .btn-test:hover:not(:disabled) {
     background: var(--status-info-dark);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    transform: translateY(var(--space--0-5, -2px));
+    box-shadow: var(--shadow-md, 0 var(--space-1, 4px) var(--space-3, 12px) rgba(59, 130, 246, 0.3));
 }
 
 .btn-test:disabled {
-    opacity: 0.6;
+    opacity: var(--opacity-60, 0.6);
     cursor: not-allowed;
 }
 
@@ -363,13 +363,13 @@
 
 .test-result.success {
     background: var(--toast-success-bg, #D1FAE5);
-    border: 2px solid var(--status-success, #10B981);
+    border: var(--space-0-5, 2px) solid var(--status-success, #10B981);
     color: var(--toast-success-text, #065F46);
 }
 
 .test-result.error {
     background: var(--toast-error-bg, #FEE2E2);
-    border: 2px solid var(--status-error, #EF4444);
+    border: var(--space-0-5, 2px) solid var(--status-error, #EF4444);
     color: var(--toast-error-text, #991B1B);
 }
 
@@ -415,14 +415,14 @@
     font-size: var(--text-base, 16px);
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all var(--transition-fast, 0.2s);
     border: none;
 }
 
 .btn-secondary {
     background: var(--card-bg);
     color: var(--text-muted);
-    border: 2px solid var(--border-light);
+    border: var(--space-0-5, 2px) solid var(--border-light);
 }
 
 .btn-secondary:hover:not(:disabled) {
@@ -437,22 +437,22 @@
 
 .btn-primary:hover:not(:disabled) {
     background: var(--status-info-dark);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    transform: translateY(var(--space--0-5, -2px));
+    box-shadow: var(--shadow-md, 0 var(--space-1, 4px) var(--space-3, 12px) rgba(59, 130, 246, 0.3));
 }
 
 .btn-secondary:disabled,
 .btn-primary:disabled {
-    opacity: 0.5;
+    opacity: var(--opacity-50, 0.5);
     cursor: not-allowed;
 }
 
 .spinner {
-    animation: spin 1s linear infinite;
+    animation: spin var(--duration-1000, 1s) linear infinite;
 }
 
 @keyframes spin {
-    to { transform: rotate(360deg); }
+    to { transform: rotate(var(--angle-360, 360deg)); }
 }
 
 /* Responsive Design */
