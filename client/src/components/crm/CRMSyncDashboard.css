@@ -4,7 +4,7 @@
 
 .crm-sync-dashboard {
     padding: var(--space-7, 30px);
-    max-width: 1400px;
+    max-width: var(--space-350, 1400px);
     margin: 0 auto;
 }
 
@@ -13,7 +13,7 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-height: 400px;
+    min-height: var(--space-100, 400px);
 }
 
 /* Header */
@@ -135,8 +135,8 @@
 }
 
 .stat-icon {
-    width: 56px;
-    height: 56px;
+    width: var(--space-14, 56px);
+    height: var(--space-14, 56px);
     border-radius: var(--radius-lg, 12px);
     display: flex;
     align-items: center;
@@ -236,9 +236,9 @@
 }
 
 .spinner {
-    width: 50px;
-    height: 50px;
-    border: 4px solid var(--border-light, #E5E7EB);
+    width: var(--space-12-5, 50px);
+    height: var(--space-12-5, 50px);
+    border: var(--space-1, 4px) solid var(--border-light, #E5E7EB);
     border-top-color: var(--status-info);
     border-radius: 50%;
     animation: spin 1s linear infinite;
