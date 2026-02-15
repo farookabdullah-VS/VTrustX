@@ -15,15 +15,15 @@
 }
 
 .quality-header h2 {
-    margin: 0 0 8px 0;
-    font-size: 28px;
-    color: #1e293b;
+    margin: 0 0 var(--space-2, 8px) 0;
+    font-size: var(--text-2xl, 24px);
+    color: var(--text-primary, #1e293b);
 }
 
 .quality-header p {
     margin: 0;
-    color: #64748b;
-    font-size: 14px;
+    color: var(--text-muted, #64748b);
+    font-size: var(--text-sm, 14px);
 }
 
 .btn-settings {
@@ -31,11 +31,11 @@
     align-items: center;
     gap: 8px;
     padding: 10px 20px;
-    background: white;
-    color: #3b82f6;
-    border: 2px solid #3b82f6;
+    background: var(--card-bg, white);
+    color: var(--status-info, #3b82f6);
+    border: 2px solid var(--status-info, #3b82f6);
     border-radius: 8px;
-    font-size: 14px;
+    font-size: var(--text-sm, 14px);
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s;
@@ -47,8 +47,8 @@
 
 /* Settings Panel */
 .settings-panel {
-    background: white;
-    border: 2px solid #e2e8f0;
+    background: var(--card-bg, white);
+    border: 2px solid var(--border-light, #e2e8f0);
     border-radius: 12px;
     padding: 30px;
     margin-bottom: 30px;
@@ -57,7 +57,7 @@
 .settings-panel h3 {
     margin: 0 0 24px 0;
     font-size: 20px;
-    color: #1e293b;
+    color: var(--text-primary, #1e293b);
 }
 
 .settings-grid {
@@ -70,8 +70,8 @@
 .setting-item label {
     display: block;
     margin-bottom: 8px;
-    color: #334155;
-    font-size: 14px;
+    color: var(--text-secondary, #334155);
+    font-size: var(--text-sm, 14px);
     font-weight: 600;
 }
 
@@ -80,22 +80,22 @@
     padding: 10px 14px;
     border: 1px solid #cbd5e1;
     border-radius: 8px;
-    font-size: 14px;
-    color: #1e293b;
+    font-size: var(--text-sm, 14px);
+    color: var(--text-primary, #1e293b);
     transition: border-color 0.2s;
 }
 
 .setting-item input[type="number"]:focus {
     outline: none;
-    border-color: #3b82f6;
+    border-color: var(--status-info, #3b82f6);
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 .help-text {
     display: block;
     margin-top: 6px;
-    color: #64748b;
-    font-size: 13px;
+    color: var(--text-muted, #64748b);
+    font-size: var(--text-xs, 12px);
 }
 
 .checkbox-settings {
@@ -113,8 +113,8 @@
     align-items: center;
     gap: 10px;
     cursor: pointer;
-    font-size: 14px;
-    color: #334155;
+    font-size: var(--text-sm, 14px);
+    color: var(--text-secondary, #334155);
 }
 
 .checkbox-settings input[type="checkbox"] {
@@ -131,11 +131,11 @@
 
 .btn-cancel {
     padding: 10px 20px;
-    background: white;
-    color: #64748b;
+    background: var(--card-bg, white);
+    color: var(--text-muted, #64748b);
     border: 1px solid #cbd5e1;
     border-radius: 8px;
-    font-size: 14px;
+    font-size: var(--text-sm, 14px);
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s;
@@ -147,11 +147,11 @@
 
 .btn-primary {
     padding: 10px 20px;
-    background: #3b82f6;
+    background: var(--status-info, #3b82f6);
     color: white;
     border: none;
     border-radius: 8px;
-    font-size: 14px;
+    font-size: var(--text-sm, 14px);
     font-weight: 600;
     cursor: pointer;
     transition: background 0.2s;
@@ -175,8 +175,8 @@
 }
 
 .stat-card {
-    background: white;
-    border: 1px solid #e2e8f0;
+    background: var(--card-bg, white);
+    border: 1px solid var(--border-light, #e2e8f0);
     border-radius: 12px;
     padding: 24px;
     display: flex;
@@ -199,27 +199,27 @@
 }
 
 .stat-label {
-    font-size: 14px;
-    color: #64748b;
+    font-size: var(--text-sm, 14px);
+    color: var(--text-muted, #64748b);
     margin-bottom: 4px;
 }
 
 .stat-value {
     font-size: 32px;
     font-weight: 700;
-    color: #1e293b;
+    color: var(--text-primary, #1e293b);
     margin-bottom: 4px;
 }
 
 .stat-description {
-    font-size: 13px;
-    color: #64748b;
+    font-size: var(--text-xs, 12px);
+    color: var(--text-muted, #64748b);
 }
 
 /* Quality Distribution */
 .quality-distribution {
-    background: white;
-    border: 1px solid #e2e8f0;
+    background: var(--card-bg, white);
+    border: 1px solid var(--border-light, #e2e8f0);
     border-radius: 12px;
     padding: 30px;
     margin-bottom: 30px;
@@ -231,7 +231,7 @@
     gap: 10px;
     margin: 0 0 24px 0;
     font-size: 18px;
-    color: #1e293b;
+    color: var(--text-primary, #1e293b);
 }
 
 .distribution-bars {
@@ -250,14 +250,14 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: 14px;
+    font-size: var(--text-sm, 14px);
     font-weight: 600;
-    color: #334155;
+    color: var(--text-secondary, #334155);
 }
 
 .distribution-count {
-    font-size: 13px;
-    color: #64748b;
+    font-size: var(--text-xs, 12px);
+    color: var(--text-muted, #64748b);
 }
 
 .distribution-bar-container {
@@ -276,14 +276,14 @@
     justify-content: flex-end;
     padding-right: 12px;
     color: white;
-    font-size: 13px;
+    font-size: var(--text-xs, 12px);
     font-weight: 600;
 }
 
 /* Low Quality Responses */
 .low-quality-section {
-    background: white;
-    border: 1px solid #e2e8f0;
+    background: var(--card-bg, white);
+    border: 1px solid var(--border-light, #e2e8f0);
     border-radius: 12px;
     padding: 30px;
 }
@@ -294,7 +294,7 @@
     gap: 10px;
     margin: 0 0 24px 0;
     font-size: 18px;
-    color: #1e293b;
+    color: var(--text-primary, #1e293b);
 }
 
 .responses-table {
@@ -310,8 +310,8 @@
     text-align: left;
     padding: 12px;
     background: #f8fafc;
-    color: #64748b;
-    font-size: 13px;
+    color: var(--text-muted, #64748b);
+    font-size: var(--text-xs, 12px);
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -321,15 +321,15 @@
 .responses-table td {
     padding: 16px 12px;
     border-bottom: 1px solid #e2e8f0;
-    font-size: 14px;
-    color: #334155;
+    font-size: var(--text-sm, 14px);
+    color: var(--text-secondary, #334155);
 }
 
 .quality-badge {
     display: inline-block;
     padding: 4px 12px;
     border-radius: 12px;
-    font-size: 13px;
+    font-size: var(--text-xs, 12px);
     font-weight: 600;
 }
 
@@ -341,11 +341,11 @@
 
 .flag-badge {
     display: inline-block;
-    padding: 4px 10px;
-    background: #fef3c7;
-    color: #92400e;
-    border-radius: 6px;
-    font-size: 12px;
+    padding: var(--space-1, 4px) var(--space-2-5, 10px);
+    background: var(--toast-warning-bg, #fef3c7);
+    color: var(--toast-warning-text, #92400e);
+    border-radius: var(--radius-sm-alt, 6px);
+    font-size: var(--text-xs, 12px);
     font-weight: 500;
     text-transform: capitalize;
 }
@@ -385,7 +385,7 @@
 }
 
 .empty-state p {
-    color: #64748b;
+    color: var(--text-muted, #64748b);
     font-size: 16px;
 }
 
