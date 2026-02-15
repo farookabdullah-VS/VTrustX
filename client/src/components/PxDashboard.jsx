@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { DashboardSkeleton } from './common/Skeleton';
 
 export function PxDashboard() {
     const [stats, setStats] = useState({
@@ -112,6 +113,15 @@ export function PxDashboard() {
 
     const npsColor = stats.nps > 30 ? '#22c55e' : stats.nps > 0 ? '#facc15' : '#ef4444';
 
+    if (loading) {
+        return (
+            <div role="status" aria-live="polite" style={containerStyle}>
+                <span className="sr-only">Loading product analytics</span>
+                <DashboardSkeleton />
+            </div>
+        );
+    }
+
     return (
         <div style={containerStyle}>
             <div style={{ marginBottom: '40px' }}>
@@ -121,7 +131,7 @@ export function PxDashboard() {
                 <p style={{ color: 'var(--text-muted)', fontSize: '1.1em', marginTop: '10px' }}>Product Experience & Adoption Analytics</p>
             </div>
 
-            {loading ? <div style={{ color: 'var(--text-muted)' }}>Loading Product Data...</div> : (
+            {(
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: '30px' }}>
 
                     {/* PRODUCT NPS */}

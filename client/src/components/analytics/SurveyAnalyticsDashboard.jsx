@@ -3,6 +3,7 @@ import { AdvancedComposedChart, SimpleBarChart } from '../ChartLibrary';
 import { Download, Filter, Calendar, Loader2 } from 'lucide-react';
 import axios from 'axios';
 import * as XLSX from 'xlsx';
+import { DashboardSkeleton } from '../common/Skeleton';
 
 export const SurveyAnalyticsDashboard = () => {
     const [activeTab, setActiveTab] = useState('survey-analysis');
@@ -342,9 +343,9 @@ export const SurveyAnalyticsDashboard = () => {
                     <button onClick={() => window.location.reload()} style={{ marginTop: '10px', padding: '8px 16px', cursor: 'pointer', background: 'white', border: '1px solid #dc2626', color: '#dc2626', borderRadius: '6px' }}>Retry</button>
                 </div>
             ) : loading ? (
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '400px', color: '#64748b' }}>
-                    <Loader2 className="animate-spin" size={48} style={{ marginBottom: '15px', color: 'var(--primary-color, #6366f1)' }} />
-                    <p>Loading real-time analytics...</p>
+                <div role="status" aria-live="polite" style={{ padding: '40px' }}>
+                    <span className="sr-only">Loading real-time analytics</span>
+                    <DashboardSkeleton />
                 </div>
             ) : (
                 <>

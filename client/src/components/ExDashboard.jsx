@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { DashboardSkeleton } from './common/Skeleton';
 
 export function ExDashboard() {
     const [stats, setStats] = useState({
@@ -104,6 +105,15 @@ export function ExDashboard() {
 
     const npsColor = stats.enps > 30 ? '#22c55e' : stats.enps > 0 ? '#facc15' : '#ef4444';
 
+    if (loading) {
+        return (
+            <div role="status" aria-live="polite" style={containerStyle}>
+                <span className="sr-only">Loading employee analytics</span>
+                <DashboardSkeleton />
+            </div>
+        );
+    }
+
     return (
         <div style={containerStyle}>
             <div style={{ marginBottom: '40px' }}>
@@ -113,7 +123,7 @@ export function ExDashboard() {
                 <p style={{ color: 'var(--text-muted)', fontSize: '1.1em', marginTop: '10px' }}>Employee Experience & Engagement Analytics</p>
             </div>
 
-            {loading ? <div style={{ color: 'var(--text-muted)' }}>Loading EX Data...</div> : (
+            {(
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: '30px' }}>
 
                     {/* BIG eNPS SCORE */}

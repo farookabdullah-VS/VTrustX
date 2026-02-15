@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from '../../axiosConfig';
 import { useNavigate } from 'react-router-dom';
 import { Key, Plus, Eye, EyeOff, Copy, Check, Trash2, Power, AlertCircle } from 'lucide-react';
+import { SkeletonCard } from '../common/Skeleton';
 import './APIKeysList.css';
 
 function APIKeysList() {
@@ -88,10 +89,21 @@ function APIKeysList() {
 
     if (loading) {
         return (
-            <div className="api-keys-list">
-                <div className="loading-container">
-                    <div className="spinner"></div>
-                    <p>Loading API keys...</p>
+            <div className="api-keys-list" role="status" aria-live="polite">
+                <span className="sr-only">Loading API keys</span>
+                <div className="api-keys-header">
+                    <div className="header-left">
+                        <Key size={24} />
+                        <div>
+                            <h1>API Keys</h1>
+                            <p className="subtitle">Manage API keys for programmatic access to VTrustX</p>
+                        </div>
+                    </div>
+                </div>
+                <div className="api-keys-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: '20px', marginTop: '24px' }}>
+                    <SkeletonCard />
+                    <SkeletonCard />
+                    <SkeletonCard />
                 </div>
             </div>
         );

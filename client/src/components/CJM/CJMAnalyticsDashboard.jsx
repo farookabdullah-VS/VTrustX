@@ -5,6 +5,7 @@ import {
     XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
 } from 'recharts';
 import { BarChart3, Map, AlertTriangle, Zap, TrendingUp, Activity } from 'lucide-react';
+import { DashboardSkeleton } from '../common/Skeleton';
 
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316'];
 
@@ -134,7 +135,12 @@ export function CJMAnalyticsDashboard() {
     }, [maps]);
 
     if (loading) {
-        return <div style={{ padding: '60px', textAlign: 'center', color: '#94a3b8' }}>Loading analytics...</div>;
+        return (
+            <div role="status" aria-live="polite" style={{ padding: '60px' }}>
+                <span className="sr-only">Loading journey map analytics</span>
+                <DashboardSkeleton />
+            </div>
+        );
     }
 
     if (!crossMapAnalytics) {

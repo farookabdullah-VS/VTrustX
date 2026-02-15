@@ -6,6 +6,7 @@ import {
 } from 'recharts';
 import { Mail, MessageSquare, MessageCircle, TrendingUp, TrendingDown, AlertCircle, CheckCircle, Radio } from 'lucide-react';
 import { useAnalyticsStream } from '../../hooks/useAnalyticsStream';
+import { DashboardSkeleton } from '../common/Skeleton';
 
 const COLORS = {
     email: '#3B82F6',
@@ -87,9 +88,9 @@ export function DeliveryAnalyticsDashboard() {
 
     if (loading) {
         return (
-            <div style={{ padding: '40px', textAlign: 'center' }}>
-                <div className="spinner"></div>
-                <p style={{ marginTop: '20px', color: 'var(--text-muted)' }}>Loading delivery analytics...</p>
+            <div role="status" aria-live="polite" style={{ padding: '40px' }}>
+                <span className="sr-only">Loading delivery analytics</span>
+                <DashboardSkeleton />
             </div>
         );
     }

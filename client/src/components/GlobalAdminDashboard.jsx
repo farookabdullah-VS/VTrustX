@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useToast } from './common/Toast';
+import { DashboardSkeleton } from './common/Skeleton';
 
 export function GlobalAdminDashboard() {
     const toast = useToast();
@@ -107,7 +108,15 @@ export function GlobalAdminDashboard() {
         }
     };
 
-    if (loading) return <div style={{ padding: '40px', color: 'var(--text-color)' }}>Loading Administration...</div>;
+    if (loading) {
+        return (
+            <div role="status" aria-live="polite" style={{ padding: '40px' }}>
+                <span className="sr-only">Loading administration dashboard</span>
+                <DashboardSkeleton />
+            </div>
+        );
+    }
+
     if (error) return <div style={{ padding: '40px', color: '#ef4444' }}>{error}</div>;
 
     return (

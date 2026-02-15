@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 import { useTranslation } from 'react-i18next';
+import { DashboardSkeleton } from './common/Skeleton';
 
 const FONT = 'var(--font-family, "Outfit", "Google Sans", system-ui, sans-serif)';
 const RADIUS = 'var(--border-radius, 24px)';
@@ -96,10 +97,9 @@ export function CrmDashboard({ user }) {
 
     if (loading) {
         return (
-            <div style={{ padding: 30, fontFamily: FONT, direction: isRtl ? 'rtl' : 'ltr', maxWidth: 1400, margin: '0 auto' }}>
-                <div style={{ ...glassCard, textAlign: 'center', padding: 60 }}>
-                    <div style={{ color: 'var(--text-muted)', fontSize: '1.1em' }}>Loading analytics...</div>
-                </div>
+            <div role="status" aria-live="polite" style={{ padding: 30, fontFamily: FONT, direction: isRtl ? 'rtl' : 'ltr', maxWidth: 1400, margin: '0 auto' }}>
+                <span className="sr-only">{t('dashboard.loading', 'Loading analytics')}</span>
+                <DashboardSkeleton />
             </div>
         );
     }

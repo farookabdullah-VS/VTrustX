@@ -8,6 +8,7 @@ import {
     LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid,
     Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell
 } from 'recharts';
+import { DashboardSkeleton } from './common/Skeleton';
 
 export function PerformanceDashboard() {
     const [loading, setLoading] = useState(true);
@@ -67,11 +68,9 @@ export function PerformanceDashboard() {
 
     if (loading) {
         return (
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '400px' }}>
-                <Activity size={32} className="animate-spin" style={{ color: '#6366f1' }} />
-                <span style={{ marginLeft: '12px', fontSize: '1.1rem', color: '#64748b' }}>
-                    Loading performance metrics...
-                </span>
+            <div role="status" aria-live="polite" style={{ padding: '40px' }}>
+                <span className="sr-only">Loading performance metrics</span>
+                <DashboardSkeleton />
             </div>
         );
     }
