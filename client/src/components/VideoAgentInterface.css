@@ -30,7 +30,7 @@
     /* Subtle glow */
     box-shadow: 0 0 40px rgba(0, 0, 0, 0.2);
     transition: all 0.3s ease;
-    background: black;
+    background: var(--deep-bg, #000);
 }
 
 .agent-avatar-container.speaking {
@@ -57,11 +57,11 @@
     right: 24px;
     width: 200px;
     height: 150px;
-    background: #000;
+    background: var(--deep-bg, #000);
     border-radius: 12px;
-    border: 2px solid rgba(255, 255, 255, 0.2);
+    border: 2px solid var(--border-light, rgba(255, 255, 255, 0.2));
     overflow: hidden;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+    box-shadow: var(--shadow-lg, 0 10px 25px rgba(0, 0, 0, 0.5));
     z-index: 1000;
 }
 
@@ -108,13 +108,13 @@
 }
 
 .btn-mute.muted {
-    background: #ef4444;
-    color: white;
+    background: var(--status-error, #ef4444);
+    color: var(--card-bg, white);
 }
 
 .btn-end {
-    background: #ef4444;
-    color: white;
+    background: var(--status-error, #ef4444);
+    color: var(--card-bg, white);
     width: 60px;
     height: 60px;
     font-size: 1.5rem;
