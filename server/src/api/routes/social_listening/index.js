@@ -1373,4 +1373,10 @@ router.use('/ai', require('./ai'));
 // Mount data sync routes
 router.use('/sync', require('./sync'));
 
+// ============================================================================
+// CRISIS DETECTION - Advanced AI-powered crisis detection
+// ============================================================================
+// Mount crisis detection routes
+router.use('/crisis', require('./crisis'));
+
 module.exports = router;
