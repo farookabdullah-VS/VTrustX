@@ -3,7 +3,7 @@
  */
 
 .crm-wizard {
-    max-width: 900px;
+    max-width: var(--space-225, 900px);
     margin: 0 auto;
     padding: var(--space-10, 40px) var(--space-5, 20px);
 }
@@ -96,7 +96,7 @@
     border: 2px solid var(--border-light);
     border-radius: var(--radius-lg, 12px);
     padding: var(--space-10, 40px);
-    min-height: 400px;
+    min-height: var(--space-100, 400px);
     margin-bottom: var(--space-7, 30px);
 }
 
