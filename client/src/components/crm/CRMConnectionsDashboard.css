@@ -40,13 +40,13 @@
     font-size: 1rem;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all var(--transition-fast, 0.2s);
 }
 
 .btn-add-connection:hover {
     background: var(--status-info-dark);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    transform: translateY(var(--space--0-5, -2px));
+    box-shadow: var(--shadow-md, 0 var(--space-1, 4px) var(--space-3, 12px) rgba(59, 130, 246, 0.3));
 }
 
 /* Platforms Showcase */
@@ -70,25 +70,25 @@
 
 .platforms-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(var(--space-80, 320px), 1fr));
     gap: var(--space-7-5, 30px);
     margin-top: var(--space-10, 40px);
 }
 
 .platform-card {
     background: var(--card-bg);
-    border: 2px solid var(--border-light);
+    border: var(--space-0-5, 2px) solid var(--border-light);
     border-radius: var(--radius-lg, 12px);
     padding: var(--space-7-5, 30px);
     text-align: center;
     cursor: pointer;
-    transition: all 0.3s;
+    transition: all var(--transition-normal, 0.3s);
 }
 
 .platform-card:hover {
     border-color: var(--status-info);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
-    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg, 0 var(--space-2, 8px) var(--space-6, 24px) rgba(0, 0, 0, 0.1));
+    transform: translateY(var(--space--1-25, -5px));
 }
 
 .platform-logo {
@@ -134,7 +134,7 @@
     font-size: 1rem;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all var(--transition-fast, 0.2s);
 }
 
 .btn-connect:hover {
@@ -156,12 +156,12 @@
     border: var(--space-1, 4px) solid var(--border-light);
     border-top-color: var(--status-info);
     border-radius: 50%;
-    animation: spin 1s linear infinite;
+    animation: spin var(--duration-1000, 1s) linear infinite;
     margin-bottom: var(--space-5, 20px);
 }
 
 @keyframes spin {
-    to { transform: rotate(360deg); }
+    to { transform: rotate(var(--angle-360, 360deg)); }
 }
 
 .loading-state p {
@@ -172,21 +172,21 @@
 /* Connections List */
 .connections-list {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(var(--space-112-5, 450px), 1fr));
     gap: var(--space-6-25, 25px);
 }
 
 .connection-card {
     background: var(--card-bg);
-    border: 2px solid var(--border-light);
+    border: var(--space-0-5, 2px) solid var(--border-light);
     border-radius: var(--radius-lg, 12px);
     padding: var(--space-6-25, 25px);
-    transition: all 0.3s;
+    transition: all var(--transition-normal, 0.3s);
 }
 
 .connection-card:hover {
     border-color: #D1D5DB;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+    box-shadow: var(--shadow-lg, 0 var(--space-1-5, 6px) var(--space-5, 20px) rgba(0, 0, 0, 0.08));
 }
 
 /* Connection Header */
@@ -313,7 +313,7 @@
     align-items: center;
     gap: var(--space-2, 8px);
     background: #FEE2E2;
-    border: 1px solid #FCA5A5;
+    border: var(--space-0-25, 1px) solid #FCA5A5;
     color: #991B1B;
     padding: var(--space-2-5, 10px) var(--space-3-75, 15px);
     border-radius: var(--radius-sm-alt, 6px);
@@ -327,7 +327,7 @@
     flex-wrap: wrap;
     gap: var(--space-2-5, 10px);
     padding-top: var(--space-3-75, 15px);
-    border-top: 1px solid var(--border-light);
+    border-top: var(--space-0-25, 1px) solid var(--border-light);
 }
 
 .action-btn {
@@ -339,12 +339,12 @@
     font-size: 0.9rem;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s;
-    border: 1px solid;
+    transition: all var(--transition-fast, 0.2s);
+    border: var(--space-0-25, 1px) solid;
 }
 
 .action-btn:disabled {
-    opacity: 0.5;
+    opacity: var(--opacity-50, 0.5);
     cursor: not-allowed;
 }
 
