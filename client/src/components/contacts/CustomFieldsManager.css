@@ -1,8 +1,8 @@
 /* Custom Fields Manager */
 
 .custom-fields-manager {
-    padding: 20px;
-    max-width: 1400px;
+    padding: var(--space-5, 20px);
+    max-width: var(--space-350, 1400px);
     margin: 0 auto;
 }
 
@@ -11,22 +11,22 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 30px;
+    margin-bottom: var(--space-7-5, 30px);
 }
 
 .fields-header h1 {
     display: flex;
     align-items: center;
-    gap: 12px;
-    font-size: 28px;
+    gap: var(--space-3, 12px);
+    font-size: var(--text-2xl-alt, 28px);
     color: var(--text-primary);
-    margin: 0 0 8px 0;
+    margin: 0 0 var(--space-2, 8px) 0;
 }
 
 .fields-header p {
     color: var(--text-muted);
     margin: 0;
-    font-size: 14px;
+    font-size: var(--text-sm, 14px);
 }
 
 /* Loading State */
@@ -35,16 +35,16 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-height: 400px;
-    gap: 16px;
+    min-height: var(--space-100, 400px);
+    gap: var(--space-4, 16px);
 }
 
 .spinner {
-    border: 3px solid var(--border-light);
-    border-top: 3px solid var(--status-info);
+    border: var(--space-0-75, 3px) solid var(--border-light);
+    border-top: var(--space-0-75, 3px) solid var(--status-info);
     border-radius: 50%;
-    width: 40px;
-    height: 40px;
+    width: var(--space-10, 40px);
+    height: var(--space-10, 40px);
     animation: spin 1s linear infinite;
 }
 
@@ -59,8 +59,8 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-height: 400px;
-    gap: 16px;
+    min-height: var(--space-100, 400px);
+    gap: var(--space-4, 16px);
     color: var(--text-disabled);
 }
 
@@ -71,20 +71,20 @@
 .empty-state h3 {
     margin: 0;
     color: var(--text-muted);
-    font-size: 20px;
+    font-size: var(--text-xl, 20px);
 }
 
 .empty-state p {
     margin: 0;
     color: var(--text-disabled);
-    font-size: 14px;
+    font-size: var(--text-sm, 14px);
 }
 
 /* Fields Table */
 .fields-table {
     background: white;
     border: 1px solid var(--border-light);
-    border-radius: 12px;
+    border-radius: var(--radius-lg, 12px);
     overflow: hidden;
 }
 
@@ -99,7 +99,7 @@
 }
 
 .fields-table th {
-    padding: 12px 16px;
+    padding: var(--space-3, 12px) var(--space-4, 16px);
     text-align: left;
     font-size: 12px;
     font-weight: 600;
@@ -126,15 +126,15 @@
 }
 
 .fields-table td {
-    padding: 16px;
-    font-size: 14px;
+    padding: var(--space-4, 16px);
+    font-size: var(--text-sm, 14px);
     color: var(--text-primary);
 }
 
 .field-label {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: var(--space-2-5, 10px);
 }
 
 .field-label svg {
@@ -147,10 +147,10 @@
 
 .fields-table code {
     background: var(--bg-tertiary, #F3F4F6);
-    padding: 4px 8px;
-    border-radius: 4px;
+    padding: var(--space-1, 4px) var(--space-2, 8px);
+    border-radius: var(--radius-sm, 4px);
     font-family: 'Courier New', monospace;
-    font-size: 13px;
+    font-size: var(--text-sm, 13px);
     color: var(--text-secondary, #374151);
 }
 
@@ -176,7 +176,7 @@
 
 .badge-optional {
     display: inline-block;
-    padding: 4px 10px;
+    padding: var(--space-1, 4px) var(--space-2-5, 10px);
     background: var(--bg-tertiary, #F3F4F6);
     color: var(--text-muted);
     border-radius: 6px;
@@ -206,13 +206,13 @@
 
 .field-actions {
     display: flex;
-    gap: 8px;
+    gap: var(--space-2, 8px);
 }
 
 .btn-icon {
     background: var(--bg-secondary, #F9FAFB);
     border: 1px solid var(--border-light);
-    padding: 6px;
+    padding: var(--space-1-5, 6px);
     border-radius: 6px;
     cursor: pointer;
     display: flex;
@@ -240,14 +240,14 @@
     align-items: center;
     justify-content: center;
     z-index: 1000;
-    padding: 20px;
+    padding: var(--space-5, 20px);
 }
 
 /* Modal */
 .modal {
     background: white;
-    border-radius: 12px;
-    max-width: 600px;
+    border-radius: var(--radius-lg, 12px);
+    max-width: var(--space-150, 600px);
     width: 100%;
     max-height: 90vh;
     overflow: hidden;
@@ -260,26 +260,26 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 20px 24px;
+    padding: var(--space-5, 20px) var(--space-6, 24px);
     border-bottom: 1px solid var(--border-light);
 }
 
 .modal-header h3 {
     margin: 0;
-    font-size: 20px;
+    font-size: var(--text-xl, 20px);
     color: var(--text-primary);
 }
 
 .modal-header button {
     background: none;
     border: none;
-    font-size: 28px;
+    font-size: var(--text-2xl-alt, 28px);
     color: var(--text-disabled);
     cursor: pointer;
     line-height: 1;
     padding: 0;
-    width: 32px;
-    height: 32px;
+    width: var(--space-8, 32px);
+    height: var(--space-8, 32px);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -293,44 +293,44 @@
 }
 
 .modal-body {
-    padding: 24px;
+    padding: var(--space-6, 24px);
     overflow-y: auto;
     flex: 1;
 }
 
 .modal-footer {
     display: flex;
-    gap: 12px;
-    padding: 16px 24px;
+    gap: var(--space-3, 12px);
+    padding: var(--space-4, 16px) var(--space-6, 24px);
     border-top: 1px solid var(--border-light);
     justify-content: flex-end;
 }
 
 /* Form Group */
 .form-group {
-    margin-bottom: 20px;
+    margin-bottom: var(--space-5, 20px);
 }
 
 .form-group label {
     display: block;
-    margin-bottom: 8px;
+    margin-bottom: var(--space-2, 8px);
     color: var(--text-secondary, #374151);
-    font-size: 14px;
+    font-size: var(--text-sm, 14px);
     font-weight: 500;
 }
 
 .form-group label input[type="checkbox"] {
-    margin-right: 8px;
+    margin-right: var(--space-2, 8px);
 }
 
 .form-group input[type="text"],
 .form-group textarea,
 .form-group select {
     width: 100%;
-    padding: 10px 12px;
+    padding: var(--space-2-5, 10px) var(--space-3, 12px);
     border: 1px solid var(--border-medium);
-    border-radius: 8px;
-    font-size: 14px;
+    border-radius: var(--radius-md, 8px);
+    font-size: var(--text-sm, 14px);
     color: var(--text-primary);
     transition: border-color 0.2s;
 }
@@ -345,7 +345,7 @@
 
 .form-group small {
     display: block;
-    margin-top: 6px;
+    margin-top: var(--space-1-5, 6px);
     color: var(--text-muted);
     font-size: 12px;
 }
@@ -354,35 +354,35 @@
 .options-input {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
-    padding: 10px;
+    gap: var(--space-2, 8px);
+    padding: var(--space-2-5, 10px);
     border: 1px solid var(--border-medium);
-    border-radius: 8px;
-    min-height: 48px;
+    border-radius: var(--radius-md, 8px);
+    min-height: var(--space-12, 48px);
     align-items: center;
 }
 
 .option-tag {
     display: flex;
     align-items: center;
-    gap: 6px;
-    padding: 4px 10px;
+    gap: var(--space-1-5, 6px);
+    padding: var(--space-1, 4px) var(--space-2-5, 10px);
     background: var(--status-info);
     color: white;
     border-radius: 6px;
-    font-size: 13px;
+    font-size: var(--text-sm, 13px);
 }
 
 .option-tag button {
     background: none;
     border: none;
     color: white;
-    font-size: 16px;
+    font-size: var(--text-base, 16px);
     cursor: pointer;
     line-height: 1;
     padding: 0;
-    width: 16px;
-    height: 16px;
+    width: var(--space-4, 16px);
+    height: var(--space-4, 16px);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -391,15 +391,15 @@
 .add-option {
     flex: 1;
     display: flex;
-    gap: 8px;
-    min-width: 200px;
+    gap: var(--space-2, 8px);
+    min-width: var(--space-50, 200px);
 }
 
 .add-option input {
     flex: 1;
     border: none;
-    padding: 4px;
-    font-size: 13px;
+    padding: var(--space-1, 4px);
+    font-size: var(--text-sm, 13px);
     outline: none;
 }
 
@@ -407,12 +407,12 @@
     background: var(--bg-tertiary, #F3F4F6);
     border: 1px solid var(--border-medium);
     color: var(--text-secondary, #4B5563);
-    padding: 4px 8px;
-    border-radius: 4px;
+    padding: var(--space-1, 4px) var(--space-2, 8px);
+    border-radius: var(--radius-sm, 4px);
     cursor: pointer;
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: var(--space-1, 4px);
     transition: all 0.2s;
 }
 
@@ -426,14 +426,14 @@
     background: var(--status-info);
     color: white;
     border: none;
-    padding: 10px 20px;
-    border-radius: 8px;
-    font-size: 14px;
+    padding: var(--space-2-5, 10px) var(--space-5, 20px);
+    border-radius: var(--radius-md, 8px);
+    font-size: var(--text-sm, 14px);
     font-weight: 500;
     cursor: pointer;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: var(--space-2, 8px);
     transition: background 0.2s;
 }
 
@@ -450,14 +450,14 @@
     background: white;
     color: var(--text-secondary, #4B5563);
     border: 1px solid var(--border-medium);
-    padding: 10px 20px;
-    border-radius: 8px;
-    font-size: 14px;
+    padding: var(--space-2-5, 10px) var(--space-5, 20px);
+    border-radius: var(--radius-md, 8px);
+    font-size: var(--text-sm, 14px);
     font-weight: 500;
     cursor: pointer;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: var(--space-2, 8px);
     transition: all 0.2s;
 }
 
@@ -469,13 +469,13 @@
 /* Responsive */
 @media (max-width: 768px) {
     .custom-fields-manager {
-        padding: 15px;
+        padding: var(--space-3-75, 15px);
     }
 
     .fields-header {
         flex-direction: column;
         align-items: flex-start;
-        gap: 16px;
+        gap: var(--space-4, 16px);
     }
 
     .fields-table {
@@ -483,7 +483,7 @@
     }
 
     .fields-table table {
-        min-width: 600px;
+        min-width: var(--space-150, 600px);
     }
 
     .modal {
