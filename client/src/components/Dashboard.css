@@ -70,27 +70,27 @@ margin: 0 auto;
 
 .card {
     padding: 20px;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--dashboard-card-border, var(--border-light));
     border-radius: 8px;
     cursor: pointer;
     flex: 1;
-    background: white;
+    background: var(--dashboard-card-bg, var(--card-bg));
     transition: all 0.2s;
 }
 
 .card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-    border-color: #cbd5e1;
+    box-shadow: var(--dashboard-card-hover-shadow, var(--shadow-lg));
+    border-color: var(--border-medium);
 }
 
 .card h3 {
     margin-top: 0;
-    color: #1e293b;
+    color: var(--text-primary);
 }
 
 .card p {
-    color: #64748b;
+    color: var(--text-muted);
     font-size: 0.9em;
 }
 
@@ -108,7 +108,7 @@ margin: 0 auto;
 .recent-forms li,
 .recent-submissions li {
     padding: 12px;
-    border-bottom: 1px solid #f1f5f9;
+    border-bottom: 1px solid var(--border-light);
     cursor: pointer;
     display: flex;
     justify-content: space-between;
@@ -117,15 +117,15 @@ margin: 0 auto;
 
 .recent-forms li:hover,
 .recent-submissions li:hover {
-    background: #f8fafc;
+    background: var(--input-bg);
 }
 
 .status {
     font-size: 0.75em;
     margin-left: 10px;
-    background: #f1f5f9;
+    background: var(--input-bg);
     padding: 4px 8px;
     border-radius: 12px;
-    color: #475569;
+    color: var(--text-muted);
     font-weight: 500;
 }

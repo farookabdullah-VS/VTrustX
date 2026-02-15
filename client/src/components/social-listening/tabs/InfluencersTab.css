@@ -16,23 +16,23 @@
 .sort-selector label {
   font-size: 14px;
   font-weight: 500;
-  color: #6c757d;
+  color: var(--text-muted);
 }
 
 .sort-selector select {
   padding: 8px 12px;
-  border: 1px solid #dee2e6;
+  border: 1px solid var(--border-medium);
   border-radius: 6px;
   font-size: 14px;
-  color: #495057;
-  background: white;
+  color: var(--text-secondary);
+  background: var(--card-bg);
   cursor: pointer;
   transition: border-color 0.2s ease;
 }
 
 .sort-selector select:focus {
   outline: none;
-  border-color: #667eea;
+  border-color: var(--status-info);
 }
 
 /* Influencers Grid */
@@ -44,7 +44,7 @@
 
 .influencer-card {
   position: relative;
-  background: white;
+  background: var(--card-bg);
   border-radius: 12px;
   padding: 24px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
@@ -67,7 +67,7 @@
   align-items: center;
   justify-content: center;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  color: var(--card-bg);
   border-radius: 50%;
   font-size: 14px;
   font-weight: 700;
@@ -89,7 +89,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
+  color: var(--card-bg);
   font-weight: 700;
   font-size: 24px;
   flex-shrink: 0;
@@ -104,13 +104,13 @@
 .influencer-name {
   font-size: 18px;
   font-weight: 700;
-  color: #212529;
+  color: var(--text-primary);
   margin-bottom: 4px;
 }
 
 .influencer-handle {
   font-size: 14px;
-  color: #6c757d;
+  color: var(--text-muted);
   margin-bottom: 8px;
 }
 
@@ -123,7 +123,7 @@
 .platform-tag {
   padding: 3px 8px;
   background: #e0e7ff;
-  color: #667eea;
+  color: var(--status-info);
   border-radius: 4px;
   font-size: 11px;
   font-weight: 600;
@@ -143,31 +143,31 @@
   flex-direction: column;
   align-items: center;
   padding: 12px;
-  background: #f8f9fa;
+  background: var(--input-bg);
   border-radius: 8px;
   transition: background-color 0.2s ease;
 }
 
 .metric-box:hover {
-  background: #e9ecef;
+  background: var(--border-light);
 }
 
 .metric-icon {
-  color: #667eea;
+  color: var(--status-info);
   margin-bottom: 8px;
 }
 
 .metric-value {
   font-size: 20px;
   font-weight: 700;
-  color: #212529;
+  color: var(--text-primary);
   margin-bottom: 4px;
 }
 
 .metric-label {
   font-size: 11px;
   font-weight: 600;
-  color: #6c757d;
+  color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -175,7 +175,7 @@
 /* Latest Mention */
 .latest-mention {
   padding: 12px;
-  background: #f8f9fa;
+  background: var(--input-bg);
   border-radius: 8px;
   margin-bottom: 16px;
   border-left: 3px solid #667eea;
@@ -184,7 +184,7 @@
 .mention-label {
   font-size: 11px;
   font-weight: 600;
-  color: #6c757d;
+  color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin-bottom: 6px;
@@ -193,14 +193,14 @@
 .mention-text {
   font-size: 13px;
   line-height: 1.5;
-  color: #495057;
+  color: var(--text-secondary);
   margin-bottom: 6px;
   font-style: italic;
 }
 
 .mention-date {
   font-size: 11px;
-  color: #adb5bd;
+  color: var(--text-disabled);
 }
 
 /* Actions */
@@ -226,8 +226,8 @@
 }
 
 .action-btn-primary {
-  background: #667eea;
-  color: white;
+  background: var(--status-info);
+  color: var(--card-bg);
 }
 
 .action-btn-primary:hover:not(:disabled) {
@@ -242,13 +242,13 @@
 }
 
 .action-btn-secondary {
-  background: #f8f9fa;
-  color: #495057;
-  border: 1px solid #dee2e6;
+  background: var(--input-bg);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-medium);
 }
 
 .action-btn-secondary:hover {
-  background: #e9ecef;
+  background: var(--border-light);
 }
 
 /* Responsive */
@@ -301,7 +301,7 @@
 /* Dark mode */
 @media (prefers-color-scheme: dark) {
   .sort-selector label {
-    color: #adb5bd;
+    color: var(--text-disabled);
   }
 
   .sort-selector select {
@@ -319,7 +319,7 @@
   }
 
   .influencer-handle {
-    color: #adb5bd;
+    color: var(--text-disabled);
   }
 
   .metric-box {
@@ -335,7 +335,7 @@
   }
 
   .metric-label {
-    color: #adb5bd;
+    color: var(--text-disabled);
   }
 
   .latest-mention {
@@ -348,7 +348,7 @@
   }
 
   .mention-date {
-    color: #6c757d;
+    color: var(--text-muted);
   }
 
   .action-btn-secondary {

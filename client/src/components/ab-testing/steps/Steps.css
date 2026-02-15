@@ -5,12 +5,12 @@
 .step-container h2 {
     font-size: 24px;
     font-weight: 700;
-    color: #111827;
+    color: var(--text-primary);
     margin: 0 0 8px 0;
 }
 
 .step-description {
-    color: #6B7280;
+    color: var(--text-muted);
     margin: 0 0 32px 0;
     font-size: 15px;
 }
@@ -30,13 +30,13 @@
 .form-group label {
     display: block;
     font-weight: 600;
-    color: #374151;
+    color: var(--text-secondary);
     margin-bottom: 8px;
     font-size: 14px;
 }
 
 .required {
-    color: #EF4444;
+    color: var(--status-error);
 }
 
 .form-input,
@@ -44,7 +44,7 @@
 .form-select {
     width: 100%;
     padding: 12px 16px;
-    border: 1px solid #D1D5DB;
+    border: 1px solid var(--border-medium);
     border-radius: 8px;
     font-size: 15px;
     font-family: inherit;
@@ -55,7 +55,7 @@
 .form-textarea:focus,
 .form-select:focus {
     outline: none;
-    border-color: #6366F1;
+    border-color: var(--primary);
     box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
 }
 
@@ -68,24 +68,24 @@
 
 .field-hint {
     font-size: 13px;
-    color: #6B7280;
+    color: var(--text-muted);
     margin-top: 6px;
     margin-bottom: 0;
 }
 
 .field-hint code {
-    background: #F3F4F6;
+    background: var(--border-light);
     padding: 2px 6px;
     border-radius: 4px;
     font-size: 12px;
-    color: #6366F1;
+    color: var(--primary);
 }
 
 .loading-select {
     padding: 12px 16px;
-    border: 1px solid #D1D5DB;
+    border: 1px solid var(--border-medium);
     border-radius: 8px;
-    color: #6B7280;
+    color: var(--text-muted);
 }
 
 /* Radio group */
@@ -99,15 +99,15 @@
     display: flex;
     align-items: center;
     padding: 16px;
-    border: 2px solid #E5E7EB;
+    border: 2px solid var(--border-light);
     border-radius: 8px;
     cursor: pointer;
     transition: all 0.2s;
 }
 
 .radio-option:hover {
-    border-color: #6366F1;
-    background: #F9FAFB;
+    border-color: var(--primary);
+    background: var(--input-bg);
 }
 
 .radio-option input[type="radio"] {
@@ -116,7 +116,7 @@
 }
 
 .radio-option input[type="radio"]:checked + .radio-label {
-    color: #6366F1;
+    color: var(--primary);
     font-weight: 600;
 }
 
@@ -137,18 +137,18 @@
     align-items: center;
     gap: 8px;
     padding: 10px 20px;
-    background: white;
-    border: 1px solid #6366F1;
+    background: var(--card-bg);
+    border: 1px solid var(--primary);
     border-radius: 8px;
-    color: #6366F1;
+    color: var(--primary);
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s;
 }
 
 .btn-add-variant:hover:not(:disabled) {
-    background: #6366F1;
-    color: white;
+    background: var(--primary);
+    color: var(--card-bg);
 }
 
 .btn-add-variant:disabled {
@@ -163,10 +163,10 @@
 }
 
 .variant-card {
-    border: 2px solid #E5E7EB;
+    border: 2px solid var(--border-light);
     border-radius: 12px;
     padding: 20px;
-    background: #F9FAFB;
+    background: var(--input-bg);
 }
 
 .variant-header {
@@ -179,9 +179,9 @@
 .variant-badge {
     font-weight: 700;
     font-size: 16px;
-    color: #6366F1;
+    color: var(--primary);
     padding: 6px 12px;
-    background: #EEF2FF;
+    background: var(--primary-light);
     border-radius: 6px;
 }
 
@@ -190,25 +190,25 @@
     align-items: center;
     gap: 4px;
     padding: 8px 12px;
-    background: white;
-    border: 1px solid #EF4444;
+    background: var(--card-bg);
+    border: 1px solid var(--status-error);
     border-radius: 6px;
-    color: #EF4444;
+    color: var(--status-error);
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s;
 }
 
 .btn-remove-variant:hover {
-    background: #EF4444;
-    color: white;
+    background: var(--status-error);
+    color: var(--card-bg);
 }
 
 .media-placeholder {
     padding: 12px 16px;
-    border: 1px dashed #D1D5DB;
+    border: 1px dashed var(--border-medium);
     border-radius: 8px;
-    color: #9CA3AF;
+    color: var(--text-disabled);
     text-align: center;
     font-size: 14px;
 }
@@ -216,19 +216,19 @@
 /* Traffic allocation */
 .btn-secondary-small {
     padding: 8px 16px;
-    background: white;
-    border: 1px solid #D1D5DB;
+    background: var(--card-bg);
+    border: 1px solid var(--border-medium);
     border-radius: 6px;
-    color: #374151;
+    color: var(--text-secondary);
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s;
 }
 
 .btn-secondary-small:hover {
-    background: #F9FAFB;
-    border-color: #6366F1;
-    color: #6366F1;
+    background: var(--input-bg);
+    border-color: var(--primary);
+    color: var(--primary);
 }
 
 .allocation-sliders {
@@ -252,12 +252,12 @@
 
 .variant-label {
     font-weight: 600;
-    color: #374151;
+    color: var(--text-secondary);
 }
 
 .allocation-value {
     font-weight: 700;
-    color: #6366F1;
+    color: var(--primary);
     font-size: 18px;
 }
 
@@ -276,9 +276,9 @@
     width: 20px;
     height: 20px;
     border-radius: 50%;
-    background: #6366F1;
+    background: var(--primary);
     cursor: pointer;
-    border: 3px solid white;
+    border: 3px solid var(--card-bg);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
@@ -286,9 +286,9 @@
     width: 20px;
     height: 20px;
     border-radius: 50%;
-    background: #6366F1;
+    background: var(--primary);
     cursor: pointer;
-    border: 3px solid white;
+    border: 3px solid var(--card-bg);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
@@ -303,15 +303,15 @@
 }
 
 .total-indicator.valid {
-    background: #D1FAE5;
-    border: 2px solid #10B981;
-    color: #065F46;
+    background: var(--toast-success-bg);
+    border: 2px solid var(--status-success);
+    color: var(--toast-success-text);
 }
 
 .total-indicator.invalid {
-    background: #FEE2E2;
-    border: 2px solid #EF4444;
-    color: #991B1B;
+    background: var(--toast-error-bg);
+    border: 2px solid var(--status-error);
+    color: var(--toast-error-text);
 }
 
 .total-label {
@@ -334,27 +334,27 @@
 .chart-container h3 {
     font-size: 18px;
     font-weight: 600;
-    color: #111827;
+    color: var(--text-primary);
     margin-bottom: 16px;
 }
 
 .recommendations-box {
-    background: #EFF6FF;
-    border: 1px solid #3B82F6;
+    background: var(--primary-light);
+    border: 1px solid var(--status-info);
     border-radius: 8px;
     padding: 16px 20px;
 }
 
 .recommendations-box h4 {
     font-size: 16px;
-    color: #1E40AF;
+    color: var(--toast-info-text);
     margin: 0 0 12px 0;
 }
 
 .recommendations-box ul {
     margin: 0;
     padding-left: 20px;
-    color: #1E3A8A;
+    color: var(--toast-info-text);
 }
 
 .recommendations-box li {
@@ -366,7 +366,7 @@
 .review-section {
     margin-bottom: 32px;
     padding-bottom: 24px;
-    border-bottom: 1px solid #E5E7EB;
+    border-bottom: 1px solid var(--border-light);
 }
 
 .review-section:last-of-type {
@@ -376,7 +376,7 @@
 .review-section h3 {
     font-size: 18px;
     font-weight: 600;
-    color: #111827;
+    color: var(--text-primary);
     margin-bottom: 16px;
 }
 
@@ -395,14 +395,14 @@
 .review-label {
     font-size: 13px;
     font-weight: 600;
-    color: #6B7280;
+    color: var(--text-muted);
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
 
 .review-value {
     font-size: 15px;
-    color: #111827;
+    color: var(--text-primary);
 }
 
 .variants-review {
@@ -412,8 +412,8 @@
 }
 
 .variant-review-card {
-    background: #F9FAFB;
-    border: 1px solid #E5E7EB;
+    background: var(--input-bg);
+    border: 1px solid var(--border-light);
     border-radius: 8px;
     padding: 16px;
 }
@@ -428,9 +428,9 @@
 .traffic-badge {
     font-size: 13px;
     font-weight: 600;
-    color: #6366F1;
+    color: var(--primary);
     padding: 4px 10px;
-    background: #EEF2FF;
+    background: var(--primary-light);
     border-radius: 12px;
 }
 
@@ -441,30 +441,30 @@
 .detail-label {
     font-size: 13px;
     font-weight: 600;
-    color: #6B7280;
+    color: var(--text-muted);
     display: block;
     margin-bottom: 4px;
 }
 
 .detail-value {
     font-size: 14px;
-    color: #111827;
+    color: var(--text-primary);
 }
 
 .body-preview {
     font-size: 14px;
-    color: #374151;
+    color: var(--text-secondary);
     line-height: 1.5;
     white-space: pre-wrap;
-    background: white;
+    background: var(--card-bg);
     padding: 12px;
     border-radius: 6px;
     font-family: 'Courier New', monospace;
 }
 
 .info-box {
-    background: #F0FDF4;
-    border: 1px solid #10B981;
+    background: var(--toast-success-bg);
+    border: 1px solid var(--status-success);
     border-radius: 8px;
     padding: 16px 20px;
     margin-bottom: 24px;
@@ -472,14 +472,14 @@
 
 .info-box h4 {
     font-size: 16px;
-    color: #065F46;
+    color: var(--toast-success-text);
     margin: 0 0 12px 0;
 }
 
 .info-box ul {
     margin: 0;
     padding-left: 20px;
-    color: #064E3B;
+    color: var(--toast-success-text);
 }
 
 .info-box li {
@@ -488,8 +488,8 @@
 }
 
 .checklist-box {
-    background: #EFF6FF;
-    border: 1px solid #3B82F6;
+    background: var(--primary-light);
+    border: 1px solid var(--status-info);
     border-radius: 8px;
     padding: 16px 20px;
     margin-bottom: 24px;
@@ -497,7 +497,7 @@
 
 .checklist-box h4 {
     font-size: 16px;
-    color: #1E40AF;
+    color: var(--toast-info-text);
     margin: 0 0 12px 0;
 }
 
@@ -509,32 +509,32 @@
 
 .checklist li {
     padding: 8px 0;
-    color: #1E3A8A;
+    color: var(--toast-info-text);
     line-height: 1.5;
 }
 
 .checklist li.checked::before {
     content: '✓ ';
-    color: #10B981;
+    color: var(--status-success);
     font-weight: 700;
     margin-right: 8px;
 }
 
 .warning-box {
-    background: #FEF3C7;
-    border: 1px solid #F59E0B;
+    background: var(--toast-warning-bg);
+    border: 1px solid var(--status-warning);
     border-radius: 8px;
     padding: 16px 20px;
 }
 
 .warning-box h4 {
     font-size: 16px;
-    color: #D97706;
+    color: var(--toast-warning-text);
     margin: 0 0 12px 0;
 }
 
 .warning-box p {
-    color: #92400E;
+    color: var(--toast-warning-text);
     line-height: 1.6;
     margin: 0 0 8px 0;
 }
@@ -552,8 +552,8 @@
 }
 
 .method-card {
-    background: white;
-    border: 2px solid #E5E7EB;
+    background: var(--card-bg);
+    border: 2px solid var(--border-light);
     border-radius: 12px;
     padding: 20px;
     cursor: pointer;
@@ -562,14 +562,14 @@
 }
 
 .method-card:hover {
-    border-color: #6366F1;
+    border-color: var(--primary);
     box-shadow: 0 4px 12px rgba(99, 102, 241, 0.1);
     transform: translateY(-2px);
 }
 
 .method-card.selected {
-    border-color: #6366F1;
-    background: #EEF2FF;
+    border-color: var(--primary);
+    background: var(--primary-light);
     box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
 }
 
@@ -581,13 +581,13 @@
 .method-name {
     font-size: 18px;
     font-weight: 700;
-    color: #111827;
+    color: var(--text-primary);
     margin: 0 0 8px 0;
 }
 
 .method-description {
     font-size: 14px;
-    color: #6B7280;
+    color: var(--text-muted);
     line-height: 1.5;
     margin: 0 0 12px 0;
     min-height: 60px;
@@ -599,18 +599,18 @@
     font-weight: 600;
     padding: 4px 10px;
     border-radius: 12px;
-    background: #E5E7EB;
-    color: #374151;
+    background: var(--border-medium);
+    color: var(--text-secondary);
 }
 
 .method-badge.recommended {
-    background: #D1FAE5;
-    color: #065F46;
+    background: var(--toast-success-bg);
+    color: var(--toast-success-text);
 }
 
 .method-options {
-    background: #F9FAFB;
-    border: 1px solid #E5E7EB;
+    background: var(--input-bg);
+    border: 1px solid var(--border-light);
     border-radius: 8px;
     padding: 20px;
     margin-top: 16px;

@@ -14,7 +14,7 @@
 }
 
 .source-card {
-  background: white;
+  background: var(--card-bg);
   border-radius: 12px;
   padding: 24px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
@@ -49,20 +49,20 @@
 .source-name {
   font-size: 18px;
   font-weight: 700;
-  color: #212529;
+  color: var(--text-primary);
   margin-bottom: 4px;
 }
 
 .source-platform {
   font-size: 13px;
-  color: #6c757d;
+  color: var(--text-muted);
   margin-bottom: 8px;
 }
 
 /* Source Meta */
 .source-meta {
   padding: 12px;
-  background: #f8f9fa;
+  background: var(--input-bg);
   border-radius: 8px;
   margin-bottom: 16px;
 }
@@ -79,12 +79,12 @@
 }
 
 .meta-label {
-  color: #6c757d;
+  color: var(--text-muted);
   font-weight: 500;
 }
 
 .meta-value {
-  color: #495057;
+  color: var(--text-secondary);
   font-weight: 600;
 }
 
@@ -127,7 +127,7 @@
 
 .action-btn-test {
   background: #d1fae5;
-  color: #10b981;
+  color: var(--status-success);
 }
 
 .action-btn-test:hover:not(:disabled) {
@@ -189,7 +189,7 @@
 }
 
 .modal-content {
-  background: white;
+  background: var(--card-bg);
   border-radius: 12px;
   padding: 32px;
   max-width: 600px;
@@ -203,13 +203,13 @@
   margin: 0 0 8px 0;
   font-size: 24px;
   font-weight: 700;
-  color: #212529;
+  color: var(--text-primary);
 }
 
 .modal-subtitle {
   margin: 0 0 24px 0;
   font-size: 14px;
-  color: #6c757d;
+  color: var(--text-muted);
   line-height: 1.5;
 }
 
@@ -226,16 +226,16 @@
   align-items: center;
   gap: 8px;
   padding: 16px;
-  background: #f8f9fa;
-  border: 2px solid #e9ecef;
+  background: var(--input-bg);
+  border: 2px solid var(--border-light);
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .platform-option:hover {
-  background: #e9ecef;
-  border-color: #667eea;
+  background: var(--border-light);
+  border-color: var(--status-info);
   transform: translateY(-2px);
 }
 
@@ -252,7 +252,7 @@
 .platform-name {
   font-size: 12px;
   font-weight: 600;
-  color: #495057;
+  color: var(--text-secondary);
   text-align: center;
 }
 

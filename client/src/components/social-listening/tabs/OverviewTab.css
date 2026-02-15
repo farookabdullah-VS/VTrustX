@@ -10,7 +10,7 @@
 .date-range-selector {
   display: flex;
   gap: 8px;
-  background-color: #f1f3f5;
+  background-color: var(--input-bg);
   padding: 4px;
   border-radius: 8px;
 }
@@ -22,20 +22,20 @@
   border-radius: 6px;
   font-size: 14px;
   font-weight: 500;
-  color: #6c757d;
+  color: var(--text-muted);
   cursor: pointer;
   transition: all 0.2s ease;
-  white-space: nowrap;
+  var(--card-bg)-space: nowrap;
 }
 
 .range-btn:hover {
-  background-color: #e9ecef;
-  color: #495057;
+  background-color: var(--border-light);
+  color: var(--text-secondary);
 }
 
 .range-btn.active {
-  background-color: white;
-  color: #667eea;
+  background-color: var(--card-bg);
+  color: var(--status-info);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
@@ -51,7 +51,7 @@
   display: flex;
   align-items: center;
   gap: 16px;
-  background: white;
+  background: var(--card-bg);
   padding: 20px;
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
@@ -81,7 +81,7 @@
 .kpi-label {
   font-size: 13px;
   font-weight: 500;
-  color: #6c757d;
+  color: var(--text-muted);
   margin-bottom: 6px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -90,14 +90,14 @@
 .kpi-value {
   font-size: 28px;
   font-weight: 700;
-  color: #212529;
+  color: var(--text-primary);
   line-height: 1.2;
   margin-bottom: 4px;
 }
 
 .kpi-subtext {
   font-size: 13px;
-  color: #6c757d;
+  color: var(--text-muted);
   margin-top: 4px;
 }
 
@@ -124,13 +124,13 @@
 .breakdown-label {
   font-size: 14px;
   font-weight: 500;
-  color: #495057;
+  color: var(--text-secondary);
   text-transform: capitalize;
 }
 
 .breakdown-bar {
   height: 24px;
-  background-color: #e9ecef;
+  background-color: var(--border-light);
   border-radius: 6px;
   overflow: hidden;
   position: relative;
@@ -145,13 +145,13 @@
 .breakdown-value {
   font-size: 14px;
   font-weight: 600;
-  color: #495057;
+  color: var(--text-secondary);
   text-align: right;
 }
 
 .no-data {
   text-align: center;
-  color: #adb5bd;
+  color: var(--text-disabled);
   padding: 40px 20px;
   font-size: 14px;
 }
@@ -207,7 +207,7 @@
   }
 
   .kpi-label {
-    color: #adb5bd;
+    color: var(--text-disabled);
   }
 
   .kpi-value {
@@ -215,7 +215,7 @@
   }
 
   .kpi-subtext {
-    color: #adb5bd;
+    color: var(--text-disabled);
   }
 
   .date-range-selector {
@@ -223,25 +223,25 @@
   }
 
   .range-btn {
-    color: #adb5bd;
+    color: var(--text-disabled);
   }
 
   .range-btn:hover {
     background-color: #383c45;
-    color: #e9ecef;
+    color: var(--border-light);
   }
 
   .range-btn.active {
     background-color: #1e2836;
-    color: #667eea;
+    color: var(--status-info);
   }
 
   .breakdown-label {
-    color: #e9ecef;
+    color: var(--border-light);
   }
 
   .breakdown-value {
-    color: #e9ecef;
+    color: var(--border-light);
   }
 
   .breakdown-bar {
@@ -249,6 +249,6 @@
   }
 
   .no-data {
-    color: #6c757d;
+    color: var(--text-muted);
   }
 }
