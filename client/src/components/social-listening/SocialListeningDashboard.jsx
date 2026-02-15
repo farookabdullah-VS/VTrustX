@@ -6,7 +6,7 @@
 
 import React, { useState, lazy, Suspense } from 'react';
 import { SocialListeningProvider } from '../../contexts/SocialListeningContext';
-import { Radio, Ear, MessageCircle, TrendingUp, Users, Award, Bell, Settings } from 'lucide-react';
+import { Radio, Ear, MessageCircle, TrendingUp, Users, Award, Bell, Settings, AlertTriangle } from 'lucide-react';
 import { LoadingSpinner } from '../common/LoadingSpinner';
 import './SocialListeningDashboard.css';
 
@@ -17,6 +17,7 @@ const TopicsTab = lazy(() => import('./tabs/TopicsTab'));
 const InfluencersTab = lazy(() => import('./tabs/InfluencersTab'));
 const CompetitorsTab = lazy(() => import('./tabs/CompetitorsTab'));
 const AlertsTab = lazy(() => import('./tabs/AlertsTab'));
+const CrisisControlCenter = lazy(() => import('./CrisisControlCenter'));
 const SourcesTab = lazy(() => import('./tabs/SourcesTab'));
 
 const SocialListeningDashboard = () => {
@@ -29,6 +30,7 @@ const SocialListeningDashboard = () => {
     { id: 'influencers', label: 'Influencers', icon: Award },
     { id: 'competitors', label: 'Competitors', icon: Users },
     { id: 'alerts', label: 'Alerts', icon: Bell },
+    { id: 'crisis', label: 'Crisis Control', icon: AlertTriangle },
     { id: 'sources', label: 'Sources', icon: Settings }
   ];
 
@@ -46,6 +48,8 @@ const SocialListeningDashboard = () => {
         return <CompetitorsTab />;
       case 'alerts':
         return <AlertsTab />;
+      case 'crisis':
+        return <CrisisControlCenter />;
       case 'sources':
         return <SourcesTab />;
       default:
