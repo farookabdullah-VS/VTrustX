@@ -203,12 +203,12 @@ const CustomFieldsManager = () => {
                     <table>
                         <thead>
                             <tr>
-                                <th>Label</th>
-                                <th>Key</th>
-                                <th>Type</th>
-                                <th>Required</th>
-                                <th>Status</th>
-                                <th>Actions</th>
+                                <th scope="col">Label</th>
+                                <th scope="col">Key</th>
+                                <th scope="col">Type</th>
+                                <th scope="col">Required</th>
+                                <th scope="col">Status</th>
+                                <th scope="col">Actions</th>
                             </tr>
                         </thead>
                         <tbody>

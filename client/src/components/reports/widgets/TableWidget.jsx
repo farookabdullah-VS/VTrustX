@@ -40,7 +40,7 @@ const TableWidget = ({ widget, data, onRemove, onClick, isSelected }) => {
                             <thead>
                                 <tr>
                                     {Object.keys(rows[0] || {}).slice(0, 5).map((key) => (
-                                        <th key={key}>{key.replace(/_/g, ' ').toUpperCase()}</th>
+                                        <th key={key} scope="col">{key.replace(/_/g, ' ').toUpperCase()}</th>
                                     ))}
                                 </tr>
                             </thead>

@@ -110,10 +110,10 @@ export function RoleMaster() {
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                     <thead style={{ background: 'var(--sidebar-bg)', borderBottom: '1px solid var(--input-border)' }}>
                         <tr>
-                            <th style={{ padding: '15px', textAlign: 'left', color: 'var(--text-muted)' }}>Role Name</th>
-                            <th style={{ padding: '15px', textAlign: 'left', color: 'var(--text-muted)' }}>Description</th>
-                            <th style={{ padding: '15px', textAlign: 'left', color: 'var(--text-muted)' }}>Created</th>
-                            <th style={{ padding: '15px', textAlign: 'right', color: 'var(--text-muted)' }}>Actions</th>
+                            <th scope="col" style={{ padding: '15px', textAlign: 'left', color: 'var(--text-muted)' }}>Role Name</th>
+                            <th scope="col" style={{ padding: '15px', textAlign: 'left', color: 'var(--text-muted)' }}>Description</th>
+                            <th scope="col" style={{ padding: '15px', textAlign: 'left', color: 'var(--text-muted)' }}>Created</th>
+                            <th scope="col" style={{ padding: '15px', textAlign: 'right', color: 'var(--text-muted)' }}>Actions</th>
                         </tr>
                     </thead>
                     <tbody>

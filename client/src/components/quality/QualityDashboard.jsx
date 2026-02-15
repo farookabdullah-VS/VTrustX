@@ -359,11 +359,11 @@ const QualityDashboard = ({ formId }) => {
                         <table>
                             <thead>
                                 <tr>
-                                    <th>Submission ID</th>
-                                    <th>Quality Score</th>
-                                    <th>Flags</th>
-                                    <th>Completion Time</th>
-                                    <th>Submitted</th>
+                                    <th scope="col">Submission ID</th>
+                                    <th scope="col">Quality Score</th>
+                                    <th scope="col">Flags</th>
+                                    <th scope="col">Completion Time</th>
+                                    <th scope="col">Submitted</th>
                                 </tr>
                             </thead>
                             <tbody>

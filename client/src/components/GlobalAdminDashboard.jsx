@@ -185,11 +185,11 @@ export function GlobalAdminDashboard() {
                         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                             <thead style={{ background: 'var(--sidebar-bg)', borderBottom: '1px solid var(--input-border)' }}>
                                 <tr>
-                                    <th style={{ padding: '16px', textAlign: 'left', fontSize: '0.85em', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Organization</th>
-                                    <th style={{ padding: '16px', textAlign: 'left', fontSize: '0.85em', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Plan</th>
-                                    <th style={{ padding: '16px', textAlign: 'left', fontSize: '0.85em', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Status</th>
-                                    <th style={{ padding: '16px', textAlign: 'left', fontSize: '0.85em', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Users</th>
-                                    <th style={{ padding: '16px', textAlign: 'left', fontSize: '0.85em', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Actions</th>
+                                    <th scope="col" style={{ padding: '16px', textAlign: 'left', fontSize: '0.85em', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Organization</th>
+                                    <th scope="col" style={{ padding: '16px', textAlign: 'left', fontSize: '0.85em', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Plan</th>
+                                    <th scope="col" style={{ padding: '16px', textAlign: 'left', fontSize: '0.85em', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Status</th>
+                                    <th scope="col" style={{ padding: '16px', textAlign: 'left', fontSize: '0.85em', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Users</th>
+                                    <th scope="col" style={{ padding: '16px', textAlign: 'left', fontSize: '0.85em', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>

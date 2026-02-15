@@ -103,9 +103,9 @@ export const SurveyAnalyticsDashboard = () => {
                         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
                             <thead>
                                 <tr style={{ background: '#f8fafc', textAlign: 'left', position: 'sticky', top: 0 }}>
-                                    <th style={{ padding: '10px' }}>Question</th>
-                                    <th style={{ padding: '10px' }}>Form</th>
-                                    <th style={{ padding: '10px' }}>Rate</th>
+                                    <th scope="col" style={{ padding: '10px' }}>Question</th>
+                                    <th scope="col" style={{ padding: '10px' }}>Form</th>
+                                    <th scope="col" style={{ padding: '10px' }}>Rate</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -217,9 +217,9 @@ export const SurveyAnalyticsDashboard = () => {
                 <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                     <thead>
                         <tr style={{ background: '#f1f5f9' }}>
-                            <th style={{ padding: '12px' }}>Survey Name</th>
-                            <th style={{ padding: '12px' }}>Response Count</th>
-                            <th style={{ padding: '12px' }}>Avg CSAT</th>
+                            <th scope="col" style={{ padding: '12px' }}>Survey Name</th>
+                            <th scope="col" style={{ padding: '12px' }}>Response Count</th>
+                            <th scope="col" style={{ padding: '12px' }}>Avg CSAT</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -262,12 +262,12 @@ export const SurveyAnalyticsDashboard = () => {
                     <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
                         <thead>
                             <tr style={{ background: '#f8fafc', color: '#64748b', position: 'sticky', top: 0 }}>
-                                <th style={{ padding: '10px' }}>Date</th>
-                                <th style={{ padding: '10px' }}>Agent</th>
-                                <th style={{ padding: '10px' }}>Group</th>
-                                <th style={{ padding: '10px' }}>Survey Form</th>
-                                <th style={{ padding: '10px' }}>Question</th>
-                                <th style={{ padding: '10px' }}>Answer</th>
+                                <th scope="col" style={{ padding: '10px' }}>Date</th>
+                                <th scope="col" style={{ padding: '10px' }}>Agent</th>
+                                <th scope="col" style={{ padding: '10px' }}>Group</th>
+                                <th scope="col" style={{ padding: '10px' }}>Survey Form</th>
+                                <th scope="col" style={{ padding: '10px' }}>Question</th>
+                                <th scope="col" style={{ padding: '10px' }}>Answer</th>
                             </tr>
                         </thead>
                         <tbody>

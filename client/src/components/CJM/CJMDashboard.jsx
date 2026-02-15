@@ -228,11 +228,11 @@ export function CJMDashboard({ onSelectMap }) {
                     <table className="cjm-dash-table">
                         <thead>
                             <tr>
-                                <th>Title</th>
-                                <th>Status</th>
-                                <th>Updated</th>
-                                <th>Created</th>
-                                <th>Actions</th>
+                                <th scope="col">Title</th>
+                                <th scope="col">Status</th>
+                                <th scope="col">Updated</th>
+                                <th scope="col">Created</th>
+                                <th scope="col">Actions</th>
                             </tr>
                         </thead>
                         <tbody>

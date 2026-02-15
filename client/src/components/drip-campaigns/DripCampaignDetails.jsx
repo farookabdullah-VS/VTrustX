@@ -337,11 +337,11 @@ const DripCampaignDetails = () => {
                                 <table>
                                     <thead>
                                         <tr>
-                                            <th>Recipient</th>
-                                            <th>Status</th>
-                                            <th>Current Step</th>
-                                            <th>Responded</th>
-                                            <th>Enrolled At</th>
+                                            <th scope="col">Recipient</th>
+                                            <th scope="col">Status</th>
+                                            <th scope="col">Current Step</th>
+                                            <th scope="col">Responded</th>
+                                            <th scope="col">Enrolled At</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -378,10 +378,10 @@ const DripCampaignDetails = () => {
                                 <table>
                                     <thead>
                                         <tr>
-                                            <th>Recipient</th>
-                                            <th>Step</th>
-                                            <th>Status</th>
-                                            <th>Sent At</th>
+                                            <th scope="col">Recipient</th>
+                                            <th scope="col">Step</th>
+                                            <th scope="col">Status</th>
+                                            <th scope="col">Sent At</th>
                                         </tr>
                                     </thead>
                                     <tbody>
