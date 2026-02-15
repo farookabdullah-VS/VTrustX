@@ -36,8 +36,8 @@ function MapCard({ map, onEdit, onDuplicate, onDelete }) {
                 <div className="cjm-dash-card-meta">
                     <span><Clock size={12} /> {new Date(map.updated_at).toLocaleDateString()}</span>
                     <div className="cjm-dash-card-actions" onClick={e => e.stopPropagation()}>
-                        <button className="cjm-dash-action-btn" onClick={() => setShowMenu(!showMenu)}>
-                            <MoreVertical size={16} />
+                        <button className="cjm-dash-action-btn" onClick={() => setShowMenu(!showMenu)} aria-label={`More actions for ${map.title}`} aria-expanded={showMenu}>
+                            <MoreVertical size={16} aria-hidden="true" />
                         </button>
                         {showMenu && (
                             <div className="cjm-dash-action-menu">
@@ -63,9 +63,9 @@ function MapListItem({ map, onEdit, onDuplicate, onDelete }) {
             <td>{new Date(map.created_at).toLocaleDateString()}</td>
             <td onClick={e => e.stopPropagation()}>
                 <div style={{ display: 'flex', gap: '4px' }}>
-                    <button className="cjm-dash-icon-btn" onClick={() => onEdit(map.id)} title="Edit"><Edit3 size={14} /></button>
-                    <button className="cjm-dash-icon-btn" onClick={() => onDuplicate(map.id)} title="Duplicate"><Copy size={14} /></button>
-                    <button className="cjm-dash-icon-btn danger" onClick={() => onDelete(map.id)} title="Delete"><Trash2 size={14} /></button>
+                    <button className="cjm-dash-icon-btn" onClick={() => onEdit(map.id)} aria-label={`Edit journey map ${map.title}`} title="Edit"><Edit3 size={14} aria-hidden="true" /></button>
+                    <button className="cjm-dash-icon-btn" onClick={() => onDuplicate(map.id)} aria-label={`Duplicate journey map ${map.title}`} title="Duplicate"><Copy size={14} aria-hidden="true" /></button>
+                    <button className="cjm-dash-icon-btn danger" onClick={() => onDelete(map.id)} aria-label={`Delete journey map ${map.title}`} title="Delete"><Trash2 size={14} aria-hidden="true" /></button>
                 </div>
             </td>
         </tr>

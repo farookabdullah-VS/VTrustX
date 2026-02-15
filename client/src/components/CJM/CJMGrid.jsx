@@ -28,15 +28,15 @@ function StageHeader({ stage, onUpdate, onDelete }) {
                 className="cjm-stage-input"
             />
             <div className="cjm-stage-actions">
-                <button className="cjm-icon-mini" onClick={() => setShowSettings(!showSettings)}><Settings size={12} /></button>
-                <button className="cjm-icon-mini danger" onClick={() => onDelete(stage.id)}><Trash2 size={12} /></button>
+                <button className="cjm-icon-mini" onClick={() => setShowSettings(!showSettings)} aria-label={`Settings for stage ${stage.name}`} aria-expanded={showSettings}><Settings size={12} aria-hidden="true" /></button>
+                <button className="cjm-icon-mini danger" onClick={() => onDelete(stage.id)} aria-label={`Delete stage ${stage.name}`}><Trash2 size={12} aria-hidden="true" /></button>
             </div>
 
             {showSettings && (
                 <div className="cjm-color-picker-popover" onClick={e => e.stopPropagation()}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <span style={{ fontSize: '0.8rem', fontWeight: 600, color: '#334155' }}>Stage Settings</span>
-                        <button onClick={() => setShowSettings(false)} style={{ border: 'none', background: 'none', cursor: 'pointer', color: '#94a3b8' }}><X size={14} /></button>
+                        <button onClick={() => setShowSettings(false)} aria-label="Close settings" style={{ border: 'none', background: 'none', cursor: 'pointer', color: '#94a3b8' }}><X size={14} aria-hidden="true" /></button>
                     </div>
                     <label>Background Color</label>
                     <input
@@ -83,7 +83,7 @@ export function CJMGrid({ stages, sections, onUpdateCell, onAddStage, onAddSecti
                         />
                     ))}
                 </SortableContext>
-                <button className="cjm-add-stage-btn" onClick={onAddStage}><Plus size={16} /></button>
+                <button className="cjm-add-stage-btn" onClick={onAddStage} aria-label="Add new stage"><Plus size={16} aria-hidden="true" /></button>
             </div>
 
             <SortableContext items={sections.map(s => s.id)} strategy={verticalListSortingStrategy}>

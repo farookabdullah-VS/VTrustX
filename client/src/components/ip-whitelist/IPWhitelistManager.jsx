@@ -375,23 +375,23 @@ function IPWhitelistManager() {
                                     <button
                                         className="btn-icon"
                                         onClick={() => handleToggleActive(rule)}
-                                        title={rule.is_active ? 'Deactivate' : 'Activate'}
+                                        aria-label={rule.is_active ? `Deactivate rule ${rule.ip_address || rule.ip_range}` : `Activate rule ${rule.ip_address || rule.ip_range}`}
                                     >
-                                        <Power size={16} />
+                                        <Power size={16} aria-hidden="true" />
                                     </button>
                                     <button
                                         className="btn-icon"
                                         onClick={() => handleOpenEditModal(rule)}
-                                        title="Edit"
+                                        aria-label={`Edit rule ${rule.ip_address || rule.ip_range}`}
                                     >
-                                        <Edit2 size={16} />
+                                        <Edit2 size={16} aria-hidden="true" />
                                     </button>
                                     <button
                                         className="btn-icon danger"
                                         onClick={() => handleDelete(rule.id)}
-                                        title="Delete"
+                                        aria-label={`Delete rule ${rule.ip_address || rule.ip_range}`}
                                     >
-                                        <Trash2 size={16} />
+                                        <Trash2 size={16} aria-hidden="true" />
                                     </button>
                                 </div>
                             </div>

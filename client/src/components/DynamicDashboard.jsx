@@ -57,7 +57,7 @@ const DynamicDashboard = () => {
                         <div key={item.i} style={{ background: '#fff', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
                             <div className="drag-handle" style={{ padding: '10px', background: '#f5f5f5', display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'move', borderBottom: '1px solid #eee' }}>
                                 <span style={{ fontWeight: 600 }}>{w.title}</span>
-                                <button onClick={() => setEditingId(item.i)} style={{ border: 'none', background: 'transparent', cursor: 'pointer' }}>⚙️</button>
+                                <button onClick={() => setEditingId(item.i)} style={{ border: 'none', background: 'transparent', cursor: 'pointer' }} aria-label={`Configure widget ${w.title}`}>⚙️</button>
                             </div>
                             <div style={{ flex: 1, padding: '10px', minHeight: 0 }}>
                                 <WidgetRenderer type={w.type} config={w.config} data={MOCK_DATA} />

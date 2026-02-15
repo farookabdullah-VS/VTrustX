@@ -56,7 +56,7 @@ export function CJMComments({ mapId, comments, onCommentsChange, onClose }) {
                     <MessageCircle size={16} style={{ marginRight: '6px', verticalAlign: 'middle' }} />
                     Comments ({comments.filter(c => !c.resolved).length})
                 </h3>
-                <button onClick={onClose} style={{ border: 'none', background: 'none', cursor: 'pointer', color: '#94a3b8' }}><X size={18} /></button>
+                <button onClick={onClose} style={{ border: 'none', background: 'none', cursor: 'pointer', color: '#94a3b8' }} aria-label="Close comments panel"><X size={18} aria-hidden="true" /></button>
             </div>
 
             <div style={{ padding: '8px 16px', display: 'flex', gap: '6px', borderBottom: '1px solid #f1f5f9' }}>
@@ -144,8 +144,9 @@ export function CJMComments({ mapId, comments, onCommentsChange, onClose }) {
                         border: 'none', background: 'var(--primary-color, #3b82f6)', color: 'white',
                         borderRadius: '8px', padding: '8px 12px', cursor: 'pointer'
                     }}
+                    aria-label="Send comment"
                 >
-                    <Send size={16} />
+                    <Send size={16} aria-hidden="true" />
                 </button>
             </div>
         </div>

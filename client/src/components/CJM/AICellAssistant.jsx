@@ -63,9 +63,9 @@ export function AICellAssistant({ cellText, sectionType, sectionTitle, stageName
             <button
                 className="ai-cell-trigger"
                 onClick={(e) => { e.stopPropagation(); setOpen(true); }}
-                title="AI Assistant"
+                aria-label="Open AI Assistant"
             >
-                <Sparkles size={12} />
+                <Sparkles size={12} aria-hidden="true" />
             </button>
         );
     }
@@ -74,7 +74,7 @@ export function AICellAssistant({ cellText, sectionType, sectionTitle, stageName
         <div className="ai-cell-panel" onClick={e => e.stopPropagation()}>
             <div className="ai-cell-header">
                 <span className="ai-cell-title"><Sparkles size={12} /> AI Assistant</span>
-                <button className="ai-cell-close" onClick={() => { setOpen(false); setResult(null); }}><X size={14} /></button>
+                <button className="ai-cell-close" onClick={() => { setOpen(false); setResult(null); }} aria-label="Close AI Assistant"><X size={14} aria-hidden="true" /></button>
             </div>
 
             <div className="ai-cell-actions">

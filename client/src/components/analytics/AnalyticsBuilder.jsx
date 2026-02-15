@@ -132,8 +132,8 @@ export const AnalyticsBuilder = ({ onNavigate }) => {
                                         <p style={{ margin: 0, fontSize: '0.8rem', color: '#64748b' }}>Modified: {d.lastModified}</p>
                                     </div>
 
-                                    <button style={{ position: 'absolute', top: '10px', right: '10px', padding: '5px', background: 'white', borderRadius: '4px', border: 'none', cursor: 'pointer', opacity: 0.6 }}>
-                                        <MoreVertical size={16} />
+                                    <button style={{ position: 'absolute', top: '10px', right: '10px', padding: '5px', background: 'white', borderRadius: '4px', border: 'none', cursor: 'pointer', opacity: 0.6 }} aria-label={`More options for ${d.name}`}>
+                                        <MoreVertical size={16} aria-hidden="true" />
                                     </button>
                                 </div>
                             ))}

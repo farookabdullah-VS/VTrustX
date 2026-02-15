@@ -111,8 +111,8 @@ export function SectionRow({ section, stages, onUpdateCell, onUpdateSection, onD
                         className="cjm-section-input"
                     />
                     <div className="cjm-section-actions">
-                        <button onClick={() => onDeleteSection(section.id)} className="cjm-icon-mini danger"><Trash2 size={12} /></button>
-                        <button className="cjm-icon-mini"><Settings size={12} /></button>
+                        <button onClick={() => onDeleteSection(section.id)} className="cjm-icon-mini danger" aria-label={`Delete section ${section.title}`}><Trash2 size={12} aria-hidden="true" /></button>
+                        <button className="cjm-icon-mini" aria-label={`Settings for section ${section.title}`}><Settings size={12} aria-hidden="true" /></button>
                     </div>
                 </div>
             </div>

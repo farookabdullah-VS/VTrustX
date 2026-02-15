@@ -198,11 +198,11 @@ export function CxPersonaBuilder({ onToggleSidebar, onNavigate }) {
                                     <button
                                         onClick={(e) => handleDelete(e, p.id)}
                                         style={{ background: 'transparent', border: 'none', color: '#ef4444', padding: '6px', borderRadius: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                                        title="Delete"
+                                        aria-label={`Delete persona ${p.name}`}
                                         onMouseOver={e => e.currentTarget.style.background = '#fee2e2'}
                                         onMouseOut={e => e.currentTarget.style.background = 'transparent'}
                                     >
-                                        <Trash2 size={16} />
+                                        <Trash2 size={16} aria-hidden="true" />
                                     </button>
                                 </div>
                             </div>

@@ -181,16 +181,16 @@ function WebhooksList() {
                                         <button
                                             className="btn-icon"
                                             onClick={() => handleToggleActive(webhook.id, webhook.is_active)}
-                                            title={webhook.is_active ? 'Deactivate' : 'Activate'}
+                                            aria-label={webhook.is_active ? `Deactivate webhook ${webhook.name}` : `Activate webhook ${webhook.name}`}
                                         >
-                                            <Power size={16} />
+                                            <Power size={16} aria-hidden="true" />
                                         </button>
                                         <button
                                             className="btn-icon btn-danger"
                                             onClick={() => setShowConfirmDelete(webhook.id)}
-                                            title="Delete"
+                                            aria-label={`Delete webhook ${webhook.name}`}
                                         >
-                                            <Trash2 size={16} />
+                                            <Trash2 size={16} aria-hidden="true" />
                                         </button>
                                     </div>
                                 </div>
