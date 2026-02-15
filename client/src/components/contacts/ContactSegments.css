@@ -94,12 +94,12 @@
     border: var(--space-0-25, 1px) solid var(--border-light);
     border-radius: var(--radius-lg, 12px);
     padding: var(--space-5, 20px);
-    transition: all 0.2s ease;
+    transition: all var(--transition-fast, 0.2s) ease;
     cursor: pointer;
 }
 
 .segment-card:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 var(--space-1, 4px) var(--space-3, 12px) rgba(0, 0, 0, var(--opacity-10, 0.1));
     border-color: var(--status-info);
 }
 
@@ -126,7 +126,7 @@
 
 /* Badge */
 .badge {
-    padding: 4px 12px;
+    padding: var(--space-1, 4px) var(--space-3, 12px);
     border-radius: var(--space-5, 20px);
     font-size: var(--space-3, 12px);
     font-weight: 600;
@@ -149,7 +149,7 @@
     flex-direction: column;
     gap: var(--space-2, 8px);
     padding: 12px 0;
-    border-top: 1px solid var(--border-light);
+    border-top: var(--space-0-25, 1px) solid var(--border-light);
     margin-bottom: var(--space-3, 12px);
 }
 
@@ -188,7 +188,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(0, 0, 0, var(--opacity-50, 0.5));
     display: flex;
     align-items: center;
     justify-content: center;
@@ -213,8 +213,8 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 20px 24px;
-    border-bottom: 1px solid var(--border-light);
+    padding: var(--space-5, 20px) var(--space-6, 24px);
+    border-bottom: var(--space-0-25, 1px) solid var(--border-light);
 }
 
 .modal-header h3 {
@@ -237,7 +237,7 @@
     align-items: center;
     justify-content: center;
     border-radius: var(--space-1-5, 6px);
-    transition: all 0.2s;
+    transition: all var(--transition-fast, 0.2s);
 }
 
 .modal-header button:hover {
@@ -252,7 +252,7 @@
 }
 
 .modal-body h4 {
-    margin: 24px 0 16px 0;
+    margin: var(--space-6, 24px) 0 var(--space-4, 16px) 0;
     color: var(--text-primary);
     font-size: var(--space-4, 16px);
 }
@@ -260,8 +260,8 @@
 .modal-footer {
     display: flex;
     gap: var(--space-3, 12px);
-    padding: 16px 24px;
-    border-top: 1px solid var(--border-light);
+    padding: var(--space-4, 16px) var(--space-6, 24px);
+    border-top: var(--space-0-25, 1px) solid var(--border-light);
     justify-content: flex-end;
 }
 
@@ -286,12 +286,12 @@
 .form-group textarea,
 .form-group select {
     width: 100%;
-    padding: 10px 12px;
+    padding: var(--space-2-5, 10px) var(--space-3, 12px);
     border: var(--space-0-25, 1px) solid var(--border-medium);
     border-radius: var(--space-2, 8px);
     font-size: var(--text-sm, 14px);
     color: var(--text-primary);
-    transition: border-color 0.2s;
+    transition: border-color var(--transition-fast, 0.2s);
 }
 
 .form-group input:focus,
@@ -323,7 +323,7 @@
     display: flex;
     align-items: center;
     gap: var(--space-1-5, 6px);
-    padding: 4px 10px;
+    padding: var(--space-1, 4px) var(--space-2-5, 10px);
     background: var(--status-info);
     color: white;
     border-radius: var(--space-1-5, 6px);
@@ -349,14 +349,14 @@
     background: var(--bg-tertiary, #F3F4F6);
     border: var(--space-0-25, 1px) dashed var(--text-disabled);
     color: var(--text-secondary, #4B5563);
-    padding: 4px 12px;
+    padding: var(--space-1, 4px) var(--space-3, 12px);
     border-radius: var(--space-1-5, 6px);
     font-size: var(--text-xs-alt, 13px);
     cursor: pointer;
     display: flex;
     align-items: center;
     gap: var(--space-1, 4px);
-    transition: all 0.2s;
+    transition: all var(--transition-fast, 0.2s);
 }
 
 .btn-add-tag:hover {
@@ -385,7 +385,7 @@
     background: var(--status-info);
     color: white;
     border: none;
-    padding: 10px 20px;
+    padding: var(--space-2-5, 10px) var(--space-5, 20px);
     border-radius: var(--space-2, 8px);
     font-size: var(--text-sm, 14px);
     font-weight: 500;
@@ -393,7 +393,7 @@
     display: flex;
     align-items: center;
     gap: var(--space-2, 8px);
-    transition: background 0.2s;
+    transition: background var(--transition-fast, 0.2s);
 }
 
 .btn-primary:hover {
@@ -409,7 +409,7 @@
     background: var(--card-bg, white);
     color: var(--text-secondary, #4B5563);
     border: var(--space-0-25, 1px) solid var(--border-medium);
-    padding: 10px 20px;
+    padding: var(--space-2-5, 10px) var(--space-5, 20px);
     border-radius: var(--space-2, 8px);
     font-size: var(--text-sm, 14px);
     font-weight: 500;
@@ -417,7 +417,7 @@
     display: flex;
     align-items: center;
     gap: var(--space-2, 8px);
-    transition: all 0.2s;
+    transition: all var(--transition-fast, 0.2s);
 }
 
 .btn-secondary:hover {
@@ -426,24 +426,24 @@
 }
 
 .btn-secondary:disabled {
-    opacity: 0.5;
+    opacity: var(--opacity-50, 0.5);
     cursor: not-allowed;
 }
 
 .btn-sm {
-    padding: 6px 12px;
+    padding: var(--space-1-5, 6px) var(--space-3, 12px);
     font-size: var(--text-xs-alt, 13px);
 }
 
 /* Spinning Animation */
 .spinning {
-    animation: spin 1s linear infinite;
+    animation: spin var(--duration-1000, 1s) linear infinite;
 }
 
 /* Responsive */
 @media (max-width: 768px) {
     .contact-segments {
-        padding: 15px;
+        padding: var(--space-3-75, 15px);
     }
 
     .segments-header {
