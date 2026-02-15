@@ -314,8 +314,8 @@ export function PerformanceDashboard() {
                 <h3 style={{ fontSize: '1.2rem', fontWeight: '600', color: '#0f172a', marginBottom: '16px' }}>
                     Slowest API Endpoints
                 </h3>
-                <div style={{ overflowX: 'auto' }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '900px' }}>
                         <caption style={{ position: 'absolute', left: '-10000px', width: '1px', height: '1px', overflow: 'hidden' }}>Slowest API endpoints performance metrics</caption>
                         <thead>
                             <tr style={{ borderBottom: '2px solid #e2e8f0' }}>

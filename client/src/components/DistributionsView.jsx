@@ -267,8 +267,8 @@ export function DistributionsView() {
             {loading ? (
                 <SkeletonTable rows={5} cols={6} />
             ) : (
-                <div style={{ background: 'white', borderRadius: '16px', border: '1px solid #e2e8f0', overflow: 'hidden' }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <div style={{ background: 'white', borderRadius: '16px', border: '1px solid #e2e8f0', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '900px' }}>
                         <caption style={{ position: 'absolute', left: '-10000px', width: '1px', height: '1px', overflow: 'hidden' }}>Survey distribution campaigns list</caption>
                         <thead style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
                             <tr>

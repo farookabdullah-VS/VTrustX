@@ -302,8 +302,8 @@ export function TicketListView({ onSelectTicket, user }) {
                     </div>
                 ) : (
                     <>
-                        <div style={{ overflowX: 'auto' }}>
-                            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9em' }}>
+                        <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+                            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9em', minWidth: '1000px' }}>
                                 <thead>
                                     <tr style={{ borderBottom: '2px solid var(--glass-border, rgba(0,0,0,0.08))' }}>
                                         <th scope="col" style={{ padding: '12px 16px', textAlign: 'center', width: 40 }}>

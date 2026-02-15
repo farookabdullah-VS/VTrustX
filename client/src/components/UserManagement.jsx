@@ -253,8 +253,8 @@ export function UserManagement() {
 
             {!loading && !error && (
                 <>
-                    <div style={{ background: 'var(--input-bg)', borderRadius: '12px', overflow: 'hidden', border: '1px solid var(--input-border)', boxShadow: '0 4px 6px rgba(0,0,0,0.03)' }}>
-                        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <div style={{ background: 'var(--input-bg)', borderRadius: '12px', overflowX: 'auto', WebkitOverflowScrolling: 'touch', border: '1px solid var(--input-border)', boxShadow: '0 4px 6px rgba(0,0,0,0.03)' }}>
+                        <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '800px' }}>
                             <caption style={{ position: 'absolute', left: '-10000px', width: '1px', height: '1px', overflow: 'hidden' }}>User management table</caption>
                             <thead>
                                 <tr style={{ background: 'var(--sidebar-bg)', borderBottom: '1px solid var(--input-border)' }}>

@@ -210,8 +210,8 @@ export function ContactMaster() {
             {error && <div style={{ color: 'red' }}>{error}</div>}
 
             {!loading && !error && (
-                <div style={{ overflowX: 'auto', background: 'white', borderRadius: '12px', boxShadow: '0 4px 6px rgba(0,0,0,0.05)' }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch', background: 'white', borderRadius: '12px', boxShadow: '0 4px 6px rgba(0,0,0,0.05)' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '700px' }}>
                         <thead style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0', color: '#475569' }}>
                             <tr>
                                 <th scope="col" style={{ padding: '15px', textAlign: 'left' }}>Name</th>

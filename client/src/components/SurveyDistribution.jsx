@@ -731,8 +731,8 @@ export function SurveyDistribution({ formId: propsFormId, onBack, onNavigate }) 
                                         </div>
                                     </div>
 
-                                    <div style={{ overflowX: 'auto' }}>
-                                        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.95em' }}>
+                                    <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+                                        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.95em', minWidth: '600px' }}>
                                             <caption style={{ position: 'absolute', left: '-10000px', width: '1px', height: '1px', overflow: 'hidden' }}>Imported audience data preview</caption>
                                             <thead style={{ background: '#f1f5f9', color: '#475569', textAlign: 'left' }}>
                                                 <tr>
