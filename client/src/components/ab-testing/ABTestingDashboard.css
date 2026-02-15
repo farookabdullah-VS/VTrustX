@@ -1,6 +1,6 @@
 .ab-testing-dashboard {
     padding: var(--space-6, 24px);
-    max-width: 1400px;
+    max-width: var(--space-350, 1400px);
     margin: 0 auto;
 }
 
@@ -37,12 +37,12 @@
     gap: var(--space-2, 8px);
     padding: var(--space-2-5, 10px) var(--space-4, 16px);
     background: var(--ab-testing-live-indicator-bg, #10B98115);
-    border: 2px solid var(--ab-testing-live-indicator-border, #10B981);
+    border: var(--space-0-5, 2px) solid var(--ab-testing-live-indicator-border, #10B981);
     border-radius: var(--radius-md, 8px);
     color: var(--ab-testing-live-indicator-border, #10B981);
     font-weight: 600;
     font-size: var(--text-sm, 14px);
-    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    animation: pulse var(--duration-2000, 2s) cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
 @keyframes pulse {
@@ -57,17 +57,17 @@
 .reconnect-btn {
     padding: var(--space-2-5, 10px) var(--space-4, 16px);
     background: var(--toast-warning-bg, #FEF3C7);
-    border: 1px solid var(--toast-warning-border, #F59E0B);
+    border: var(--space-0-25, 1px) solid var(--toast-warning-border, #F59E0B);
     border-radius: var(--radius-md, 8px);
     color: var(--toast-warning-text, #D97706);
     font-weight: 600;
     cursor: pointer;
-    transition: background 0.2s;
+    transition: background var(--transition-fast, 0.2s);
 }
 
 .reconnect-btn:hover {
     background: var(--toast-warning-bg, #FDE68A);
-    opacity: 0.9;
+    opacity: var(--opacity-90, 0.9);
 }
 
 .btn-primary {
@@ -81,7 +81,7 @@
     border-radius: var(--radius-md, 8px);
     font-weight: 600;
     cursor: pointer;
-    transition: background 0.2s;
+    transition: background var(--transition-fast, 0.2s);
 }
 
 .btn-primary:hover {
@@ -93,19 +93,19 @@
     display: flex;
     gap: var(--space-2, 8px);
     margin-bottom: var(--space-6, 24px);
-    border-bottom: 2px solid var(--border-light);
+    border-bottom: var(--space-0-5, 2px) solid var(--border-light);
 }
 
 .tab {
     padding: var(--space-3, 12px) var(--space-6, 24px);
     background: none;
     border: none;
-    border-bottom: 3px solid transparent;
+    border-bottom: var(--space-0-75, 3px) solid transparent;
     color: var(--text-muted);
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.2s;
-    margin-bottom: -2px;
+    transition: all var(--transition-fast, 0.2s);
+    margin-bottom: var(--space--0-5, -2px);
 }
 
 .tab:hover {
@@ -122,7 +122,7 @@
 .error-message {
     padding: var(--space-4, 16px);
     background: var(--toast-error-bg, #FEE2E2);
-    border: 1px solid var(--toast-error-border, #EF4444);
+    border: var(--space-0-25, 1px) solid var(--toast-error-border, #EF4444);
     border-radius: var(--radius-md, 8px);
     color: var(--toast-error-text, #991B1B);
     margin-bottom: var(--space-6, 24px);
@@ -143,11 +143,11 @@
     border: var(--space-1, 4px) solid var(--border-light);
     border-top-color: var(--primary);
     border-radius: 50%;
-    animation: spin 1s linear infinite;
+    animation: spin var(--duration-1000, 1s) linear infinite;
 }
 
 @keyframes spin {
-    to { transform: rotate(360deg); }
+    to { transform: rotate(var(--angle-360, 360deg)); }
 }
 
 .loading-state p {
@@ -179,24 +179,24 @@
 /* Experiments grid */
 .experiments-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(var(--space-87-5, 350px), 1fr));
     gap: var(--space-5, 20px);
 }
 
 .experiment-card {
     background: var(--ab-testing-card-bg, var(--card-bg));
-    border: 1px solid var(--ab-testing-card-border, var(--border-light));
+    border: var(--space-0-25, 1px) solid var(--ab-testing-card-border, var(--border-light));
     border-radius: var(--radius-lg, 12px);
     padding: var(--space-5, 20px);
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all var(--transition-fast, 0.2s);
     position: relative;
 }
 
 .experiment-card:hover {
     border-color: var(--primary);
     box-shadow: var(--ab-testing-card-shadow, var(--shadow-lg));
-    transform: translateY(-2px);
+    transform: translateY(var(--space--0-5, -2px));
 }
 
 .card-header {
@@ -229,7 +229,7 @@
     font-size: var(--text-xs, 12px);
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: var(--space-0-125, 0.5px);
 }
 
 .experiment-description {
@@ -281,8 +281,8 @@
     display: flex;
     gap: var(--space-2, 8px);
     margin-top: var(--space-4, 16px);
-    padding-top: 16px;
-    border-top: 1px solid var(--border-light);
+    padding-top: var(--space-4, 16px);
+    border-top: var(--space-0-25, 1px) solid var(--border-light);
 }
 
 .btn-secondary {
@@ -293,13 +293,13 @@
     gap: var(--space-1-5, 6px);
     padding: var(--space-2-5, 10px) var(--space-4, 16px);
     background: var(--button-secondary-bg);
-    border: 1px solid var(--border-medium);
+    border: var(--space-0-25, 1px) solid var(--border-medium);
     border-radius: var(--radius-md, 8px);
     color: var(--button-secondary-text);
     font-weight: 600;
     font-size: var(--text-sm, 14px);
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all var(--transition-fast, 0.2s);
 }
 
 .btn-secondary:hover {
