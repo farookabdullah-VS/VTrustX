@@ -12,19 +12,6 @@
     color: var(--text-color, #fff);
 }
 
-width: 100%;
-min-height: 100vh;
-padding: 20px;
-max-width: 1200px;
-margin: 0 auto;
-box-sizing: border-box;
-display: flex;
-flex-direction: column;
-gap: 24px;
-background: var(--background-color, #0f172a);
-color: var(--text-color, #fff);
-}
-
 /* Mobile adjustments */
 @media (max-width: 600px) {
     .dashboard {
@@ -39,24 +26,6 @@ color: var(--text-color, #fff);
     .card {
         flex: 1 1 auto;
     }
-}
-
-width: 100%;
-min-height: 100vh;
-padding: 0;
-max-width: none;
-margin: 0;
-box-sizing: border-box;
-display: flex;
-flex-direction: column;
-gap: 24px;
-background: var(--background-color, #0f172a);
-color: var(--text-color, #fff);
-}
-
-padding: 20px;
-max-width: 1200px;
-margin: 0 auto;
 }
 
 .creation-actions {
@@ -91,7 +60,7 @@ margin: 0 auto;
 
 .card p {
     color: var(--text-muted);
-    font-size: 0.9em;
+    font-size: var(--text-sm, 14px);
 }
 
 .content-grid {
@@ -121,7 +90,7 @@ margin: 0 auto;
 }
 
 .status {
-    font-size: 0.75em;
+    font-size: var(--text-xs, 12px);
     margin-left: var(--space-2-5, 10px);
     background: var(--input-bg);
     padding: var(--space-1, 4px) var(--space-2, 8px);
