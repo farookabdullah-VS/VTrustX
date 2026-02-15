@@ -1,60 +1,60 @@
 .power-analysis-calculator {
     background: var(--card-bg);
-    border-radius: 12px;
+    border-radius: var(--radius-lg, 12px);
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
     overflow: hidden;
 }
 
 .calculator-header {
     background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
-    padding: 32px;
+    padding: var(--space-8, 32px);
     color: var(--card-bg);
 }
 
 .header-content {
     display: flex;
     align-items: center;
-    gap: 12px;
-    margin-bottom: 8px;
+    gap: var(--space-3, 12px);
+    margin-bottom: var(--space-2, 8px);
 }
 
 .header-content h2 {
-    font-size: 24px;
+    font-size: var(--text-2xl, 24px);
     font-weight: 700;
     margin: 0;
 }
 
 .header-description {
-    font-size: 15px;
+    font-size: var(--text-base, 15px);
     opacity: 0.9;
     margin: 0;
 }
 
 .calculator-body {
-    padding: 32px;
+    padding: var(--space-8, 32px);
 }
 
 /* Inputs Section */
 .inputs-section {
     display: flex;
     flex-direction: column;
-    gap: 24px;
-    margin-bottom: 32px;
+    gap: var(--space-6, 24px);
+    margin-bottom: var(--space-8, 32px);
 }
 
 .input-group {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: var(--space-2, 8px);
 }
 
 .input-group label {
     font-weight: 600;
     color: var(--text-secondary);
-    font-size: 14px;
+    font-size: var(--text-sm, 14px);
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: var(--space-1-5, 6px);
 }
 
 .info-icon {
@@ -68,16 +68,16 @@
 .input-with-unit {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: var(--space-3, 12px);
 }
 
 .calc-input,
 .calc-select {
     flex: 1;
-    padding: 12px 16px;
+    padding: var(--space-3, 12px) var(--space-4, 16px);
     border: 1px solid var(--border-medium);
-    border-radius: 8px;
-    font-size: 15px;
+    border-radius: var(--radius-md, 8px);
+    font-size: var(--text-base, 15px);
     font-family: inherit;
     transition: border-color 0.2s, box-shadow 0.2s;
 }
@@ -90,14 +90,14 @@
 }
 
 .input-unit {
-    font-size: 15px;
+    font-size: var(--text-base, 15px);
     color: var(--text-muted);
     font-weight: 600;
-    min-width: 80px;
+    min-width: var(--space-20, 80px);
 }
 
 .input-hint {
-    font-size: 13px;
+    font-size: var(--text-sm, 13px);
     color: var(--text-disabled);
     margin: 0;
 }
@@ -105,24 +105,24 @@
 .input-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 20px;
+    gap: var(--space-5, 20px);
 }
 
 .btn-calculate {
-    padding: 14px 28px;
+    padding: var(--space-3-5, 14px) var(--space-7, 28px);
     background: var(--primary);
     color: var(--card-bg);
     border: none;
-    border-radius: 8px;
-    font-size: 16px;
+    border-radius: var(--radius-md, 8px);
+    font-size: var(--text-base, 16px);
     font-weight: 600;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 10px;
+    gap: var(--space-2-5, 10px);
     transition: all 0.2s;
-    margin-top: 8px;
+    margin-top: var(--space-2, 8px);
 }
 
 .btn-calculate:hover:not(:disabled) {
@@ -140,10 +140,10 @@
 .error-box {
     background: var(--toast-error-bg, #FEE2E2);
     border: 1px solid var(--status-error, #EF4444);
-    border-radius: 8px;
-    padding: 16px 20px;
+    border-radius: var(--radius-md, 8px);
+    padding: var(--space-4, 16px) var(--space-5, 20px);
     color: var(--toast-error-text, #991B1B);
-    margin-bottom: 24px;
+    margin-bottom: var(--space-6, 24px);
 }
 
 .error-box strong {
@@ -153,18 +153,18 @@
 /* Results Section */
 .results-section {
     border-top: 2px solid var(--border-light, #E5E7EB);
-    padding-top: 32px;
+    padding-top: var(--space-8, 32px);
 }
 
 .results-section h3 {
-    font-size: 20px;
+    font-size: var(--text-xl, 20px);
     font-weight: 700;
     color: var(--text-primary, #111827);
-    margin: 0 0 24px 0;
+    margin: 0 0 var(--space-6, 24px) 0;
 }
 
 .results-section h4 {
-    font-size: 16px;
+    font-size: var(--text-base, 16px);
     font-weight: 600;
     color: var(--text-secondary);
     margin: 0 0 12px 0;
@@ -173,15 +173,15 @@
 .results-cards {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 16px;
-    margin-bottom: 32px;
+    gap: var(--space-4, 16px);
+    margin-bottom: var(--space-8, 32px);
 }
 
 .result-card {
     background: var(--input-bg, #F9FAFB);
     border: 2px solid var(--border-light, #E5E7EB);
-    border-radius: 12px;
-    padding: 20px;
+    border-radius: var(--radius-lg, 12px);
+    padding: var(--space-5, 20px);
     text-align: center;
 }
 
@@ -191,23 +191,23 @@
 }
 
 .result-label {
-    font-size: 13px;
+    font-size: var(--text-sm, 13px);
     font-weight: 600;
     color: var(--text-muted);
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    margin-bottom: 8px;
+    margin-bottom: var(--space-2, 8px);
 }
 
 .result-value {
-    font-size: 32px;
+    font-size: var(--text-3xl, 32px);
     font-weight: 700;
     color: var(--text-primary, #111827);
-    margin-bottom: 4px;
+    margin-bottom: var(--space-1, 4px);
     display: flex;
     align-items: baseline;
     justify-content: center;
-    gap: 8px;
+    gap: var(--space-2, 8px);
 }
 
 .result-card.primary .result-value {
@@ -215,13 +215,13 @@
 }
 
 .result-unit {
-    font-size: 16px;
+    font-size: var(--text-base, 16px);
     font-weight: 600;
     color: var(--text-muted);
 }
 
 .result-subtext {
-    font-size: 13px;
+    font-size: var(--text-sm, 13px);
     color: var(--text-disabled);
 }
 
@@ -229,9 +229,9 @@
 .recommendations {
     background: var(--toast-info-bg, #EFF6FF);
     border: 1px solid var(--status-info, #3B82F6);
-    border-radius: 8px;
-    padding: 20px;
-    margin-bottom: 32px;
+    border-radius: var(--radius-md, 8px);
+    padding: var(--space-5, 20px);
+    margin-bottom: var(--space-8, 32px);
 }
 
 .recommendations h4 {
@@ -240,11 +240,11 @@
 
 .recommendations ul {
     margin: 0;
-    padding-left: 20px;
+    padding-left: var(--space-5, 20px);
 }
 
 .recommendations li {
-    margin-bottom: 8px;
+    margin-bottom: var(--space-2, 8px);
     line-height: 1.5;
 }
 
@@ -266,24 +266,24 @@
 
 /* Power Curve */
 .power-curve {
-    margin-bottom: 32px;
+    margin-bottom: var(--space-8, 32px);
 }
 
 .chart-description {
-    font-size: 14px;
+    font-size: var(--text-sm, 14px);
     color: var(--text-muted);
-    margin: 0 0 20px 0;
+    margin: 0 0 var(--space-5, 20px) 0;
 }
 
 /* Use Results Button */
 .btn-use-results {
     width: 100%;
-    padding: 14px 28px;
+    padding: var(--space-3-5, 14px) var(--space-7, 28px);
     background: var(--status-success, #10B981);
     color: var(--card-bg);
     border: none;
-    border-radius: 8px;
-    font-size: 16px;
+    border-radius: var(--radius-md, 8px);
+    font-size: var(--text-base, 16px);
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s;
