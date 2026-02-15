@@ -30,7 +30,7 @@
     display: flex;
     align-items: center;
     gap: var(--space-2, 8px);
-    padding: 10px 20px;
+    padding: var(--space-2-5, 10px) 20px;
     background: var(--card-bg, white);
     color: var(--status-info, #3b82f6);
     border: 2px solid var(--status-info, #3b82f6);
@@ -69,7 +69,7 @@
 
 .setting-item label {
     display: block;
-    margin-bottom: 8px;
+    margin-bottom: var(--space-2, 8px);
     color: var(--text-secondary, #334155);
     font-size: var(--text-sm, 14px);
     font-weight: 600;
@@ -77,7 +77,7 @@
 
 .setting-item input[type="number"] {
     width: 100%;
-    padding: 10px 14px;
+    padding: var(--space-2-5, 10px) 14px;
     border: 1px solid var(--border-medium, #cbd5e1);
     border-radius: var(--radius-md, 8px);
     font-size: var(--text-sm, 14px);
@@ -93,7 +93,7 @@
 
 .help-text {
     display: block;
-    margin-top: 6px;
+    margin-top: var(--space-1-5, 6px);
     color: var(--text-muted, #64748b);
     font-size: var(--text-xs, 12px);
 }
@@ -101,7 +101,7 @@
 .checkbox-settings {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: var(--space-3, 12px);
     padding: 20px;
     background: var(--bg-secondary, #f8fafc);
     border-radius: var(--radius-md, 8px);
@@ -111,7 +111,7 @@
 .checkbox-settings label {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: var(--space-2-5, 10px);
     cursor: pointer;
     font-size: var(--text-sm, 14px);
     color: var(--text-secondary, #334155);
@@ -126,11 +126,11 @@
 .settings-actions {
     display: flex;
     justify-content: flex-end;
-    gap: 12px;
+    gap: var(--space-3, 12px);
 }
 
 .btn-cancel {
-    padding: 10px 20px;
+    padding: var(--space-2-5, 10px) 20px;
     background: var(--card-bg, white);
     color: var(--text-muted, #64748b);
     border: 1px solid var(--border-medium, #cbd5e1);
@@ -146,7 +146,7 @@
 }
 
 .btn-primary {
-    padding: 10px 20px;
+    padding: var(--space-2-5, 10px) 20px;
     background: var(--status-info, #3b82f6);
     color: white;
     border: none;
@@ -228,7 +228,7 @@
 .quality-distribution h3 {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: var(--space-2-5, 10px);
     margin: 0 0 24px 0;
     font-size: 18px;
     color: var(--text-primary, #1e293b);
@@ -274,7 +274,7 @@
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    padding-right: 12px;
+    padding-right: var(--space-3, 12px);
     color: white;
     font-size: var(--text-xs, 12px);
     font-weight: 600;
@@ -291,7 +291,7 @@
 .low-quality-section h3 {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: var(--space-2-5, 10px);
     margin: 0 0 24px 0;
     font-size: 18px;
     color: var(--text-primary, #1e293b);
@@ -308,7 +308,7 @@
 
 .responses-table th {
     text-align: left;
-    padding: 12px;
+    padding: var(--space-3, 12px);
     background: var(--bg-secondary, #f8fafc);
     color: var(--text-muted, #64748b);
     font-size: var(--text-xs, 12px);
@@ -336,7 +336,7 @@
 .flags-list {
     display: flex;
     flex-wrap: wrap;
-    gap: 6px;
+    gap: var(--space-1-5, 6px);
 }
 
 .flag-badge {
@@ -410,11 +410,11 @@
     }
 
     .responses-table {
-        font-size: 12px;
+        font-size: var(--space-3, 12px);
     }
 
     .responses-table th,
     .responses-table td {
-        padding: 8px;
+        padding: var(--space-2, 8px);
     }
 }
