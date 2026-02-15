@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RayiX Analytics | High-Tech Experience Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@200;300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+
+<body class="t-theme">
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="brand">
+                    <div class="brand-icon">T</div>
+                    <span class="brand-name">Rayi<span class="accent">X</span></span>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-group">
+                    <span class="group-title">Intelligence</span>
+                    <a href="#" class="nav-item active"><i data-lucide="layout-grid"></i> Dashboard</a>
+                    <a href="#" class="nav-item"><i data-lucide="brain-circuit"></i> AI Analytics</a>
+                    <a href="#" class="nav-item"><i data-lucide="message-square-heart"></i> Sentiment</a>
+                </div>
+                <div class="nav-group">
+                    <span class="group-title">Engagement</span>
+                    <a href="#" class="nav-item"><i data-lucide="megaphone"></i> SmartReach</a>
+                    <a href="#" class="nav-item"><i data-lucide="users"></i> Personas</a>
+                    <a href="#" class="nav-item"><i data-lucide="map"></i> Journeys</a>
+                </div>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="user-profile">
+                    <div class="avatar">JS</div>
+                    <div class="user-info">
+                        <span class="name">John S.</span>
+                        <span class="role">Chief Experience Officer</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="top-bar">
+                <div class="header-left">
+                    <h1>Predictive Intelligence <span class="badge">Live</span></h1>
+                    <p class="subtitle">Global Experience Index for Q1 2026</p>
+                </div>
+                <div class="header-right">
+                    <div class="search-bar">
+                        <i data-lucide="search"></i>
+                        <input type="text" placeholder="Search experiences...">
+                    </div>
+                    <button class="icon-btn"><i data-lucide="bell"></i></button>
+                    <button class="upgrade-btn">T-Upgrade</button>
+                </div>
+            </header>
+
+            <!-- Stats Grid -->
+            <section class="stats-grid">
+                <div class="stat-card glass shine">
+                    <div class="stat-header">
+                        <span class="label">NPS Score</span>
+                        <i data-lucide="trending-up" class="trend-icon"></i>
+                    </div>
+                    <div class="stat-value">+82.4</div>
+                    <div class="stat-footer">
+                        <span class="trend positive">+5.2% vs last month</span>
+                    </div>
+                    <div class="mini-chart">
+                        <svg viewBox="0 0 100 30" class="sparkline">
+                            <path d="M0,25 Q10,15 20,20 T40,10 T60,22 T80,5 T100,15" fill="none" stroke="var(--emerald)"
+                                stroke-width="2" />
+                        </svg>
+                    </div>
+                </div>
+                <div class="stat-card glass shine">
+                    <div class="stat-header">
+                        <span class="label">Sentiment Index</span>
+                        <i data-lucide="smile" class="trend-icon green"></i>
+                    </div>
+                    <div class="stat-value">Positive</div>
+                    <div class="stat-footer">
+                        <span class="trend positive">Strong across 12 sectors</span>
+                    </div>
+                    <div class="sentiment-meter">
+                        <div class="track"></div>
+                        <div class="indicator" style="left: 75%"></div>
+                    </div>
+                </div>
+                <div class="stat-card glass shine">
+                    <div class="stat-header">
+                        <span class="label">Response Rate</span>
+                        <i data-lucide="zap" class="trend-icon yellow"></i>
+                    </div>
+                    <div class="stat-value">64.2%</div>
+                    <div class="stat-footer">
+                        <span class="trend neutral">Optimal threshold reached</span>
+                    </div>
+                    <div class="progress-ring-container">
+                        <svg class="progress-ring" width="40" height="40">
+                            <circle class="progress-ring__circle" stroke="rgba(255,255,255,0.1)" stroke-width="4"
+                                fill="transparent" r="16" cx="20" cy="20" />
+                            <circle class="progress-ring__circle" stroke="var(--cyan)" stroke-width="4"
+                                stroke-dasharray="100.5, 100" fill="transparent" r="16" cx="20" cy="20" />
+                        </svg>
+                    </div>
+                </div>
+                <div class="stat-card glass shine">
+                    <div class="stat-header">
+                        <span class="label">AI Predictions</span>
+                        <i data-lucide="brain-circuit" class="trend-icon purple"></i>
+                    </div>
+                    <div class="stat-value">98.2%</div>
+                    <div class="stat-footer">
+                        <span class="trend neutral">Model Confidence: High</span>
+                    </div>
+                    <div class="pulse-indicator"></div>
+                </div>
+            </section>
+
+            <!-- Main Charts Section -->
+            <section class="charts-section">
+                <div class="main-chart-container glass">
+                    <div class="section-top">
+                        <h2>Experience Trends</h2>
+                        <div class="time-filters">
+                            <button class="active">Daily</button>
+                            <button>Weekly</button>
+                            <button>Monthly</button>
+                        </div>
+                    </div>
+                    <div class="high-tech-chart">
+                        <!-- SVG for complex chart -->
+                        <svg viewBox="0 0 800 300" class="main-svg">
+                            <defs>
+                                <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="0%" stop-color="var(--cyan)" stop-opacity="0.3" />
+                                    <stop offset="100%" stop-color="var(--cyan)" stop-opacity="0" />
+                                </linearGradient>
+                            </defs>
+                            <path class="grid-line" d="M0 50 H800 M0 125 H800 M0 200 H800 M0 275 H800" />
+                            <path class="area-path" d="M0,250 Q100,180 200,220 T400,100 T600,150 T800,50 V300 H0 Z"
+                                fill="url(#chartGradient)" />
+                            <path class="line-path" d="M0,250 Q100,180 200,220 T400,100 T600,150 T800,50" fill="none"
+                                stroke="var(--cyan)" stroke-width="3" />
+                            <circle cx="400" cy="100" r="6" fill="var(--cyan)" class="data-point pulse" />
+                        </svg>
+                    </div>
+                </div>
+
+                <div class="side-panel glass">
+                    <h2>Audience Segments</h2>
+                    <div class="segment-list">
+                        <div class="segment-item">
+                            <div class="segment-info">
+                                <span>Innovators</span>
+                                <span class="percentage">42%</span>
+                            </div>
+                            <div class="segment-bar">
+                                <div class="fill" style="width: 42%; background: var(--cyan)"></div>
+                            </div>
+                        </div>
+                        <div class="segment-item">
+                            <div class="segment-info">
+                                <span>Rationalists</span>
+                                <span class="percentage">28%</span>
+                            </div>
+                            <div class="segment-bar">
+                                <div class="fill" style="width: 28%; background: var(--purple)"></div>
+                            </div>
+                        </div>
+                        <div class="segment-item">
+                            <div class="segment-info">
+                                <span>Traditionalists</span>
+                                <span class="percentage">30%</span>
+                            </div>
+                            <div class="segment-bar">
+                                <div class="fill" style="width: 30%; background: var(--emerald)"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ai-insight">
+                        <i data-lucide="sparkles"></i>
+                        <p>AI suggests increasing focus on "Innovators" segment for Q2 growth.</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Background Elements -->
+    <div class="bg-blur blur-1"></div>
+    <div class="bg-blur blur-2"></div>
+    <div class="bg-grid"></div>
+
+    <script src="script.js"></script>
+    <script>lucide.createIcons();</script>
+</body>
+
+</html>

@@ -73,8 +73,13 @@
 }
 
 @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
 }
 
 /* Info Card */
@@ -313,7 +318,7 @@
     font-size: 14px;
     font-weight: 600;
     cursor: pointer;
-    var(--card-bg)-space: nowrap;
+    white-space: nowrap;
     transition: all 0.2s;
 }
 
@@ -351,7 +356,7 @@
     color: var(--text-primary);
 }
 
-.test-message-section > p {
+.test-message-section>p {
     margin: 0 0 24px 0;
     color: var(--text-muted);
     font-size: 14px;

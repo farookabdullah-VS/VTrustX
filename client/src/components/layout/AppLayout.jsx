@@ -55,7 +55,14 @@ export function AppLayout({ onNavigate, viewTitles }) {
 
   // Derive current view from pathname
   const pathParts = location.pathname.split('/').filter(Boolean);
-  const currentView = pathParts[0] || 'dashboard';
+  let currentView = pathParts[0] || 'dashboard';
+
+  // Smarter view detection for nested routes
+  if (pathParts.includes('smartreach')) {
+    currentView = 'smartreach';
+  } else if (pathParts.includes('surveys') || pathParts.includes('viewer')) {
+    currentView = 'surveys';
+  }
 
   // Auto-hide/Collapse Sidebar Logic
   useEffect(() => {
@@ -92,24 +99,23 @@ export function AppLayout({ onNavigate, viewTitles }) {
       {/* Top Header - Fixed Full Width */}
       <header
         role="banner"
-        className="glass-panel"
+        className="glass-panel main-header"
         style={{
           position: 'fixed',
           top: 0,
           left: 0,
           right: 0,
-          height: isMobile ? '56px' : '70px',
+          height: isMobile ? '60px' : '72px',
           zIndex: 1100,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          padding: isMobile ? '0 12px' : '0 24px',
+          padding: isMobile ? '0 16px' : '0 32px',
           background: 'var(--header-bg)',
+          backdropFilter: 'blur(12px)',
+          WebkitBackdropFilter: 'blur(12px)',
           borderBottom: '1px solid var(--header-border)',
-          borderLeft: 'none',
-          borderRight: 'none',
-          borderTop: 'none',
-          borderRadius: 0,
+          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)',
         }}
       >
         <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
@@ -200,23 +206,48 @@ export function AppLayout({ onNavigate, viewTitles }) {
               onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
               onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setIsProfileMenuOpen(!isProfileMenuOpen); } }}
               style={{
-                display: 'flex', alignItems: 'center', gap: '10px', paddingLeft: '20px',
-                borderLeft: '1px solid var(--divider-color)', cursor: 'pointer', userSelect: 'none',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                padding: '6px 12px',
+                paddingLeft: '20px',
+                borderLeft: '1px solid var(--divider-color)',
+                cursor: 'pointer',
+                userSelect: 'none',
+                borderRadius: '12px',
+                transition: 'all 0.2s ease',
+              }}
+              className="profile-trigger"
+              onMouseOver={(e) => {
+                e.currentTarget.style.background = 'var(--sidebar-hover-bg)';
+              }}
+              onMouseOut={(e) => {
+                e.currentTarget.style.background = 'transparent';
               }}
             >
               <div style={{
-                width: '36px', height: '36px', borderRadius: '50%', background: 'var(--avatar-bg)', color: isDark ? '#0A0E1A' : 'white',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold',
+                width: '40px',
+                height: '40px',
+                borderRadius: '50%',
+                background: 'var(--avatar-bg)',
+                color: '#ffffff',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontWeight: '700',
+                fontSize: '1.1rem',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                border: '2px solid rgba(255,255,255,0.8)'
               }}>
                 {user?.user?.username?.[0]?.toUpperCase() || 'U'}
               </div>
               {!isMobile && (
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                  <span style={{ fontWeight: '600', fontSize: '0.9em', color: 'var(--username-color)' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                  <span style={{ fontWeight: '700', fontSize: '0.9rem', color: 'var(--username-color)', display: 'flex', alignItems: 'center', gap: '4px' }}>
                     {user?.user?.username || 'User'}
-                    <span style={{ fontSize: '0.7em', marginLeft: '5px', color: 'var(--username-muted)' }}>&#9660;</span>
+                    <span style={{ fontSize: '0.6rem', color: 'var(--username-muted)', marginTop: '2px' }}>▼</span>
                   </span>
-                  <span style={{ fontSize: '0.75em', color: 'var(--username-muted)' }}>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--username-muted)', fontWeight: '500' }}>
                     {t(`users.role_${user?.user?.role}`) || user?.user?.role || t('users.role_user')}
                   </span>
                 </div>
@@ -297,29 +328,31 @@ export function AppLayout({ onNavigate, viewTitles }) {
       />
 
       {/* Sidebar */}
-      {showSidebar && (
-        <div className={`sidebar-container ${isMobile && isMobileSidebarOpen ? 'mobile-open' : ''}`} style={{
-          position: 'fixed',
-          top: isMobile ? '56px' : '70px',
-          left: 0,
-          bottom: 0,
-          zIndex: 1050,
-        }}>
-          <Sidebar
-            user={user}
-            view={currentView === 'viewer' ? 'form-viewer' : currentView === 'builder' ? 'create-normal' : currentView}
-            onViewChange={(id) => {
-              if (onNavigate) onNavigate(id);
-              if (isMobile) setIsMobileSidebarOpen(false);
-            }}
-            onLogout={logout}
-            isCollapsed={!isMobile && isSidebarCollapsed}
-            toggleSidebar={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-            onHide={() => setIsSidebarHidden(true)}
-            isMobile={isMobile}
-          />
-        </div>
-      )}
+      {
+        showSidebar && (
+          <div className={`sidebar-container ${isMobile && isMobileSidebarOpen ? 'mobile-open' : ''}`} style={{
+            position: 'fixed',
+            top: isMobile ? '56px' : '70px',
+            left: 0,
+            bottom: 0,
+            zIndex: 1050,
+          }}>
+            <Sidebar
+              user={user}
+              view={currentView === 'builder' ? 'create-normal' : currentView}
+              onViewChange={(id) => {
+                if (onNavigate) onNavigate(id);
+                if (isMobile) setIsMobileSidebarOpen(false);
+              }}
+              onLogout={logout}
+              isCollapsed={!isMobile && isSidebarCollapsed}
+              toggleSidebar={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+              onHide={() => setIsSidebarHidden(true)}
+              isMobile={isMobile}
+            />
+          </div>
+        )
+      }
 
       <div
         id="main-content"

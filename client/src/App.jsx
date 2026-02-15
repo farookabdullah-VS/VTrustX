@@ -61,6 +61,7 @@ const CJMBuilder = React.lazy(() => import('./components/CJM/CJMBuilder').then(m
 const CJMDashboard = React.lazy(() => import('./components/CJM/CJMDashboard').then(m => ({ default: m.CJMDashboard })));
 const CJMAnalyticsDashboard = React.lazy(() => import('./components/CJM/CJMAnalyticsDashboard').then(m => ({ default: m.CJMAnalyticsDashboard })));
 const InteractiveManual = React.lazy(() => import('./components/InteractiveManual').then(m => ({ default: m.InteractiveManual })));
+const MobileExperience = React.lazy(() => import('./components/MobileExperience').then(m => ({ default: m.MobileExperience })));
 const Notifications = React.lazy(() => import('./components/Notifications').then(m => ({ default: m.Notifications })));
 const ABTestingDashboard = React.lazy(() => import('./components/ab-testing/ABTestingDashboard'));
 const ABExperimentBuilder = React.lazy(() => import('./components/ab-testing/ABExperimentBuilder'));
@@ -96,6 +97,7 @@ const VIEW_TITLES = {
   dashboard: 'Overview',
   builder: 'Form Builder',
   viewer: 'Surveys',
+  surveys: 'Surveys',
   results: 'Results',
   'ai-settings': 'AI Settings',
   'system-settings': 'System Settings',
@@ -136,10 +138,11 @@ const VIEW_TITLES = {
   'ai-video-agent': 'AI Video Agent',
   'ticket-settings': 'Ticket Settings',
   'persona-templates': 'Persona Templates',
-  collect: 'Distribution',
+  smartreach: 'SmartReach',
   'ab-tests': 'A/B Testing',
   'social-listening': 'Social Listening',
   'custom-reports': 'Custom Reports',
+  'mobile-app': 'Frontline App',
   'crm-connections': 'CRM Integrations',
   'telegram-config': 'Telegram Bot',
   'slack-config': 'Slack Bot',
@@ -216,7 +219,11 @@ function AppRoutes() {
       return;
     }
     // Map sidebar IDs that don't match route paths
-    const routeMap = { 'form-viewer': 'viewer', 'survey-results': 'survey-reports', 'mobile-app': 'distributions', 'xm-center': 'cx-ratings' };
+    const routeMap = {
+      'survey-results': 'survey-reports',
+      'mobile-app': 'mobile-app',
+      'xm-center': 'cx-ratings'
+    };
     navigate(`/${routeMap[id] || id}`);
   }, [navigate]);
 
@@ -240,223 +247,226 @@ function AppRoutes() {
           <NotificationProvider isAuthenticated={isAuthenticated}>
             <Suspense fallback={<LoadingSpinner />}>
               <Routes>
-            {/* Public routes */}
-            <Route path="/login" element={
-              isAuthenticated ? <Navigate to="/" replace /> : <LandingPage onLogin={login} />
-            } />
-            <Route path="/support" element={<SupportPage />} />
-            <Route path="/s/voice/:slug" element={<PublicVoiceRoute />} />
-            <Route path="/s/report/:slug" element={<PublicReportRoute />} />
-            <Route path="/report/:slug" element={<PublicReportRoute />} />
-            <Route path="/s/:slug" element={<PublicSurveyRoute />} />
+                {/* Public routes */}
+                <Route path="/login" element={
+                  isAuthenticated ? <Navigate to="/" replace /> : <LandingPage onLogin={login} />
+                } />
+                <Route path="/support" element={<SupportPage />} />
+                <Route path="/s/voice/:slug" element={<PublicVoiceRoute />} />
+                <Route path="/s/report/:slug" element={<PublicReportRoute />} />
+                <Route path="/report/:slug" element={<PublicReportRoute />} />
+                <Route path="/s/:slug" element={<PublicSurveyRoute />} />
 
-            {/* Protected routes with AppLayout */}
-            <Route element={
-              <ProtectedRoute>
-                <AppLayout onNavigate={handleNavigate} viewTitles={VIEW_TITLES} />
-              </ProtectedRoute>
-            }>
-              <Route index element={<Dashboard onNavigate={handleNavigate} onEdit={handleEditForm} onEditSubmission={handleEditSubmission} />} />
-              <Route path="dashboard" element={<Dashboard onNavigate={handleNavigate} onEdit={handleEditForm} onEditSubmission={handleEditSubmission} />} />
-              <Route path="cx-ratings" element={<CxDashboard onNavigate={handleNavigate} />} />
-              <Route path="survey-reports" element={<SurveyReportSelector onSelect={(id) => { setCurrentFormId(id); navigate('/results'); }} />} />
-              <Route path="builder" element={
-                <FormBuilder user={user} formId={currentFormId} initialData={initialData}
-                  onBack={() => { setCurrentFormId(null); navigate('/viewer'); }}
-                  onNavigate={(target) => { if (target === 'results') navigate('/results'); }}
-                  onFormChange={handleEditForm}
-                />
-              } />
-              <Route path="builder/:id" element={<BuilderWithParam handleEditForm={handleEditForm} />} />
+                {/* Protected routes with AppLayout */}
+                <Route element={
+                  <ProtectedRoute>
+                    <AppLayout onNavigate={handleNavigate} viewTitles={VIEW_TITLES} />
+                  </ProtectedRoute>
+                }>
+                  <Route index element={<Dashboard onNavigate={handleNavigate} onEdit={handleEditForm} onEditSubmission={handleEditSubmission} />} />
+                  <Route path="dashboard" element={<Dashboard onNavigate={handleNavigate} onEdit={handleEditForm} onEditSubmission={handleEditSubmission} />} />
+                  <Route path="cx-ratings" element={<CxDashboard onNavigate={handleNavigate} />} />
+                  <Route path="survey-reports" element={<SurveyReportSelector onSelect={(id) => { setCurrentFormId(id); navigate('/results'); }} />} />
+                  <Route path="builder" element={
+                    <FormBuilder user={user} formId={currentFormId} initialData={initialData}
+                      onBack={() => { setCurrentFormId(null); navigate('/viewer'); }}
+                      onNavigate={(target) => { if (target === 'results') navigate('/results'); }}
+                      onFormChange={handleEditForm}
+                    />
+                  } />
+                  <Route path="builder/:id" element={<BuilderWithParam handleEditForm={handleEditForm} />} />
 
-              {/* NEW: URL-based survey routes */}
-              <Route path="surveys" element={
-                <FormViewer formId={currentFormId} submissionId={currentSubmissionId}
-                  onSelectForm={(id) => setCurrentFormId(id)}
-                  onEditSubmission={handleEditSubmission}
-                  onEditForm={handleEditForm}
-                  onCreate={(type) => handleNavigate(type)}
-                  user={user}
-                />
-              } />
-              <Route path="surveys/:formId" element={
-                <FormViewer
-                  onEditSubmission={(subId, fId) => navigate(`/surveys/${fId}?submissionId=${subId}`)}
-                  onEditForm={(fId) => navigate(`/surveys/${fId}/edit`)}
-                  onCreate={(type) => handleNavigate(type)}
-                  user={user}
-                />
-              } />
-              <Route path="surveys/:formId/edit" element={
-                <FormBuilder user={user}
-                  onFormChange={(id) => navigate(`/surveys/${id}/edit`)}
-                />
-              } />
-              <Route path="surveys/:formId/results" element={
-                <ResultsViewer
-                  onBack={() => navigate('/surveys')}
-                  onEditSubmission={(subId, fId) => navigate(`/surveys/${fId}?submissionId=${subId}`)}
-                  onNavigate={(target, payload) => {
-                    if (target === 'builder') navigate(`/surveys/${payload}/edit`);
-                    else navigate(`/${target}`);
-                  }}
-                />
-              } />
-              <Route path="surveys/:formId/collect" element={
-                <SurveyDistribution
-                  onBack={() => navigate('/surveys')}
-                  onNavigate={(target, payload) => {
-                    if (target === 'builder') navigate(`/surveys/${payload}/edit`);
-                    else navigate(`/${target}`);
-                  }}
-                />
-              } />
+                  {/* NEW: URL-based survey routes */}
+                  <Route path="surveys" element={
+                    <FormViewer formId={currentFormId} submissionId={currentSubmissionId}
+                      onSelectForm={(id) => setCurrentFormId(id)}
+                      onEditSubmission={handleEditSubmission}
+                      onEditForm={handleEditForm}
+                      onCreate={(type) => handleNavigate(type)}
+                      user={user}
+                    />
+                  } />
+                  <Route path="surveys/:formId" element={
+                    <FormViewer
+                      onEditSubmission={(subId, fId) => navigate(`/surveys/${fId}?submissionId=${subId}`)}
+                      onEditForm={(fId) => navigate(`/surveys/${fId}/edit`)}
+                      onCreate={(type) => handleNavigate(type)}
+                      user={user}
+                    />
+                  } />
+                  <Route path="surveys/:formId/edit" element={
+                    <FormBuilder user={user}
+                      onFormChange={(id) => navigate(`/surveys/${id}/edit`)}
+                    />
+                  } />
+                  <Route path="surveys/:formId/results" element={
+                    <ResultsViewer
+                      onBack={() => navigate('/surveys')}
+                      onEditSubmission={(subId, fId) => navigate(`/surveys/${fId}?submissionId=${subId}`)}
+                      onNavigate={(target, payload) => {
+                        if (target === 'builder') navigate(`/surveys/${payload}/edit`);
+                        else navigate(`/${target}`);
+                      }}
+                    />
+                  } />
+                  <Route path="surveys/:formId/smartreach" element={
+                    <SurveyDistribution
+                      onBack={() => navigate('/surveys')}
+                      onNavigate={(target, payload) => {
+                        if (target === 'builder') navigate(`/surveys/${payload}/edit`);
+                        else navigate(`/${target}`);
+                      }}
+                    />
+                  } />
 
-              <Route path="results" element={
-                <ResultsViewer formId={currentFormId} initialView={initialData?.view}
-                  onBack={() => navigate('/')}
-                  onEditSubmission={handleEditSubmission}
-                  onNavigate={(target) => { if (target === 'builder') handleEditForm(currentFormId); else navigate(`/${target}`); }}
-                />
-              } />
-              <Route path="collect" element={
-                <SurveyDistribution formId={currentFormId}
-                  onBack={() => navigate('/')}
-                  onNavigate={(target) => { if (target === 'builder') handleEditForm(currentFormId); else navigate(`/${target}`); }}
-                />
-              } />
-              <Route path="viewer" element={
-                <FormViewer formId={currentFormId} submissionId={currentSubmissionId}
-                  onSelectForm={(id) => setCurrentFormId(id)}
-                  onEditSubmission={handleEditSubmission}
-                  onEditForm={handleEditForm}
-                  onCreate={(type) => handleNavigate(type)}
-                  user={user}
-                />
-              } />
-              <Route path="ai-settings" element={<AIIntegrations />} />
-              <Route path="system-settings" element={<SystemSettings />} />
-              <Route path="ticket-settings" element={<TicketSettings />} />
-              <Route path="theme-settings" element={<ThemeSettings />} />
-              <Route path="interactive-manual" element={<InteractiveManual />} />
-              <Route path="ai-surveyor" element={<AISurveyor />} />
-              <Route path="ai-video-agent" element={<AIVideoAgentPage />} />
-              <Route path="profile" element={<UserProfile user={user} onUpdateUser={(updatedUser) => setUser(prev => ({ ...prev, user: updatedUser }))} />} />
-              <Route path="integrations" element={<IntegrationsView />} />
-              <Route path="workflows" element={<WorkflowsPage />} />
-              <Route path="user-management" element={<UserManagement />} />
-              <Route path="role-master" element={<RoleMaster />} />
-              <Route path="subscription" element={<SubscriptionManagement />} />
-              <Route path="global-admin" element={<GlobalAdminDashboard />} />
-              <Route path="contact-master" element={<ContactMaster />} />
-              <Route path="contact-segments" element={<ContactSegments />} />
-              <Route path="custom-fields" element={<CustomFieldsManager />} />
-              <Route path="contact-tags" element={<TagsManager />} />
-              <Route path="customer360" element={<Customer360 />} />
-              <Route path="personas" element={<CxPersonaBuilder onNavigate={(v) => navigate(`/${v}`)} />} />
-              <Route path="journeys" element={<JourneyBuilder />} />
-              <Route path="persona-templates" element={
-                <PersonaTemplatesRoute navigate={navigate} />
-              } />
-              <Route path="templates" element={
-                <div style={{ height: 'calc(100vh - 100px)' }}>
-                  <TemplateGallery displayMode="page" onSelect={(template) => {
-                    setInitialData({ ...template.definition, title: template.title });
-                    setCurrentFormId(null);
-                    navigate('/builder');
-                  }} />
-                </div>
-              } />
-              <Route path="tickets" element={
-                <TicketListView user={user} onSelectTicket={(id) => {
-                  if (id === 'reports') navigate('/crm-reports');
-                  else { setCurrentTicketId(id); navigate('/ticket-detail'); }
-                }} />
-              } />
-              <Route path="crm-reports" element={<CrmDashboard user={user} />} />
-              <Route path="ticket-detail" element={
-                <TicketDetailView ticketId={currentTicketId} user={user}
-                  onBack={() => { navigate('/tickets'); setCurrentTicketId(null); }}
-                />
-              } />
-              <Route path="analytics-studio" element={<AnalyticsStudio />} />
-              <Route path="analytics-builder" element={<AnalyticsBuilder onNavigate={(v) => navigate(`/${v}`)} />} />
-              <Route path="analytics-dashboard" element={<DynamicDashboard />} />
-              <Route path="survey-activity-dashboard" element={<SurveyAnalyticsDashboard />} />
-              <Route path="textiq" element={<TextIQDashboard />} />
-              <Route path="xm-directory" element={<XMDirectory />} />
-              <Route path="actions" element={<ActionPlanning />} />
-              <Route path="social-media" element={<SocialMediaMarketing />} />
-              <Route path="reputation" element={<ReputationManager />} />
-              <Route path="cjm" element={
-                currentCjmMapId
-                  ? <CJMBuilder mapId={currentCjmMapId} onBack={() => setCurrentCjmMapId(null)} />
-                  : <CJMDashboard onSelectMap={(id) => setCurrentCjmMapId(id)} />
-              } />
-              <Route path="cjm-analytics" element={<CJMAnalyticsDashboard />} />
+                  <Route path="results" element={
+                    <ResultsViewer formId={currentFormId} initialView={initialData?.view}
+                      onBack={() => navigate('/')}
+                      onEditSubmission={handleEditSubmission}
+                      onNavigate={(target) => { if (target === 'builder') handleEditForm(currentFormId); else navigate(`/${target}`); }}
+                    />
+                  } />
+                  <Route path="smartreach" element={
+                    <SurveyDistribution formId={currentFormId}
+                      onBack={() => navigate('/')}
+                      onNavigate={(target) => { if (target === 'builder') handleEditForm(currentFormId); else navigate(`/${target}`); }}
+                    />
+                  } />
+                  <Route path="viewer" element={
+                    <FormViewer formId={currentFormId} submissionId={currentSubmissionId}
+                      onSelectForm={(id) => setCurrentFormId(id)}
+                      onEditSubmission={handleEditSubmission}
+                      onEditForm={handleEditForm}
+                      onCreate={(type) => handleNavigate(type)}
+                      user={user}
+                    />
+                  } />
+                  <Route path="ai-settings" element={<AIIntegrations />} />
+                  <Route path="system-settings" element={<SystemSettings />} />
+                  <Route path="ticket-settings" element={<TicketSettings />} />
+                  <Route path="theme-settings" element={<ThemeSettings />} />
+                  <Route path="interactive-manual" element={<InteractiveManual />} />
+                  <Route path="ai-surveyor" element={<AISurveyor />} />
+                  <Route path="ai-video-agent" element={<AIVideoAgentPage />} />
+                  <Route path="profile" element={<UserProfile user={user} onUpdateUser={(updatedUser) => setUser(prev => ({ ...prev, user: updatedUser }))} />} />
+                  <Route path="integrations" element={<IntegrationsView />} />
+                  <Route path="workflows" element={<WorkflowsPage />} />
+                  <Route path="user-management" element={<UserManagement />} />
+                  <Route path="role-master" element={<RoleMaster />} />
+                  <Route path="subscription" element={<SubscriptionManagement />} />
+                  <Route path="global-admin" element={<GlobalAdminDashboard />} />
+                  <Route path="contact-master" element={<ContactMaster />} />
+                  <Route path="contact-segments" element={<ContactSegments />} />
+                  <Route path="custom-fields" element={<CustomFieldsManager />} />
+                  <Route path="contact-tags" element={<TagsManager />} />
+                  <Route path="customer360" element={<Customer360 />} />
+                  <Route path="personas" element={<CxPersonaBuilder onNavigate={(v) => navigate(`/${v}`)} />} />
+                  <Route path="journeys" element={<JourneyBuilder />} />
+                  <Route path="persona-templates" element={
+                    <PersonaTemplatesRoute navigate={navigate} />
+                  } />
+                  <Route path="templates" element={
+                    <div style={{ height: 'calc(100vh - 100px)' }}>
+                      <TemplateGallery displayMode="page" onSelect={(template) => {
+                        setInitialData({ ...template.definition, title: template.title });
+                        setCurrentFormId(null);
+                        navigate('/builder');
+                      }} />
+                    </div>
+                  } />
+                  <Route path="tickets" element={
+                    <TicketListView user={user} onSelectTicket={(id) => {
+                      if (id === 'reports') navigate('/crm-reports');
+                      else { setCurrentTicketId(id); navigate('/ticket-detail'); }
+                    }} />
+                  } />
+                  <Route path="crm-reports" element={<CrmDashboard user={user} />} />
+                  <Route path="ticket-detail" element={
+                    <TicketDetailView ticketId={currentTicketId} user={user}
+                      onBack={() => { navigate('/tickets'); setCurrentTicketId(null); }}
+                    />
+                  } />
+                  <Route path="analytics-studio" element={<AnalyticsStudio />} />
+                  <Route path="analytics-builder" element={<AnalyticsBuilder onNavigate={(v) => navigate(`/${v}`)} />} />
+                  <Route path="analytics-dashboard" element={<DynamicDashboard />} />
+                  <Route path="survey-activity-dashboard" element={<SurveyAnalyticsDashboard />} />
+                  <Route path="textiq" element={<TextIQDashboard />} />
+                  <Route path="xm-directory" element={<XMDirectory />} />
+                  <Route path="actions" element={<ActionPlanning />} />
+                  <Route path="social-media" element={<SocialMediaMarketing />} />
+                  <Route path="reputation" element={<ReputationManager />} />
+                  <Route path="cjm" element={
+                    currentCjmMapId
+                      ? <CJMBuilder mapId={currentCjmMapId} onBack={() => setCurrentCjmMapId(null)} />
+                      : <CJMDashboard onSelectMap={(id) => setCurrentCjmMapId(id)} />
+                  } />
+                  <Route path="cjm-analytics" element={<CJMAnalyticsDashboard />} />
 
-              {/* A/B Testing Routes */}
-              <Route path="ab-tests" element={<ABTestingDashboard />} />
-              <Route path="ab-tests/new" element={<ABExperimentBuilder />} />
-              <Route path="ab-tests/:id" element={<ABStatsComparison />} />
+                  {/* A/B Testing Routes */}
+                  <Route path="ab-tests" element={<ABTestingDashboard />} />
+                  <Route path="ab-tests/new" element={<ABExperimentBuilder />} />
+                  <Route path="ab-tests/:id" element={<ABStatsComparison />} />
 
-              {/* Social Listening Route */}
-              <Route path="social-listening" element={<SocialListeningDashboard />} />
+                  {/* Social Listening Route */}
+                  <Route path="social-listening" element={<SocialListeningDashboard />} />
 
-              {/* Custom Reports Routes */}
-              <Route path="custom-reports" element={<CustomReportsDashboard />} />
-              <Route path="custom-reports/new" element={<CustomReportBuilder />} />
-              <Route path="custom-reports/:id" element={<CustomReportBuilder />} />
-              <Route path="custom-reports/:id/edit" element={<CustomReportBuilder />} />
+                  {/* Custom Reports Routes */}
+                  <Route path="custom-reports" element={<CustomReportsDashboard />} />
+                  <Route path="custom-reports/new" element={<CustomReportBuilder />} />
+                  <Route path="custom-reports/:id" element={<CustomReportBuilder />} />
+                  <Route path="custom-reports/:id/edit" element={<CustomReportBuilder />} />
 
-              {/* CRM Integrations Routes */}
-              <Route path="crm-connections" element={<CRMConnectionsDashboard />} />
-              <Route path="crm-connections/new" element={<CRMConnectionWizard />} />
-              <Route path="crm-connections/:id/sync" element={<CRMSyncDashboard />} />
+                  {/* CRM Integrations Routes */}
+                  <Route path="crm-connections" element={<CRMConnectionsDashboard />} />
+                  <Route path="crm-connections/new" element={<CRMConnectionWizard />} />
+                  <Route path="crm-connections/:id/sync" element={<CRMSyncDashboard />} />
 
-              {/* Telegram Bot Configuration */}
-              <Route path="telegram-config" element={<TelegramConfig />} />
+                  {/* Telegram Bot Configuration */}
+                  <Route path="telegram-config" element={<TelegramConfig />} />
 
-              {/* Slack Bot Configuration */}
-              <Route path="slack-config" element={<SlackConfig />} />
+                  {/* Slack Bot Configuration */}
+                  <Route path="slack-config" element={<SlackConfig />} />
 
-              {/* Microsoft Teams Bot Configuration */}
-              <Route path="teams-config" element={<TeamsConfig />} />
+                  {/* Microsoft Teams Bot Configuration */}
+                  <Route path="teams-config" element={<TeamsConfig />} />
 
-              {/* Drip Campaigns Routes */}
-              <Route path="drip-campaigns" element={<DripCampaignsDashboard />} />
-              <Route path="drip-campaigns/new" element={<DripCampaignBuilder />} />
-              <Route path="drip-campaigns/:id" element={<DripCampaignDetails />} />
-              <Route path="workflows-automation" element={<WorkflowAutomationList />} />
-              <Route path="workflows-automation/new" element={<WorkflowAutomationBuilder />} />
+                  {/* Drip Campaigns Routes */}
+                  <Route path="drip-campaigns" element={<DripCampaignsDashboard />} />
+                  <Route path="drip-campaigns/new" element={<DripCampaignBuilder />} />
+                  <Route path="drip-campaigns/:id" element={<DripCampaignDetails />} />
+                  <Route path="workflows-automation" element={<WorkflowAutomationList />} />
+                  <Route path="workflows-automation/new" element={<WorkflowAutomationBuilder />} />
 
-              {/* API Keys & Webhooks Routes */}
-              <Route path="api-keys" element={<APIKeysList />} />
-              <Route path="api-keys/new" element={<APIKeyBuilder />} />
-              <Route path="webhooks" element={<WebhooksList />} />
-              <Route path="webhooks/new" element={<WebhookBuilder />} />
+                  {/* API Keys & Webhooks Routes */}
+                  <Route path="api-keys" element={<APIKeysList />} />
+                  <Route path="api-keys/new" element={<APIKeyBuilder />} />
+                  <Route path="webhooks" element={<WebhooksList />} />
+                  <Route path="webhooks/new" element={<WebhookBuilder />} />
 
-              {/* Audit Logs Routes */}
-              <Route path="audit-logs" element={<AuditLogViewer />} />
-              <Route path="retention-policy" element={<RetentionPolicySettings />} />
+                  {/* Audit Logs Routes */}
+                  <Route path="audit-logs" element={<AuditLogViewer />} />
+                  <Route path="retention-policy" element={<RetentionPolicySettings />} />
 
-              {/* IP Whitelisting Routes */}
-              <Route path="ip-whitelist" element={<IPWhitelistManager />} />
+                  {/* IP Whitelisting Routes */}
+                  <Route path="ip-whitelist" element={<IPWhitelistManager />} />
 
-              {/* Security Settings Routes */}
-              <Route path="2fa-settings" element={<TwoFactorSettings />} />
+                  {/* Frontline App Route */}
+                  <Route path="mobile-app" element={<MobileExperience />} />
 
-              {/* SSO Provider Routes */}
-              <Route path="sso-providers" element={<SSOProvidersList />} />
-              <Route path="sso-providers/new" element={<SSOProviderWizard />} />
-              <Route path="sso-providers/:id/edit" element={<SSOProviderWizard />} />
+                  {/* Security Settings Routes */}
+                  <Route path="2fa-settings" element={<TwoFactorSettings />} />
 
-              {/* Backward Compatibility Redirects */}
-              <Route path="form-viewer" element={<Navigate to="/surveys" replace />} />
-            </Route>
+                  {/* SSO Provider Routes */}
+                  <Route path="sso-providers" element={<SSOProvidersList />} />
+                  <Route path="sso-providers/new" element={<SSOProviderWizard />} />
+                  <Route path="sso-providers/:id/edit" element={<SSOProviderWizard />} />
 
-            {/* Catch-all: redirect to dashboard or login */}
-            <Route path="*" element={<Navigate to={isAuthenticated ? "/" : "/login"} replace />} />
+                  {/* Backward Compatibility Redirects */}
+                  <Route path="form-viewer" element={<Navigate to="/surveys" replace />} />
+                </Route>
+
+                {/* Catch-all: redirect to dashboard or login */}
+                <Route path="*" element={<Navigate to={isAuthenticated ? "/" : "/login"} replace />} />
               </Routes>
             </Suspense>
           </NotificationProvider>

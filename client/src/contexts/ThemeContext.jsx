@@ -11,7 +11,8 @@ export function ThemeProvider({ children, user }) {
 
   // Current theme ID
   const [currentTheme, setCurrentTheme] = useState(() => {
-    return localStorage.getItem('rayix_theme_id') || 'default';
+    const saved = localStorage.getItem('rayix_theme_id');
+    return (saved && saved !== 'dark') ? saved : 'default';
   });
 
   // Dark mode: check localStorage first, then system preference
@@ -49,16 +50,88 @@ export function ThemeProvider({ children, user }) {
 
   // Fetch tenant-specific theme from backend
   useEffect(() => {
-    if (!user?.tenant_id) return;
+    if (!user?.user?.tenant_id) return;
 
-    axios.get(`/api/tenants/${user.tenant_id}/theme`)
+    axios.get(`/api/settings/theme`)
       .then(res => {
         const theme = res.data;
-        if (theme && theme.customTheme) {
-          // Register custom theme
-          const themeId = `tenant_${user.tenant_id}`;
-          registerTheme(themeId, theme.customTheme);
-          setCustomTheme(theme.customTheme);
+        if (theme && (theme.primaryColor || theme.backgroundColor)) {
+          // Transform flat tenant theme to structured theme
+          const themeId = `tenant_${user.user.tenant_id}`;
+          // Helper to adjust color opacity
+          const alpha = (hex, opacity) => {
+            if (!hex) return 'transparent';
+            if (hex.startsWith('rgba')) return hex;
+            const r = parseInt(hex.slice(1, 3), 16);
+            const g = parseInt(hex.slice(3, 5), 16);
+            const b = parseInt(hex.slice(5, 7), 16);
+            return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+          };
+
+          const structuredTheme = {
+            id: themeId,
+            name: theme.name || 'Custom Brand',
+            colors: {
+              // Core Colors
+              primary: theme.primaryColor,
+              primaryHover: theme.primaryColor,
+              primaryLight: alpha(theme.primaryColor, 0.1),
+              secondary: theme.secondaryColor || theme.primaryColor,
+              accent: theme.primaryColor,
+
+              // Backgrounds
+              deepBg: theme.backgroundColor || '#eff3f8',
+              surfaceBg: '#ffffff',
+              cardBg: '#ffffff',
+
+              // Glass Effect
+              glassBg: 'rgba(255, 255, 255, 0.85)',
+              glassBorder: 'rgba(255, 255, 255, 0.6)',
+
+              // Sidebar
+              sidebarBg: `linear-gradient(180deg, ${alpha(theme.primaryColor, 0.08)} 0%, ${alpha(theme.backgroundColor || '#ffffff', 0.95)} 100%)`,
+              sidebarText: theme.textColor || '#1a1c1e',
+              sidebarActiveBg: alpha(theme.primaryColor, 0.1),
+              sidebarActiveText: theme.primaryColor,
+              sidebarHoverBg: alpha(theme.primaryColor, 0.04),
+              sidebarBorder: alpha(theme.primaryColor, 0.08),
+
+              // Header
+              headerBg: alpha(theme.backgroundColor || '#ffffff', 0.95),
+              headerBorder: alpha(theme.primaryColor, 0.15),
+
+              // Text
+              textPrimary: theme.textColor || '#1a1c1e',
+              textSecondary: alpha(theme.textColor || '#1a1c1e', 0.7),
+              textMuted: alpha(theme.textColor || '#1a1c1e', 0.5),
+
+              // Components
+              buttonPrimaryBg: theme.primaryColor,
+              buttonPrimaryText: '#ffffff',
+              inputBg: alpha(theme.primaryColor, 0.02),
+              inputBorder: alpha(theme.primaryColor, 0.1),
+
+              // Profile/Header elements
+              avatarBg: theme.primaryColor,
+              usernameColor: theme.textColor || '#1a1c1e',
+              dividerColor: alpha(theme.primaryColor, 0.08),
+              profileMenuBg: '#ffffff',
+              profileMenuBorder: alpha(theme.primaryColor, 0.1)
+            },
+            borderRadius: {
+              sm: '4px',
+              md: theme.borderRadius || '8px',
+              lg: theme.borderRadius || '12px',
+              xl: '16px',
+              full: '9999px'
+            },
+            typography: {
+              fontFamily: theme.fontFamily || "'Outfit', sans-serif"
+            }
+          };
+
+          registerTheme(themeId, structuredTheme);
+          setCustomTheme(structuredTheme);
           setCurrentTheme(themeId);
         } else if (theme && theme.preset) {
           // Use preset theme
@@ -66,7 +139,7 @@ export function ThemeProvider({ children, user }) {
         }
       })
       .catch(err => {
-        console.log('[ThemeContext] No custom theme found, using default');
+        console.log('[ThemeContext] No custom theme found or error fetching', err);
       });
   }, [user]);
 

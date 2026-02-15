@@ -1297,7 +1297,7 @@ export function FormViewer({ formId: propsFormId, submissionId: propsSubmissionI
                                                                     <Download size={16} color="#6366f1" /> Export
                                                                 </button>
                                                                 <button onClick={() => setCollectViewId(form.id)} style={{ padding: '10px 12px', background: 'transparent', border: 'none', cursor: 'pointer', color: '#1e293b', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.9em', borderRadius: '6px' }} onMouseEnter={e => e.currentTarget.style.background = '#f1f5f9'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-                                                                    <Share2 size={16} color="#10b981" /> {t('surveys.action.collect')}
+                                                                    <Share2 size={16} color="#10b981" /> SmartReach
                                                                 </button>
                                                                 <a
                                                                     href={`https://api.whatsapp.com/send?text=${encodeURIComponent(`${form.title} - ${window.location.origin}/s/${form.slug || form.id}`)}`}

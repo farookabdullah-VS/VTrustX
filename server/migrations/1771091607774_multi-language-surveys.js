@@ -64,7 +64,7 @@ export const up = (pgm) => {
     // Add default_language to forms table
     pgm.addColumn('forms', {
         default_language: { type: 'varchar(10)', default: "'en'" },
-        available_languages: { type: 'jsonb', default: "'[\"en\"]'" }, // Array of enabled language codes
+        available_languages: { type: 'jsonb', default: '["en"]' }, // Array of enabled language codes
         auto_translate: { type: 'boolean', default: false },
         translation_provider: { type: 'varchar(20)', default: "'google'" } // google, deepl, azure, manual
     });

@@ -4,7 +4,7 @@ import {
     AlertCircle, Home, Send, CheckCircle, Clock, X, ArrowLeft, Star, MessageSquare,
     Calendar, Filter, Search, RefreshCw, Download
 } from 'lucide-react';
-import axios from 'axios';
+import axios from '../axiosConfig';
 
 export function MobileExperience() {
     const [activeTab, setActiveTab] = useState('home');
