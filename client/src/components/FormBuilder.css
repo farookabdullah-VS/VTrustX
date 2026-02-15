@@ -5,13 +5,13 @@
     font-weight: 500;
     cursor: pointer;
     text-decoration: none;
-    border-bottom: 2px solid transparent;
+    border-bottom: var(--space-0-5, 2px) solid transparent;
     height: 100%;
     display: flex;
     align-items: center;
     background: transparent;
     font-size: var(--text-sm, 14px);
-    transition: all 0.2s ease;
+    transition: all var(--transition-fast, 0.2s) ease;
 }
 
 .fb-nav-item:hover {
@@ -23,5 +23,5 @@
 .fb-nav-item.active {
     color: var(--primary-color, #064e3b);
     font-weight: 600;
-    border-bottom: 2px solid var(--primary-color, #064e3b);
+    border-bottom: var(--space-0-5, 2px) solid var(--primary-color, #064e3b);
 }
