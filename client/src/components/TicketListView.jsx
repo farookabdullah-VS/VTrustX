@@ -306,8 +306,8 @@ export function TicketListView({ onSelectTicket, user }) {
                             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9em' }}>
                                 <thead>
                                     <tr style={{ borderBottom: '2px solid var(--glass-border, rgba(0,0,0,0.08))' }}>
-                                        <th style={{ padding: '12px 16px', textAlign: 'center', width: 40 }}>
-                                            <input type="checkbox" checked={selectedIds.size === tickets.length && tickets.length > 0} onChange={toggleSelectAll} style={{ cursor: 'pointer', accentColor: 'var(--primary-color)' }} />
+                                        <th scope="col" style={{ padding: '12px 16px', textAlign: 'center', width: 40 }}>
+                                            <input type="checkbox" checked={selectedIds.size === tickets.length && tickets.length > 0} onChange={toggleSelectAll} style={{ cursor: 'pointer', accentColor: 'var(--primary-color)' }} aria-label={t('tickets.selectAll', 'Select all tickets')} />
                                         </th>
                                         {[
                                             { key: 'ticket_code', label: t('tickets.table.code', 'Code') },
@@ -320,6 +320,7 @@ export function TicketListView({ onSelectTicket, user }) {
                                         ].map((col, i) => (
                                             <th
                                                 key={i}
+                                                scope="col"
                                                 onClick={col.key ? () => handleSort(col.key) : undefined}
                                                 style={{
                                                     padding: '12px 16px',

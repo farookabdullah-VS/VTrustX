@@ -1,12 +1,18 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import * as XLSX from 'xlsx';
 import { useToast } from './common/Toast';
 import { WhatsAppShareButton, SharePanel } from './common/WhatsAppShare';
 
-export function SurveyDistribution({ formId, onBack, onNavigate }) {
+export function SurveyDistribution({ formId: propsFormId, onBack, onNavigate }) {
+    const { formId: paramsFormId } = useParams();
+    const formId = propsFormId || paramsFormId;
+
+    const navigate = useNavigate();
     const toast = useToast();
     const [formMetadata, setFormMetadata] = useState(null);
+    const [allForms, setAllForms] = useState([]);
     const [loading, setLoading] = useState(true);
     const [activeSidebar, setActiveSidebar] = useState('audience'); // audience, link, email
     const [audienceData, setAudienceData] = useState([]);
@@ -19,6 +25,10 @@ export function SurveyDistribution({ formId, onBack, onNavigate }) {
                 if (formId) {
                     const res = await axios.get(`/api/forms/${formId}`);
                     setFormMetadata(res.data);
+                } else {
+                    // Global mode - fetch all forms to choose one
+                    const res = await axios.get('/api/forms');
+                    setAllForms(res.data || []);
                 }
                 setLoading(false);
             } catch (err) {
@@ -58,27 +68,51 @@ export function SurveyDistribution({ formId, onBack, onNavigate }) {
 
     const navLinkStyle = (active) => ({
         padding: '0 15px',
-        color: active ? '#2563eb' : '#64748b',
-        fontWeight: active ? '600' : '500',
+        color: active ? 'var(--primary-color, #2563eb)' : 'var(--text-secondary, #64748b)',
+        fontWeight: active ? '700' : '500',
         cursor: 'pointer',
         textDecoration: 'none',
-        borderBottom: active ? '2px solid #2563eb' : 'none',
+        borderBottom: active ? '3px solid var(--primary-color, #2563eb)' : 'none',
         height: '100%',
         display: 'flex',
-        alignItems: 'center'
+        alignItems: 'center',
+        transition: 'all 0.2s ease'
     });
 
     const sidebarItemStyle = (active) => ({
-        padding: '12px 20px',
+        padding: '12px 24px',
         cursor: 'pointer',
-        color: active ? '#2563eb' : '#64748b',
-        fontWeight: active ? '600' : 'normal',
-        background: active ? '#eff6ff' : 'transparent',
-        borderRight: active ? '3px solid #2563eb' : 'none',
+        color: active ? 'var(--primary-color, #2563eb)' : 'var(--sidebar-text, #64748b)',
+        fontWeight: active ? '600' : '500',
+        background: active ? 'var(--sidebar-active-bg, #eff6ff)' : 'transparent',
+        borderRight: active ? '3px solid var(--primary-color, #2563eb)' : 'none',
         display: 'flex',
         alignItems: 'center',
-        gap: '10px'
+        gap: '12px',
+        transition: 'all 0.2s ease'
     });
+
+    const primaryButtonStyle = {
+        padding: '10px 20px',
+        background: 'var(--primary-color, #2563eb)',
+        color: 'white',
+        border: 'none',
+        borderRadius: '8px',
+        cursor: 'pointer',
+        fontWeight: '600',
+        fontSize: '0.9em',
+        transition: 'all 0.2s ease',
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: '8px'
+    };
+
+    const copyLink = () => {
+        if (!formMetadata) return;
+        const url = `${window.location.origin}/s/${formMetadata.slug || formMetadata.id}`;
+        navigator.clipboard.writeText(url);
+        toast.success("Link copied to clipboard!");
+    };
 
     const handleSaveAudience = async () => {
         if (!audienceData || audienceData.length === 0) return;
@@ -138,18 +172,18 @@ export function SurveyDistribution({ formId, onBack, onNavigate }) {
     };
 
     return (
-        <div style={{ background: '#f8fafc', minHeight: '100vh', display: 'flex', flexDirection: 'column', fontFamily: "'Outfit', sans-serif" }}>
+        <div style={{ background: 'var(--deep-bg, #f8fafc)', minHeight: '100vh', display: 'flex', flexDirection: 'column', fontFamily: 'var(--font-family, inherit)' }}>
             {/* TOP NAVIGATION */}
-            <div style={{ background: 'white', borderBottom: '1px solid #e2e8f0', height: '60px', display: 'flex', alignItems: 'center', padding: '0 30px', justifyContent: 'space-between' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <button onClick={onBack} style={{ border: 'none', background: 'none', cursor: 'pointer', fontSize: '1.2em', color: '#64748b' }}>←</button>
-                    <div style={{ fontWeight: 'bold', fontSize: '1.1em', color: '#0f172a' }}>{formMetadata?.title || 'SmartReach'}</div>
-                    <div style={{ background: '#e0f2fe', color: '#0369a1', padding: '2px 8px', borderRadius: '4px', fontSize: '0.8em', marginLeft: '10px' }}>ID: {formId}</div>
+            <div style={{ background: 'var(--surface-bg, white)', borderBottom: '1px solid var(--divider-color, #e2e8f0)', height: '64px', display: 'flex', alignItems: 'center', padding: '0 30px', justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <button onClick={onBack} style={{ border: 'none', background: 'none', cursor: 'pointer', fontSize: '1.4em', color: 'var(--text-secondary, #64748b)', display: 'flex', alignItems: 'center' }}>←</button>
+                    <div style={{ fontWeight: '800', fontSize: '1.2em', color: 'var(--text-primary, #0f172a)', letterSpacing: '-0.5px' }}>{formMetadata?.title || 'SmartReach'}</div>
+                    {formId && <div style={{ background: 'var(--primary-light, #e0f2fe)', color: 'var(--primary-color, #0369a1)', padding: '2px 10px', borderRadius: '6px', fontSize: '0.75em', fontWeight: '700', marginLeft: '10px' }}>ID: {formId}</div>}
                 </div>
-                <div style={{ display: 'flex', height: '100%', gap: '20px' }}>
+                <div style={{ display: 'flex', height: '100%', gap: '24px' }}>
                     <div style={navLinkStyle(false)} onClick={() => onNavigate && onNavigate('builder')}>Questionnaire</div>
                     <div style={navLinkStyle(false)} onClick={() => onNavigate && onNavigate('settings')}>Settings</div>
-                    <div style={navLinkStyle(true)}>Get Responses</div>
+                    <div style={navLinkStyle(true)}>SmartReach</div>
                     <div style={navLinkStyle(false)} onClick={() => onNavigate && onNavigate('results')}>Results</div>
                 </div>
                 <div style={{ width: '32px' }}></div> {/* Spacer */}
@@ -157,8 +191,8 @@ export function SurveyDistribution({ formId, onBack, onNavigate }) {
 
             <div style={{ display: 'flex', flex: 1 }}>
                 {/* SIDEBAR */}
-                <div style={{ width: '250px', background: 'white', borderRight: '1px solid #e2e8f0', padding: '20px 0' }}>
-                    <div style={{ padding: '0 20px 20px', fontSize: '1.2em', fontWeight: 'bold', color: '#334155' }}>SmartReach</div>
+                <div style={{ width: '280px', background: 'var(--surface-bg, white)', borderRight: '1px solid var(--divider-color, #e2e8f0)', padding: '24px 0' }}>
+                    <div style={{ padding: '0 24px 20px', fontSize: '0.8rem', fontWeight: '800', color: 'var(--text-muted, #94a3b8)', textTransform: 'uppercase', letterSpacing: '1px' }}>Distribution Channels</div>
                     <div style={sidebarItemStyle(activeSidebar === 'link')} onClick={() => setActiveSidebar('link')}>
                         <span>🔗</span> Web Link
                     </div>
@@ -186,7 +220,80 @@ export function SurveyDistribution({ formId, onBack, onNavigate }) {
                 </div>
 
                 {/* MAIN AREA */}
-                <div style={{ flex: 1, padding: '40px' }}>
+                <div style={{ flex: 1, padding: '40px', overflowY: 'auto' }}>
+                    {/* Survey Selection if no formId provided */}
+                    {!formId && !formMetadata && (
+                        <div style={{ maxWidth: '900px', margin: '0 auto' }}>
+                            <div style={{ marginBottom: '30px' }}>
+                                <h1 style={{ fontSize: '1.8em', color: '#0f172a', marginBottom: '8px' }}>Select a Survey</h1>
+                                <p style={{ color: '#64748b' }}>Choose a survey to manage its distribution and reach more audiences.</p>
+                            </div>
+
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' }}>
+                                {allForms.length === 0 && !loading && (
+                                    <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '100px 0', color: '#64748b' }}>
+                                        <div style={{ fontSize: '3em', marginBottom: '10px' }}>📋</div>
+                                        <h3>No surveys found</h3>
+                                        <p>Create a survey first to use SmartReach.</p>
+                                        <button
+                                            onClick={() => onNavigate('builder')}
+                                            style={{ marginTop: '20px', padding: '10px 20px', background: '#0f172a', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer' }}
+                                        >
+                                            Create Survey
+                                        </button>
+                                    </div>
+                                )}
+                                {allForms.map(form => (
+                                    <div
+                                        key={form.id}
+                                        onClick={() => {
+                                            // We simulate selection by updating formMetadata if we don't want to navigate
+                                            // or we can use onNavigate to update the URL
+                                            if (onNavigate) {
+                                                navigate(`/surveys/${form.id}/smartreach`);
+                                            } else {
+                                                setFormMetadata(form);
+                                            }
+                                        }}
+                                        style={{
+                                            background: 'white',
+                                            padding: '24px',
+                                            borderRadius: '16px',
+                                            border: '1px solid #e2e8f0',
+                                            cursor: 'pointer',
+                                            transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                                            boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            gap: '12px'
+                                        }}
+                                        onMouseOver={e => {
+                                            e.currentTarget.style.borderColor = 'var(--primary-color, #2563eb)';
+                                            e.currentTarget.style.boxShadow = '0 10px 15px -3px rgba(0,0,0,0.1)';
+                                            e.currentTarget.style.transform = 'translateY(-2px)';
+                                        }}
+                                        onMouseOut={e => {
+                                            e.currentTarget.style.borderColor = '#e2e8f0';
+                                            e.currentTarget.style.boxShadow = '0 1px 2px rgba(0,0,0,0.05)';
+                                            e.currentTarget.style.transform = 'translateY(0)';
+                                        }}
+                                    >
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                            <div style={{ fontSize: '1.2em', fontWeight: 'bold', color: '#1e293b' }}>{form.title}</div>
+                                            <div style={{ background: '#f1f5f9', color: '#64748b', fontSize: '0.7em', padding: '2px 6px', borderRadius: '4px' }}>ID: {form.id}</div>
+                                        </div>
+                                        <div style={{ color: '#64748b', fontSize: '0.9em', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                                            {form.description || 'No description provided.'}
+                                        </div>
+                                        <div style={{ marginTop: 'auto', paddingTop: '12px', borderTop: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                            <span style={{ fontSize: '0.8em', color: '#94a3b8' }}>Created: {new Date(form.created_at).toLocaleDateString()}</span>
+                                            <span style={{ color: '#2563eb', fontWeight: '600', fontSize: '0.85em' }}>Distribute →</span>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
                     {/* WhatsApp-dedicated tab */}
                     {activeSidebar === 'whatsapp' && formMetadata && (
                         <div>
@@ -235,7 +342,7 @@ export function SurveyDistribution({ formId, onBack, onNavigate }) {
                                     To send surveys via Telegram, you need to configure a Telegram Bot. Once configured, you can send survey invitations to contacts with Telegram Chat IDs.
                                 </p>
                                 <button
-                                    onClick={() => window.location.href = '/telegram-config'}
+                                    onClick={() => navigate('/telegram-config')}
                                     style={{
                                         background: '#0088cc',
                                         color: 'white',
@@ -328,7 +435,7 @@ export function SurveyDistribution({ formId, onBack, onNavigate }) {
                                     To send surveys via Slack, you need to configure a Slack Bot. Once configured, you can send survey invitations to channels and direct messages.
                                 </p>
                                 <button
-                                    onClick={() => window.location.href = '/slack-config'}
+                                    onClick={() => navigate('/slack-config')}
                                     style={{
                                         background: '#611f69',
                                         color: 'white',
@@ -425,12 +532,7 @@ export function SurveyDistribution({ formId, onBack, onNavigate }) {
                                     To send surveys via Microsoft Teams, you need to configure a Teams Bot. Once configured, you can send survey invitations to channels, teams, and direct messages.
                                 </p>
                                 <button
-                                    onClick={() => {
-                                        const newPath = '/dashboard/teams-config';
-                                        if (window.location.pathname !== newPath) {
-                                            window.location.href = newPath;
-                                        }
-                                    }}
+                                    onClick={() => navigate('/teams-config')}
                                     style={{
                                         padding: '10px 20px',
                                         background: '#5059C9',
@@ -631,12 +733,13 @@ export function SurveyDistribution({ formId, onBack, onNavigate }) {
 
                                     <div style={{ overflowX: 'auto' }}>
                                         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.95em' }}>
+                                            <caption style={{ position: 'absolute', left: '-10000px', width: '1px', height: '1px', overflow: 'hidden' }}>Imported audience data preview</caption>
                                             <thead style={{ background: '#f1f5f9', color: '#475569', textAlign: 'left' }}>
                                                 <tr>
-                                                    <th style={{ padding: '12px', borderBottom: '2px solid #e2e8f0' }}>#</th>
-                                                    <th style={{ padding: '12px', borderBottom: '2px solid #e2e8f0' }}>Name</th>
-                                                    <th style={{ padding: '12px', borderBottom: '2px solid #e2e8f0' }}>Email</th>
-                                                    <th style={{ padding: '12px', borderBottom: '2px solid #e2e8f0' }}>Phone</th>
+                                                    <th scope="col" style={{ padding: '12px', borderBottom: '2px solid #e2e8f0' }}>#</th>
+                                                    <th scope="col" style={{ padding: '12px', borderBottom: '2px solid #e2e8f0' }}>Name</th>
+                                                    <th scope="col" style={{ padding: '12px', borderBottom: '2px solid #e2e8f0' }}>Email</th>
+                                                    <th scope="col" style={{ padding: '12px', borderBottom: '2px solid #e2e8f0' }}>Phone</th>
                                                 </tr>
                                             </thead>
                                             <tbody>

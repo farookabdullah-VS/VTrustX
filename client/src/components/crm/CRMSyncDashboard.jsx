@@ -327,14 +327,15 @@ const CRMSyncDashboard = () => {
                     </div>
                 ) : (
                     <table className="sync-logs-table">
+                        <caption style={{ position: 'absolute', left: '-10000px', width: '1px', height: '1px', overflow: 'hidden' }}>CRM sync operations log</caption>
                         <thead>
                             <tr>
-                                <th>Status</th>
-                                <th>Type</th>
-                                <th>Date & Time</th>
-                                <th>Records</th>
-                                <th>Duration</th>
-                                <th>Details</th>
+                                <th scope="col">Status</th>
+                                <th scope="col">Type</th>
+                                <th scope="col">Date & Time</th>
+                                <th scope="col">Records</th>
+                                <th scope="col">Duration</th>
+                                <th scope="col">Details</th>
                             </tr>
                         </thead>
                         <tbody>

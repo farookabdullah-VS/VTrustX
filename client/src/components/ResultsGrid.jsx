@@ -25,9 +25,9 @@ function SortableHeader({ id, title }) {
     };
 
     return (
-        <th ref={setNodeRef} style={style} {...attributes} {...listeners} title={title}>
+        <th ref={setNodeRef} scope="col" style={style} {...attributes} {...listeners} title={title}>
             <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', display: 'flex', alignItems: 'center', gap: '5px' }}>
-                <span style={{ color: '#94a3b8' }}>⋮⋮</span> {title}
+                <span aria-hidden="true" style={{ color: '#94a3b8' }}>⋮⋮</span> {title}
             </div>
         </th>
     );
@@ -170,10 +170,11 @@ export function ResultsGrid({ submissions, questions, onEdit, onDelete, readOnly
                     onDragEnd={handleDragEnd}
                 >
                     <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9em', minWidth: '1000px' }}>
+                        <caption style={{ position: 'absolute', left: '-10000px', width: '1px', height: '1px', overflow: 'hidden' }}>Survey submission results grid</caption>
                         <thead>
                             <tr style={{ borderBottom: '2px solid #e2e8f0', textAlign: 'left', color: '#64748b', background: '#f8fafc' }}>
                                 {/* Fixed Actions Column */}
-                                {!readOnly && <th style={{ padding: '12px', position: 'sticky', left: 0, background: '#f8fafc', zIndex: 10, borderBottom: '2px solid #e2e8f0' }}>Actions</th>}
+                                {!readOnly && <th scope="col" style={{ padding: '12px', position: 'sticky', left: 0, background: '#f8fafc', zIndex: 10, borderBottom: '2px solid #e2e8f0' }}>Actions</th>}
 
                                 <SortableContext items={columnOrder} strategy={horizontalListSortingStrategy}>
                                     {columnOrder.map(colId => (
@@ -191,6 +192,7 @@ export function ResultsGrid({ submissions, questions, onEdit, onDelete, readOnly
                                             <div style={{ display: 'flex', gap: '8px' }}>
                                                 <button
                                                     onClick={() => onEdit(sub.id)}
+                                                    aria-label={`Edit submission ${sub.id}`}
                                                     style={{
                                                         border: '1px solid #cbd5e1', background: 'white', cursor: 'pointer',
                                                         padding: '6px 12px', borderRadius: '6px', fontSize: '0.9em', display: 'flex', alignItems: 'center', gap: '5px',
@@ -208,6 +210,7 @@ export function ResultsGrid({ submissions, questions, onEdit, onDelete, readOnly
                                                             onDelete(sub.id);
                                                         }
                                                     }}
+                                                    aria-label={`Delete submission ${sub.id}`}
                                                     style={{
                                                         border: '1px solid #fee2e2', background: '#fef2f2', cursor: 'pointer',
                                                         padding: '6px 12px', borderRadius: '6px', fontSize: '0.9em', display: 'flex', alignItems: 'center', gap: '5px',

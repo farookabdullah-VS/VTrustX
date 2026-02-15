@@ -255,10 +255,11 @@ export function UserManagement() {
                 <>
                     <div style={{ background: 'var(--input-bg)', borderRadius: '12px', overflow: 'hidden', border: '1px solid var(--input-border)', boxShadow: '0 4px 6px rgba(0,0,0,0.03)' }}>
                         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                            <caption style={{ position: 'absolute', left: '-10000px', width: '1px', height: '1px', overflow: 'hidden' }}>User management table</caption>
                             <thead>
                                 <tr style={{ background: 'var(--sidebar-bg)', borderBottom: '1px solid var(--input-border)' }}>
                                     {['User', 'Email', 'Phone', 'Role', 'Status', 'Last Login', 'Actions'].map(h => (
-                                        <th key={h} style={{ padding: '13px 15px', textAlign: isRtl ? 'right' : 'left', color: 'var(--text-muted)', fontSize: '0.8em', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{h}</th>
+                                        <th key={h} scope="col" style={{ padding: '13px 15px', textAlign: isRtl ? 'right' : 'left', color: 'var(--text-muted)', fontSize: '0.8em', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{h}</th>
                                     ))}
                                 </tr>
                             </thead>
@@ -302,14 +303,14 @@ export function UserManagement() {
                                         </td>
                                         <td style={{ padding: '13px 15px' }}>
                                             <div style={{ display: 'flex', gap: '4px' }}>
-                                                <button onClick={() => openEditModal(u)} title="Edit" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '6px', borderRadius: '6px', color: 'var(--text-muted)' }}>
-                                                    <Edit2 size={16} />
+                                                <button onClick={() => openEditModal(u)} aria-label={`Edit user ${u.name || u.username}`} title="Edit" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '6px', borderRadius: '6px', color: 'var(--text-muted)' }}>
+                                                    <Edit2 size={16} aria-hidden="true" />
                                                 </button>
-                                                <button onClick={() => handleToggleStatus(u)} title={u.status === 'active' ? 'Deactivate' : 'Activate'} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '6px', borderRadius: '6px', color: u.status === 'active' ? '#f59e0b' : '#10b981' }}>
-                                                    {u.status === 'active' ? <UserX size={16} /> : <UserCheck size={16} />}
+                                                <button onClick={() => handleToggleStatus(u)} aria-label={u.status === 'active' ? `Deactivate user ${u.name || u.username}` : `Activate user ${u.name || u.username}`} title={u.status === 'active' ? 'Deactivate' : 'Activate'} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '6px', borderRadius: '6px', color: u.status === 'active' ? '#f59e0b' : '#10b981' }}>
+                                                    {u.status === 'active' ? <UserX size={16} aria-hidden="true" /> : <UserCheck size={16} aria-hidden="true" />}
                                                 </button>
-                                                <button onClick={() => handleDelete(u)} title="Delete" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '6px', borderRadius: '6px', color: '#ef4444' }}>
-                                                    <Trash2 size={16} />
+                                                <button onClick={() => handleDelete(u)} aria-label={`Delete user ${u.name || u.username}`} title="Delete" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '6px', borderRadius: '6px', color: '#ef4444' }}>
+                                                    <Trash2 size={16} aria-hidden="true" />
                                                 </button>
                                             </div>
                                         </td>

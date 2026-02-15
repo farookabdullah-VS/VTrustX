@@ -214,11 +214,11 @@ export function ContactMaster() {
                     <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                         <thead style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0', color: '#475569' }}>
                             <tr>
-                                <th style={{ padding: '15px', textAlign: 'left' }}>Name</th>
-                                <th style={{ padding: '15px', textAlign: 'left' }}>Email</th>
-                                <th style={{ padding: '15px', textAlign: 'left' }}>Mobile</th>
-                                <th style={{ padding: '15px', textAlign: 'left' }}>Role/Dept</th>
-                                <th style={{ padding: '15px', textAlign: 'right' }}>Actions</th>
+                                <th scope="col" style={{ padding: '15px', textAlign: 'left' }}>Name</th>
+                                <th scope="col" style={{ padding: '15px', textAlign: 'left' }}>Email</th>
+                                <th scope="col" style={{ padding: '15px', textAlign: 'left' }}>Mobile</th>
+                                <th scope="col" style={{ padding: '15px', textAlign: 'left' }}>Role/Dept</th>
+                                <th scope="col" style={{ padding: '15px', textAlign: 'right' }}>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -232,9 +232,9 @@ export function ContactMaster() {
                                         <div style={{ color: '#94a3b8' }}>{c.department}</div>
                                     </td>
                                     <td style={{ padding: '15px', textAlign: 'right' }}>
-                                        <button onClick={() => handleEdit(c)} style={{ padding: '8px', color: '#2563eb', background: 'none', border: 'none', cursor: 'pointer', marginRight: '10px' }}>✏️</button>
-                                        <button onClick={() => handleDelete(c.id)} style={{ padding: '8px', color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer', marginRight: '10px' }}>🗑️</button>
-                                        <button onClick={() => handleOpenCallModal(c)} title="Call with AI Agent" style={{ padding: '8px', color: '#10b981', background: 'none', border: 'none', cursor: 'pointer' }}>📞</button>
+                                        <button onClick={() => handleEdit(c)} aria-label={`Edit contact ${c.name}`} style={{ padding: '8px', color: '#2563eb', background: 'none', border: 'none', cursor: 'pointer', marginRight: '10px' }}>✏️</button>
+                                        <button onClick={() => handleDelete(c.id)} aria-label={`Delete contact ${c.name}`} style={{ padding: '8px', color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer', marginRight: '10px' }}>🗑️</button>
+                                        <button onClick={() => handleOpenCallModal(c)} aria-label={`Call contact ${c.name} with AI agent`} title="Call with AI Agent" style={{ padding: '8px', color: '#10b981', background: 'none', border: 'none', cursor: 'pointer' }}>📞</button>
                                     </td>
                                 </tr>
                             ))}

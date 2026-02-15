@@ -269,14 +269,15 @@ export function DistributionsView() {
             ) : (
                 <div style={{ background: 'white', borderRadius: '16px', border: '1px solid #e2e8f0', overflow: 'hidden' }}>
                     <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                        <caption style={{ position: 'absolute', left: '-10000px', width: '1px', height: '1px', overflow: 'hidden' }}>Survey distribution campaigns list</caption>
                         <thead style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
                             <tr>
-                                <th style={{ textAlign: 'left', padding: '16px', color: '#64748b' }}>Name</th>
-                                <th style={{ textAlign: 'left', padding: '16px', color: '#64748b' }}>Type</th>
-                                <th style={{ textAlign: 'left', padding: '16px', color: '#64748b' }}>Status</th>
-                                <th style={{ textAlign: 'left', padding: '16px', color: '#64748b' }}>Recipients</th>
-                                <th style={{ textAlign: 'left', padding: '16px', color: '#64748b' }}>Performance</th>
-                                <th style={{ textAlign: 'left', padding: '16px', color: '#64748b' }}>Date</th>
+                                <th scope="col" style={{ textAlign: 'left', padding: '16px', color: '#64748b' }}>Name</th>
+                                <th scope="col" style={{ textAlign: 'left', padding: '16px', color: '#64748b' }}>Type</th>
+                                <th scope="col" style={{ textAlign: 'left', padding: '16px', color: '#64748b' }}>Status</th>
+                                <th scope="col" style={{ textAlign: 'left', padding: '16px', color: '#64748b' }}>Recipients</th>
+                                <th scope="col" style={{ textAlign: 'left', padding: '16px', color: '#64748b' }}>Performance</th>
+                                <th scope="col" style={{ textAlign: 'left', padding: '16px', color: '#64748b' }}>Date</th>
                             </tr>
                         </thead>
                         <tbody>

@@ -316,24 +316,25 @@ export function PerformanceDashboard() {
                 </h3>
                 <div style={{ overflowX: 'auto' }}>
                     <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                        <caption style={{ position: 'absolute', left: '-10000px', width: '1px', height: '1px', overflow: 'hidden' }}>Slowest API endpoints performance metrics</caption>
                         <thead>
                             <tr style={{ borderBottom: '2px solid #e2e8f0' }}>
-                                <th style={{ textAlign: 'left', padding: '12px', color: '#64748b', fontWeight: '500', fontSize: '0.85rem' }}>
+                                <th scope="col" style={{ textAlign: 'left', padding: '12px', color: '#64748b', fontWeight: '500', fontSize: '0.85rem' }}>
                                     Endpoint
                                 </th>
-                                <th style={{ textAlign: 'left', padding: '12px', color: '#64748b', fontWeight: '500', fontSize: '0.85rem' }}>
+                                <th scope="col" style={{ textAlign: 'left', padding: '12px', color: '#64748b', fontWeight: '500', fontSize: '0.85rem' }}>
                                     Method
                                 </th>
-                                <th style={{ textAlign: 'right', padding: '12px', color: '#64748b', fontWeight: '500', fontSize: '0.85rem' }}>
+                                <th scope="col" style={{ textAlign: 'right', padding: '12px', color: '#64748b', fontWeight: '500', fontSize: '0.85rem' }}>
                                     Avg Duration
                                 </th>
-                                <th style={{ textAlign: 'right', padding: '12px', color: '#64748b', fontWeight: '500', fontSize: '0.85rem' }}>
+                                <th scope="col" style={{ textAlign: 'right', padding: '12px', color: '#64748b', fontWeight: '500', fontSize: '0.85rem' }}>
                                     Max Duration
                                 </th>
-                                <th style={{ textAlign: 'right', padding: '12px', color: '#64748b', fontWeight: '500', fontSize: '0.85rem' }}>
+                                <th scope="col" style={{ textAlign: 'right', padding: '12px', color: '#64748b', fontWeight: '500', fontSize: '0.85rem' }}>
                                     Requests
                                 </th>
-                                <th style={{ textAlign: 'right', padding: '12px', color: '#64748b', fontWeight: '500', fontSize: '0.85rem' }}>
+                                <th scope="col" style={{ textAlign: 'right', padding: '12px', color: '#64748b', fontWeight: '500', fontSize: '0.85rem' }}>
                                     Errors
                                 </th>
                             </tr>
