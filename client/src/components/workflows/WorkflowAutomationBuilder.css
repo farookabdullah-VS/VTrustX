@@ -12,14 +12,14 @@
     display: flex;
     align-items: center;
     gap: var(--space-2, 8px);
-    padding: var(--space-2, 8px) 16px;
+    padding: var(--space-2, 8px) var(--space-4, 16px);
     background: var(--card-bg);
-    border: 1px solid var(--border-light);
+    border: var(--space-0-25, 1px) solid var(--border-light);
     border-radius: var(--space-1-5, 6px);
     color: var(--text-muted);
     font-size: var(--text-sm, 14px);
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all var(--transition-fast, 0.2s);
     margin-bottom: var(--space-4, 16px);
 }
 
@@ -36,7 +36,7 @@
 
 .workflow-automation-builder-content {
     background: var(--card-bg);
-    border: 1px solid var(--border-light);
+    border: var(--space-0-25, 1px) solid var(--border-light);
     border-radius: var(--space-3, 12px);
     padding: var(--space-6, 24px);
 }
@@ -57,7 +57,7 @@
     display: flex;
     align-items: center;
     gap: var(--space-2-5, 10px);
-    margin: 0 0 20px 0;
+    margin: 0 0 var(--space-5, 20px) 0;
     font-size: var(--space-5, 20px);
     color: var(--text-primary);
 }
@@ -80,13 +80,13 @@
 .form-group textarea,
 .form-group select {
     width: 100%;
-    padding: var(--space-2-5, 10px) 12px;
-    border: 1px solid var(--border-medium, #D1D5DB);
+    padding: var(--space-2-5, 10px) var(--space-3, 12px);
+    border: var(--space-0-25, 1px) solid var(--border-medium, #D1D5DB);
     border-radius: var(--space-1-5, 6px);
     font-size: var(--text-sm, 14px);
     font-family: inherit;
     color: var(--text-primary);
-    transition: all 0.2s;
+    transition: all var(--transition-fast, 0.2s);
 }
 
 .form-group input:focus,
@@ -94,7 +94,7 @@
 .form-group select:focus {
     outline: none;
     border-color: var(--status-info, #3B82F6);
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    box-shadow: var(--shadow-outline, 0 0 0 var(--space-0-75, 3px) rgba(59, 130, 246, 0.1));
 }
 
 .form-group textarea {
@@ -121,14 +121,14 @@
 }
 
 .trigger-config-section h4 {
-    margin: 0 0 16px 0;
+    margin: 0 0 var(--space-4, 16px) 0;
     font-size: var(--text-base, 15px);
     color: var(--text-secondary, #374151);
 }
 
 .action-card {
     background: var(--bg-secondary, #F9FAFB);
-    border: 1px solid var(--border-light);
+    border: var(--space-0-25, 1px) solid var(--border-light);
     border-radius: var(--space-2, 8px);
     padding: var(--space-4, 16px);
     margin-bottom: var(--space-4, 16px);
@@ -148,14 +148,14 @@
 }
 
 .remove-action-btn {
-    padding: var(--space-1-5, 6px) 12px;
+    padding: var(--space-1-5, 6px) var(--space-3, 12px);
     background: var(--card-bg);
-    border: 1px solid var(--border-light);
+    border: var(--space-0-25, 1px) solid var(--border-light);
     border-radius: var(--space-1-5, 6px);
     color: var(--status-error, #EF4444);
     font-size: var(--text-sm, 13px);
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all var(--transition-fast, 0.2s);
 }
 
 .remove-action-btn:hover {
@@ -169,15 +169,15 @@
 
 .add-action-btn {
     width: 100%;
-    padding: var(--space-2-5, 10px) 16px;
+    padding: var(--space-2-5, 10px) var(--space-4, 16px);
     background: var(--card-bg);
-    border: 2px dashed var(--border-medium, #D1D5DB);
+    border: var(--space-0-5, 2px) dashed var(--border-medium, #D1D5DB);
     border-radius: var(--space-2, 8px);
     color: var(--text-muted);
     font-size: var(--text-sm, 14px);
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all var(--transition-fast, 0.2s);
 }
 
 .add-action-btn:hover {
@@ -220,15 +220,15 @@
 }
 
 .cancel-btn {
-    padding: var(--space-2-5, 10px) 20px;
+    padding: var(--space-2-5, 10px) var(--space-5, 20px);
     background: var(--card-bg);
-    border: 1px solid var(--border-light);
+    border: var(--space-0-25, 1px) solid var(--border-light);
     border-radius: var(--space-2, 8px);
     color: var(--text-muted);
     font-size: var(--text-sm, 14px);
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all var(--transition-fast, 0.2s);
 }
 
 .cancel-btn:hover {
@@ -240,7 +240,7 @@
     display: flex;
     align-items: center;
     gap: var(--space-2, 8px);
-    padding: var(--space-2-5, 10px) 24px;
+    padding: var(--space-2-5, 10px) var(--space-6, 24px);
     background: var(--status-info, #3B82F6);
     border: none;
     border-radius: var(--space-2, 8px);
@@ -248,16 +248,16 @@
     font-size: var(--text-sm, 14px);
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all var(--transition-fast, 0.2s);
 }
 
 .save-btn:hover:not(:disabled) {
     background: var(--status-info-dark, #2563EB);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    transform: translateY(var(--space--0-25, -1px));
+    box-shadow: var(--shadow-md, 0 var(--space-1, 4px) var(--space-3, 12px) rgba(59, 130, 246, 0.3));
 }
 
 .save-btn:disabled {
-    opacity: 0.6;
+    opacity: var(--opacity-60, 0.6);
     cursor: not-allowed;
 }
