@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { QuestionChart } from './analytics/QuestionChart'; // Ensure path is correct
 import ExportModal from './ExportModal';
+import { EmptyAnalytics } from './common/EmptyState';
 
 export function AnalyticsView({ form, onBack, submissions }) {
     // const [viewMode, setViewMode] = useState('standard'); // Removed dynamic view mode
@@ -47,12 +48,11 @@ export function AnalyticsView({ form, onBack, submissions }) {
     // Handle no data
     if (!submissions || submissions.length === 0) {
         return (
-            <div style={{ padding: '40px', textAlign: 'center', fontFamily: "'Outfit', sans-serif" }}>
-                <button onClick={onBack} style={{ marginBottom: '20px', background: 'none', border: 'none', color: '#64748b', cursor: 'pointer' }}>⬅ Back</button>
-                <div style={{ padding: '60px', background: 'white', borderRadius: '16px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
-                    <h2 style={{ color: '#1e293b' }}>No Data Available</h2>
-                    <p style={{ color: '#64748b' }}>Shares your survey to start collecting responses.</p>
-                </div>
+            <div>
+                {onBack && (
+                    <button onClick={onBack} style={{ marginBottom: '20px', background: 'none', border: 'none', color: '#64748b', cursor: 'pointer' }}>⬅ Back</button>
+                )}
+                <EmptyAnalytics message="Share your survey to start collecting responses" />
             </div>
         );
     }

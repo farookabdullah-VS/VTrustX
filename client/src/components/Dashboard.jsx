@@ -7,6 +7,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { DashboardSkeleton } from './common/Skeleton';
 import { StaggerContainer, StaggerItem, AnimatedCounter } from './common/AnimatedLayout';
 import { EmptySurveys, EmptyResponses } from './common/EmptyState';
+import { A11yAnnouncer } from './common/A11yAnnouncer';
 import { DualDate } from './common/HijriDate';
 import { StatusBadge } from './common/PremiumComponents';
 import { ThemeBarChart } from './common/UnifiedChart';
@@ -290,6 +291,9 @@ export function Dashboard({ onNavigate, onEdit, onEditSubmission }) {
 
                 </div>
             </div>
+
+            {/* Screen reader announcements */}
+            <A11yAnnouncer message={loading ? t('dashboard.loading') || 'Loading dashboard data' : ''} />
 
             {loading ? <DashboardSkeleton /> : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>

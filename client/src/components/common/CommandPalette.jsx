@@ -223,6 +223,8 @@ export function CommandPalette({ isOpen, onClose, onNavigate }) {
             {/* Results list */}
             <div
               ref={listRef}
+              role="listbox"
+              aria-label="Command options"
               style={{
                 maxHeight: '360px',
                 overflowY: 'auto',
@@ -240,6 +242,9 @@ export function CommandPalette({ isOpen, onClose, onNavigate }) {
                 return (
                   <div
                     key={item.id}
+                    role="option"
+                    aria-selected={isActive}
+                    tabIndex={isActive ? 0 : -1}
                     data-active={isActive}
                     onClick={() => handleSelect(item)}
                     onMouseEnter={() => setSelectedIndex(idx)}

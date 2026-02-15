@@ -1,7 +1,7 @@
 .ab-stats-comparison {
     max-width: 1400px;
     margin: 0 auto;
-    padding: 24px;
+    padding: var(--space-6);
 }
 
 /* Header */
@@ -12,15 +12,15 @@
 .back-link {
     display: flex;
     align-items: center;
-    gap: 4px;
-    padding: 8px 12px;
+    gap: var(--space-1);
+    padding: var(--space-2) var(--space-3);
     background: none;
     border: none;
     color: var(--primary);
     font-weight: 600;
     cursor: pointer;
     transition: background 0.2s;
-    border-radius: 6px;
+    border-radius: var(--radius-sm-alt);
     margin-bottom: 16px;
 }
 
@@ -33,26 +33,26 @@
     justify-content: space-between;
     align-items: flex-start;
     flex-wrap: wrap;
-    gap: 16px;
+    gap: var(--space-4);
 }
 
 .title-left {
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: var(--space-4);
 }
 
 .title-left h1 {
-    font-size: 28px;
+    font-size: var(--text-2xl-alt);
     font-weight: 700;
     color: var(--text-primary);
     margin: 0;
 }
 
 .status-badge {
-    padding: 6px 14px;
-    border-radius: 12px;
-    font-size: 13px;
+    padding: var(--space-2) var(--space-4);
+    border-radius: var(--radius-lg);
+    font-size: var(--text-sm);
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -61,20 +61,20 @@
 .title-right {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: var(--space-3);
 }
 
 .live-indicator {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 10px 16px;
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-4);
     background: var(--status-success)15;
     border: 2px solid var(--status-success);
-    border-radius: 8px;
+    border-radius: var(--radius-md);
     color: var(--status-success);
     font-weight: 600;
-    font-size: 14px;
+    font-size: var(--text-sm);
     animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
@@ -90,11 +90,11 @@
 .btn-secondary {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 10px 18px;
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-4);
     background: var(--card-bg);
     border: 1px solid var(--border-medium);
-    border-radius: 8px;
+    border-radius: var(--radius-md);
     color: var(--text-secondary);
     font-weight: 600;
     cursor: pointer;
@@ -110,12 +110,12 @@
 .btn-primary {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 10px 18px;
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-4);
     background: var(--primary);
     color: var(--card-bg);
     border: none;
-    border-radius: 8px;
+    border-radius: var(--radius-md);
     font-weight: 600;
     cursor: pointer;
     transition: background 0.2s;
@@ -129,13 +129,13 @@
 .live-activity {
     background: var(--input-bg);
     border: 1px solid var(--border-light);
-    border-radius: 12px;
-    padding: 20px;
+    border-radius: var(--radius-lg);
+    padding: var(--space-5);
     margin-bottom: 24px;
 }
 
 .live-activity h3 {
-    font-size: 16px;
+    font-size: var(--text-base);
     font-weight: 600;
     color: var(--text-primary);
     margin: 0 0 12px 0;
@@ -147,8 +147,8 @@
 }
 
 .activity-item {
-    padding: 8px 0;
-    font-size: 14px;
+    padding: var(--space-2) 0;
+    font-size: var(--text-sm);
     color: var(--text-muted);
     border-bottom: 1px solid var(--border-light);
 }
@@ -161,15 +161,15 @@
 .metrics-cards {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 20px;
+    gap: var(--space-5);
     margin-bottom: 32px;
 }
 
 .metric-card {
     background: var(--card-bg);
     border: 2px solid var(--border-light);
-    border-radius: 12px;
-    padding: 20px;
+    border-radius: var(--radius-lg);
+    padding: var(--space-5);
     position: relative;
     transition: all 0.2s;
 }
@@ -185,12 +185,12 @@
     right: 16px;
     display: flex;
     align-items: center;
-    gap: 6px;
-    padding: 6px 12px;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-3);
     background: linear-gradient(135deg, var(--status-warning), var(--status-warning));
     color: var(--card-bg);
-    border-radius: 20px;
-    font-size: 13px;
+    border-radius: var(--radius-xl-alt);
+    font-size: var(--text-sm);
     font-weight: 700;
 }
 
@@ -199,7 +199,7 @@
 }
 
 .card-header h3 {
-    font-size: 20px;
+    font-size: var(--text-xl);
     font-weight: 700;
     color: var(--text-primary);
     margin: 0 0 8px 0;
@@ -208,32 +208,32 @@
 .assignments {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: var(--space-2);
     color: var(--text-muted);
-    font-size: 14px;
+    font-size: var(--text-sm);
 }
 
 .metrics-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 16px;
+    gap: var(--space-4);
 }
 
 .metric {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: var(--space-1);
 }
 
 .metric.highlight {
     grid-column: span 2;
     background: var(--primary-light, #EEF2FF);
-    border-radius: 8px;
-    padding: 12px;
+    border-radius: var(--radius-md);
+    padding: var(--space-3);
 }
 
 .metric-label {
-    font-size: 13px;
+    font-size: var(--text-sm);
     font-weight: 600;
     color: var(--text-muted);
     text-transform: uppercase;
@@ -241,7 +241,7 @@
 }
 
 .metric-value {
-    font-size: 28px;
+    font-size: var(--text-2xl-alt);
     font-weight: 700;
     color: var(--text-primary);
 }
@@ -251,7 +251,7 @@
 }
 
 .metric-detail {
-    font-size: 13px;
+    font-size: var(--text-sm);
     color: var(--text-disabled);
 }
 
@@ -259,13 +259,13 @@
 .chart-section {
     background: var(--card-bg);
     border: 1px solid var(--border-light);
-    border-radius: 12px;
-    padding: 24px;
+    border-radius: var(--radius-lg);
+    padding: var(--space-6);
     margin-bottom: 32px;
 }
 
 .chart-section h2 {
-    font-size: 20px;
+    font-size: var(--text-xl);
     font-weight: 700;
     color: var(--text-primary);
     margin: 0 0 24px 0;
@@ -275,12 +275,12 @@
 .stats-section {
     background: var(--card-bg);
     border: 1px solid var(--border-light);
-    border-radius: 12px;
-    padding: 24px;
+    border-radius: var(--radius-lg);
+    padding: var(--space-6);
 }
 
 .stats-section h2 {
-    font-size: 20px;
+    font-size: var(--text-xl);
     font-weight: 700;
     color: var(--text-primary);
     margin: 0 0 24px 0;
@@ -289,9 +289,9 @@
 .significance-box {
     display: flex;
     align-items: flex-start;
-    gap: 16px;
-    padding: 20px;
-    border-radius: 12px;
+    gap: var(--space-4);
+    padding: var(--space-5);
+    border-radius: var(--radius-lg);
     margin-bottom: 24px;
 }
 
@@ -308,12 +308,12 @@
 }
 
 .significance-box h4 {
-    font-size: 16px;
+    font-size: var(--text-base);
     margin: 0 0 6px 0;
 }
 
 .significance-box p {
-    font-size: 14px;
+    font-size: var(--text-sm);
     margin: 0;
     line-height: 1.5;
 }
@@ -321,22 +321,22 @@
 .stats-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 16px;
+    gap: var(--space-4);
     margin-bottom: 32px;
 }
 
 .stat-box {
     display: flex;
     flex-direction: column;
-    gap: 6px;
-    padding: 16px;
+    gap: var(--space-2);
+    padding: var(--space-4);
     background: var(--input-bg);
     border: 1px solid var(--border-light);
-    border-radius: 8px;
+    border-radius: var(--radius-md);
 }
 
 .stat-label {
-    font-size: 13px;
+    font-size: var(--text-sm);
     font-weight: 600;
     color: var(--text-muted);
     text-transform: uppercase;
@@ -344,25 +344,25 @@
 }
 
 .stat-value {
-    font-size: 24px;
+    font-size: var(--text-2xl);
     font-weight: 700;
     color: var(--text-primary);
 }
 
 .stat-hint {
-    font-size: 12px;
+    font-size: var(--text-xs);
     color: var(--text-disabled);
 }
 
 .confidence-intervals {
     background: var(--input-bg);
     border: 1px solid var(--border-light);
-    border-radius: 8px;
-    padding: 20px;
+    border-radius: var(--radius-md);
+    padding: var(--space-5);
 }
 
 .confidence-intervals h4 {
-    font-size: 16px;
+    font-size: var(--text-base);
     font-weight: 600;
     color: var(--text-primary);
     margin: 0 0 16px 0;
@@ -371,26 +371,26 @@
 .intervals-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 12px;
+    gap: var(--space-3);
 }
 
 .interval-box {
     display: flex;
     flex-direction: column;
-    gap: 6px;
-    padding: 12px;
+    gap: var(--space-2);
+    padding: var(--space-3);
     background: var(--card-bg);
-    border-radius: 6px;
+    border-radius: var(--radius-sm-alt);
 }
 
 .interval-name {
-    font-size: 13px;
+    font-size: var(--text-sm);
     font-weight: 600;
     color: var(--primary);
 }
 
 .interval-range {
-    font-size: 15px;
+    font-size: var(--text-sm);
     color: var(--text-primary);
 }
 
@@ -401,7 +401,7 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 64px 24px;
+    padding: var(--space-16) var(--space-6);
     text-align: center;
 }
 
@@ -426,11 +426,11 @@
 
 .error-container button {
     margin-top: 16px;
-    padding: 10px 20px;
+    padding: var(--space-3) var(--space-5);
     background: var(--primary);
     color: var(--card-bg);
     border: none;
-    border-radius: 8px;
+    border-radius: var(--radius-md);
     font-weight: 600;
     cursor: pointer;
 }
@@ -439,7 +439,7 @@
 .advanced-section {
     background: var(--card-bg);
     border: 2px solid var(--border-light);
-    border-radius: 12px;
+    border-radius: var(--radius-lg);
     padding: 32px;
     margin-top: 32px;
 }
@@ -447,12 +447,12 @@
 .section-header {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: var(--space-3);
     margin-bottom: 24px;
 }
 
 .section-header h2 {
-    font-size: 22px;
+    font-size: var(--text-xl);
     font-weight: 700;
     color: var(--text-primary);
     margin: 0;
@@ -465,7 +465,7 @@
 
 .bayesian-probabilities h4,
 .credible-intervals h4 {
-    font-size: 18px;
+    font-size: var(--text-lg);
     font-weight: 600;
     color: var(--text-secondary);
     margin: 0 0 16px 0;
@@ -474,27 +474,27 @@
 .prob-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 20px;
+    gap: var(--space-5);
     margin-bottom: 32px;
 }
 
 .prob-card {
     background: var(--input-bg);
     border: 1px solid var(--border-light);
-    border-radius: 8px;
-    padding: 20px;
+    border-radius: var(--radius-md);
+    padding: var(--space-5);
     text-align: center;
 }
 
 .prob-card .variant-name {
-    font-size: 14px;
+    font-size: var(--text-sm);
     font-weight: 600;
     color: var(--text-muted);
     margin-bottom: 12px;
 }
 
 .prob-value {
-    font-size: 36px;
+    font-size: var(--text-4xl);
     font-weight: 700;
     color: var(--primary);
     margin-bottom: 12px;
@@ -504,7 +504,7 @@
     width: 100%;
     height: 12px;
     background: var(--border-light);
-    border-radius: 6px;
+    border-radius: var(--radius-sm-alt);
     overflow: hidden;
 }
 
@@ -514,15 +514,15 @@
 }
 
 .interval-mean {
-    font-size: 12px;
+    font-size: var(--text-xs);
     color: var(--text-disabled);
 }
 
 .recommendation-box {
     background: var(--toast-info-bg, #EFF6FF);
     border: 2px solid var(--status-info);
-    border-radius: 8px;
-    padding: 20px;
+    border-radius: var(--radius-md);
+    padding: var(--space-5);
     margin-top: 24px;
 }
 
@@ -532,7 +532,7 @@
 }
 
 .recommendation-box h4 {
-    font-size: 16px;
+    font-size: var(--text-base);
     color: var(--toast-info-text, #1E40AF);
     margin: 0 0 8px 0;
 }
@@ -559,20 +559,20 @@
 .sequential-status {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 16px;
+    gap: var(--space-4);
     margin-bottom: 32px;
 }
 
 .status-card {
     background: var(--input-bg);
     border: 1px solid var(--border-light);
-    border-radius: 8px;
-    padding: 20px;
+    border-radius: var(--radius-md);
+    padding: var(--space-5);
     text-align: center;
 }
 
 .status-label {
-    font-size: 13px;
+    font-size: var(--text-sm);
     font-weight: 600;
     color: var(--text-muted);
     text-transform: uppercase;
@@ -580,14 +580,14 @@
 }
 
 .status-value {
-    font-size: 24px;
+    font-size: var(--text-2xl);
     font-weight: 700;
     color: var(--text-primary);
 }
 
 .sequential-history h4,
 .boundary-chart h4 {
-    font-size: 18px;
+    font-size: var(--text-lg);
     font-weight: 600;
     color: var(--text-secondary);
     margin: 0 0 16px 0;
@@ -596,7 +596,7 @@
 .history-table {
     background: var(--input-bg);
     border: 1px solid var(--border-light);
-    border-radius: 8px;
+    border-radius: var(--radius-md);
     overflow: hidden;
     margin-bottom: 32px;
 }
@@ -605,21 +605,21 @@
 .history-row {
     display: grid;
     grid-template-columns: 1fr 2fr 2fr 2fr;
-    gap: 16px;
-    padding: 16px;
+    gap: var(--space-4);
+    padding: var(--space-4);
 }
 
 .history-header {
     background: var(--primary-light, #EEF2FF);
     font-weight: 600;
     color: var(--text-secondary);
-    font-size: 13px;
+    font-size: var(--text-sm);
     text-transform: uppercase;
 }
 
 .history-row {
     border-bottom: 1px solid var(--border-light);
-    font-size: 14px;
+    font-size: var(--text-sm);
     color: var(--text-primary);
 }
 
@@ -641,7 +641,7 @@
 }
 
 .chart-note {
-    font-size: 13px;
+    font-size: var(--text-sm);
     color: var(--text-muted);
     font-style: italic;
     margin-top: 12px;
@@ -655,20 +655,20 @@
 .bandit-summary {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 16px;
+    gap: var(--space-4);
     margin-bottom: 32px;
 }
 
 .summary-card {
     background: var(--input-bg);
     border: 1px solid var(--border-light);
-    border-radius: 8px;
-    padding: 20px;
+    border-radius: var(--radius-md);
+    padding: var(--space-5);
     text-align: center;
 }
 
 .summary-label {
-    font-size: 13px;
+    font-size: var(--text-sm);
     font-weight: 600;
     color: var(--text-muted);
     text-transform: uppercase;
@@ -676,14 +676,14 @@
 }
 
 .summary-value {
-    font-size: 24px;
+    font-size: var(--text-2xl);
     font-weight: 700;
     color: var(--text-primary);
 }
 
 .allocation-evolution h4,
 .regret-chart h4 {
-    font-size: 18px;
+    font-size: var(--text-lg);
     font-weight: 600;
     color: var(--text-secondary);
     margin: 0 0 16px 0;
@@ -692,15 +692,15 @@
 .allocation-cards {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 20px;
+    gap: var(--space-5);
     margin-bottom: 32px;
 }
 
 .alloc-card {
     background: var(--input-bg);
     border: 2px solid var(--border-light);
-    border-radius: 8px;
-    padding: 20px;
+    border-radius: var(--radius-md);
+    padding: var(--space-5);
 }
 
 .alloc-header {
@@ -711,13 +711,13 @@
 }
 
 .alloc-name {
-    font-size: 16px;
+    font-size: var(--text-base);
     font-weight: 600;
     color: var(--text-primary);
 }
 
 .alloc-shift {
-    font-size: 14px;
+    font-size: var(--text-sm);
     font-weight: 700;
     color: var(--primary);
 }
@@ -726,7 +726,7 @@
     width: 100%;
     height: 12px;
     background: var(--border-light);
-    border-radius: 6px;
+    border-radius: var(--radius-sm-alt);
     overflow: hidden;
     margin-bottom: 12px;
 }
@@ -740,7 +740,7 @@
 .alloc-performance {
     display: flex;
     justify-content: space-between;
-    font-size: 13px;
+    font-size: var(--text-sm);
     color: var(--text-muted);
     margin-bottom: 8px;
 }
@@ -754,9 +754,9 @@
     .history-header,
     .history-row {
         grid-template-columns: 1fr 1fr;
-        gap: 8px;
-        font-size: 12px;
-        padding: 12px;
+        gap: var(--space-2);
+        font-size: var(--text-xs);
+        padding: var(--space-3);
     }
 
     .prob-grid,

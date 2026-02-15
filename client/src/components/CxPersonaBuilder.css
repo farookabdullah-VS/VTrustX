@@ -1,6 +1,6 @@
 /* Main Container */
 .cx-persona-container {
-    padding: 30px;
+    padding: var(--space-7);
     font-family: 'Outfit', sans-serif;
     color: var(--text-secondary);
     background: var(--input-bg);
@@ -12,7 +12,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 30px;
+    margin-bottom: var(--space-7);
 }
 
 .cx-header h2 {
@@ -25,21 +25,21 @@
     background: var(--text-primary);
     color: var(--card-bg);
     border: none;
-    padding: 10px 20px;
-    border-radius: 8px;
+    padding: var(--space-3) var(--space-5);
+    border-radius: var(--radius-md);
     cursor: pointer;
     font-weight: 600;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: var(--space-2);
 }
 
 .btn-secondary {
     background: var(--card-bg);
     border: 1px solid var(--border-medium);
     color: var(--text-secondary);
-    padding: 10px 20px;
-    border-radius: 8px;
+    padding: var(--space-3) var(--space-5);
+    border-radius: var(--radius-md);
     cursor: pointer;
     font-weight: 600;
 }
@@ -50,8 +50,8 @@
     border: none;
     cursor: pointer;
     color: var(--text-disabled);
-    padding: 4px;
-    border-radius: 4px;
+    padding: var(--space-1);
+    border-radius: var(--radius-sm);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -73,7 +73,7 @@
 .drag-handle {
     cursor: grab;
     color: #cbd5e1;
-    margin-right: 8px;
+    margin-right: var(--space-2);
     opacity: 0.5;
     display: flex;
     align-items: center;
@@ -87,7 +87,7 @@
 .color-trigger {
     width: 24px;
     height: 24px;
-    border-radius: 6px;
+    border-radius: var(--radius-sm-alt);
     border: 1px solid var(--border-light);
     cursor: pointer;
     display: flex;
@@ -113,8 +113,8 @@
     right: 0;
     width: 250px;
     background: var(--card-bg);
-    padding: 20px;
-    border-radius: 12px;
+    padding: var(--space-5);
+    border-radius: var(--radius-lg);
     box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
     border: 1px solid var(--border-light);
     z-index: 100;
@@ -131,7 +131,7 @@
     background: var(--card-bg);
     border: 1px solid var(--border-light);
     border-radius: 16px;
-    padding: 20px;
+    padding: var(--space-5);
     transition: transform 0.2s, box-shadow 0.2s;
     cursor: pointer;
 }
@@ -174,13 +174,13 @@
 .card-tags {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
+    gap: var(--space-2);
 }
 
 .tag {
     background: #f1f5f9;
     padding: 4px 8px;
-    border-radius: 6px;
+    border-radius: var(--radius-sm-alt);
     font-size: 12px;
     color: var(--text-secondary);
 }
@@ -212,7 +212,7 @@
 .photo-card {
     background: var(--card-bg);
     padding: 10px;
-    border-radius: 8px;
+    border-radius: var(--radius-md);
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     text-align: center;
 }
@@ -221,7 +221,7 @@
     width: 100%;
     height: 320px;
     object-fit: cover;
-    border-radius: 6px;
+    border-radius: var(--radius-sm-alt);
     background: var(--border-light);
 }
 
@@ -229,8 +229,8 @@
 .sidebar-section {
     background: var(--card-bg);
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    padding: 20px;
-    border-radius: 8px;
+    padding: var(--space-5);
+    border-radius: var(--radius-md);
 }
 
 .sidebar-title-row {
@@ -264,7 +264,7 @@
     font-weight: 500;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: var(--space-2);
 }
 
 .demo-value {
@@ -306,7 +306,7 @@
 .main-header {
     background: var(--card-bg);
     padding: 24px 30px;
-    border-radius: 8px;
+    border-radius: var(--radius-md);
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     display: flex;
     justify-content: space-between;
@@ -342,8 +342,8 @@
 /* Big Quote */
 .quote-block {
     background: var(--card-bg);
-    padding: 30px;
-    border-radius: 8px;
+    padding: var(--space-7);
+    border-radius: var(--radius-md);
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     font-size: 22px;
     font-style: italic;
@@ -364,7 +364,7 @@
 .attr-card {
     background: var(--card-bg);
     padding: 25px;
-    border-radius: 8px;
+    border-radius: var(--radius-md);
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     border-top: 5px solid #cbd5e1;
     position: relative;
@@ -400,7 +400,7 @@
     color: var(--text-secondary);
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: var(--space-2);
 }
 
 .add-item-btn {
@@ -471,7 +471,7 @@
 /* Add Section Button (Floating or Grid Item) */
 .add-section-card {
     border: 2px dashed #94a3b8;
-    border-radius: 8px;
+    border-radius: var(--radius-md);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -508,7 +508,7 @@
     width: 900px;
     height: 700px;
     background: var(--card-bg);
-    border-radius: 12px;
+    border-radius: var(--radius-lg);
     display: flex;
     overflow: hidden;
     position: relative;
@@ -563,7 +563,7 @@
 
 .modal-content-area {
     flex: 1;
-    padding: 30px;
+    padding: var(--space-7);
     overflow-y: auto;
 }
 
@@ -575,7 +575,7 @@
 
 .section-preview-item {
     border: 1px solid var(--border-light);
-    border-radius: 8px;
+    border-radius: var(--radius-md);
     padding: 15px;
     cursor: pointer;
     transition: transform 0.2s;
@@ -594,7 +594,7 @@
     width: 40px;
     height: 40px;
     background: #f1f5f9;
-    border-radius: 6px;
+    border-radius: var(--radius-sm-alt);
     display: flex;
     align-items: center;
     justify-content: center;
