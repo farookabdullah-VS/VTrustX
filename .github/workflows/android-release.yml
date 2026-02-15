@@ -1,0 +1,162 @@
+name: Build Android Release
+
+on:
+  release:
+    types: [created]
+  workflow_dispatch:  # Allows manual trigger
+    inputs:
+      version:
+        description: 'Version name (e.g., 1.0.1)'
+        required: true
+        default: '1.0.0'
+      versionCode:
+        description: 'Version code (e.g., 2)'
+        required: true
+        default: '1'
+
+env:
+  NODE_VERSION: '18'
+  JAVA_VERSION: '17'
+
+jobs:
+  build-release:
+    name: Build Android Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: client/package-lock.json
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Install dependencies
+        working-directory: ./client
+        run: npm ci
+
+      - name: Build web app
+        working-directory: ./client
+        run: npm run build
+
+      - name: Sync Capacitor
+        working-directory: ./client
+        run: npx cap sync android
+
+      - name: Decode Keystore
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          echo "$KEYSTORE_BASE64" | base64 -d > client/android/app/rayix-release-key.keystore
+
+      - name: Create gradle.properties
+        working-directory: ./client/android
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          echo "RAYIX_RELEASE_STORE_FILE=rayix-release-key.keystore" >> gradle.properties
+          echo "RAYIX_RELEASE_STORE_PASSWORD=$KEYSTORE_PASSWORD" >> gradle.properties
+          echo "RAYIX_RELEASE_KEY_ALIAS=$KEY_ALIAS" >> gradle.properties
+          echo "RAYIX_RELEASE_KEY_PASSWORD=$KEY_PASSWORD" >> gradle.properties
+
+      - name: Update version in build.gradle
+        if: github.event.inputs.version != ''
+        working-directory: ./client/android/app
+        run: |
+          sed -i "s/versionCode .*/versionCode ${{ github.event.inputs.versionCode }}/" build.gradle
+          sed -i "s/versionName .*/versionName \"${{ github.event.inputs.version }}\"/" build.gradle
+
+      - name: Grant execute permission for gradlew
+        working-directory: ./client/android
+        run: chmod +x gradlew
+
+      - name: Build Release AAB
+        working-directory: ./client/android
+        run: ./gradlew bundleRelease
+
+      - name: Build Release APK
+        working-directory: ./client/android
+        run: ./gradlew assembleRelease
+
+      - name: Sign APK (if unsigned)
+        working-directory: ./client/android
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          if [ -f "app/build/outputs/apk/release/app-release-unsigned.apk" ]; then
+            $ANDROID_HOME/build-tools/33.0.0/apksigner sign \
+              --ks app/rayix-release-key.keystore \
+              --ks-pass pass:$KEYSTORE_PASSWORD \
+              --key-pass pass:$KEY_PASSWORD \
+              --out app/build/outputs/apk/release/app-release-signed.apk \
+              app/build/outputs/apk/release/app-release-unsigned.apk
+          fi
+
+      - name: Get file sizes
+        id: file-sizes
+        working-directory: ./client/android
+        run: |
+          AAB_SIZE=$(du -h app/build/outputs/bundle/release/app-release.aab | cut -f1)
+          APK_SIZE=$(du -h app/build/outputs/apk/release/app-release.apk | cut -f1)
+          echo "aab_size=$AAB_SIZE" >> $GITHUB_OUTPUT
+          echo "apk_size=$APK_SIZE" >> $GITHUB_OUTPUT
+
+      - name: Upload Release AAB
+        uses: actions/upload-artifact@v4
+        with:
+          name: RayiX-Android-Release-AAB
+          path: client/android/app/build/outputs/bundle/release/app-release.aab
+          retention-days: 90
+
+      - name: Upload Release APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: RayiX-Android-Release-APK
+          path: client/android/app/build/outputs/apk/release/app-release.apk
+          retention-days: 90
+
+      - name: Upload to GitHub Release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            client/android/app/build/outputs/bundle/release/app-release.aab
+            client/android/app/build/outputs/apk/release/app-release.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build Summary
+        run: |
+          echo "### ✅ Android Release Build Successful! 🎉" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "📱 **App Name:** RayiX" >> $GITHUB_STEP_SUMMARY
+          echo "🔨 **Build Type:** Release (Signed)" >> $GITHUB_STEP_SUMMARY
+          echo "📦 **AAB Size:** ${{ steps.file-sizes.outputs.aab_size }}" >> $GITHUB_STEP_SUMMARY
+          echo "📦 **APK Size:** ${{ steps.file-sizes.outputs.apk_size }}" >> $GITHUB_STEP_SUMMARY
+          echo "🔢 **Version:** ${{ github.event.inputs.version || 'From release tag' }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📥 Download Options:" >> $GITHUB_STEP_SUMMARY
+          echo "- **AAB** (for Play Store): RayiX-Android-Release-AAB" >> $GITHUB_STEP_SUMMARY
+          echo "- **APK** (for direct install): RayiX-Android-Release-APK" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🚀 Next Steps:" >> $GITHUB_STEP_SUMMARY
+          echo "1. Download the AAB from Artifacts" >> $GITHUB_STEP_SUMMARY
+          echo "2. Upload to Google Play Console" >> $GITHUB_STEP_SUMMARY
+          echo "3. Submit for review" >> $GITHUB_STEP_SUMMARY
+
+      - name: Cleanup keystore
+        if: always()
+        run: rm -f client/android/app/rayix-release-key.keystore
