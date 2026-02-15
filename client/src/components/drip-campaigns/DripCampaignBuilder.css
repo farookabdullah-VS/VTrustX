@@ -22,9 +22,9 @@
     color: var(--text-muted);
     font-size: var(--text-sm, 14px);
     cursor: pointer;
-    padding: var(--space-2, 8px) 12px;
+    padding: var(--space-2, 8px) var(--space-3, 12px);
     border-radius: var(--space-1-5, 6px);
-    transition: all 0.2s;
+    transition: all var(--transition-fast, 0.2s);
     margin-bottom: var(--space-3-75, 15px);
 }
 
@@ -74,13 +74,13 @@
     height: var(--space-10, 40px);
     border-radius: 50%;
     background: var(--card-bg);
-    border: 2px solid var(--border-light);
+    border: var(--space-0-5, 2px) solid var(--border-light);
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: 600;
     color: var(--text-disabled);
-    transition: all 0.3s;
+    transition: all var(--transition-normal, 0.3s);
 }
 
 .progress-step.active .step-circle {
@@ -112,7 +112,7 @@
 /* Wizard Content */
 .wizard-content {
     background: var(--card-bg);
-    border: 2px solid var(--border-light);
+    border: var(--space-0-5, 2px) solid var(--border-light);
     border-radius: var(--space-3, 12px);
     padding: var(--space-7-5, 30px);
     margin-bottom: var(--space-5, 20px);
@@ -123,13 +123,13 @@
     font-size: var(--text-xl, 20px);
     font-weight: 600;
     color: var(--text-primary);
-    margin: 0 0 8px 0;
+    margin: 0 0 var(--space-2, 8px) 0;
 }
 
 .step-description {
     color: var(--text-muted);
     font-size: var(--text-base, 16px);
-    margin: 0 0 30px 0;
+    margin: 0 0 var(--space-7-5, 30px) 0;
 }
 
 /* Form Elements */
@@ -149,11 +149,11 @@
 .form-group select,
 .form-group textarea {
     width: 100%;
-    padding: var(--space-2-5, 10px) 14px;
-    border: 2px solid var(--border-light);
+    padding: var(--space-2-5, 10px) var(--space-3-5, 14px);
+    border: var(--space-0-5, 2px) solid var(--border-light);
     border-radius: var(--space-2, 8px);
     font-size: var(--text-sm, 14px);
-    transition: all 0.2s;
+    transition: all var(--transition-fast, 0.2s);
     font-family: inherit;
 }
 
@@ -162,7 +162,7 @@
 .form-group textarea:focus {
     outline: none;
     border-color: var(--status-info);
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    box-shadow: var(--shadow-outline, 0 0 0 var(--space-0-75, 3px) rgba(59, 130, 246, 0.1));
 }
 
 .help-text {
@@ -184,12 +184,12 @@
     flex-direction: column;
     align-items: center;
     gap: var(--space-2, 8px);
-    padding: var(--space-3-75, 15px) 10px;
+    padding: var(--space-3-75, 15px) var(--space-2-5, 10px);
     background: var(--card-bg);
-    border: 2px solid var(--border-light);
+    border: var(--space-0-5, 2px) solid var(--border-light);
     border-radius: var(--space-2, 8px);
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all var(--transition-fast, 0.2s);
     color: var(--text-muted);
 }
 
@@ -219,7 +219,7 @@
 
 .step-editor {
     background: var(--input-bg);
-    border: 2px solid var(--border-light);
+    border: var(--space-0-5, 2px) solid var(--border-light);
     border-radius: var(--space-3, 12px);
     padding: var(--space-5, 20px);
 }
@@ -246,12 +246,12 @@
 
 .btn-icon-danger {
     background: var(--card-bg);
-    border: 2px solid var(--status-error);
+    border: var(--space-0-5, 2px) solid var(--status-error);
     color: var(--status-error);
     padding: var(--space-2, 8px);
     border-radius: var(--space-1-5, 6px);
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all var(--transition-fast, 0.2s);
 }
 
 .btn-icon-danger:hover {
@@ -297,12 +297,12 @@
     width: 100%;
     padding: var(--space-3, 12px);
     background: var(--card-bg);
-    border: 2px dashed var(--status-info);
+    border: var(--space-0-5, 2px) dashed var(--status-info);
     color: var(--status-info);
     border-radius: var(--space-2, 8px);
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all var(--transition-fast, 0.2s);
 }
 
 .btn-add-step:hover:not(:disabled) {
@@ -310,7 +310,7 @@
 }
 
 .btn-add-step:disabled {
-    opacity: 0.5;
+    opacity: var(--opacity-50, 0.5);
     cursor: not-allowed;
 }
 
@@ -331,7 +331,7 @@
 .setting-item {
     padding: var(--space-3-75, 15px);
     background: var(--input-bg);
-    border: 1px solid var(--border-light);
+    border: var(--space-0-25, 1px) solid var(--border-light);
     border-radius: var(--space-2, 8px);
 }
 
@@ -356,14 +356,14 @@
 .setting-description {
     color: var(--text-muted);
     font-size: var(--text-sm, 14px);
-    margin: var(--space-2, 8px) 0 0 28px;
+    margin: var(--space-2, 8px) 0 0 var(--space-7, 28px);
 }
 
 /* Review Section */
 .review-section {
     margin-bottom: var(--space-7-5, 30px);
     padding-bottom: var(--space-5, 20px);
-    border-bottom: 1px solid var(--border-light);
+    border-bottom: var(--space-0-25, 1px) solid var(--border-light);
 }
 
 .review-section:last-child {
@@ -374,7 +374,7 @@
     font-size: var(--text-lg, 18px);
     font-weight: 600;
     color: var(--text-primary);
-    margin: 0 0 15px 0;
+    margin: 0 0 var(--space-3-75, 15px) 0;
 }
 
 .review-item {
@@ -421,9 +421,9 @@
 .wizard-footer {
     display: flex;
     gap: var(--space-3, 12px);
-    padding: var(--space-5, 20px) 30px;
+    padding: var(--space-5, 20px) var(--space-7-5, 30px);
     background: var(--card-bg);
-    border: 2px solid var(--border-light);
+    border: var(--space-0-5, 2px) solid var(--border-light);
     border-radius: var(--space-3, 12px);
 }
 
@@ -432,17 +432,17 @@
     display: flex;
     align-items: center;
     gap: var(--space-2, 8px);
-    padding: var(--space-3, 12px) 24px;
+    padding: var(--space-3, 12px) var(--space-6, 24px);
     border-radius: var(--space-2, 8px);
     font-size: var(--text-base, 16px);
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all var(--transition-fast, 0.2s);
 }
 
 .btn-secondary {
     background: var(--card-bg);
-    border: 2px solid var(--border-light);
+    border: var(--space-0-5, 2px) solid var(--border-light);
     color: var(--text-muted);
 }
 
@@ -458,12 +458,12 @@
 
 .btn-primary:hover:not(:disabled) {
     background: var(--status-info-dark, #2563EB);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    transform: translateY(var(--space--0-5, -2px));
+    box-shadow: var(--shadow-md, 0 var(--space-1, 4px) var(--space-3, 12px) rgba(59, 130, 246, 0.3));
 }
 
 .btn-primary:disabled {
-    opacity: 0.5;
+    opacity: var(--opacity-50, 0.5);
     cursor: not-allowed;
 }
 
