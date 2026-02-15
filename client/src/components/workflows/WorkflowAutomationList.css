@@ -7,7 +7,7 @@
 .workflow-automation-loading {
     text-align: center;
     padding: 60px 20px;
-    color: #6B7280;
+    color: var(--text-muted);
     font-size: 16px;
 }
 
@@ -31,12 +31,12 @@
 .workflow-automation-header h1 {
     margin: 0;
     font-size: 28px;
-    color: #111827;
+    color: var(--text-primary);
 }
 
 .workflow-automation-header p {
     margin: 4px 0 0 0;
-    color: #6B7280;
+    color: var(--text-muted);
     font-size: 14px;
 }
 
@@ -45,8 +45,8 @@
     align-items: center;
     gap: 8px;
     padding: 10px 20px;
-    background: #3B82F6;
-    color: white;
+    background: var(--status-info);
+    color: var(--card-bg);
     border: none;
     border-radius: 8px;
     font-size: 14px;
@@ -69,24 +69,24 @@
 
 .filter-btn {
     padding: 8px 16px;
-    background: white;
-    border: 1px solid #E5E7EB;
+    background: var(--card-bg);
+    border: 1px solid var(--border-light);
     border-radius: 6px;
     font-size: 14px;
-    color: #6B7280;
+    color: var(--text-muted);
     cursor: pointer;
     transition: all 0.2s;
 }
 
 .filter-btn:hover {
     border-color: #3B82F6;
-    color: #3B82F6;
+    color: var(--status-info);
 }
 
 .filter-btn.active {
-    background: #3B82F6;
+    background: var(--status-info);
     border-color: #3B82F6;
-    color: white;
+    color: var(--card-bg);
 }
 
 .workflow-automation-empty {
@@ -102,12 +102,12 @@
 .workflow-automation-empty h2 {
     margin: 0 0 12px 0;
     font-size: 24px;
-    color: #111827;
+    color: var(--text-primary);
 }
 
 .workflow-automation-empty p {
     margin: 0 0 24px 0;
-    color: #6B7280;
+    color: var(--text-muted);
     font-size: 16px;
 }
 
@@ -118,8 +118,8 @@
 }
 
 .workflow-automation-card {
-    background: white;
-    border: 1px solid #E5E7EB;
+    background: var(--card-bg);
+    border: 1px solid var(--border-light);
     border-radius: 12px;
     padding: 20px;
     transition: all 0.2s;
@@ -148,7 +148,7 @@
 .workflow-automation-card-title h3 {
     margin: 0 0 8px 0;
     font-size: 18px;
-    color: #111827;
+    color: var(--text-primary);
 }
 
 .workflow-automation-status-badge {
@@ -166,7 +166,7 @@
 
 .workflow-automation-status-badge.inactive {
     background: #F3F4F6;
-    color: #6B7280;
+    color: var(--text-muted);
 }
 
 .workflow-automation-card-actions {
@@ -177,10 +177,10 @@
 .icon-btn {
     padding: 6px;
     background: transparent;
-    border: 1px solid #E5E7EB;
+    border: 1px solid var(--border-light);
     border-radius: 6px;
     cursor: pointer;
-    color: #6B7280;
+    color: var(--text-muted);
     transition: all 0.2s;
     display: flex;
     align-items: center;
@@ -188,9 +188,9 @@
 }
 
 .icon-btn:hover {
-    background: #F9FAFB;
+    background: var(--input-bg);
     border-color: #3B82F6;
-    color: #3B82F6;
+    color: var(--status-info);
 }
 
 .icon-btn.danger:hover {
@@ -201,13 +201,13 @@
 
 .workflow-automation-description {
     margin: 0 0 16px 0;
-    color: #6B7280;
+    color: var(--text-muted);
     font-size: 14px;
     line-height: 1.5;
 }
 
 .workflow-automation-trigger-info {
-    background: #F9FAFB;
+    background: var(--input-bg);
     padding: 12px;
     border-radius: 8px;
     margin-bottom: 16px;
@@ -215,13 +215,13 @@
 
 .trigger-label {
     font-size: 13px;
-    color: #111827;
+    color: var(--text-primary);
     margin-bottom: 4px;
 }
 
 .trigger-description {
     font-size: 13px;
-    color: #6B7280;
+    color: var(--text-muted);
 }
 
 .workflow-automation-stats {
@@ -239,7 +239,7 @@
     align-items: center;
     gap: 6px;
     font-size: 13px;
-    color: #6B7280;
+    color: var(--text-muted);
 }
 
 .workflow-automation-stats .stat svg {
@@ -262,17 +262,17 @@
     justify-content: center;
     gap: 8px;
     padding: 8px 16px;
-    background: white;
-    border: 1px solid #E5E7EB;
+    background: var(--card-bg);
+    border: 1px solid var(--border-light);
     border-radius: 6px;
     font-size: 13px;
-    color: #6B7280;
+    color: var(--text-muted);
     cursor: pointer;
     transition: all 0.2s;
 }
 
 .workflow-automation-view-btn:hover {
-    background: #F9FAFB;
+    background: var(--input-bg);
     border-color: #3B82F6;
-    color: #3B82F6;
+    color: var(--status-info);
 }

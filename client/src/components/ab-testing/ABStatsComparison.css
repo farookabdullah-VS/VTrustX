@@ -16,7 +16,7 @@
     padding: 8px 12px;
     background: none;
     border: none;
-    color: #6366F1;
+    color: var(--primary);
     font-weight: 600;
     cursor: pointer;
     transition: background 0.2s;
@@ -25,7 +25,7 @@
 }
 
 .back-link:hover {
-    background: #EEF2FF;
+    background: var(--primary-light, #EEF2FF);
 }
 
 .experiment-title-row {
@@ -45,7 +45,7 @@
 .title-left h1 {
     font-size: 28px;
     font-weight: 700;
-    color: #111827;
+    color: var(--text-primary);
     margin: 0;
 }
 
@@ -69,10 +69,10 @@
     align-items: center;
     gap: 8px;
     padding: 10px 16px;
-    background: #10B98115;
-    border: 2px solid #10B981;
+    background: var(--status-success)15;
+    border: 2px solid var(--status-success);
     border-radius: 8px;
-    color: #10B981;
+    color: var(--status-success);
     font-weight: 600;
     font-size: 14px;
     animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
@@ -92,19 +92,19 @@
     align-items: center;
     gap: 8px;
     padding: 10px 18px;
-    background: white;
-    border: 1px solid #D1D5DB;
+    background: var(--card-bg);
+    border: 1px solid var(--border-medium);
     border-radius: 8px;
-    color: #374151;
+    color: var(--text-secondary);
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s;
 }
 
 .btn-secondary:hover {
-    background: #F9FAFB;
-    border-color: #6366F1;
-    color: #6366F1;
+    background: var(--input-bg);
+    border-color: var(--primary);
+    color: var(--primary);
 }
 
 .btn-primary {
@@ -112,8 +112,8 @@
     align-items: center;
     gap: 8px;
     padding: 10px 18px;
-    background: #6366F1;
-    color: white;
+    background: var(--primary);
+    color: var(--card-bg);
     border: none;
     border-radius: 8px;
     font-weight: 600;
@@ -122,13 +122,13 @@
 }
 
 .btn-primary:hover {
-    background: #4F46E5;
+    background: var(--primary-hover);
 }
 
 /* Live Activity */
 .live-activity {
-    background: #F9FAFB;
-    border: 1px solid #E5E7EB;
+    background: var(--input-bg);
+    border: 1px solid var(--border-light);
     border-radius: 12px;
     padding: 20px;
     margin-bottom: 24px;
@@ -137,7 +137,7 @@
 .live-activity h3 {
     font-size: 16px;
     font-weight: 600;
-    color: #111827;
+    color: var(--text-primary);
     margin: 0 0 12px 0;
 }
 
@@ -149,8 +149,8 @@
 .activity-item {
     padding: 8px 0;
     font-size: 14px;
-    color: #6B7280;
-    border-bottom: 1px solid #E5E7EB;
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--border-light);
 }
 
 .activity-item:last-child {
@@ -166,8 +166,8 @@
 }
 
 .metric-card {
-    background: white;
-    border: 2px solid #E5E7EB;
+    background: var(--card-bg);
+    border: 2px solid var(--border-light);
     border-radius: 12px;
     padding: 20px;
     position: relative;
@@ -175,7 +175,7 @@
 }
 
 .metric-card.winner {
-    border-color: #FBBF24;
+    border-color: var(--status-warning);
     box-shadow: 0 4px 12px rgba(251, 191, 36, 0.2);
 }
 
@@ -187,8 +187,8 @@
     align-items: center;
     gap: 6px;
     padding: 6px 12px;
-    background: linear-gradient(135deg, #FBBF24, #F59E0B);
-    color: white;
+    background: linear-gradient(135deg, var(--status-warning), var(--status-warning));
+    color: var(--card-bg);
     border-radius: 20px;
     font-size: 13px;
     font-weight: 700;
@@ -201,7 +201,7 @@
 .card-header h3 {
     font-size: 20px;
     font-weight: 700;
-    color: #111827;
+    color: var(--text-primary);
     margin: 0 0 8px 0;
 }
 
@@ -209,7 +209,7 @@
     display: flex;
     align-items: center;
     gap: 6px;
-    color: #6B7280;
+    color: var(--text-muted);
     font-size: 14px;
 }
 
@@ -227,7 +227,7 @@
 
 .metric.highlight {
     grid-column: span 2;
-    background: #EEF2FF;
+    background: var(--primary-light, #EEF2FF);
     border-radius: 8px;
     padding: 12px;
 }
@@ -235,7 +235,7 @@
 .metric-label {
     font-size: 13px;
     font-weight: 600;
-    color: #6B7280;
+    color: var(--text-muted);
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
@@ -243,22 +243,22 @@
 .metric-value {
     font-size: 28px;
     font-weight: 700;
-    color: #111827;
+    color: var(--text-primary);
 }
 
 .metric.highlight .metric-value {
-    color: #6366F1;
+    color: var(--primary);
 }
 
 .metric-detail {
     font-size: 13px;
-    color: #9CA3AF;
+    color: var(--text-disabled);
 }
 
 /* Chart Section */
 .chart-section {
-    background: white;
-    border: 1px solid #E5E7EB;
+    background: var(--card-bg);
+    border: 1px solid var(--border-light);
     border-radius: 12px;
     padding: 24px;
     margin-bottom: 32px;
@@ -267,14 +267,14 @@
 .chart-section h2 {
     font-size: 20px;
     font-weight: 700;
-    color: #111827;
+    color: var(--text-primary);
     margin: 0 0 24px 0;
 }
 
 /* Stats Section */
 .stats-section {
-    background: white;
-    border: 1px solid #E5E7EB;
+    background: var(--card-bg);
+    border: 1px solid var(--border-light);
     border-radius: 12px;
     padding: 24px;
 }
@@ -282,7 +282,7 @@
 .stats-section h2 {
     font-size: 20px;
     font-weight: 700;
-    color: #111827;
+    color: var(--text-primary);
     margin: 0 0 24px 0;
 }
 
@@ -296,15 +296,15 @@
 }
 
 .significance-box.success {
-    background: #D1FAE5;
-    border: 2px solid #10B981;
-    color: #065F46;
+    background: var(--toast-success-bg, #D1FAE5);
+    border: 2px solid var(--status-success);
+    color: var(--toast-success-text, #065F46);
 }
 
 .significance-box.info {
-    background: #EFF6FF;
-    border: 2px solid #3B82F6;
-    color: #1E3A8A;
+    background: var(--toast-info-bg, #EFF6FF);
+    border: 2px solid var(--status-info);
+    color: var(--toast-info-text, #1E3A8A);
 }
 
 .significance-box h4 {
@@ -330,15 +330,15 @@
     flex-direction: column;
     gap: 6px;
     padding: 16px;
-    background: #F9FAFB;
-    border: 1px solid #E5E7EB;
+    background: var(--input-bg);
+    border: 1px solid var(--border-light);
     border-radius: 8px;
 }
 
 .stat-label {
     font-size: 13px;
     font-weight: 600;
-    color: #6B7280;
+    color: var(--text-muted);
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
@@ -346,17 +346,17 @@
 .stat-value {
     font-size: 24px;
     font-weight: 700;
-    color: #111827;
+    color: var(--text-primary);
 }
 
 .stat-hint {
     font-size: 12px;
-    color: #9CA3AF;
+    color: var(--text-disabled);
 }
 
 .confidence-intervals {
-    background: #F9FAFB;
-    border: 1px solid #E5E7EB;
+    background: var(--input-bg);
+    border: 1px solid var(--border-light);
     border-radius: 8px;
     padding: 20px;
 }
@@ -364,7 +364,7 @@
 .confidence-intervals h4 {
     font-size: 16px;
     font-weight: 600;
-    color: #111827;
+    color: var(--text-primary);
     margin: 0 0 16px 0;
 }
 
@@ -379,19 +379,19 @@
     flex-direction: column;
     gap: 6px;
     padding: 12px;
-    background: white;
+    background: var(--card-bg);
     border-radius: 6px;
 }
 
 .interval-name {
     font-size: 13px;
     font-weight: 600;
-    color: #6366F1;
+    color: var(--primary);
 }
 
 .interval-range {
     font-size: 15px;
-    color: #111827;
+    color: var(--text-primary);
 }
 
 /* Loading/Error */
@@ -408,8 +408,8 @@
 .spinner {
     width: 48px;
     height: 48px;
-    border: 4px solid #E5E7EB;
-    border-top-color: #6366F1;
+    border: 4px solid var(--border-light);
+    border-top-color: var(--primary);
     border-radius: 50%;
     animation: spin 1s linear infinite;
 }
@@ -421,14 +421,14 @@
 .loading-container p,
 .error-container p {
     margin-top: 16px;
-    color: #6B7280;
+    color: var(--text-muted);
 }
 
 .error-container button {
     margin-top: 16px;
     padding: 10px 20px;
-    background: #6366F1;
-    color: white;
+    background: var(--primary);
+    color: var(--card-bg);
     border: none;
     border-radius: 8px;
     font-weight: 600;
@@ -437,8 +437,8 @@
 
 /* Advanced Statistics Sections */
 .advanced-section {
-    background: white;
-    border: 2px solid #E5E7EB;
+    background: var(--card-bg);
+    border: 2px solid var(--border-light);
     border-radius: 12px;
     padding: 32px;
     margin-top: 32px;
@@ -454,20 +454,20 @@
 .section-header h2 {
     font-size: 22px;
     font-weight: 700;
-    color: #111827;
+    color: var(--text-primary);
     margin: 0;
 }
 
 /* Bayesian Styles */
 .bayesian-section {
-    border-color: #6366F1;
+    border-color: var(--primary);
 }
 
 .bayesian-probabilities h4,
 .credible-intervals h4 {
     font-size: 18px;
     font-weight: 600;
-    color: #374151;
+    color: var(--text-secondary);
     margin: 0 0 16px 0;
 }
 
@@ -479,8 +479,8 @@
 }
 
 .prob-card {
-    background: #F9FAFB;
-    border: 1px solid #E5E7EB;
+    background: var(--input-bg);
+    border: 1px solid var(--border-light);
     border-radius: 8px;
     padding: 20px;
     text-align: center;
@@ -489,21 +489,21 @@
 .prob-card .variant-name {
     font-size: 14px;
     font-weight: 600;
-    color: #6B7280;
+    color: var(--text-muted);
     margin-bottom: 12px;
 }
 
 .prob-value {
     font-size: 36px;
     font-weight: 700;
-    color: #6366F1;
+    color: var(--primary);
     margin-bottom: 12px;
 }
 
 .prob-bar {
     width: 100%;
     height: 12px;
-    background: #E5E7EB;
+    background: var(--border-light);
     border-radius: 6px;
     overflow: hidden;
 }
@@ -515,45 +515,45 @@
 
 .interval-mean {
     font-size: 12px;
-    color: #9CA3AF;
+    color: var(--text-disabled);
 }
 
 .recommendation-box {
-    background: #EFF6FF;
-    border: 2px solid #3B82F6;
+    background: var(--toast-info-bg, #EFF6FF);
+    border: 2px solid var(--status-info);
     border-radius: 8px;
     padding: 20px;
     margin-top: 24px;
 }
 
 .recommendation-box.declare_winner {
-    background: #D1FAE5;
-    border-color: #10B981;
+    background: var(--toast-success-bg, #D1FAE5);
+    border-color: var(--status-success);
 }
 
 .recommendation-box h4 {
     font-size: 16px;
-    color: #1E40AF;
+    color: var(--toast-info-text, #1E40AF);
     margin: 0 0 8px 0;
 }
 
 .recommendation-box.declare_winner h4 {
-    color: #065F46;
+    color: var(--toast-success-text, #065F46);
 }
 
 .recommendation-box p {
     margin: 0;
-    color: #1E3A8A;
+    color: var(--toast-info-text, #1E3A8A);
     line-height: 1.5;
 }
 
 .recommendation-box.declare_winner p {
-    color: #064E3B;
+    color: var(--toast-success-text, #064E3B);
 }
 
 /* Sequential Styles */
 .sequential-section {
-    border-color: #10B981;
+    border-color: var(--status-success);
 }
 
 .sequential-status {
@@ -564,8 +564,8 @@
 }
 
 .status-card {
-    background: #F9FAFB;
-    border: 1px solid #E5E7EB;
+    background: var(--input-bg);
+    border: 1px solid var(--border-light);
     border-radius: 8px;
     padding: 20px;
     text-align: center;
@@ -574,7 +574,7 @@
 .status-label {
     font-size: 13px;
     font-weight: 600;
-    color: #6B7280;
+    color: var(--text-muted);
     text-transform: uppercase;
     margin-bottom: 8px;
 }
@@ -582,20 +582,20 @@
 .status-value {
     font-size: 24px;
     font-weight: 700;
-    color: #111827;
+    color: var(--text-primary);
 }
 
 .sequential-history h4,
 .boundary-chart h4 {
     font-size: 18px;
     font-weight: 600;
-    color: #374151;
+    color: var(--text-secondary);
     margin: 0 0 16px 0;
 }
 
 .history-table {
-    background: #F9FAFB;
-    border: 1px solid #E5E7EB;
+    background: var(--input-bg);
+    border: 1px solid var(--border-light);
     border-radius: 8px;
     overflow: hidden;
     margin-bottom: 32px;
@@ -610,17 +610,17 @@
 }
 
 .history-header {
-    background: #EEF2FF;
+    background: var(--primary-light, #EEF2FF);
     font-weight: 600;
-    color: #374151;
+    color: var(--text-secondary);
     font-size: 13px;
     text-transform: uppercase;
 }
 
 .history-row {
-    border-bottom: 1px solid #E5E7EB;
+    border-bottom: 1px solid var(--border-light);
     font-size: 14px;
-    color: #111827;
+    color: var(--text-primary);
 }
 
 .history-row:last-child {
@@ -628,28 +628,28 @@
 }
 
 .decision-continue {
-    color: #3B82F6;
+    color: var(--status-info);
 }
 
 .decision-stop_winner {
-    color: #10B981;
+    color: var(--status-success);
     font-weight: 600;
 }
 
 .decision-stop_futile {
-    color: #F59E0B;
+    color: var(--status-warning);
 }
 
 .chart-note {
     font-size: 13px;
-    color: #6B7280;
+    color: var(--text-muted);
     font-style: italic;
     margin-top: 12px;
 }
 
 /* Bandit Styles */
 .bandit-section {
-    border-color: #F59E0B;
+    border-color: var(--status-warning);
 }
 
 .bandit-summary {
@@ -660,8 +660,8 @@
 }
 
 .summary-card {
-    background: #F9FAFB;
-    border: 1px solid #E5E7EB;
+    background: var(--input-bg);
+    border: 1px solid var(--border-light);
     border-radius: 8px;
     padding: 20px;
     text-align: center;
@@ -670,7 +670,7 @@
 .summary-label {
     font-size: 13px;
     font-weight: 600;
-    color: #6B7280;
+    color: var(--text-muted);
     text-transform: uppercase;
     margin-bottom: 8px;
 }
@@ -678,14 +678,14 @@
 .summary-value {
     font-size: 24px;
     font-weight: 700;
-    color: #111827;
+    color: var(--text-primary);
 }
 
 .allocation-evolution h4,
 .regret-chart h4 {
     font-size: 18px;
     font-weight: 600;
-    color: #374151;
+    color: var(--text-secondary);
     margin: 0 0 16px 0;
 }
 
@@ -697,8 +697,8 @@
 }
 
 .alloc-card {
-    background: #F9FAFB;
-    border: 2px solid #E5E7EB;
+    background: var(--input-bg);
+    border: 2px solid var(--border-light);
     border-radius: 8px;
     padding: 20px;
 }
@@ -713,19 +713,19 @@
 .alloc-name {
     font-size: 16px;
     font-weight: 600;
-    color: #111827;
+    color: var(--text-primary);
 }
 
 .alloc-shift {
     font-size: 14px;
     font-weight: 700;
-    color: #6366F1;
+    color: var(--primary);
 }
 
 .alloc-bar {
     width: 100%;
     height: 12px;
-    background: #E5E7EB;
+    background: var(--border-light);
     border-radius: 6px;
     overflow: hidden;
     margin-bottom: 12px;
@@ -733,7 +733,7 @@
 
 .alloc-fill {
     height: 100%;
-    background: linear-gradient(90deg, #6366F1, #8B5CF6);
+    background: linear-gradient(90deg, var(--primary), #8B5CF6);
 }
 
 .alloc-stats,
@@ -741,7 +741,7 @@
     display: flex;
     justify-content: space-between;
     font-size: 13px;
-    color: #6B7280;
+    color: var(--text-muted);
     margin-bottom: 8px;
 }
 

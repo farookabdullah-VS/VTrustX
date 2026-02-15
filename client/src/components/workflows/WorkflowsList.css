@@ -4,7 +4,7 @@
     padding: 24px;
     max-width: 1400px;
     margin: 0 auto;
-    background: #F9FAFB;
+    background: var(--input-bg);
     min-height: 100vh;
 }
 
@@ -16,13 +16,13 @@
 .header-content h1 {
     font-size: 32px;
     font-weight: 700;
-    color: #111827;
+    color: var(--text-primary);
     margin: 0 0 8px 0;
 }
 
 .header-content p {
     font-size: 16px;
-    color: #6B7280;
+    color: var(--text-muted);
     margin: 0 0 24px 0;
 }
 
@@ -35,7 +35,7 @@
 }
 
 .stat-card {
-    background: white;
+    background: var(--card-bg);
     border-radius: 12px;
     padding: 20px;
     display: flex;
@@ -80,13 +80,13 @@
 .stat-value {
     font-size: 28px;
     font-weight: 700;
-    color: #111827;
+    color: var(--text-primary);
     margin: 0 0 4px 0;
 }
 
 .stat-label {
     font-size: 13px;
-    color: #6B7280;
+    color: var(--text-muted);
     text-transform: uppercase;
     letter-spacing: 0.05em;
 }
@@ -99,7 +99,7 @@
 }
 
 .workflow-row {
-    background: white;
+    background: var(--card-bg);
     border-radius: 12px;
     padding: 24px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
@@ -129,7 +129,7 @@
 .workflow-header-row h3 {
     font-size: 18px;
     font-weight: 600;
-    color: #111827;
+    color: var(--text-primary);
     margin: 0;
 }
 
@@ -152,7 +152,7 @@
 
 .workflow-description {
     font-size: 14px;
-    color: #6B7280;
+    color: var(--text-muted);
     margin: 0 0 12px 0;
     line-height: 1.5;
 }
@@ -165,11 +165,11 @@
 
 .meta-item {
     font-size: 13px;
-    color: #6B7280;
+    color: var(--text-muted);
 }
 
 .meta-item strong {
-    color: #374151;
+    color: var(--text-secondary);
     font-weight: 500;
 }
 
@@ -179,8 +179,8 @@
     grid-template-columns: repeat(4, 1fr);
     gap: 16px;
     padding: 0 24px;
-    border-left: 1px solid #E5E7EB;
-    border-right: 1px solid #E5E7EB;
+    border-left: 1px solid var(--border-light);
+    border-right: 1px solid var(--border-light);
 }
 
 .workflow-stats .stat {
@@ -198,13 +198,13 @@
 .workflow-stats .stat-value {
     font-size: 20px;
     font-weight: 700;
-    color: #111827;
+    color: var(--text-primary);
 }
 
 .workflow-stats .stat-value.small {
     font-size: 11px;
     font-weight: 500;
-    color: #6B7280;
+    color: var(--text-muted);
 }
 
 /* Workflow Actions */
@@ -270,7 +270,7 @@
 .empty-state {
     text-align: center;
     padding: 60px 20px;
-    background: white;
+    background: var(--card-bg);
     border-radius: 12px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
@@ -297,13 +297,13 @@
 .empty-state h3 {
     font-size: 18px;
     font-weight: 600;
-    color: #111827;
+    color: var(--text-primary);
     margin: 0 0 8px 0;
 }
 
 .empty-state p {
     font-size: 14px;
-    color: #6B7280;
+    color: var(--text-muted);
     margin: 0;
 }
 
@@ -316,8 +316,8 @@
     .workflow-stats {
         border-left: none;
         border-right: none;
-        border-top: 1px solid #E5E7EB;
-        border-bottom: 1px solid #E5E7EB;
+        border-top: 1px solid var(--border-light);
+        border-bottom: 1px solid var(--border-light);
         padding: 16px 0;
     }
 

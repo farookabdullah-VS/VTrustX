@@ -15,7 +15,7 @@
 }
 
 .timeline-content {
-    background: white;
+    background: var(--card-bg);
     border-radius: 12px;
     max-width: 900px;
     width: 100%;
@@ -32,8 +32,8 @@
     justify-content: space-between;
     align-items: center;
     padding: 24px;
-    border-bottom: 1px solid #E5E7EB;
-    background: #F9FAFB;
+    border-bottom: 1px solid var(--border-light);
+    background: var(--input-bg);
 }
 
 .timeline-header h2 {
@@ -42,12 +42,12 @@
     gap: 12px;
     margin: 0 0 4px 0;
     font-size: 24px;
-    color: #1F2937;
+    color: var(--text-primary);
 }
 
 .timeline-header p {
     margin: 0;
-    color: #6B7280;
+    color: var(--text-muted);
     font-size: 14px;
     margin-left: 36px;
 }
@@ -61,7 +61,7 @@
 .close-btn {
     background: none;
     border: none;
-    color: #9CA3AF;
+    color: var(--text-disabled);
     cursor: pointer;
     padding: 4px;
     border-radius: 6px;
@@ -72,8 +72,8 @@
 }
 
 .close-btn:hover {
-    background: #F3F4F6;
-    color: #1F2937;
+    background: var(--input-bg);
+    color: var(--text-primary);
 }
 
 /* Loading State */
@@ -88,7 +88,7 @@
 }
 
 .spinner {
-    border: 3px solid #E5E7EB;
+    border: 3px solid var(--border-light);
     border-top: 3px solid #3B82F6;
     border-radius: 50%;
     width: 40px;
@@ -109,7 +109,7 @@
     justify-content: center;
     min-height: 300px;
     gap: 16px;
-    color: #9CA3AF;
+    color: var(--text-disabled);
     padding: 40px;
 }
 
@@ -119,13 +119,13 @@
 
 .empty-state h3 {
     margin: 0;
-    color: #6B7280;
+    color: var(--text-muted);
     font-size: 20px;
 }
 
 .empty-state p {
     margin: 0;
-    color: #9CA3AF;
+    color: var(--text-disabled);
     font-size: 14px;
 }
 
@@ -151,7 +151,7 @@
     top: 40px;
     bottom: -24px;
     width: 2px;
-    background: #E5E7EB;
+    background: var(--border-light);
 }
 
 .timeline-marker {
@@ -162,18 +162,18 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    color: white;
-    box-shadow: 0 0 0 4px #F9FAFB;
+    color: var(--card-bg);
+    box-shadow: 0 0 0 4px var(--input-bg);
     position: relative;
     z-index: 1;
 }
 
 .timeline-item-content {
     flex: 1;
-    background: #F9FAFB;
+    background: var(--input-bg);
     border-radius: 12px;
     padding: 16px;
-    border: 1px solid #E5E7EB;
+    border: 1px solid var(--border-light);
 }
 
 .timeline-item-header {
@@ -186,14 +186,14 @@
 .timeline-item-header h4 {
     margin: 0;
     font-size: 16px;
-    color: #1F2937;
+    color: var(--text-primary);
     font-weight: 600;
 }
 
 .timeline-date {
-    color: #9CA3AF;
+    color: var(--text-disabled);
     font-size: 13px;
-    white-space: nowrap;
+    var(--card-bg)-space: nowrap;
 }
 
 .timeline-description {
@@ -213,11 +213,11 @@
 .metadata-badge {
     display: inline-block;
     padding: 4px 10px;
-    background: white;
-    border: 1px solid #E5E7EB;
+    background: var(--card-bg);
+    border: 1px solid var(--border-light);
     border-radius: 6px;
     font-size: 12px;
-    color: #6B7280;
+    color: var(--text-muted);
 }
 
 /* Modal Overlay (for Add Activity) */
@@ -237,7 +237,7 @@
 
 /* Modal */
 .modal {
-    background: white;
+    background: var(--card-bg);
     border-radius: 12px;
     max-width: 500px;
     width: 100%;
@@ -253,20 +253,20 @@
     justify-content: space-between;
     align-items: center;
     padding: 20px 24px;
-    border-bottom: 1px solid #E5E7EB;
+    border-bottom: 1px solid var(--border-light);
 }
 
 .modal-header h3 {
     margin: 0;
     font-size: 20px;
-    color: #1F2937;
+    color: var(--text-primary);
 }
 
 .modal-header button {
     background: none;
     border: none;
     font-size: 28px;
-    color: #9CA3AF;
+    color: var(--text-disabled);
     cursor: pointer;
     line-height: 1;
     padding: 0;
@@ -280,8 +280,8 @@
 }
 
 .modal-header button:hover {
-    background: #F3F4F6;
-    color: #1F2937;
+    background: var(--input-bg);
+    color: var(--text-primary);
 }
 
 .modal-body {
@@ -294,7 +294,7 @@
     display: flex;
     gap: 12px;
     padding: 16px 24px;
-    border-top: 1px solid #E5E7EB;
+    border-top: 1px solid var(--border-light);
     justify-content: flex-end;
 }
 
@@ -319,7 +319,7 @@
     border: 1px solid #D1D5DB;
     border-radius: 8px;
     font-size: 14px;
-    color: #1F2937;
+    color: var(--text-primary);
     transition: border-color 0.2s;
 }
 
@@ -339,7 +339,7 @@
 /* Buttons */
 .btn-primary {
     background: #3B82F6;
-    color: white;
+    color: var(--card-bg);
     border: none;
     padding: 10px 20px;
     border-radius: 8px;
@@ -357,12 +357,12 @@
 }
 
 .btn-primary:disabled {
-    background: #9CA3AF;
+    background: var(--text-disabled);
     cursor: not-allowed;
 }
 
 .btn-secondary {
-    background: white;
+    background: var(--card-bg);
     color: #4B5563;
     border: 1px solid #D1D5DB;
     padding: 10px 20px;
@@ -377,8 +377,8 @@
 }
 
 .btn-secondary:hover {
-    background: #F9FAFB;
-    border-color: #9CA3AF;
+    background: var(--input-bg);
+    border-color: var(--text-disabled);
 }
 
 .btn-sm {

@@ -19,7 +19,7 @@
     gap: 8px;
     background: none;
     border: none;
-    color: #6B7280;
+    color: var(--text-muted);
     font-size: 0.95rem;
     cursor: pointer;
     padding: 8px 12px;
@@ -29,8 +29,8 @@
 }
 
 .btn-back:hover {
-    background: #F3F4F6;
-    color: #1F2937;
+    background: var(--input-bg);
+    color: var(--text-primary);
 }
 
 .header-content {
@@ -39,8 +39,8 @@
     align-items: flex-start;
     gap: 20px;
     padding: 25px;
-    background: white;
-    border: 2px solid #E5E7EB;
+    background: var(--card-bg);
+    border: 2px solid var(--border-light);
     border-radius: 12px;
 }
 
@@ -52,19 +52,19 @@
 }
 
 .header-icon {
-    color: #3B82F6;
+    color: var(--status-info);
     flex-shrink: 0;
 }
 
 .header-content h1 {
     font-size: 1.5rem;
     font-weight: 600;
-    color: #1F2937;
+    color: var(--text-primary);
     margin: 0 0 5px 0;
 }
 
 .header-content p {
-    color: #6B7280;
+    color: var(--text-muted);
     font-size: 0.95rem;
     margin: 0;
 }
@@ -84,8 +84,8 @@
 }
 
 .stat-card {
-    background: white;
-    border: 2px solid #E5E7EB;
+    background: var(--card-bg);
+    border: 2px solid var(--border-light);
     border-radius: 12px;
     padding: 20px;
     display: flex;
@@ -95,7 +95,7 @@
 }
 
 .stat-card:hover {
-    border-color: #3B82F6;
+    border-color: var(--status-info);
     box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
 }
 
@@ -110,7 +110,7 @@
 
 .stat-icon.blue {
     background: #EFF6FF;
-    color: #3B82F6;
+    color: var(--status-info);
 }
 
 .stat-icon.green {
@@ -136,13 +136,13 @@
 
 .stat-label {
     font-size: 0.85rem;
-    color: #6B7280;
+    color: var(--text-muted);
 }
 
 .stat-value {
     font-size: 1.75rem;
     font-weight: 600;
-    color: #1F2937;
+    color: var(--text-primary);
 }
 
 /* Tabs */
@@ -157,7 +157,7 @@
     background: none;
     border: none;
     border-bottom: 3px solid transparent;
-    color: #6B7280;
+    color: var(--text-muted);
     font-size: 1rem;
     font-weight: 500;
     cursor: pointer;
@@ -166,18 +166,18 @@
 }
 
 .tab:hover {
-    color: #1F2937;
+    color: var(--text-primary);
 }
 
 .tab.active {
-    color: #3B82F6;
+    color: var(--status-info);
     border-bottom-color: #3B82F6;
 }
 
 /* Tab Content */
 .tab-content {
-    background: white;
-    border: 2px solid #E5E7EB;
+    background: var(--card-bg);
+    border: 2px solid var(--border-light);
     border-radius: 12px;
     padding: 30px;
     min-height: 400px;
@@ -193,7 +193,7 @@
 .info-section h3 {
     font-size: 1.25rem;
     font-weight: 600;
-    color: #1F2937;
+    color: var(--text-primary);
     margin: 0 0 20px 0;
 }
 
@@ -213,8 +213,8 @@
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    background: #3B82F6;
-    color: white;
+    background: var(--status-info);
+    color: var(--card-bg);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -225,26 +225,26 @@
 .step-content {
     flex: 1;
     padding: 10px 15px;
-    background: #F9FAFB;
-    border: 1px solid #E5E7EB;
+    background: var(--input-bg);
+    border: 1px solid var(--border-light);
     border-radius: 8px;
 }
 
 .step-content h4 {
     font-size: 1rem;
     font-weight: 600;
-    color: #1F2937;
+    color: var(--text-primary);
     margin: 0 0 8px 0;
 }
 
 .step-delay {
-    color: #6B7280;
+    color: var(--text-muted);
     font-size: 0.85rem;
     margin: 0 0 10px 0;
 }
 
 .step-content p {
-    color: #4B5563;
+    color: var(--text-secondary);
     font-size: 0.9rem;
     line-height: 1.5;
     margin: 5px 0;
@@ -262,19 +262,19 @@
     justify-content: space-between;
     align-items: center;
     padding: 12px 15px;
-    background: #F9FAFB;
-    border: 1px solid #E5E7EB;
+    background: var(--input-bg);
+    border: 1px solid var(--border-light);
     border-radius: 8px;
 }
 
 .setting-row .label {
     font-weight: 500;
-    color: #6B7280;
+    color: var(--text-muted);
 }
 
 .setting-row .value {
     font-weight: 500;
-    color: #1F2937;
+    color: var(--text-primary);
 }
 
 /* Tables */
@@ -289,14 +289,14 @@ table {
 }
 
 thead {
-    background: #F9FAFB;
+    background: var(--input-bg);
 }
 
 th {
     text-align: left;
     padding: 12px 15px;
     font-weight: 600;
-    color: #6B7280;
+    color: var(--text-muted);
     font-size: 0.85rem;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -309,12 +309,12 @@ tbody tr {
 }
 
 tbody tr:hover {
-    background: #F9FAFB;
+    background: var(--input-bg);
 }
 
 td {
     padding: 15px;
-    color: #4B5563;
+    color: var(--text-secondary);
 }
 
 .recipient-info {
@@ -324,12 +324,12 @@ td {
 }
 
 .recipient-info strong {
-    color: #1F2937;
+    color: var(--text-primary);
     font-size: 0.95rem;
 }
 
 .recipient-info small {
-    color: #6B7280;
+    color: var(--text-muted);
     font-size: 0.85rem;
 }
 
@@ -345,8 +345,8 @@ td {
 }
 
 .status-badge.status-gray {
-    background: #F3F4F6;
-    color: #6B7280;
+    background: var(--input-bg);
+    color: var(--text-muted);
 }
 
 .status-badge.status-green {
@@ -361,7 +361,7 @@ td {
 
 .status-badge.status-blue {
     background: #EFF6FF;
-    color: #3B82F6;
+    color: var(--status-info);
 }
 
 .status-badge.status-red {
@@ -386,9 +386,9 @@ td {
 }
 
 .btn-primary {
-    background: #3B82F6;
+    background: var(--status-info);
     border: none;
-    color: white;
+    color: var(--card-bg);
 }
 
 .btn-primary:hover {
@@ -398,19 +398,19 @@ td {
 }
 
 .btn-secondary {
-    background: white;
-    border: 2px solid #E5E7EB;
-    color: #6B7280;
+    background: var(--card-bg);
+    border: 2px solid var(--border-light);
+    color: var(--text-muted);
 }
 
 .btn-secondary:hover {
-    background: #F9FAFB;
+    background: var(--input-bg);
 }
 
 .btn-success {
     background: #10B981;
     border: none;
-    color: white;
+    color: var(--card-bg);
 }
 
 .btn-success:hover {
@@ -420,7 +420,7 @@ td {
 .btn-warning {
     background: #F59E0B;
     border: none;
-    color: white;
+    color: var(--card-bg);
 }
 
 .btn-warning:hover {
@@ -442,7 +442,7 @@ td {
 }
 
 .modal {
-    background: white;
+    background: var(--card-bg);
     border-radius: 12px;
     max-width: 600px;
     width: 90%;
@@ -463,14 +463,14 @@ td {
 .modal-header h3 {
     font-size: 1.25rem;
     font-weight: 600;
-    color: #1F2937;
+    color: var(--text-primary);
     margin: 0;
 }
 
 .modal-header button {
     background: none;
     border: none;
-    color: #6B7280;
+    color: var(--text-muted);
     font-size: 1.5rem;
     cursor: pointer;
     padding: 0;
@@ -484,7 +484,7 @@ td {
 }
 
 .modal-header button:hover {
-    background: #F3F4F6;
+    background: var(--input-bg);
 }
 
 .modal-body {
@@ -493,14 +493,14 @@ td {
 }
 
 .modal-body p {
-    color: #6B7280;
+    color: var(--text-muted);
     margin: 0 0 15px 0;
 }
 
 .modal-body textarea {
     width: 100%;
     padding: 12px;
-    border: 2px solid #E5E7EB;
+    border: 2px solid var(--border-light);
     border-radius: 8px;
     font-family: monospace;
     font-size: 0.9rem;
@@ -509,7 +509,7 @@ td {
 
 .modal-body textarea:focus {
     outline: none;
-    border-color: #3B82F6;
+    border-color: var(--status-info);
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
@@ -536,7 +536,7 @@ td {
 }
 
 .empty-state p {
-    color: #6B7280;
+    color: var(--text-muted);
     font-size: 1rem;
 }
 
@@ -564,7 +564,7 @@ td {
 }
 
 .loading-state p {
-    color: #6B7280;
+    color: var(--text-muted);
     font-size: 1rem;
 }
 

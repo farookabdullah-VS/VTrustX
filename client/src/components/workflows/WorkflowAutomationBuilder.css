@@ -13,10 +13,10 @@
     align-items: center;
     gap: 8px;
     padding: 8px 16px;
-    background: white;
-    border: 1px solid #E5E7EB;
+    background: var(--card-bg);
+    border: 1px solid var(--border-light);
     border-radius: 6px;
-    color: #6B7280;
+    color: var(--text-muted);
     font-size: 14px;
     cursor: pointer;
     transition: all 0.2s;
@@ -31,12 +31,12 @@
 .workflow-automation-builder-header h1 {
     margin: 0;
     font-size: 28px;
-    color: #111827;
+    color: var(--text-primary);
 }
 
 .workflow-automation-builder-content {
-    background: white;
-    border: 1px solid #E5E7EB;
+    background: var(--card-bg);
+    border: 1px solid var(--border-light);
     border-radius: 12px;
     padding: 24px;
 }
@@ -59,7 +59,7 @@
     gap: 10px;
     margin: 0 0 20px 0;
     font-size: 20px;
-    color: #111827;
+    color: var(--text-primary);
 }
 
 .form-group {
@@ -85,7 +85,7 @@
     border-radius: 6px;
     font-size: 14px;
     font-family: inherit;
-    color: #111827;
+    color: var(--text-primary);
     transition: all 0.2s;
 }
 
@@ -110,7 +110,7 @@
 .help-text {
     margin: 8px 0 0 0;
     font-size: 13px;
-    color: #6B7280;
+    color: var(--text-muted);
 }
 
 .trigger-config-section {
@@ -128,7 +128,7 @@
 
 .action-card {
     background: #F9FAFB;
-    border: 1px solid #E5E7EB;
+    border: 1px solid var(--border-light);
     border-radius: 8px;
     padding: 16px;
     margin-bottom: 16px;
@@ -144,13 +144,13 @@
 .action-card-header h3 {
     margin: 0;
     font-size: 16px;
-    color: #111827;
+    color: var(--text-primary);
 }
 
 .remove-action-btn {
     padding: 6px 12px;
-    background: white;
-    border: 1px solid #E5E7EB;
+    background: var(--card-bg);
+    border: 1px solid var(--border-light);
     border-radius: 6px;
     color: #EF4444;
     font-size: 13px;
@@ -170,10 +170,10 @@
 .add-action-btn {
     width: 100%;
     padding: 10px 16px;
-    background: white;
+    background: var(--card-bg);
     border: 2px dashed #D1D5DB;
     border-radius: 8px;
-    color: #6B7280;
+    color: var(--text-muted);
     font-size: 14px;
     font-weight: 500;
     cursor: pointer;
@@ -221,10 +221,10 @@
 
 .cancel-btn {
     padding: 10px 20px;
-    background: white;
-    border: 1px solid #E5E7EB;
+    background: var(--card-bg);
+    border: 1px solid var(--border-light);
     border-radius: 8px;
-    color: #6B7280;
+    color: var(--text-muted);
     font-size: 14px;
     font-weight: 500;
     cursor: pointer;

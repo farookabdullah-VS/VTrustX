@@ -16,7 +16,7 @@
     padding: 8px 12px;
     background: none;
     border: none;
-    color: #6366F1;
+    color: var(--primary);
     font-weight: 600;
     cursor: pointer;
     transition: background 0.2s;
@@ -25,13 +25,13 @@
 }
 
 .back-link:hover {
-    background: #EEF2FF;
+    background: var(--primary-light, #EEF2FF);
 }
 
 .builder-header h1 {
     font-size: 28px;
     font-weight: 700;
-    color: #111827;
+    color: var(--text-primary);
     margin: 0;
 }
 
@@ -58,8 +58,8 @@
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    background: #E5E7EB;
-    color: #6B7280;
+    background: var(--border-light);
+    color: var(--text-muted);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -70,29 +70,29 @@
 }
 
 .progress-step.active .step-circle {
-    background: #6366F1;
-    color: white;
-    box-shadow: 0 0 0 4px #EEF2FF;
+    background: var(--primary);
+    color: var(--card-bg);
+    box-shadow: 0 0 0 4px var(--primary-light, #EEF2FF);
 }
 
 .progress-step.completed .step-circle {
-    background: #10B981;
-    color: white;
+    background: var(--status-success);
+    color: var(--card-bg);
 }
 
 .step-label {
     font-size: 14px;
     font-weight: 600;
-    color: #6B7280;
+    color: var(--text-muted);
     transition: color 0.3s;
 }
 
 .progress-step.active .step-label {
-    color: #6366F1;
+    color: var(--primary);
 }
 
 .progress-step.completed .step-label {
-    color: #10B981;
+    color: var(--status-success);
 }
 
 .step-connector {
@@ -101,30 +101,30 @@
     left: 60%;
     right: -40%;
     height: 2px;
-    background: #E5E7EB;
+    background: var(--border-light);
     z-index: 1;
     transition: background 0.3s;
 }
 
 .progress-step.completed .step-connector {
-    background: #10B981;
+    background: var(--status-success);
 }
 
 /* Error message */
 .error-message {
     padding: 16px;
-    background: #FEE2E2;
-    border: 1px solid #EF4444;
+    background: var(--toast-error-bg, #FEE2E2);
+    border: 1px solid var(--status-error);
     border-radius: 8px;
-    color: #991B1B;
+    color: var(--toast-error-text, #991B1B);
     margin-bottom: 24px;
     font-weight: 600;
 }
 
 /* Step content */
 .step-content {
-    background: white;
-    border: 1px solid #E5E7EB;
+    background: var(--card-bg);
+    border: 1px solid var(--border-light);
     border-radius: 12px;
     padding: 32px;
     margin-bottom: 24px;
@@ -147,19 +147,19 @@
     align-items: center;
     gap: 8px;
     padding: 12px 24px;
-    background: white;
-    border: 1px solid #D1D5DB;
+    background: var(--card-bg);
+    border: 1px solid var(--border-medium);
     border-radius: 8px;
-    color: #374151;
+    color: var(--text-secondary);
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s;
 }
 
 .btn-secondary:hover:not(:disabled) {
-    background: #F9FAFB;
-    border-color: #6366F1;
-    color: #6366F1;
+    background: var(--input-bg);
+    border-color: var(--primary);
+    color: var(--primary);
 }
 
 .btn-secondary:disabled {
@@ -172,8 +172,8 @@
     align-items: center;
     gap: 8px;
     padding: 12px 24px;
-    background: #6366F1;
-    color: white;
+    background: var(--primary);
+    color: var(--card-bg);
     border: none;
     border-radius: 8px;
     font-weight: 600;
@@ -182,7 +182,7 @@
 }
 
 .btn-primary:hover:not(:disabled) {
-    background: #4F46E5;
+    background: var(--primary-hover);
 }
 
 .btn-primary:disabled {

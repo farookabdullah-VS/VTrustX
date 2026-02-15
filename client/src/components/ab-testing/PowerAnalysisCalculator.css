@@ -1,14 +1,14 @@
 .power-analysis-calculator {
-    background: white;
+    background: var(--card-bg);
     border-radius: 12px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
     overflow: hidden;
 }
 
 .calculator-header {
-    background: linear-gradient(135deg, #6366F1 0%, #4F46E5 100%);
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
     padding: 32px;
-    color: white;
+    color: var(--card-bg);
 }
 
 .header-content {
@@ -50,7 +50,7 @@
 
 .input-group label {
     font-weight: 600;
-    color: #374151;
+    color: var(--text-secondary);
     font-size: 14px;
     display: flex;
     align-items: center;
@@ -61,7 +61,7 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    color: #9CA3AF;
+    color: var(--text-disabled);
     cursor: help;
 }
 
@@ -75,7 +75,7 @@
 .calc-select {
     flex: 1;
     padding: 12px 16px;
-    border: 1px solid #D1D5DB;
+    border: 1px solid var(--border-medium);
     border-radius: 8px;
     font-size: 15px;
     font-family: inherit;
@@ -85,20 +85,20 @@
 .calc-input:focus,
 .calc-select:focus {
     outline: none;
-    border-color: #6366F1;
+    border-color: var(--primary);
     box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
 }
 
 .input-unit {
     font-size: 15px;
-    color: #6B7280;
+    color: var(--text-muted);
     font-weight: 600;
     min-width: 80px;
 }
 
 .input-hint {
     font-size: 13px;
-    color: #9CA3AF;
+    color: var(--text-disabled);
     margin: 0;
 }
 
@@ -110,8 +110,8 @@
 
 .btn-calculate {
     padding: 14px 28px;
-    background: #6366F1;
-    color: white;
+    background: var(--primary);
+    color: var(--card-bg);
     border: none;
     border-radius: 8px;
     font-size: 16px;
@@ -126,7 +126,7 @@
 }
 
 .btn-calculate:hover:not(:disabled) {
-    background: #4F46E5;
+    background: var(--primary-hover);
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
 }
@@ -166,7 +166,7 @@
 .results-section h4 {
     font-size: 16px;
     font-weight: 600;
-    color: #374151;
+    color: var(--text-secondary);
     margin: 0 0 12px 0;
 }
 
@@ -187,13 +187,13 @@
 
 .result-card.primary {
     background: linear-gradient(135deg, #EEF2FF 0%, #E0E7FF 100%);
-    border-color: #6366F1;
+    border-color: var(--primary);
 }
 
 .result-label {
     font-size: 13px;
     font-weight: 600;
-    color: #6B7280;
+    color: var(--text-muted);
     text-transform: uppercase;
     letter-spacing: 0.5px;
     margin-bottom: 8px;
@@ -211,18 +211,18 @@
 }
 
 .result-card.primary .result-value {
-    color: #6366F1;
+    color: var(--primary);
 }
 
 .result-unit {
     font-size: 16px;
     font-weight: 600;
-    color: #6B7280;
+    color: var(--text-muted);
 }
 
 .result-subtext {
     font-size: 13px;
-    color: #9CA3AF;
+    color: var(--text-disabled);
 }
 
 /* Recommendations */
@@ -271,7 +271,7 @@
 
 .chart-description {
     font-size: 14px;
-    color: #6B7280;
+    color: var(--text-muted);
     margin: 0 0 20px 0;
 }
 
@@ -280,7 +280,7 @@
     width: 100%;
     padding: 14px 28px;
     background: #10B981;
-    color: white;
+    color: var(--card-bg);
     border: none;
     border-radius: 8px;
     font-size: 16px;

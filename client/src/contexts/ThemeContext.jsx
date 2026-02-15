@@ -1,12 +1,18 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import axios from 'axios';
 import { useTranslation } from 'react-i18next';
+import { applyTheme, registerTheme, getAvailableThemes } from '../themes';
 
 const ThemeContext = createContext(null);
 
 export function ThemeProvider({ children, user }) {
   const { i18n } = useTranslation();
   const isRtl = i18n.language.startsWith('ar');
+
+  // Current theme ID
+  const [currentTheme, setCurrentTheme] = useState(() => {
+    return localStorage.getItem('rayix_theme_id') || 'default';
+  });
 
   // Dark mode: check localStorage first, then system preference
   const [isDark, setIsDark] = useState(() => {
@@ -15,16 +21,19 @@ export function ThemeProvider({ children, user }) {
     return window.matchMedia?.('(prefers-color-scheme: dark)').matches ?? false;
   });
 
+  // Custom theme object (for tenant-specific themes)
+  const [customTheme, setCustomTheme] = useState(null);
+
   // Apply direction
   useEffect(() => {
     document.body.dir = isRtl ? 'rtl' : 'ltr';
   }, [isRtl]);
 
-  // Apply dark/light theme attribute
+  // Apply theme when changed
   useEffect(() => {
-    document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
-    localStorage.setItem('rayix_theme_mode', isDark ? 'dark' : 'light');
-  }, [isDark]);
+    const themeId = isDark ? 'dark' : currentTheme;
+    applyTheme(themeId, customTheme);
+  }, [currentTheme, isDark, customTheme]);
 
   // Listen for system theme changes
   useEffect(() => {
@@ -38,46 +47,66 @@ export function ThemeProvider({ children, user }) {
     return () => mq.removeEventListener('change', handler);
   }, []);
 
-  const toggleDarkMode = useCallback(() => {
-    setIsDark(prev => !prev);
-  }, []);
-
-  // Fetch and apply brand theme from backend
+  // Fetch tenant-specific theme from backend
   useEffect(() => {
-    axios.get('/api/settings/theme')
+    if (!user?.tenant_id) return;
+
+    axios.get(`/api/tenants/${user.tenant_id}/theme`)
       .then(res => {
         const theme = res.data;
-        if (theme && Object.keys(theme).length > 0) {
-          applyTheme(theme);
+        if (theme && theme.customTheme) {
+          // Register custom theme
+          const themeId = `tenant_${user.tenant_id}`;
+          registerTheme(themeId, theme.customTheme);
+          setCustomTheme(theme.customTheme);
+          setCurrentTheme(themeId);
+        } else if (theme && theme.preset) {
+          // Use preset theme
+          setCurrentTheme(theme.preset);
         }
       })
-      .catch(() => {});
+      .catch(err => {
+        console.log('[ThemeContext] No custom theme found, using default');
+      });
   }, [user]);
 
+  // Switch theme
+  const switchTheme = useCallback((themeId) => {
+    setCurrentTheme(themeId);
+    localStorage.setItem('rayix_theme_id', themeId);
+    console.log(`[ThemeContext] Switched to theme: ${themeId}`);
+  }, []);
+
+  // Toggle dark mode
+  const toggleDarkMode = useCallback(() => {
+    setIsDark(prev => {
+      const newValue = !prev;
+      localStorage.setItem('rayix_theme_mode', newValue ? 'dark' : 'light');
+      return newValue;
+    });
+  }, []);
+
+  // Update custom theme
+  const updateCustomTheme = useCallback((themeConfig) => {
+    setCustomTheme(themeConfig);
+    applyTheme(currentTheme, themeConfig);
+    console.log('[ThemeContext] Custom theme updated');
+  }, [currentTheme]);
+
   return (
-    <ThemeContext.Provider value={{ isRtl, isDark, toggleDarkMode }}>
+    <ThemeContext.Provider value={{
+      currentTheme,
+      isDark,
+      isRtl,
+      customTheme,
+      switchTheme,
+      toggleDarkMode,
+      updateCustomTheme,
+      availableThemes: getAvailableThemes()
+    }}>
       {children}
     </ThemeContext.Provider>
   );
-}
-
-function applyTheme(theme) {
-  const root = document.documentElement;
-  if (theme.primaryColor) {
-    root.style.setProperty('--primary-color', theme.primaryColor);
-    root.style.setProperty('--sidebar-bg', `color-mix(in srgb, ${theme.primaryColor} 4%, white)`);
-    root.style.setProperty('--sidebar-text', theme.primaryColor);
-    root.style.setProperty('--sidebar-active-bg', theme.primaryColor);
-    root.style.setProperty('--sidebar-active-text', '#ffffff');
-    root.style.setProperty('--sidebar-border', `color-mix(in srgb, ${theme.primaryColor} 15%, transparent)`);
-    root.style.setProperty('--header-bg', `color-mix(in srgb, ${theme.primaryColor} 2%, white)`);
-    root.style.setProperty('--header-border', `color-mix(in srgb, ${theme.primaryColor} 15%, transparent)`);
-  }
-  if (theme.secondaryColor) root.style.setProperty('--secondary-color', theme.secondaryColor);
-  if (theme.backgroundColor) root.style.setProperty('--background-color', theme.backgroundColor);
-  if (theme.textColor) root.style.setProperty('--text-color', theme.textColor);
-  if (theme.borderRadius) root.style.setProperty('--border-radius', theme.borderRadius);
-  if (theme.fontFamily) root.style.setProperty('--font-family', theme.fontFamily);
 }
 
 export const useTheme = () => {

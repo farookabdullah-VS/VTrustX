@@ -21,13 +21,13 @@
     margin: 0;
     font-size: 28px;
     font-weight: 600;
-    color: #1F2937;
+    color: var(--text-primary);
 }
 
 .subtitle {
     margin: 5px 0 0 0;
     font-size: 14px;
-    color: #6B7280;
+    color: var(--text-muted);
 }
 
 .btn-create-webhook {
@@ -35,8 +35,8 @@
     align-items: center;
     gap: 8px;
     padding: 10px 20px;
-    background: #3B82F6;
-    color: white;
+    background: var(--status-info);
+    color: var(--card-bg);
     border: none;
     border-radius: 8px;
     font-size: 14px;
@@ -73,8 +73,8 @@
 }
 
 .spinner {
-    border: 3px solid #E5E7EB;
-    border-top: 3px solid #3B82F6;
+    border: 3px solid var(--border-light);
+    border-top: 3px solid var(--status-info);
     border-radius: 50%;
     width: 40px;
     height: 40px;
@@ -96,20 +96,20 @@
 }
 
 .empty-icon {
-    color: #D1D5DB;
+    color: var(--border-medium);
     margin-bottom: 20px;
 }
 
 .empty-state h3 {
     margin: 0 0 8px 0;
     font-size: 20px;
-    color: #1F2937;
+    color: var(--text-primary);
 }
 
 .empty-state p {
     margin: 0 0 24px 0;
     font-size: 14px;
-    color: #6B7280;
+    color: var(--text-muted);
 }
 
 .btn-primary {
@@ -117,8 +117,8 @@
     align-items: center;
     gap: 8px;
     padding: 12px 24px;
-    background: #3B82F6;
-    color: white;
+    background: var(--status-info);
+    color: var(--card-bg);
     border: none;
     border-radius: 8px;
     font-size: 14px;
@@ -139,8 +139,8 @@
 }
 
 .webhook-card {
-    background: white;
-    border: 2px solid #E5E7EB;
+    background: var(--card-bg);
+    border: 2px solid var(--border-light);
     border-radius: 12px;
     padding: 24px;
     transition: all 0.2s;
@@ -148,14 +148,14 @@
 }
 
 .webhook-card:hover {
-    border-color: #3B82F6;
+    border-color: var(--status-info);
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
     transform: translateY(-2px);
 }
 
 .webhook-card.inactive {
     opacity: 0.7;
-    border-color: #D1D5DB;
+    border-color: var(--border-medium);
 }
 
 .webhook-card-header {
@@ -173,7 +173,7 @@
     margin: 0 0 8px 0;
     font-size: 18px;
     font-weight: 600;
-    color: #1F2937;
+    color: var(--text-primary);
 }
 
 .webhook-badges {
@@ -230,8 +230,8 @@
 }
 
 .health-badge.unknown {
-    background: #F3F4F6;
-    color: #6B7280;
+    background: var(--input-bg);
+    color: var(--text-muted);
 }
 
 .webhook-actions {
@@ -241,7 +241,7 @@
 
 .btn-icon {
     padding: 8px;
-    background: #F3F4F6;
+    background: var(--input-bg);
     border: none;
     border-radius: 6px;
     cursor: pointer;
@@ -252,7 +252,7 @@
 }
 
 .btn-icon:hover {
-    background: #E5E7EB;
+    background: var(--border-light);
 }
 
 .btn-danger:hover {
@@ -265,8 +265,8 @@
     align-items: center;
     gap: 8px;
     padding: 12px;
-    background: #F9FAFB;
-    border: 1px solid #E5E7EB;
+    background: var(--input-bg);
+    border: 1px solid var(--border-light);
     border-radius: 8px;
     margin-bottom: 16px;
 }
@@ -275,10 +275,10 @@
     flex: 1;
     font-family: 'Monaco', 'Courier New', monospace;
     font-size: 12px;
-    color: #1F2937;
+    color: var(--text-primary);
     overflow: hidden;
     text-overflow: ellipsis;
-    white-space: nowrap;
+    var(--card-bg)-space: nowrap;
 }
 
 .webhook-events {
@@ -290,7 +290,7 @@
 
 .webhook-events strong {
     font-size: 13px;
-    color: #4B5563;
+    color: var(--text-secondary);
 }
 
 .events-list {
@@ -311,7 +311,7 @@
 
 .delivery-summary {
     padding: 12px;
-    background: #F9FAFB;
+    background: var(--input-bg);
     border-radius: 8px;
     margin-bottom: 16px;
 }
@@ -324,12 +324,12 @@
 }
 
 .success-count {
-    color: #10B981;
+    color: var(--status-success);
     font-weight: 600;
 }
 
 .failed-count {
-    color: #EF4444;
+    color: var(--status-error);
     font-weight: 600;
 }
 
@@ -339,7 +339,7 @@
     gap: 8px;
     padding: 12px 0;
     margin-bottom: 16px;
-    border-top: 1px solid #E5E7EB;
+    border-top: 1px solid var(--border-light);
 }
 
 .metadata-row {
@@ -350,12 +350,12 @@
 }
 
 .metadata-label {
-    color: #6B7280;
+    color: var(--text-muted);
     font-weight: 500;
 }
 
 .metadata-value {
-    color: #1F2937;
+    color: var(--text-primary);
     font-weight: 500;
 }
 
@@ -381,17 +381,17 @@
 }
 
 .btn-secondary {
-    background: #F3F4F6;
-    color: #4B5563;
+    background: var(--input-bg);
+    color: var(--text-secondary);
 }
 
 .btn-secondary:hover {
-    background: #E5E7EB;
+    background: var(--border-light);
 }
 
 .btn-test {
-    background: #3B82F6;
-    color: white;
+    background: var(--status-info);
+    color: var(--card-bg);
 }
 
 .btn-test:hover {
@@ -413,7 +413,7 @@
 }
 
 .confirm-delete-modal {
-    background: white;
+    background: var(--card-bg);
     border-radius: 12px;
     padding: 24px;
     max-width: 400px;
@@ -424,13 +424,13 @@
 .confirm-delete-modal h4 {
     margin: 0 0 12px 0;
     font-size: 18px;
-    color: #1F2937;
+    color: var(--text-primary);
 }
 
 .confirm-delete-modal p {
     margin: 0 0 20px 0;
     font-size: 14px;
-    color: #6B7280;
+    color: var(--text-muted);
     line-height: 1.5;
 }
 
@@ -452,17 +452,17 @@
 }
 
 .btn-cancel {
-    background: #F3F4F6;
-    color: #4B5563;
+    background: var(--input-bg);
+    color: var(--text-secondary);
 }
 
 .btn-cancel:hover {
-    background: #E5E7EB;
+    background: var(--border-light);
 }
 
 .btn-confirm-delete {
     background: #DC2626;
-    color: white;
+    color: var(--card-bg);
 }
 
 .btn-confirm-delete:hover {

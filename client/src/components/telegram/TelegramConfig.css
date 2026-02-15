@@ -15,7 +15,7 @@
     align-items: center;
     margin-bottom: 30px;
     padding-bottom: 20px;
-    border-bottom: 2px solid #E5E7EB;
+    border-bottom: 2px solid var(--border-light);
 }
 
 .header-left {
@@ -31,12 +31,12 @@
 .telegram-header h1 {
     font-size: 1.75rem;
     font-weight: 600;
-    color: #1F2937;
+    color: var(--text-primary);
     margin: 0 0 5px 0;
 }
 
 .telegram-header p {
-    color: #6B7280;
+    color: var(--text-muted);
     font-size: 1rem;
     margin: 0;
 }
@@ -52,9 +52,9 @@
 }
 
 .status-badge.active {
-    background: #10B98115;
-    border: 2px solid #10B981;
-    color: #10B981;
+    background: var(--status-success)15;
+    border: 2px solid var(--status-success);
+    color: var(--status-success);
 }
 
 /* Info Card */
@@ -76,7 +76,7 @@
 .info-card ol {
     margin: 0 0 15px 0;
     padding-left: 20px;
-    color: #1F2937;
+    color: var(--text-primary);
 }
 
 .info-card ol li {
@@ -97,7 +97,7 @@
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    color: #3B82F6;
+    color: var(--status-info);
     text-decoration: none;
     font-weight: 500;
     transition: all 0.2s;
@@ -110,8 +110,8 @@
 
 /* Configuration Form */
 .config-form {
-    background: white;
-    border: 2px solid #E5E7EB;
+    background: var(--card-bg);
+    border: 2px solid var(--border-light);
     border-radius: 12px;
     padding: 0;
     overflow: hidden;
@@ -119,7 +119,7 @@
 
 .form-section {
     padding: 25px 30px;
-    border-bottom: 2px solid #E5E7EB;
+    border-bottom: 2px solid var(--border-light);
 }
 
 .form-section:last-child {
@@ -132,7 +132,7 @@
     gap: 10px;
     font-size: 1.1rem;
     font-weight: 600;
-    color: #1F2937;
+    color: var(--text-primary);
     margin: 0 0 20px 0;
 }
 
@@ -147,13 +147,13 @@
 .form-group label {
     display: block;
     font-weight: 600;
-    color: #374151;
+    color: var(--text-secondary);
     margin-bottom: 8px;
 }
 
 .form-group label .optional {
     font-weight: 400;
-    color: #6B7280;
+    color: var(--text-muted);
     font-size: 0.9rem;
     margin-left: 8px;
 }
@@ -164,7 +164,7 @@
 .form-group textarea {
     width: 100%;
     padding: 10px 14px;
-    border: 2px solid #E5E7EB;
+    border: 2px solid var(--border-light);
     border-radius: 8px;
     font-size: 0.95rem;
     transition: all 0.2s;
@@ -174,7 +174,7 @@
 .form-group input:focus,
 .form-group textarea:focus {
     outline: none;
-    border-color: #3B82F6;
+    border-color: var(--status-info);
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
@@ -189,14 +189,14 @@
 
 .btn-test {
     padding: 10px 20px;
-    background: white;
-    border: 2px solid #3B82F6;
-    color: #3B82F6;
+    background: var(--card-bg);
+    border: 2px solid var(--status-info);
+    color: var(--status-info);
     border-radius: 8px;
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s;
-    white-space: nowrap;
+    var(--card-bg)-space: nowrap;
 }
 
 .btn-test:hover:not(:disabled) {
@@ -210,7 +210,7 @@
 
 .help-text {
     display: block;
-    color: #6B7280;
+    color: var(--text-muted);
     font-size: 0.85rem;
     margin-top: 6px;
 }
@@ -227,13 +227,13 @@
 
 .test-result.success {
     background: #ECFDF5;
-    border: 2px solid #10B981;
+    border: 2px solid var(--status-success);
     color: #065F46;
 }
 
 .test-result.error {
     background: #FEF2F2;
-    border: 2px solid #EF4444;
+    border: 2px solid var(--status-error);
     color: #991B1B;
 }
 
@@ -272,7 +272,7 @@
 /* Form Actions */
 .form-actions {
     padding: 20px 30px;
-    background: #F9FAFB;
+    background: var(--input-bg);
     display: flex;
     justify-content: flex-end;
 }
@@ -281,8 +281,8 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    background: #3B82F6;
-    color: white;
+    background: var(--status-info);
+    color: var(--card-bg);
     border: none;
     padding: 12px 24px;
     border-radius: 8px;
@@ -305,8 +305,8 @@
 
 /* Test Message Section */
 .test-message-section {
-    background: white;
-    border: 2px solid #E5E7EB;
+    background: var(--card-bg);
+    border: 2px solid var(--border-light);
     border-radius: 12px;
     padding: 25px 30px;
     margin-top: 30px;
@@ -318,12 +318,12 @@
     gap: 10px;
     font-size: 1.1rem;
     font-weight: 600;
-    color: #1F2937;
+    color: var(--text-primary);
     margin: 0 0 8px 0;
 }
 
 .test-message-section > p {
-    color: #6B7280;
+    color: var(--text-muted);
     margin: 0 0 20px 0;
 }
 
@@ -339,7 +339,7 @@
 .spinner {
     width: 50px;
     height: 50px;
-    border: 4px solid #E5E7EB;
+    border: 4px solid var(--border-light);
     border-top-color: #0088CC;
     border-radius: 50%;
     animation: spin 1s linear infinite;
@@ -351,7 +351,7 @@
 }
 
 .loading-state p {
-    color: #6B7280;
+    color: var(--text-muted);
     font-size: 1rem;
 }
 

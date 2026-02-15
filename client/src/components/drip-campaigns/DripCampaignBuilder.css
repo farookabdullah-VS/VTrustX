@@ -19,7 +19,7 @@
     gap: 8px;
     background: none;
     border: none;
-    color: #6B7280;
+    color: var(--text-muted);
     font-size: 0.95rem;
     cursor: pointer;
     padding: 8px 12px;
@@ -29,14 +29,14 @@
 }
 
 .btn-back:hover {
-    background: #F3F4F6;
-    color: #1F2937;
+    background: var(--input-bg);
+    color: var(--text-primary);
 }
 
 .builder-header h1 {
     font-size: 1.75rem;
     font-weight: 600;
-    color: #1F2937;
+    color: var(--text-primary);
     margin: 0;
 }
 
@@ -55,7 +55,7 @@
     left: 10%;
     right: 10%;
     height: 2px;
-    background: #E5E7EB;
+    background: var(--border-light);
     z-index: 0;
 }
 
@@ -73,46 +73,46 @@
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    background: white;
-    border: 2px solid #E5E7EB;
+    background: var(--card-bg);
+    border: 2px solid var(--border-light);
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: 600;
-    color: #9CA3AF;
+    color: var(--text-disabled);
     transition: all 0.3s;
 }
 
 .progress-step.active .step-circle {
-    border-color: #3B82F6;
-    color: #3B82F6;
+    border-color: var(--status-info);
+    color: var(--status-info);
     background: #EFF6FF;
 }
 
 .progress-step.completed .step-circle {
-    background: #10B981;
-    border-color: #10B981;
-    color: white;
+    background: var(--status-success);
+    border-color: var(--status-success);
+    color: var(--card-bg);
 }
 
 .step-label {
     font-size: 0.85rem;
-    color: #9CA3AF;
+    color: var(--text-disabled);
     font-weight: 500;
 }
 
 .progress-step.active .step-label {
-    color: #3B82F6;
+    color: var(--status-info);
 }
 
 .progress-step.completed .step-label {
-    color: #10B981;
+    color: var(--status-success);
 }
 
 /* Wizard Content */
 .wizard-content {
-    background: white;
-    border: 2px solid #E5E7EB;
+    background: var(--card-bg);
+    border: 2px solid var(--border-light);
     border-radius: 12px;
     padding: 30px;
     margin-bottom: 20px;
@@ -122,12 +122,12 @@
 .wizard-step h2 {
     font-size: 1.5rem;
     font-weight: 600;
-    color: #1F2937;
+    color: var(--text-primary);
     margin: 0 0 8px 0;
 }
 
 .step-description {
-    color: #6B7280;
+    color: var(--text-muted);
     font-size: 1rem;
     margin: 0 0 30px 0;
 }
@@ -140,7 +140,7 @@
 .form-group label {
     display: block;
     font-weight: 600;
-    color: #374151;
+    color: var(--text-secondary);
     margin-bottom: 8px;
 }
 
@@ -150,7 +150,7 @@
 .form-group textarea {
     width: 100%;
     padding: 10px 14px;
-    border: 2px solid #E5E7EB;
+    border: 2px solid var(--border-light);
     border-radius: 8px;
     font-size: 0.95rem;
     transition: all 0.2s;
@@ -161,13 +161,13 @@
 .form-group select:focus,
 .form-group textarea:focus {
     outline: none;
-    border-color: #3B82F6;
+    border-color: var(--status-info);
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
 .help-text {
     display: block;
-    color: #6B7280;
+    color: var(--text-muted);
     font-size: 0.85rem;
     margin-top: 6px;
 }
@@ -185,23 +185,23 @@
     align-items: center;
     gap: 8px;
     padding: 15px 10px;
-    background: white;
-    border: 2px solid #E5E7EB;
+    background: var(--card-bg);
+    border: 2px solid var(--border-light);
     border-radius: 8px;
     cursor: pointer;
     transition: all 0.2s;
-    color: #6B7280;
+    color: var(--text-muted);
 }
 
 .channel-option:hover {
-    border-color: #3B82F6;
+    border-color: var(--status-info);
     background: #EFF6FF;
 }
 
 .channel-option.active {
-    background: #3B82F6;
-    border-color: #3B82F6;
-    color: white;
+    background: var(--status-info);
+    border-color: var(--status-info);
+    color: var(--card-bg);
 }
 
 .channel-option span {
@@ -218,8 +218,8 @@
 }
 
 .step-editor {
-    background: #F9FAFB;
-    border: 2px solid #E5E7EB;
+    background: var(--input-bg);
+    border: 2px solid var(--border-light);
     border-radius: 12px;
     padding: 20px;
 }
@@ -235,7 +235,7 @@
     display: flex;
     align-items: center;
     gap: 10px;
-    color: #1F2937;
+    color: var(--text-primary);
 }
 
 .step-title h3 {
@@ -245,9 +245,9 @@
 }
 
 .btn-icon-danger {
-    background: white;
-    border: 2px solid #EF4444;
-    color: #EF4444;
+    background: var(--card-bg);
+    border: 2px solid var(--status-error);
+    color: var(--status-error);
     padding: 8px;
     border-radius: 6px;
     cursor: pointer;
@@ -265,13 +265,13 @@
     gap: 10px;
     margin-bottom: 15px;
     padding: 12px;
-    background: white;
+    background: var(--card-bg);
     border-radius: 8px;
 }
 
 .delay-config label {
     font-weight: 500;
-    color: #6B7280;
+    color: var(--text-muted);
     margin: 0;
 }
 
@@ -296,9 +296,9 @@
     gap: 8px;
     width: 100%;
     padding: 12px;
-    background: white;
-    border: 2px dashed #3B82F6;
-    color: #3B82F6;
+    background: var(--card-bg);
+    border: 2px dashed var(--status-info);
+    color: var(--status-info);
     border-radius: 8px;
     font-weight: 500;
     cursor: pointer;
@@ -316,7 +316,7 @@
 
 .text-muted {
     display: block;
-    color: #9CA3AF;
+    color: var(--text-disabled);
     font-size: 0.85rem;
     margin-top: 8px;
 }
@@ -330,8 +330,8 @@
 
 .setting-item {
     padding: 15px;
-    background: #F9FAFB;
-    border: 1px solid #E5E7EB;
+    background: var(--input-bg);
+    border: 1px solid var(--border-light);
     border-radius: 8px;
 }
 
@@ -350,11 +350,11 @@
 
 .setting-header span {
     font-weight: 600;
-    color: #1F2937;
+    color: var(--text-primary);
 }
 
 .setting-description {
-    color: #6B7280;
+    color: var(--text-muted);
     font-size: 0.9rem;
     margin: 8px 0 0 28px;
 }
@@ -363,7 +363,7 @@
 .review-section {
     margin-bottom: 30px;
     padding-bottom: 20px;
-    border-bottom: 1px solid #E5E7EB;
+    border-bottom: 1px solid var(--border-light);
 }
 
 .review-section:last-child {
@@ -373,7 +373,7 @@
 .review-section h3 {
     font-size: 1.1rem;
     font-weight: 600;
-    color: #1F2937;
+    color: var(--text-primary);
     margin: 0 0 15px 0;
 }
 
@@ -386,16 +386,16 @@
 
 .review-item .label {
     font-weight: 500;
-    color: #6B7280;
+    color: var(--text-muted);
 }
 
 .review-item .value {
     font-weight: 500;
-    color: #1F2937;
+    color: var(--text-primary);
 }
 
 .review-step {
-    background: #F9FAFB;
+    background: var(--input-bg);
     padding: 12px;
     border-radius: 8px;
     margin-bottom: 10px;
@@ -403,16 +403,16 @@
 
 .review-step strong {
     display: block;
-    color: #1F2937;
+    color: var(--text-primary);
     margin-bottom: 5px;
 }
 
 .review-step small {
-    color: #6B7280;
+    color: var(--text-muted);
 }
 
 .review-step p {
-    color: #6B7280;
+    color: var(--text-muted);
     font-size: 0.9rem;
     margin: 5px 0 0 0;
 }
@@ -422,8 +422,8 @@
     display: flex;
     gap: 12px;
     padding: 20px 30px;
-    background: white;
-    border: 2px solid #E5E7EB;
+    background: var(--card-bg);
+    border: 2px solid var(--border-light);
     border-radius: 12px;
 }
 
@@ -441,19 +441,19 @@
 }
 
 .btn-secondary {
-    background: white;
-    border: 2px solid #E5E7EB;
-    color: #6B7280;
+    background: var(--card-bg);
+    border: 2px solid var(--border-light);
+    color: var(--text-muted);
 }
 
 .btn-secondary:hover {
-    background: #F9FAFB;
+    background: var(--input-bg);
 }
 
 .btn-primary {
-    background: #3B82F6;
+    background: var(--status-info);
     border: none;
-    color: white;
+    color: var(--card-bg);
 }
 
 .btn-primary:hover:not(:disabled) {

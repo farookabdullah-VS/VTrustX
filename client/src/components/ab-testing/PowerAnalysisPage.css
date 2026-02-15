@@ -13,19 +13,19 @@
     align-items: center;
     gap: 8px;
     padding: 8px 16px;
-    background: white;
-    border: 1px solid #D1D5DB;
+    background: var(--card-bg);
+    border: 1px solid var(--border-medium);
     border-radius: 8px;
-    color: #374151;
+    color: var(--text-secondary);
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s;
 }
 
 .back-button:hover {
-    background: #F9FAFB;
-    border-color: #6366F1;
-    color: #6366F1;
+    background: var(--input-bg);
+    border-color: var(--primary);
+    color: var(--primary);
 }
 
 .page-content {
@@ -37,13 +37,13 @@
 .intro-section h1 {
     font-size: 32px;
     font-weight: 700;
-    color: #111827;
+    color: var(--text-primary);
     margin: 0 0 12px 0;
 }
 
 .intro-text {
     font-size: 16px;
-    color: #6B7280;
+    color: var(--text-muted);
     line-height: 1.6;
     margin: 0 0 32px 0;
     max-width: 800px;
@@ -57,15 +57,15 @@
 }
 
 .info-card {
-    background: white;
-    border: 2px solid #E5E7EB;
+    background: var(--card-bg);
+    border: 2px solid var(--border-light);
     border-radius: 12px;
     padding: 24px;
     transition: all 0.2s;
 }
 
 .info-card:hover {
-    border-color: #6366F1;
+    border-color: var(--primary);
     box-shadow: 0 4px 12px rgba(99, 102, 241, 0.1);
     transform: translateY(-2px);
 }
@@ -78,19 +78,19 @@
 .info-card h3 {
     font-size: 18px;
     font-weight: 600;
-    color: #111827;
+    color: var(--text-primary);
     margin: 0 0 8px 0;
 }
 
 .info-card p {
     font-size: 14px;
-    color: #6B7280;
+    color: var(--text-muted);
     line-height: 1.5;
     margin: 0;
 }
 
 .tips-section {
-    background: #F9FAFB;
+    background: var(--input-bg);
     border-radius: 12px;
     padding: 32px;
 }
@@ -98,7 +98,7 @@
 .tips-section h2 {
     font-size: 24px;
     font-weight: 700;
-    color: #111827;
+    color: var(--text-primary);
     margin: 0 0 24px 0;
 }
 
@@ -109,8 +109,8 @@
 }
 
 .tip-card {
-    background: white;
-    border: 1px solid #E5E7EB;
+    background: var(--card-bg);
+    border: 1px solid var(--border-light);
     border-radius: 8px;
     padding: 20px;
 }
@@ -118,13 +118,13 @@
 .tip-card strong {
     display: block;
     font-size: 16px;
-    color: #111827;
+    color: var(--text-primary);
     margin-bottom: 8px;
 }
 
 .tip-card p {
     font-size: 14px;
-    color: #6B7280;
+    color: var(--text-muted);
     line-height: 1.5;
     margin: 0;
 }

@@ -13,7 +13,7 @@
 
 .btn-back {
     padding: 10px;
-    background: #F3F4F6;
+    background: var(--input-bg);
     border: none;
     border-radius: 8px;
     cursor: pointer;
@@ -24,7 +24,7 @@
 }
 
 .btn-back:hover {
-    background: #E5E7EB;
+    background: var(--border-light);
 }
 
 .header-content {
@@ -37,12 +37,12 @@
     margin: 0;
     font-size: 28px;
     font-weight: 600;
-    color: #1F2937;
+    color: var(--text-primary);
 }
 
 .builder-form {
-    background: white;
-    border: 2px solid #E5E7EB;
+    background: var(--card-bg);
+    border: 2px solid var(--border-light);
     border-radius: 12px;
     padding: 32px;
 }
@@ -59,13 +59,13 @@
     margin: 0 0 8px 0;
     font-size: 18px;
     font-weight: 600;
-    color: #1F2937;
+    color: var(--text-primary);
 }
 
 .section-description {
     margin: 0 0 20px 0;
     font-size: 14px;
-    color: #6B7280;
+    color: var(--text-muted);
     line-height: 1.5;
 }
 
@@ -78,7 +78,7 @@
     margin-bottom: 8px;
     font-size: 14px;
     font-weight: 500;
-    color: #374151;
+    color: var(--text-secondary);
 }
 
 .form-group input,
@@ -86,7 +86,7 @@
 .form-group textarea {
     width: 100%;
     padding: 12px;
-    border: 2px solid #E5E7EB;
+    border: 2px solid var(--border-light);
     border-radius: 8px;
     font-size: 14px;
     font-family: inherit;
@@ -97,7 +97,7 @@
 .form-group select:focus,
 .form-group textarea:focus {
     outline: none;
-    border-color: #3B82F6;
+    border-color: var(--status-info);
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
@@ -137,7 +137,7 @@
 }
 
 .scope-category {
-    border: 2px solid #E5E7EB;
+    border: 2px solid var(--border-light);
     border-radius: 12px;
     padding: 20px;
 }
@@ -153,12 +153,12 @@
     margin: 0;
     font-size: 16px;
     font-weight: 600;
-    color: #1F2937;
+    color: var(--text-primary);
 }
 
 .btn-select-all {
     padding: 6px 12px;
-    background: #F3F4F6;
+    background: var(--input-bg);
     border: none;
     border-radius: 6px;
     font-size: 12px;
@@ -169,7 +169,7 @@
 }
 
 .btn-select-all:hover {
-    background: #E5E7EB;
+    background: var(--border-light);
 }
 
 .scope-checkboxes {
@@ -182,14 +182,14 @@
     display: flex;
     gap: 12px;
     padding: 12px;
-    border: 2px solid #E5E7EB;
+    border: 2px solid var(--border-light);
     border-radius: 8px;
     cursor: pointer;
     transition: all 0.2s;
 }
 
 .scope-checkbox:hover {
-    border-color: #3B82F6;
+    border-color: var(--status-info);
     background: #F9FAFB;
 }
 
@@ -209,14 +209,14 @@
     font-family: 'Monaco', 'Courier New', monospace;
     font-size: 13px;
     font-weight: 600;
-    color: #1F2937;
+    color: var(--text-primary);
     margin-bottom: 4px;
 }
 
 .scope-description {
     margin: 0;
     font-size: 13px;
-    color: #6B7280;
+    color: var(--text-muted);
     line-height: 1.4;
 }
 
@@ -226,7 +226,7 @@
     justify-content: flex-end;
     margin-top: 32px;
     padding-top: 24px;
-    border-top: 2px solid #E5E7EB;
+    border-top: 2px solid var(--border-light);
 }
 
 .btn-cancel,
@@ -241,17 +241,17 @@
 }
 
 .btn-cancel {
-    background: #F3F4F6;
+    background: var(--input-bg);
     color: #4B5563;
 }
 
 .btn-cancel:hover {
-    background: #E5E7EB;
+    background: var(--border-light);
 }
 
 .btn-create {
-    background: #3B82F6;
-    color: white;
+    background: var(--status-info);
+    color: var(--card-bg);
 }
 
 .btn-create:hover {
@@ -268,8 +268,8 @@
 
 /* Key Generated Styles */
 .key-generated-container {
-    background: white;
-    border: 2px solid #E5E7EB;
+    background: var(--card-bg);
+    border: 2px solid var(--border-light);
     border-radius: 12px;
     padding: 32px;
 }
@@ -307,7 +307,7 @@
     margin-bottom: 12px;
     font-size: 14px;
     font-weight: 600;
-    color: #374151;
+    color: var(--text-secondary);
 }
 
 .key-display-container {
@@ -318,19 +318,19 @@
 .key-input-display {
     flex: 1;
     padding: 16px;
-    border: 2px solid #E5E7EB;
+    border: 2px solid var(--border-light);
     border-radius: 8px;
     font-family: 'Monaco', 'Courier New', monospace;
     font-size: 14px;
-    color: #1F2937;
+    color: var(--text-primary);
     background: #F9FAFB;
 }
 
 .btn-toggle-visibility,
 .btn-copy-key {
     padding: 12px 20px;
-    background: #3B82F6;
-    color: white;
+    background: var(--status-info);
+    color: var(--card-bg);
     border: none;
     border-radius: 8px;
     font-size: 14px;
@@ -343,7 +343,7 @@
 }
 
 .btn-toggle-visibility {
-    background: #6B7280;
+    background: var(--text-muted);
 }
 
 .btn-toggle-visibility:hover {
@@ -377,13 +377,13 @@
 .detail-label {
     font-size: 13px;
     font-weight: 500;
-    color: #6B7280;
+    color: var(--text-muted);
 }
 
 .detail-value {
     font-size: 15px;
     font-weight: 600;
-    color: #1F2937;
+    color: var(--text-primary);
 }
 
 .env-badge {
@@ -424,17 +424,17 @@
 }
 
 .btn-download {
-    background: #F3F4F6;
+    background: var(--input-bg);
     color: #4B5563;
 }
 
 .btn-download:hover {
-    background: #E5E7EB;
+    background: var(--border-light);
 }
 
 .btn-done {
     background: #10B981;
-    color: white;
+    color: var(--card-bg);
 }
 
 .btn-done:hover {

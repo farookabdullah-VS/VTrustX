@@ -29,20 +29,20 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    background: white;
-    border: 2px solid #E5E7EB;
+    background: var(--card-bg);
+    border: 2px solid var(--border-light);
     padding: 10px 16px;
     border-radius: 8px;
     font-size: 0.95rem;
     font-weight: 500;
-    color: #6B7280;
+    color: var(--text-muted);
     cursor: pointer;
     transition: all 0.2s;
 }
 
 .btn-back:hover {
-    background: #F9FAFB;
-    border-color: #D1D5DB;
+    background: var(--input-bg);
+    border-color: var(--border-medium);
 }
 
 .connection-info {
@@ -52,7 +52,7 @@
 .connection-info h1 {
     font-size: 1.75rem;
     font-weight: 600;
-    color: #1F2937;
+    color: var(--text-primary);
     margin-bottom: 8px;
 }
 
@@ -60,12 +60,12 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    background: #F3F4F6;
+    background: var(--border-light);
     padding: 6px 14px;
     border-radius: 20px;
     font-size: 0.9rem;
     font-weight: 500;
-    color: #4B5563;
+    color: var(--text-secondary);
     width: fit-content;
 }
 
@@ -97,23 +97,23 @@
 }
 
 .btn-sync.push {
-    background: white;
-    color: #10B981;
-    border-color: #10B981;
+    background: var(--card-bg);
+    color: var(--status-success);
+    border-color: var(--status-success);
 }
 
 .btn-sync.push:hover:not(:disabled) {
-    background: #D1FAE5;
+    background: var(--toast-success-bg);
 }
 
 .btn-sync.pull {
-    background: white;
-    color: #3B82F6;
-    border-color: #3B82F6;
+    background: var(--card-bg);
+    color: var(--status-info);
+    border-color: var(--status-info);
 }
 
 .btn-sync.pull:hover:not(:disabled) {
-    background: #EFF6FF;
+    background: var(--primary-light);
 }
 
 /* Stats Grid */
@@ -125,8 +125,8 @@
 }
 
 .stat-card {
-    background: white;
-    border: 2px solid #E5E7EB;
+    background: var(--card-bg);
+    border: 2px solid var(--border-light);
     border-radius: 12px;
     padding: 20px;
     display: flex;
@@ -150,14 +150,14 @@
 .stat-value {
     font-size: 1.75rem;
     font-weight: 700;
-    color: #1F2937;
+    color: var(--text-primary);
     line-height: 1;
     margin-bottom: 5px;
 }
 
 .stat-label {
     font-size: 0.9rem;
-    color: #6B7280;
+    color: var(--text-muted);
     font-weight: 500;
 }
 
@@ -167,8 +167,8 @@
     align-items: center;
     gap: 12px;
     padding: 20px;
-    background: white;
-    border: 2px solid #E5E7EB;
+    background: var(--card-bg);
+    border: 2px solid var(--border-light);
     border-radius: 12px;
     margin-bottom: 20px;
     flex-wrap: wrap;
@@ -178,50 +178,50 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    color: #6B7280;
+    color: var(--text-muted);
     font-weight: 500;
 }
 
 .sync-filters select {
     padding: 8px 14px;
-    border: 2px solid #E5E7EB;
+    border: 2px solid var(--border-light);
     border-radius: 6px;
     font-size: 0.9rem;
-    background: white;
+    background: var(--card-bg);
     cursor: pointer;
     transition: all 0.2s;
 }
 
 .sync-filters select:focus {
     outline: none;
-    border-color: #3B82F6;
+    border-color: var(--status-info);
 }
 
 .btn-refresh {
     display: flex;
     align-items: center;
     gap: 6px;
-    background: white;
-    border: 2px solid #E5E7EB;
+    background: var(--card-bg);
+    border: 2px solid var(--border-light);
     padding: 8px 16px;
     border-radius: 6px;
     font-size: 0.9rem;
     font-weight: 500;
-    color: #6B7280;
+    color: var(--text-muted);
     cursor: pointer;
     transition: all 0.2s;
     margin-left: auto;
 }
 
 .btn-refresh:hover {
-    background: #F9FAFB;
-    border-color: #D1D5DB;
+    background: var(--input-bg);
+    border-color: var(--border-medium);
 }
 
 /* Sync Logs Container */
 .sync-logs-container {
-    background: white;
-    border: 2px solid #E5E7EB;
+    background: var(--card-bg);
+    border: 2px solid var(--border-light);
     border-radius: 12px;
     overflow: hidden;
 }
@@ -239,7 +239,7 @@
     width: 50px;
     height: 50px;
     border: 4px solid #E5E7EB;
-    border-top-color: #3B82F6;
+    border-top-color: var(--status-info);
     border-radius: 50%;
     animation: spin 1s linear infinite;
     margin-bottom: 20px;
@@ -250,19 +250,19 @@
 }
 
 .loading-state p {
-    color: #6B7280;
+    color: var(--text-muted);
     font-size: 1rem;
 }
 
 .empty-state h3 {
     font-size: 1.25rem;
     font-weight: 600;
-    color: #1F2937;
+    color: var(--text-primary);
     margin: 15px 0 5px;
 }
 
 .empty-state p {
-    color: #6B7280;
+    color: var(--text-muted);
 }
 
 /* Sync Logs Table */
@@ -272,8 +272,8 @@
 }
 
 .sync-logs-table thead {
-    background: #F9FAFB;
-    border-bottom: 2px solid #E5E7EB;
+    background: var(--input-bg);
+    border-bottom: 2px solid var(--border-light);
 }
 
 .sync-logs-table th {
@@ -281,18 +281,18 @@
     text-align: left;
     font-size: 0.85rem;
     font-weight: 600;
-    color: #6B7280;
+    color: var(--text-muted);
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
 
 .sync-logs-table tbody tr {
-    border-bottom: 1px solid #E5E7EB;
+    border-bottom: 1px solid var(--border-light);
     transition: all 0.2s;
 }
 
 .sync-logs-table tbody tr:hover {
-    background: #F9FAFB;
+    background: var(--input-bg);
 }
 
 .sync-logs-table td {
@@ -316,7 +316,7 @@
 }
 
 .status-badge.success {
-    background: #D1FAE5;
+    background: var(--toast-success-bg);
     color: #065F46;
 }
 
@@ -334,7 +334,7 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    color: #4B5563;
+    color: var(--text-secondary);
 }
 
 .records-cell {
@@ -344,12 +344,12 @@
 }
 
 .records-cell .success {
-    color: #10B981;
+    color: var(--status-success);
     font-weight: 600;
 }
 
 .records-cell .failed {
-    color: #EF4444;
+    color: var(--status-error);
     font-size: 0.85rem;
 }
 
@@ -357,26 +357,26 @@
     display: flex;
     align-items: center;
     gap: 6px;
-    color: #EF4444;
+    color: var(--status-error);
     font-size: 0.85rem;
 }
 
 .details-cell {
-    color: #6B7280;
+    color: var(--text-muted);
     font-size: 0.85rem;
 }
 
 /* Log Row States */
 .log-row.success td {
-    border-left: 3px solid #10B981;
+    border-left: 3px solid var(--status-success);
 }
 
 .log-row.failed td {
-    border-left: 3px solid #EF4444;
+    border-left: 3px solid var(--status-error);
 }
 
 .log-row.pending td {
-    border-left: 3px solid #F59E0B;
+    border-left: 3px solid var(--status-warning);
 }
 
 .log-row.success:first-child td:first-child {
@@ -412,7 +412,7 @@
 
     .sync-logs-table tbody tr {
         margin-bottom: 15px;
-        border: 2px solid #E5E7EB;
+        border: 2px solid var(--border-light);
         border-radius: 8px;
         padding: 15px;
     }
@@ -431,7 +431,7 @@
         width: 45%;
         padding-right: 10px;
         font-weight: 600;
-        color: #6B7280;
+        color: var(--text-muted);
         font-size: 0.85rem;
     }
 }

@@ -21,13 +21,13 @@
     margin: 0;
     font-size: 28px;
     font-weight: 600;
-    color: #1F2937;
+    color: var(--text-primary);
 }
 
 .subtitle {
     margin: 5px 0 0 0;
     font-size: 14px;
-    color: #6B7280;
+    color: var(--text-muted);
 }
 
 .btn-create-key {
@@ -35,8 +35,8 @@
     align-items: center;
     gap: 8px;
     padding: 10px 20px;
-    background: #3B82F6;
-    color: white;
+    background: var(--status-info);
+    color: var(--card-bg);
     border: none;
     border-radius: 8px;
     font-size: 14px;
@@ -73,8 +73,8 @@
 }
 
 .spinner {
-    border: 3px solid #E5E7EB;
-    border-top: 3px solid #3B82F6;
+    border: 3px solid var(--border-light);
+    border-top: 3px solid var(--status-info);
     border-radius: 50%;
     width: 40px;
     height: 40px;
@@ -96,20 +96,20 @@
 }
 
 .empty-icon {
-    color: #D1D5DB;
+    color: var(--border-medium);
     margin-bottom: 20px;
 }
 
 .empty-state h3 {
     margin: 0 0 8px 0;
     font-size: 20px;
-    color: #1F2937;
+    color: var(--text-primary);
 }
 
 .empty-state p {
     margin: 0 0 24px 0;
     font-size: 14px;
-    color: #6B7280;
+    color: var(--text-muted);
 }
 
 .api-keys-grid {
@@ -119,8 +119,8 @@
 }
 
 .api-key-card {
-    background: white;
-    border: 2px solid #E5E7EB;
+    background: var(--card-bg);
+    border: 2px solid var(--border-light);
     border-radius: 12px;
     padding: 24px;
     transition: all 0.2s;
@@ -128,14 +128,14 @@
 }
 
 .api-key-card:hover {
-    border-color: #3B82F6;
+    border-color: var(--status-info);
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
     transform: translateY(-2px);
 }
 
 .api-key-card.revoked {
     opacity: 0.7;
-    border-color: #D1D5DB;
+    border-color: var(--border-medium);
 }
 
 .key-card-header {
@@ -155,7 +155,7 @@
     margin: 0;
     font-size: 18px;
     font-weight: 600;
-    color: #1F2937;
+    color: var(--text-primary);
 }
 
 .status-badge {
@@ -196,7 +196,7 @@
 }
 
 .btn-icon:hover {
-    background: #E5E7EB;
+    background: var(--border-light);
 }
 
 .btn-icon:disabled {
@@ -212,7 +212,7 @@
 .key-description {
     margin: 0 0 16px 0;
     font-size: 14px;
-    color: #6B7280;
+    color: var(--text-muted);
     line-height: 1.5;
 }
 
@@ -228,7 +228,7 @@
     gap: 8px;
     padding: 12px;
     background: #F9FAFB;
-    border: 1px solid #E5E7EB;
+    border: 1px solid var(--border-light);
     border-radius: 8px;
 }
 
@@ -236,16 +236,16 @@
     flex: 1;
     font-family: 'Monaco', 'Courier New', monospace;
     font-size: 13px;
-    color: #1F2937;
+    color: var(--text-primary);
     overflow: hidden;
     text-overflow: ellipsis;
-    white-space: nowrap;
+    var(--card-bg)-space: nowrap;
 }
 
 .btn-copy {
     padding: 6px;
-    background: white;
-    border: 1px solid #D1D5DB;
+    background: var(--card-bg);
+    border: 1px solid var(--border-medium);
     border-radius: 4px;
     cursor: pointer;
     transition: all 0.2s;
@@ -254,8 +254,8 @@
 }
 
 .btn-copy:hover {
-    border-color: #3B82F6;
-    color: #3B82F6;
+    border-color: var(--status-info);
+    color: var(--status-info);
 }
 
 .copy-success {
@@ -312,7 +312,7 @@
     flex-direction: column;
     gap: 8px;
     padding-top: 12px;
-    border-top: 1px solid #E5E7EB;
+    border-top: 1px solid var(--border-light);
 }
 
 .metadata-row {
@@ -323,12 +323,12 @@
 }
 
 .metadata-label {
-    color: #6B7280;
+    color: var(--text-muted);
     font-weight: 500;
 }
 
 .metadata-value {
-    color: #1F2937;
+    color: var(--text-primary);
     font-weight: 500;
 }
 
@@ -351,7 +351,7 @@
 }
 
 .confirm-delete-modal {
-    background: white;
+    background: var(--card-bg);
     border-radius: 12px;
     padding: 24px;
     max-width: 400px;
@@ -362,13 +362,13 @@
 .confirm-delete-modal h4 {
     margin: 0 0 12px 0;
     font-size: 18px;
-    color: #1F2937;
+    color: var(--text-primary);
 }
 
 .confirm-delete-modal p {
     margin: 0 0 20px 0;
     font-size: 14px;
-    color: #6B7280;
+    color: var(--text-muted);
     line-height: 1.5;
 }
 
@@ -394,12 +394,12 @@
 }
 
 .btn-cancel:hover {
-    background: #E5E7EB;
+    background: var(--border-light);
 }
 
 .btn-confirm-delete {
     background: #DC2626;
-    color: white;
+    color: var(--card-bg);
 }
 
 .btn-confirm-delete:hover {

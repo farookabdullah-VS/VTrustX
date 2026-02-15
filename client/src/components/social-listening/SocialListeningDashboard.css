@@ -5,14 +5,14 @@
 .social-listening-dashboard {
   width: 100%;
   min-height: 100vh;
-  background-color: #f8f9fa;
+  background-color: var(--input-bg);
   padding: 0;
 }
 
 /* Header */
 .sl-header {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  color: var(--card-bg);
   padding: 32px 40px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
@@ -29,7 +29,7 @@
 }
 
 .sl-icon {
-  color: white;
+  color: var(--card-bg);
   opacity: 0.9;
 }
 
@@ -37,22 +37,22 @@
   margin: 0;
   font-size: 32px;
   font-weight: 700;
-  color: white;
+  color: var(--card-bg);
 }
 
 .sl-subtitle {
   margin: 8px 0 0 0;
   font-size: 16px;
   opacity: 0.9;
-  color: white;
+  color: var(--card-bg);
 }
 
 /* Tabs */
 .sl-tabs {
   display: flex;
   gap: 4px;
-  background-color: white;
-  border-bottom: 2px solid #e9ecef;
+  background-color: var(--card-bg);
+  border-bottom: 2px solid var(--border-light);
   padding: 0 40px;
   max-width: 1400px;
   margin: 0 auto;
@@ -67,7 +67,7 @@
   background: none;
   border: none;
   border-bottom: 3px solid transparent;
-  color: #6c757d;
+  color: var(--text-muted);
   font-size: 15px;
   font-weight: 500;
   cursor: pointer;
@@ -76,8 +76,8 @@
 }
 
 .sl-tab:hover {
-  color: #495057;
-  background-color: #f8f9fa;
+  color: var(--text-secondary);
+  background-color: var(--input-bg);
 }
 
 .sl-tab.active {
@@ -144,13 +144,13 @@
 .sl-empty-state h3 {
   font-size: 20px;
   font-weight: 600;
-  color: #495057;
+  color: var(--text-secondary);
   margin: 0 0 8px 0;
 }
 
 .sl-empty-state p {
   font-size: 15px;
-  color: #6c757d;
+  color: var(--text-muted);
   margin: 0 0 24px 0;
 }
 
@@ -161,7 +161,7 @@
   gap: 8px;
   padding: 10px 20px;
   background-color: #667eea;
-  color: white;
+  color: var(--card-bg);
   border: none;
   border-radius: 8px;
   font-size: 14px;
@@ -181,8 +181,8 @@
 }
 
 .sl-button-secondary {
-  background-color: #f8f9fa;
-  color: #495057;
+  background-color: var(--input-bg);
+  color: var(--text-secondary);
   border: 1px solid #dee2e6;
 }
 

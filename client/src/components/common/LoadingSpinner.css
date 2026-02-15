@@ -10,7 +10,7 @@
 }
 
 .spinner-message {
-  color: var(--text-muted, #64748b);
+  color: var(--text-muted);
   font-size: 0.95rem;
   font-weight: 500;
   letter-spacing: 0.3px;
@@ -191,10 +191,10 @@
 }
 
 .loading-spinner-overlay .loading-spinner-container {
-  background: var(--card-bg, white);
+  background: var(--card-bg);
   border-radius: 16px;
   padding: 40px;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  box-shadow: var(--shadow-xl);
   min-height: auto;
 }
 

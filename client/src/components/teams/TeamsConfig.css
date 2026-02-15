@@ -13,7 +13,7 @@
     align-items: center;
     margin-bottom: 30px;
     padding-bottom: 20px;
-    border-bottom: 2px solid #e2e8f0;
+    border-bottom: 2px solid var(--border-light);
 }
 
 .header-left {
@@ -29,12 +29,12 @@
 .teams-header h1 {
     margin: 0 0 8px 0;
     font-size: 28px;
-    color: #1e293b;
+    color: var(--text-primary);
 }
 
 .teams-header p {
     margin: 0;
-    color: #64748b;
+    color: var(--text-muted);
     font-size: 14px;
 }
 
@@ -64,7 +64,7 @@
 }
 
 .spinner {
-    border: 3px solid #e2e8f0;
+    border: 3px solid var(--border-light);
     border-top: 3px solid #5059C9;
     border-radius: 50%;
     width: 40px;
@@ -79,8 +79,8 @@
 
 /* Info Card */
 .info-card {
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
+    background: var(--input-bg);
+    border: 1px solid var(--border-light);
     border-radius: 12px;
     padding: 24px;
     margin-bottom: 30px;
@@ -89,7 +89,7 @@
 .info-card h3 {
     margin: 0 0 16px 0;
     font-size: 18px;
-    color: #1e293b;
+    color: var(--text-primary);
 }
 
 .info-card ol {
@@ -104,13 +104,13 @@
 }
 
 .info-card code {
-    background: white;
+    background: var(--card-bg);
     padding: 2px 8px;
     border-radius: 4px;
     font-family: 'Courier New', monospace;
     font-size: 13px;
     color: #e11d48;
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--border-light);
 }
 
 .external-link {
@@ -129,8 +129,8 @@
 
 /* Configuration Form */
 .config-form {
-    background: white;
-    border: 1px solid #e2e8f0;
+    background: var(--card-bg);
+    border: 1px solid var(--border-light);
     border-radius: 12px;
     padding: 30px;
 }
@@ -149,7 +149,7 @@
     gap: 10px;
     margin: 0 0 20px 0;
     font-size: 18px;
-    color: #1e293b;
+    color: var(--text-primary);
 }
 
 .form-group {
@@ -159,7 +159,7 @@
 .form-group label {
     display: block;
     margin-bottom: 8px;
-    color: #334155;
+    color: var(--text-secondary);
     font-size: 14px;
     font-weight: 600;
 }
@@ -167,7 +167,7 @@
 .optional {
     margin-left: 8px;
     font-weight: normal;
-    color: #94a3b8;
+    color: var(--text-disabled);
     font-size: 13px;
 }
 
@@ -186,10 +186,10 @@
 .form-group textarea {
     width: 100%;
     padding: 10px 14px;
-    border: 1px solid #cbd5e1;
+    border: 1px solid var(--border-medium);
     border-radius: 8px;
     font-size: 14px;
-    color: #1e293b;
+    color: var(--text-primary);
     transition: border-color 0.2s;
 }
 
@@ -201,7 +201,7 @@
 }
 
 .form-group input[readonly] {
-    background: #f8fafc;
+    background: var(--input-bg);
     cursor: not-allowed;
 }
 
@@ -213,12 +213,12 @@
 .help-text {
     display: block;
     margin-top: 6px;
-    color: #64748b;
+    color: var(--text-muted);
     font-size: 13px;
 }
 
 .help-text strong {
-    color: #334155;
+    color: var(--text-secondary);
 }
 
 /* Checkbox Group */
@@ -282,7 +282,7 @@
 /* Buttons */
 .btn-primary {
     background: #5059C9;
-    color: white;
+    color: var(--card-bg);
     border: none;
     padding: 10px 20px;
     border-radius: 8px;
@@ -300,12 +300,12 @@
 }
 
 .btn-primary:disabled {
-    background: #94a3b8;
+    background: var(--text-disabled);
     cursor: not-allowed;
 }
 
 .btn-test {
-    background: white;
+    background: var(--card-bg);
     color: #5059C9;
     border: 1px solid #5059C9;
     padding: 10px 20px;
@@ -313,7 +313,7 @@
     font-size: 14px;
     font-weight: 600;
     cursor: pointer;
-    white-space: nowrap;
+    var(--card-bg)-space: nowrap;
     transition: all 0.2s;
 }
 
@@ -330,13 +330,13 @@
     display: flex;
     justify-content: flex-end;
     padding-top: 20px;
-    border-top: 1px solid #e2e8f0;
+    border-top: 1px solid var(--border-light);
 }
 
 /* Test Message Section */
 .test-message-section {
-    background: white;
-    border: 1px solid #e2e8f0;
+    background: var(--card-bg);
+    border: 1px solid var(--border-light);
     border-radius: 12px;
     padding: 30px;
     margin-top: 30px;
@@ -348,12 +348,12 @@
     gap: 10px;
     margin: 0 0 8px 0;
     font-size: 18px;
-    color: #1e293b;
+    color: var(--text-primary);
 }
 
 .test-message-section > p {
     margin: 0 0 24px 0;
-    color: #64748b;
+    color: var(--text-muted);
     font-size: 14px;
 }
 

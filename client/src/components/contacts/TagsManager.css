@@ -19,12 +19,12 @@
     align-items: center;
     gap: 12px;
     font-size: 28px;
-    color: #1F2937;
+    color: var(--text-primary);
     margin: 0 0 8px 0;
 }
 
 .tags-header p {
-    color: #6B7280;
+    color: var(--text-muted);
     margin: 0;
     font-size: 14px;
 }
@@ -43,7 +43,7 @@
 
 .info-banner svg {
     flex-shrink: 0;
-    color: #3B82F6;
+    color: var(--status-info);
     margin-top: 2px;
 }
 
@@ -65,8 +65,8 @@
 }
 
 .spinner {
-    border: 3px solid #E5E7EB;
-    border-top: 3px solid #3B82F6;
+    border: 3px solid var(--border-light);
+    border-top: 3px solid var(--status-info);
     border-radius: 50%;
     width: 40px;
     height: 40px;
@@ -95,7 +95,7 @@
 
 .empty-state h3 {
     margin: 0;
-    color: #6B7280;
+    color: var(--text-muted);
     font-size: 20px;
 }
 
@@ -116,7 +116,7 @@
 /* Tag Card */
 .tag-card {
     background: white;
-    border: 1px solid #E5E7EB;
+    border: 1px solid var(--border-light);
     border-radius: 12px;
     padding: 20px;
     transition: all 0.2s ease;
@@ -124,7 +124,7 @@
 
 .tag-card:hover {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    border-color: #3B82F6;
+    border-color: var(--status-info);
 }
 
 .tag-header {
@@ -151,14 +151,14 @@
 .tag-info h3 {
     margin: 0 0 4px 0;
     font-size: 18px;
-    color: #1F2937;
+    color: var(--text-primary);
     font-weight: 600;
 }
 
 .tag-description {
     margin: 0;
     font-size: 13px;
-    color: #6B7280;
+    color: var(--text-muted);
     line-height: 1.4;
 }
 
@@ -167,8 +167,8 @@
     display: flex;
     gap: 16px;
     padding: 12px 0;
-    border-top: 1px solid #E5E7EB;
-    border-bottom: 1px solid #E5E7EB;
+    border-top: 1px solid var(--border-light);
+    border-bottom: 1px solid var(--border-light);
     margin-bottom: 16px;
 }
 
@@ -176,12 +176,12 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    color: #6B7280;
+    color: var(--text-muted);
     font-size: 14px;
 }
 
 .tag-stats .stat svg {
-    color: #3B82F6;
+    color: var(--status-info);
     flex-shrink: 0;
 }
 
@@ -212,7 +212,7 @@
 /* Tag Statistics Section */
 .tags-stats-section {
     background: white;
-    border: 1px solid #E5E7EB;
+    border: 1px solid var(--border-light);
     border-radius: 12px;
     padding: 24px;
     margin-top: 30px;
@@ -221,7 +221,7 @@
 .tags-stats-section h2 {
     margin: 0 0 20px 0;
     font-size: 20px;
-    color: #1F2937;
+    color: var(--text-primary);
 }
 
 .stats-cards {
@@ -236,7 +236,7 @@
     padding: 20px;
     background: #F9FAFB;
     border-radius: 10px;
-    border: 1px solid #E5E7EB;
+    border: 1px solid var(--border-light);
 }
 
 .stat-icon {
@@ -247,20 +247,20 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #3B82F6;
+    color: var(--status-info);
 }
 
 .stat-content h3 {
     margin: 0 0 4px 0;
     font-size: 24px;
-    color: #1F2937;
+    color: var(--text-primary);
     font-weight: 700;
 }
 
 .stat-content p {
     margin: 0;
     font-size: 13px;
-    color: #6B7280;
+    color: var(--text-muted);
 }
 
 /* Modal Overlay */
@@ -296,13 +296,13 @@
     justify-content: space-between;
     align-items: center;
     padding: 20px 24px;
-    border-bottom: 1px solid #E5E7EB;
+    border-bottom: 1px solid var(--border-light);
 }
 
 .modal-header h3 {
     margin: 0;
     font-size: 20px;
-    color: #1F2937;
+    color: var(--text-primary);
 }
 
 .modal-header button {
@@ -324,7 +324,7 @@
 
 .modal-header button:hover {
     background: #F3F4F6;
-    color: #1F2937;
+    color: var(--text-primary);
 }
 
 .modal-body {
@@ -337,7 +337,7 @@
     display: flex;
     gap: 12px;
     padding: 16px 24px;
-    border-top: 1px solid #E5E7EB;
+    border-top: 1px solid var(--border-light);
     justify-content: flex-end;
 }
 
@@ -361,14 +361,14 @@
     border: 1px solid #D1D5DB;
     border-radius: 8px;
     font-size: 14px;
-    color: #1F2937;
+    color: var(--text-primary);
     transition: border-color 0.2s;
 }
 
 .form-group input:focus,
 .form-group textarea:focus {
     outline: none;
-    border-color: #3B82F6;
+    border-color: var(--status-info);
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
@@ -398,7 +398,7 @@
 }
 
 .color-option.selected {
-    border-color: #1F2937;
+    border-color: var(--text-primary);
     box-shadow: 0 0 0 2px white;
 }
 
@@ -406,7 +406,7 @@
 .tag-preview-section {
     margin-top: 20px;
     padding-top: 20px;
-    border-top: 1px solid #E5E7EB;
+    border-top: 1px solid var(--border-light);
 }
 
 .tag-preview-section label {
@@ -419,7 +419,7 @@
 
 /* Buttons */
 .btn-primary {
-    background: #3B82F6;
+    background: var(--status-info);
     color: white;
     border: none;
     padding: 10px 20px;
