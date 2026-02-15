@@ -29,17 +29,17 @@
     border-radius: 50%;
     /* Subtle glow */
     box-shadow: 0 0 var(--space-10, 40px) rgba(0, 0, 0, 0.2);
-    transition: all 0.3s ease;
+    transition: all var(--transition-normal, 0.3s) ease;
     background: var(--deep-bg, #000);
 }
 
 .agent-avatar-container.speaking {
-    animation: pulse-speaking 1.5s infinite ease-in-out;
+    animation: pulse-speaking var(--duration-1500, 1.5s) infinite ease-in-out;
     box-shadow: 0 0 var(--space-15, 60px) var(--primary-color);
 }
 
 .agent-avatar-container.listening {
-    border: 2px solid var(--primary-color);
+    border: var(--space-0-5, 2px) solid var(--primary-color);
     box-shadow: 0 0 var(--space-5, 20px) var(--primary-color);
 }
 
@@ -59,7 +59,7 @@
     height: var(--space-37-5, 150px);
     background: var(--deep-bg, #000);
     border-radius: var(--radius-lg, 12px);
-    border: 2px solid var(--border-light, rgba(255, 255, 255, 0.2));
+    border: var(--space-0-5, 2px) solid var(--border-light, rgba(255, 255, 255, 0.2));
     overflow: hidden;
     box-shadow: var(--shadow-lg, 0 var(--space-2-5, 10px) var(--space-6-25, 25px) rgba(0, 0, 0, 0.5));
     z-index: 1000;
@@ -81,7 +81,7 @@
     align-items: center;
     justify-content: center;
     gap: var(--space-5, 20px);
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    border-top: var(--space-0-25, 1px) solid rgba(255, 255, 255, 0.1);
 }
 
 .control-btn {
@@ -94,7 +94,7 @@
     justify-content: center;
     font-size: 1.2rem;
     cursor: pointer;
-    transition: transform 0.2s, background 0.2s;
+    transition: transform var(--transition-fast, 0.2s), background var(--transition-fast, 0.2s);
 }
 
 .control-btn:hover {
@@ -104,7 +104,7 @@
 .btn-mute {
     background: var(--sidebar-bg);
     color: var(--text-color);
-    border: 1px solid var(--sidebar-border);
+    border: var(--space-0-25, 1px) solid var(--sidebar-border);
 }
 
 .btn-mute.muted {
@@ -122,23 +122,23 @@
 
 .realtime-caption {
     position: absolute;
-    bottom: 120px;
+    bottom: var(--space-30, 120px);
     /* Above controls */
     left: 50%;
     transform: translateX(-50%);
     background: rgba(0, 0, 0, 0.6);
-    padding: var(--space-2-5, 10px) 20px;
-    border-radius: 20px;
+    padding: var(--space-2-5, 10px) var(--space-5, 20px);
+    border-radius: var(--radius-xl-alt, 20px);
     font-size: 1.1rem;
     max-width: 80%;
     text-align: center;
-    min-height: 48px;
-    opacity: 0;
-    transition: opacity 0.3s;
+    min-height: var(--space-12, 48px);
+    opacity: var(--opacity-0, 0);
+    transition: opacity var(--transition-normal, 0.3s);
 }
 
 .realtime-caption.visible {
-    opacity: 1;
+    opacity: var(--opacity-100, 1);
 }
 
 @keyframes pulse-speaking {
@@ -175,13 +175,13 @@
 
 .status-indicator {
     position: absolute;
-    top: 24px;
+    top: var(--space-6, 24px);
     left: 50%;
     transform: translateX(-50%);
     background: rgba(255, 255, 255, 0.1);
-    padding: var(--space-1-5, 6px) 16px;
-    border-radius: 20px;
+    padding: var(--space-1-5, 6px) var(--space-4, 16px);
+    border-radius: var(--radius-xl-alt, 20px);
     font-size: 0.9rem;
     color: var(--text-color);
-    backdrop-filter: blur(4px);
+    backdrop-filter: blur(var(--space-1, 4px));
 }
