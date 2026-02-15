@@ -1,39 +1,10 @@
+@import '../src/design-tokens.css';
+
+/* Local overrides or landing-specific tweaks can go here */
 :root {
-    /* Default Light Theme (Qualtrics Style) */
-    --primary-color: #0076CE;
-    --primary-dark: #005A9E;
-    --primary-light: #E1F0FF;
-    --text-main: #1A1C21;
-    --text-secondary: #5C6270;
-    --bg-white: #FFFFFF;
-    --bg-light: #F8F9FA;
-    --border-color: #EDEDED;
-    --glass-bg: rgba(255, 255, 255, 0.7);
-    --glass-border: rgba(255, 255, 255, 0.3);
-
-    --accent-emerald: #10B981;
-    --nav-height: 70px;
-    --container-width: 1200px;
-    --shadow-soft: 0 10px 30px rgba(0, 0, 0, 0.05);
-    --shadow-hover: 0 20px 50px rgba(0, 118, 206, 0.15);
-    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition: var(--transition-theme);
 }
 
-body.t-theme {
-    /* T-Theme (Dark High-Tech) */
-    --primary-color: #00F5FF;
-    --primary-dark: #00D1DB;
-    --primary-light: rgba(0, 245, 255, 0.1);
-    --text-main: #FFFFFF;
-    --text-secondary: #8E9196;
-    --bg-white: #05070A;
-    --bg-light: #0A0D14;
-    --border-color: rgba(255, 255, 255, 0.1);
-    --glass-bg: rgba(255, 255, 255, 0.03);
-    --glass-border: rgba(255, 255, 255, 0.08);
-    --shadow-soft: 0 10px 40px rgba(0, 0, 0, 0.5);
-    --shadow-hover: 0 20px 60px rgba(0, 245, 255, 0.15);
-}
 
 * {
     margin: 0;
