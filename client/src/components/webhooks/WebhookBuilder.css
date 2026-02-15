@@ -1,5 +1,5 @@
 .webhook-builder {
-    padding: 30px;
+    padding: var(--space-7-5, 30px);
     max-width: 900px;
     margin: 0 auto;
 }
@@ -7,20 +7,20 @@
 .builder-header {
     display: flex;
     align-items: center;
-    gap: 16px;
-    margin-bottom: 30px;
+    gap: var(--space-4, 16px);
+    margin-bottom: var(--space-7-5, 30px);
 }
 
 .btn-back {
-    padding: 10px;
+    padding: var(--space-2-5, 10px);
     background: var(--input-bg);
     border: none;
-    border-radius: 8px;
+    border-radius: var(--radius-md, 8px);
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.2s;
+    transition: all var(--transition-fast, 0.2s);
 }
 
 .btn-back:hover {
@@ -30,7 +30,7 @@
 .header-content {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: var(--space-3, 12px);
 }
 
 .builder-header h1 {
@@ -42,13 +42,13 @@
 
 .builder-form {
     background: var(--card-bg);
-    border: 2px solid var(--border-light);
-    border-radius: 12px;
+    border: var(--space-0-5, 2px) solid var(--border-light);
+    border-radius: var(--radius-lg, 12px);
     padding: 32px;
 }
 
 .form-section {
-    margin-bottom: 32px;
+    margin-bottom: var(--space-8, 32px);
 }
 
 .form-section:last-child {
@@ -57,26 +57,26 @@
 
 .form-section h3 {
     margin: 0 0 8px 0;
-    font-size: 18px;
+    font-size: var(--text-lg, 18px);
     font-weight: 600;
     color: var(--text-primary);
 }
 
 .section-description {
     margin: 0 0 20px 0;
-    font-size: 14px;
+    font-size: var(--text-sm, 14px);
     color: var(--text-muted);
     line-height: 1.5;
 }
 
 .form-group {
-    margin-bottom: 20px;
+    margin-bottom: var(--space-5, 20px);
 }
 
 .form-group label {
     display: block;
-    margin-bottom: 8px;
-    font-size: 14px;
+    margin-bottom: var(--space-2, 8px);
+    font-size: var(--text-sm, 14px);
     font-weight: 500;
     color: var(--text-secondary);
 }
@@ -84,65 +84,65 @@
 .form-group input,
 .form-group select {
     width: 100%;
-    padding: 12px;
-    border: 2px solid var(--border-light);
-    border-radius: 8px;
-    font-size: 14px;
+    padding: var(--space-3, 12px);
+    border: var(--space-0-5, 2px) solid var(--border-light);
+    border-radius: var(--radius-md, 8px);
+    font-size: var(--text-sm, 14px);
     font-family: inherit;
-    transition: all 0.2s;
+    transition: all var(--transition-fast, 0.2s);
 }
 
 .form-group input:focus,
 .form-group select:focus {
     outline: none;
     border-color: var(--status-info);
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    box-shadow: 0 0 0 var(--space-0-75, 3px) rgba(59, 130, 246, var(--opacity-10, 0.1));
 }
 
 .field-hint {
-    margin: 6px 0 0 0;
-    font-size: 12px;
+    margin: var(--space-1-5, 6px) 0 0 0;
+    font-size: var(--text-xs, 12px);
     color: #9CA3AF;
 }
 
 .form-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 20px;
+    gap: var(--space-5, 20px);
 }
 
 .error-banner {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 16px;
+    gap: var(--space-3, 12px);
+    padding: var(--space-4, 16px);
     background: #FEF2F2;
-    border: 2px solid #FCA5A5;
-    border-radius: 12px;
+    border: var(--space-0-5, 2px) solid var(--toast-error-border, #FCA5A5);
+    border-radius: var(--radius-lg, 12px);
     color: #991B1B;
-    margin-bottom: 24px;
+    margin-bottom: var(--space-6, 24px);
 }
 
 .info-banner {
     display: flex;
-    gap: 16px;
-    padding: 20px;
+    gap: var(--space-4, 16px);
+    padding: var(--space-5, 20px);
     background: #EFF6FF;
-    border: 2px solid #93C5FD;
-    border-radius: 12px;
-    margin-bottom: 32px;
+    border: var(--space-0-5, 2px) solid var(--primary-border, #93C5FD);
+    border-radius: var(--radius-lg, 12px);
+    margin-bottom: var(--space-8, 32px);
 }
 
 .info-banner strong {
     display: block;
-    font-size: 15px;
+    font-size: var(--text-sm-alt, 15px);
     color: #1E40AF;
-    margin-bottom: 4px;
+    margin-bottom: var(--space-1, 4px);
 }
 
 .info-banner p {
     margin: 0;
-    font-size: 14px;
+    font-size: var(--text-sm, 14px);
     color: #1E40AF;
     line-height: 1.5;
 }
@@ -154,9 +154,9 @@
 }
 
 .event-category {
-    border: 2px solid var(--border-light);
-    border-radius: 12px;
-    padding: 20px;
+    border: var(--space-0-5, 2px) solid var(--border-light);
+    border-radius: var(--radius-lg, 12px);
+    padding: var(--space-5, 20px);
 }
 
 .category-header {
@@ -178,11 +178,11 @@
     background: var(--input-bg);
     border: none;
     border-radius: 6px;
-    font-size: 12px;
+    font-size: var(--text-xs, 12px);
     font-weight: 500;
     color: var(--text-secondary);
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all var(--transition-fast, 0.2s);
 }
 
 .btn-select-all:hover {
@@ -192,17 +192,17 @@
 .event-checkboxes {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: var(--space-3, 12px);
 }
 
 .event-checkbox {
     display: flex;
-    gap: 12px;
-    padding: 12px;
-    border: 2px solid var(--border-light);
-    border-radius: 8px;
+    gap: var(--space-3, 12px);
+    padding: var(--space-3, 12px);
+    border: var(--space-0-5, 2px) solid var(--border-light);
+    border-radius: var(--radius-md, 8px);
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all var(--transition-fast, 0.2s);
 }
 
 .event-checkbox:hover {
@@ -227,7 +227,7 @@
     font-size: 13px;
     font-weight: 600;
     color: var(--text-primary);
-    margin-bottom: 4px;
+    margin-bottom: var(--space-1, 4px);
 }
 
 .event-description {
@@ -238,16 +238,16 @@
 }
 
 .info-box {
-    padding: 16px;
+    padding: var(--space-4, 16px);
     background: var(--input-bg);
     border: 1px solid #E5E7EB;
-    border-radius: 8px;
+    border-radius: var(--radius-md, 8px);
     margin-top: 20px;
 }
 
 .info-box strong {
     display: block;
-    font-size: 14px;
+    font-size: var(--text-sm, 14px);
     color: var(--text-primary);
     margin-bottom: 6px;
 }
@@ -264,13 +264,13 @@
     background: var(--border-light);
     border-radius: 4px;
     font-family: 'Monaco', 'Courier New', monospace;
-    font-size: 12px;
+    font-size: var(--text-xs, 12px);
     color: var(--text-primary);
 }
 
 .form-actions {
     display: flex;
-    gap: 12px;
+    gap: var(--space-3, 12px);
     justify-content: flex-end;
     margin-top: 32px;
     padding-top: 24px;
@@ -281,11 +281,11 @@
 .btn-create {
     padding: 12px 24px;
     border: none;
-    border-radius: 8px;
-    font-size: 14px;
+    border-radius: var(--radius-md, 8px);
+    font-size: var(--text-sm, 14px);
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all var(--transition-fast, 0.2s);
 }
 
 .btn-cancel {
