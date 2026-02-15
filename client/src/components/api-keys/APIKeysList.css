@@ -1,6 +1,6 @@
 .api-keys-list {
     padding: var(--space-7, 30px);
-    max-width: 1400px;
+    max-width: var(--space-350, 1400px);
     margin: 0 auto;
 }
 
@@ -74,16 +74,16 @@
 
 .spinner {
     border: var(--space-0-75, 3px) solid var(--border-light);
-    border-top: 3px solid var(--status-info);
+    border-top: var(--space-0-75, 3px) solid var(--status-info);
     border-radius: 50%;
     width: var(--space-10, 40px);
     height: var(--space-10, 40px);
-    animation: spin 1s linear infinite;
+    animation: spin var(--duration-1000, 1s) linear infinite;
 }
 
 @keyframes spin {
     0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    100% { transform: rotate(var(--angle-360, 360deg)); }
 }
 
 .empty-state {
