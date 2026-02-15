@@ -20,7 +20,7 @@
     background: none;
     border: none;
     color: var(--text-muted);
-    font-size: 0.95rem;
+    font-size: var(--text-sm, 14px);
     cursor: pointer;
     padding: 8px 12px;
     border-radius: 6px;
@@ -34,7 +34,7 @@
 }
 
 .builder-header h1 {
-    font-size: 1.75rem;
+    font-size: var(--text-2xl, 24px);
     font-weight: 600;
     color: var(--text-primary);
     margin: 0;
@@ -86,7 +86,7 @@
 .progress-step.active .step-circle {
     border-color: var(--status-info);
     color: var(--status-info);
-    background: #EFF6FF;
+    background: var(--primary-light, #EFF6FF);
 }
 
 .progress-step.completed .step-circle {
@@ -96,7 +96,7 @@
 }
 
 .step-label {
-    font-size: 0.85rem;
+    font-size: var(--text-xs, 12px);
     color: var(--text-disabled);
     font-weight: 500;
 }
@@ -120,7 +120,7 @@
 }
 
 .wizard-step h2 {
-    font-size: 1.5rem;
+    font-size: var(--text-xl, 20px);
     font-weight: 600;
     color: var(--text-primary);
     margin: 0 0 8px 0;
@@ -128,7 +128,7 @@
 
 .step-description {
     color: var(--text-muted);
-    font-size: 1rem;
+    font-size: var(--text-base, 16px);
     margin: 0 0 30px 0;
 }
 
@@ -152,7 +152,7 @@
     padding: 10px 14px;
     border: 2px solid var(--border-light);
     border-radius: 8px;
-    font-size: 0.95rem;
+    font-size: var(--text-sm, 14px);
     transition: all 0.2s;
     font-family: inherit;
 }
@@ -168,7 +168,7 @@
 .help-text {
     display: block;
     color: var(--text-muted);
-    font-size: 0.85rem;
+    font-size: var(--text-xs, 12px);
     margin-top: 6px;
 }
 
@@ -195,7 +195,7 @@
 
 .channel-option:hover {
     border-color: var(--status-info);
-    background: #EFF6FF;
+    background: var(--primary-light, #EFF6FF);
 }
 
 .channel-option.active {
@@ -205,7 +205,7 @@
 }
 
 .channel-option span {
-    font-size: 0.85rem;
+    font-size: var(--text-xs, 12px);
     font-weight: 500;
 }
 
@@ -239,7 +239,7 @@
 }
 
 .step-title h3 {
-    font-size: 1.1rem;
+    font-size: var(--text-lg, 18px);
     font-weight: 600;
     margin: 0;
 }
@@ -255,7 +255,7 @@
 }
 
 .btn-icon-danger:hover {
-    background: #FEE2E2;
+    background: var(--toast-error-bg, #FEE2E2);
 }
 
 /* Delay Config */
@@ -306,7 +306,7 @@
 }
 
 .btn-add-step:hover:not(:disabled) {
-    background: #EFF6FF;
+    background: var(--primary-light, #EFF6FF);
 }
 
 .btn-add-step:disabled {
@@ -317,7 +317,7 @@
 .text-muted {
     display: block;
     color: var(--text-disabled);
-    font-size: 0.85rem;
+    font-size: var(--text-xs, 12px);
     margin-top: 8px;
 }
 
@@ -355,7 +355,7 @@
 
 .setting-description {
     color: var(--text-muted);
-    font-size: 0.9rem;
+    font-size: var(--text-sm, 14px);
     margin: 8px 0 0 28px;
 }
 
@@ -371,7 +371,7 @@
 }
 
 .review-section h3 {
-    font-size: 1.1rem;
+    font-size: var(--text-lg, 18px);
     font-weight: 600;
     color: var(--text-primary);
     margin: 0 0 15px 0;
@@ -413,7 +413,7 @@
 
 .review-step p {
     color: var(--text-muted);
-    font-size: 0.9rem;
+    font-size: var(--text-sm, 14px);
     margin: 5px 0 0 0;
 }
 
@@ -434,7 +434,7 @@
     gap: 8px;
     padding: 12px 24px;
     border-radius: 8px;
-    font-size: 1rem;
+    font-size: var(--text-base, 16px);
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s;
@@ -457,7 +457,7 @@
 }
 
 .btn-primary:hover:not(:disabled) {
-    background: #2563EB;
+    background: var(--status-info-dark, #2563EB);
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
 }
