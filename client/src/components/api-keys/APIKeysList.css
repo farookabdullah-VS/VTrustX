@@ -1,5 +1,5 @@
 .api-keys-list {
-    padding: 30px;
+    padding: var(--space-7, 30px);
     max-width: 1400px;
     margin: 0 auto;
 }
@@ -8,38 +8,38 @@
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    margin-bottom: 30px;
+    margin-bottom: var(--space-7, 30px);
 }
 
 .header-left {
     display: flex;
-    gap: 16px;
+    gap: var(--space-4, 16px);
     align-items: center;
 }
 
 .api-keys-header h1 {
     margin: 0;
-    font-size: 28px;
+    font-size: var(--text-2xl-alt, 28px);
     font-weight: 600;
     color: var(--text-primary);
 }
 
 .subtitle {
-    margin: 5px 0 0 0;
-    font-size: 14px;
+    margin: var(--space-1-25, 5px) 0 0 0;
+    font-size: var(--text-sm, 14px);
     color: var(--text-muted);
 }
 
 .btn-create-key {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 10px 20px;
+    gap: var(--space-2, 8px);
+    padding: var(--space-2-5, 10px) var(--space-5, 20px);
     background: var(--status-info);
     color: var(--card-bg);
     border: none;
-    border-radius: 8px;
-    font-size: 14px;
+    border-radius: var(--radius-md, 8px);
+    font-size: var(--text-sm, 14px);
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s;
@@ -48,19 +48,19 @@
 .btn-create-key:hover {
     background: #2563EB;
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    box-shadow: var(--shadow-md, 0 4px 12px rgba(59, 130, 246, 0.3));
 }
 
 .error-banner {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 16px;
+    gap: var(--space-3, 12px);
+    padding: var(--space-4, 16px);
     background: #FEF2F2;
     border: 2px solid #FCA5A5;
-    border-radius: 12px;
+    border-radius: var(--radius-lg, 12px);
     color: #991B1B;
-    margin-bottom: 24px;
+    margin-bottom: var(--space-6, 24px);
 }
 
 .loading-container {
@@ -68,8 +68,8 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 60px;
-    gap: 16px;
+    padding: var(--space-15, 60px);
+    gap: var(--space-4, 16px);
 }
 
 .spinner {
@@ -91,38 +91,38 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 80px 20px;
+    padding: var(--space-20, 80px) var(--space-5, 20px);
     text-align: center;
 }
 
 .empty-icon {
     color: var(--border-medium);
-    margin-bottom: 20px;
+    margin-bottom: var(--space-5, 20px);
 }
 
 .empty-state h3 {
-    margin: 0 0 8px 0;
-    font-size: 20px;
+    margin: 0 0 var(--space-2, 8px) 0;
+    font-size: var(--text-xl, 20px);
     color: var(--text-primary);
 }
 
 .empty-state p {
-    margin: 0 0 24px 0;
-    font-size: 14px;
+    margin: 0 0 var(--space-6, 24px) 0;
+    font-size: var(--text-sm, 14px);
     color: var(--text-muted);
 }
 
 .api-keys-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
-    gap: 24px;
+    gap: var(--space-6, 24px);
 }
 
 .api-key-card {
     background: var(--card-bg);
     border: 2px solid var(--border-light);
-    border-radius: 12px;
-    padding: 24px;
+    border-radius: var(--radius-lg, 12px);
+    padding: var(--space-6, 24px);
     transition: all 0.2s;
     position: relative;
 }
@@ -142,26 +142,26 @@
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    margin-bottom: 16px;
+    margin-bottom: var(--space-4, 16px);
 }
 
 .key-name-section {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: var(--space-2, 8px);
 }
 
 .key-name-section h3 {
     margin: 0;
-    font-size: 18px;
+    font-size: var(--text-lg, 18px);
     font-weight: 600;
     color: var(--text-primary);
 }
 
 .status-badge {
     display: inline-block;
-    padding: 4px 10px;
-    border-radius: 12px;
+    padding: var(--space-1, 4px) var(--space-2-5, 10px);
+    border-radius: var(--radius-lg, 12px);
     font-size: 11px;
     font-weight: 600;
     text-transform: uppercase;
@@ -180,14 +180,14 @@
 
 .key-actions {
     display: flex;
-    gap: 8px;
+    gap: var(--space-2, 8px);
 }
 
 .btn-icon {
-    padding: 8px;
+    padding: var(--space-2, 8px);
     background: #F3F4F6;
     border: none;
-    border-radius: 6px;
+    border-radius: var(--radius-sm-alt, 6px);
     cursor: pointer;
     transition: all 0.2s;
     display: flex;
@@ -210,8 +210,8 @@
 }
 
 .key-description {
-    margin: 0 0 16px 0;
-    font-size: 14px;
+    margin: 0 0 var(--space-4, 16px) 0;
+    font-size: var(--text-sm, 14px);
     color: var(--text-muted);
     line-height: 1.5;
 }
@@ -219,17 +219,17 @@
 .key-info {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: var(--space-4, 16px);
 }
 
 .key-display-row {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 12px;
+    gap: var(--space-2, 8px);
+    padding: var(--space-3, 12px);
     background: #F9FAFB;
     border: 1px solid var(--border-light);
-    border-radius: 8px;
+    border-radius: var(--radius-md, 8px);
 }
 
 .key-display {
@@ -239,14 +239,14 @@
     color: var(--text-primary);
     overflow: hidden;
     text-overflow: ellipsis;
-    var(--card-bg)-space: nowrap;
+    white-space: nowrap;
 }
 
 .btn-copy {
-    padding: 6px;
+    padding: var(--space-1-5, 6px);
     background: var(--card-bg);
     border: 1px solid var(--border-medium);
-    border-radius: 4px;
+    border-radius: var(--radius-sm, 4px);
     cursor: pointer;
     transition: all 0.2s;
     display: flex;
@@ -265,7 +265,7 @@
 .key-scopes {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: var(--space-2, 8px);
 }
 
 .key-scopes strong {
@@ -276,12 +276,12 @@
 .scopes-list {
     display: flex;
     flex-wrap: wrap;
-    gap: 6px;
+    gap: var(--space-1-5, 6px);
 }
 
 .scope-badge {
-    padding: 4px 8px;
-    border-radius: 4px;
+    padding: var(--space-1, 4px) var(--space-2, 8px);
+    border-radius: var(--radius-sm, 4px);
     font-size: 11px;
     font-weight: 500;
     font-family: 'Monaco', 'Courier New', monospace;
@@ -310,8 +310,8 @@
 .key-metadata {
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    padding-top: 12px;
+    gap: var(--space-2, 8px);
+    padding-top: var(--space-3, 12px);
     border-top: 1px solid var(--border-light);
 }
 
@@ -352,37 +352,37 @@
 
 .confirm-delete-modal {
     background: var(--card-bg);
-    border-radius: 12px;
-    padding: 24px;
+    border-radius: var(--radius-lg, 12px);
+    padding: var(--space-6, 24px);
     max-width: 400px;
     width: 90%;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    box-shadow: var(--shadow-2xl, 0 20px 60px rgba(0, 0, 0, 0.3));
 }
 
 .confirm-delete-modal h4 {
-    margin: 0 0 12px 0;
-    font-size: 18px;
+    margin: 0 0 var(--space-3, 12px) 0;
+    font-size: var(--text-lg, 18px);
     color: var(--text-primary);
 }
 
 .confirm-delete-modal p {
-    margin: 0 0 20px 0;
-    font-size: 14px;
+    margin: 0 0 var(--space-5, 20px) 0;
+    font-size: var(--text-sm, 14px);
     color: var(--text-muted);
     line-height: 1.5;
 }
 
 .confirm-actions {
     display: flex;
-    gap: 12px;
+    gap: var(--space-3, 12px);
     justify-content: flex-end;
 }
 
 .btn-cancel, .btn-confirm-delete {
-    padding: 10px 20px;
+    padding: var(--space-2-5, 10px) var(--space-5, 20px);
     border: none;
-    border-radius: 8px;
-    font-size: 14px;
+    border-radius: var(--radius-md, 8px);
+    font-size: var(--text-sm, 14px);
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s;
