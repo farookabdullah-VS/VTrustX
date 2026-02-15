@@ -6,7 +6,7 @@
 
 const express = require('express');
 const router = express.Router();
-const { authenticate } = require('../middleware/auth');
+const authenticate = require('../middleware/auth');
 const DripCampaignService = require('../../services/DripCampaignService');
 const { query } = require('../../infrastructure/database/db');
 const logger = require('../../infrastructure/logger');

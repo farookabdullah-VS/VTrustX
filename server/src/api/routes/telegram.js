@@ -10,7 +10,7 @@
 
 const express = require('express');
 const router = express.Router();
-const { authenticate } = require('../middleware/auth');
+const authenticate = require('../middleware/auth');
 const TelegramService = require('../../services/TelegramService');
 const logger = require('../../infrastructure/logger');
 

@@ -15,7 +15,7 @@
 
 const express = require('express');
 const router = express.Router();
-const { authenticate } = require('../middleware/auth');
+const authenticate = require('../middleware/auth');
 const QRCodeService = require('../../services/QRCodeService');
 const logger = require('../../infrastructure/logger');
 const { query } = require('../../infrastructure/database/db');

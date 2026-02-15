@@ -5,7 +5,7 @@
 import React, { useState, useEffect } from 'react';
 import { Settings, Plus, CheckCircle, AlertCircle, RefreshCw, Trash2 } from 'lucide-react';
 import { useSocialListening } from '../../../contexts/SocialListeningContext';
-import LoadingSpinner from '../../common/LoadingSpinner';
+import { LoadingSpinner } from '../../common/LoadingSpinner';
 import socialListeningApi from '../../../services/socialListeningApi';
 import './SourcesTab.css';
 

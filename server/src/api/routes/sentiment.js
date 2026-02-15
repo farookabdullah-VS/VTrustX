@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const SurveySentimentService = require('../../services/SurveySentimentService');
-const { authenticate } = require('../middleware/auth');
+const authenticate = require('../middleware/auth');
 const logger = require('../../infrastructure/logger');
 
 /**

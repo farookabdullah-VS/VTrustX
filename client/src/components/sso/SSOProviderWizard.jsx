@@ -381,74 +381,6 @@ function SSOProviderWizard() {
                                     </label>
                                 </div>
                             </>
-                        ) : (
-                            <>
-                                <div className="form-group">
-                                    <label>Client ID *</label>
-                                    <input
-                                        type="text"
-                                        placeholder="your-client-id"
-                                        value={formData.oauth_client_id}
-                                        onChange={(e) => handleChange('oauth_client_id', e.target.value)}
-                                    />
-                                    <span className="field-help">The OAuth2 client identifier</span>
-                                </div>
-
-                                <div className="form-group">
-                                    <label>Client Secret {isEditing ? '(leave blank to keep existing)' : '*'}</label>
-                                    <input
-                                        type="password"
-                                        placeholder={isEditing ? 'Enter new secret to update' : 'your-client-secret'}
-                                        value={formData.oauth_client_secret}
-                                        onChange={(e) => handleChange('oauth_client_secret', e.target.value)}
-                                    />
-                                    <span className="field-help">The OAuth2 client secret (encrypted at rest)</span>
-                                </div>
-
-                                <div className="form-group">
-                                    <label>Authorization URL *</label>
-                                    <input
-                                        type="url"
-                                        placeholder="https://accounts.example.com/oauth/authorize"
-                                        value={formData.oauth_authorization_url}
-                                        onChange={(e) => handleChange('oauth_authorization_url', e.target.value)}
-                                    />
-                                    <span className="field-help">The OAuth2 authorization endpoint</span>
-                                </div>
-
-                                <div className="form-group">
-                                    <label>Token URL *</label>
-                                    <input
-                                        type="url"
-                                        placeholder="https://accounts.example.com/oauth/token"
-                                        value={formData.oauth_token_url}
-                                        onChange={(e) => handleChange('oauth_token_url', e.target.value)}
-                                    />
-                                    <span className="field-help">The OAuth2 token endpoint</span>
-                                </div>
-
-                                <div className="form-group">
-                                    <label>UserInfo URL (OIDC)</label>
-                                    <input
-                                        type="url"
-                                        placeholder="https://accounts.example.com/oauth/userinfo"
-                                        value={formData.oauth_userinfo_url}
-                                        onChange={(e) => handleChange('oauth_userinfo_url', e.target.value)}
-                                    />
-                                    <span className="field-help">The OIDC userinfo endpoint</span>
-                                </div>
-
-                                <div className="form-group">
-                                    <label>Scopes</label>
-                                    <input
-                                        type="text"
-                                        placeholder="openid email profile"
-                                        value={formData.oauth_scopes.join(' ')}
-                                        onChange={(e) => handleChange('oauth_scopes', e.target.value.split(' ').filter(Boolean))}
-                                    />
-                                    <span className="field-help">Space-separated OAuth2 scopes to request</span>
-                                </div>
-                            </>
                         ) : formData.provider_type === 'ldap' ? (
                             <>
                                 <div className="form-group">
@@ -523,7 +455,75 @@ function SSOProviderWizard() {
                                     <span className="field-help">Disable only for self-signed certificates (not recommended for production)</span>
                                 </div>
                             </>
-                        ) : null}
+                        ) : (
+                            <>
+                                <div className="form-group">
+                                    <label>Client ID *</label>
+                                    <input
+                                        type="text"
+                                        placeholder="your-client-id"
+                                        value={formData.oauth_client_id}
+                                        onChange={(e) => handleChange('oauth_client_id', e.target.value)}
+                                    />
+                                    <span className="field-help">The OAuth2 client identifier</span>
+                                </div>
+
+                                <div className="form-group">
+                                    <label>Client Secret {isEditing ? '(leave blank to keep existing)' : '*'}</label>
+                                    <input
+                                        type="password"
+                                        placeholder={isEditing ? 'Enter new secret to update' : 'your-client-secret'}
+                                        value={formData.oauth_client_secret}
+                                        onChange={(e) => handleChange('oauth_client_secret', e.target.value)}
+                                    />
+                                    <span className="field-help">The OAuth2 client secret (encrypted at rest)</span>
+                                </div>
+
+                                <div className="form-group">
+                                    <label>Authorization URL *</label>
+                                    <input
+                                        type="url"
+                                        placeholder="https://accounts.example.com/oauth/authorize"
+                                        value={formData.oauth_authorization_url}
+                                        onChange={(e) => handleChange('oauth_authorization_url', e.target.value)}
+                                    />
+                                    <span className="field-help">The OAuth2 authorization endpoint</span>
+                                </div>
+
+                                <div className="form-group">
+                                    <label>Token URL *</label>
+                                    <input
+                                        type="url"
+                                        placeholder="https://accounts.example.com/oauth/token"
+                                        value={formData.oauth_token_url}
+                                        onChange={(e) => handleChange('oauth_token_url', e.target.value)}
+                                    />
+                                    <span className="field-help">The OAuth2 token endpoint</span>
+                                </div>
+
+                                <div className="form-group">
+                                    <label>UserInfo URL (OIDC)</label>
+                                    <input
+                                        type="url"
+                                        placeholder="https://accounts.example.com/oauth/userinfo"
+                                        value={formData.oauth_userinfo_url}
+                                        onChange={(e) => handleChange('oauth_userinfo_url', e.target.value)}
+                                    />
+                                    <span className="field-help">The OIDC userinfo endpoint</span>
+                                </div>
+
+                                <div className="form-group">
+                                    <label>Scopes</label>
+                                    <input
+                                        type="text"
+                                        placeholder="openid email profile"
+                                        value={formData.oauth_scopes.join(' ')}
+                                        onChange={(e) => handleChange('oauth_scopes', e.target.value.split(' ').filter(Boolean))}
+                                    />
+                                    <span className="field-help">Space-separated OAuth2 scopes to request</span>
+                                </div>
+                            </>
+                        )}
                     </div>
                 )}
 

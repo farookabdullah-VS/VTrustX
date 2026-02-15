@@ -15,7 +15,7 @@
 
 const express = require('express');
 const router = express.Router();
-const { authenticate } = require('../middleware/auth');
+const authenticate = require('../middleware/auth');
 const { requireRole } = require('../middleware/authorize');
 const IPWhitelistService = require('../../services/IPWhitelistService');
 const { getClientIP } = require('../middleware/ipWhitelistMiddleware');

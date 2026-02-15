@@ -12,7 +12,7 @@
 
 const express = require('express');
 const router = express.Router();
-const { authenticate } = require('../middleware/auth');
+const authenticate = require('../middleware/auth');
 const ResponseQualityService = require('../../services/ResponseQualityService');
 const logger = require('../../infrastructure/logger');
 const { query } = require('../../infrastructure/database/db');

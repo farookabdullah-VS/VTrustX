@@ -1,5 +1,9 @@
 {
   "dependencies": {
+    "@node-saml/passport-saml": "^5.1.0",
+    "ldapjs": "^3.0.7",
+    "openid-client": "^6.8.2",
+    "passport-ldapauth": "^3.0.1",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1"
   }

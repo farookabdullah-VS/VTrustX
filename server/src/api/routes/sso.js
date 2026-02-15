@@ -19,7 +19,7 @@
 
 const express = require('express');
 const router = express.Router();
-const { authenticate } = require('../middleware/auth');
+const authenticate = require('../middleware/auth');
 const { requireRole } = require('../middleware/authorize');
 const SSOService = require('../../services/SSOService');
 const logger = require('../../infrastructure/logger');

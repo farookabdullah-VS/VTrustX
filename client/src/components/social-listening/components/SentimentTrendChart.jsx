@@ -5,7 +5,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSocialListening } from '../../../contexts/SocialListeningContext';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import LoadingSpinner from '../../common/LoadingSpinner';
+import { LoadingSpinner } from '../../common/LoadingSpinner';
 import socialListeningApi from '../../../services/socialListeningApi';
 
 const SentimentTrendChart = ({ dateRange }) => {

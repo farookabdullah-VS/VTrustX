@@ -4,7 +4,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Award, Users, TrendingUp, ExternalLink, MessageCircle } from 'lucide-react';
-import LoadingSpinner from '../../common/LoadingSpinner';
+import { LoadingSpinner } from '../../common/LoadingSpinner';
 import socialListeningApi from '../../../services/socialListeningApi';
 import './InfluencersTab.css';
 

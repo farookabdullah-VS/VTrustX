@@ -12,7 +12,7 @@
 
 const express = require('express');
 const router = express.Router();
-const { authenticate } = require('../middleware/auth');
+const authenticate = require('../middleware/auth');
 const CustomReportService = require('../../services/CustomReportService');
 const WidgetDataService = require('../../services/WidgetDataService');
 const logger = require('../../infrastructure/logger');

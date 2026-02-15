@@ -29,6 +29,7 @@ const logger = require('../../infrastructure/logger');
  */
 router.get('/', authenticate, async (req, res) => {
     try {
+        await ensureSchema(); // Ensure columns exist
         // Return summary
         const result = await query('SELECT id, name, title, photo_url, updated_at FROM cx_personas WHERE tenant_id = $1 ORDER BY updated_at DESC', [req.user.tenant_id]);
         res.json(result.rows);
@@ -81,6 +82,7 @@ router.get('/:id', authenticate, async (req, res) => {
 // Helper to ensure schema
 async function ensureSchema() {
     try {
+        await query('ALTER TABLE cx_personas ADD COLUMN IF NOT EXISTS photo_url VARCHAR(500)');
         await query('ALTER TABLE cx_personas ADD COLUMN IF NOT EXISTS status VARCHAR(50) DEFAULT \'Draft\'');
         await query('ALTER TABLE cx_personas ADD COLUMN IF NOT EXISTS tags TEXT[] DEFAULT \'{}\'');
         await query('ALTER TABLE cx_personas ADD COLUMN IF NOT EXISTS accent_color VARCHAR(20) DEFAULT \'#bef264\'');

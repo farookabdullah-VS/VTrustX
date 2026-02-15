@@ -61,3 +61,6 @@ axios.interceptors.response.use(
         return Promise.reject(error);
     }
 );
+
+// Export configured axios instance as default
+export default axios;

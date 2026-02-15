@@ -192,14 +192,14 @@ export function UserProfile({ user, onUpdateUser }) {
                             style={{ ...(isEditing ? inputStyle : disabledInput), direction: 'rtl' }} />
                     </div>
                     <div>
-                        <label style={{ display: 'block', fontSize: '0.85em', fontWeight: '600', color: 'var(--text-muted)', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <label style={{ display: 'flex', fontSize: '0.85em', fontWeight: '600', color: 'var(--text-muted)', marginBottom: '6px', alignItems: 'center', gap: '4px' }}>
                             <Mail size={14} /> Email
                         </label>
                         <input type="email" disabled={!isEditing} value={profile.email} onChange={e => setProfile({ ...profile, email: e.target.value })}
                             style={isEditing ? inputStyle : disabledInput} placeholder="user@company.com" />
                     </div>
                     <div>
-                        <label style={{ display: 'block', fontSize: '0.85em', fontWeight: '600', color: 'var(--text-muted)', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <label style={{ display: 'flex', fontSize: '0.85em', fontWeight: '600', color: 'var(--text-muted)', marginBottom: '6px', alignItems: 'center', gap: '4px' }}>
                             <Phone size={14} /> Phone
                         </label>
                         <input type="tel" disabled={!isEditing} value={profile.phone} onChange={e => setProfile({ ...profile, phone: e.target.value })}

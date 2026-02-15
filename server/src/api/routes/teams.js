@@ -13,7 +13,7 @@
 
 const express = require('express');
 const router = express.Router();
-const { authenticate } = require('../middleware/auth');
+const authenticate = require('../middleware/auth');
 const TeamsService = require('../../services/TeamsService');
 const logger = require('../../infrastructure/logger');
 const { query } = require('../../infrastructure/database/db');

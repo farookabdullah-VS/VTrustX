@@ -13,7 +13,7 @@
 
 const express = require('express');
 const router = express.Router();
-const { authenticate } = require('../middleware/auth');
+const authenticate = require('../middleware/auth');
 const TwoFactorAuthService = require('../../services/TwoFactorAuthService');
 const logger = require('../../infrastructure/logger');
 const QRCode = require('qrcode');

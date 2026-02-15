@@ -7,7 +7,7 @@
 import React, { useState, lazy, Suspense } from 'react';
 import { SocialListeningProvider } from '../../contexts/SocialListeningContext';
 import { Radio, Ear, MessageCircle, TrendingUp, Users, Award, Bell, Settings } from 'lucide-react';
-import LoadingSpinner from '../common/LoadingSpinner';
+import { LoadingSpinner } from '../common/LoadingSpinner';
 import './SocialListeningDashboard.css';
 
 // Lazy load tab components

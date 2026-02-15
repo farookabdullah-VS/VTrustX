@@ -12,7 +12,7 @@
 
 const express = require('express');
 const router = express.Router();
-const { authenticate } = require('../middleware/auth');
+const authenticate = require('../middleware/auth');
 const APIKeyService = require('../../services/APIKeyService');
 const logger = require('../../infrastructure/logger');
 

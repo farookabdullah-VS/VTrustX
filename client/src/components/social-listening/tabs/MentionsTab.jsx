@@ -8,7 +8,7 @@ import {
   MessageCircle, Filter, Search, ThumbsUp, ThumbsDown, Minus,
   ExternalLink, Reply, Flag, CheckCircle, Clock, AlertCircle
 } from 'lucide-react';
-import LoadingSpinner from '../../common/LoadingSpinner';
+import { LoadingSpinner } from '../../common/LoadingSpinner';
 import socialListeningApi from '../../../services/socialListeningApi';
 import './MentionsTab.css';
 

@@ -13,7 +13,7 @@
 
 const express = require('express');
 const router = express.Router();
-const { authenticate } = require('../middleware/auth');
+const authenticate = require('../middleware/auth');
 const WebhookService = require('../../services/WebhookService');
 const logger = require('../../infrastructure/logger');
 

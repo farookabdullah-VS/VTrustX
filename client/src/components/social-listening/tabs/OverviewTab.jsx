@@ -5,7 +5,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSocialListening } from '../../../contexts/SocialListeningContext';
 import { MessageCircle, TrendingUp, ThumbsUp, ThumbsDown, BarChart3 } from 'lucide-react';
-import LoadingSpinner from '../../common/LoadingSpinner';
+import { LoadingSpinner } from '../../common/LoadingSpinner';
 import SentimentTrendChart from '../components/SentimentTrendChart';
 import VolumeTrendChart from '../components/VolumeTrendChart';
 import './OverviewTab.css';

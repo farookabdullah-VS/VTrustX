@@ -257,7 +257,7 @@ const CRMSyncDashboard = () => {
                 </div>
 
                 <div className="stat-card">
-                    <div className="stat-icon" style={{ background: '#F3F4F6', color: #6B7280' }}>
+                    <div className="stat-icon" style={{ background: '#F3F4F6', color: '#6B7280' }}>
                         <Clock size={24} />
                     </div>
                     <div className="stat-details">
