@@ -5,7 +5,7 @@
 .drip-dashboard {
     max-width: 1400px;
     margin: 0 auto;
-    padding: 30px;
+    padding: var(--space-7, 30px);
 }
 
 /* Header */
@@ -13,7 +13,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 30px;
+    margin-bottom: var(--space-7, 30px);
     padding-bottom: 20px;
     border-bottom: 2px solid var(--border-light);
 }
@@ -21,7 +21,7 @@
 .header-left {
     display: flex;
     align-items: center;
-    gap: 20px;
+    gap: var(--space-5, 20px);
 }
 
 .header-icon {
@@ -29,7 +29,7 @@
 }
 
 .dashboard-header h1 {
-    font-size: 1.75rem;
+    font-size: var(--text-2xl-alt, 28px);
     font-weight: 600;
     color: var(--text-primary);
     margin: 0 0 5px 0;
@@ -37,26 +37,26 @@
 
 .dashboard-header p {
     color: var(--text-muted);
-    font-size: 1rem;
+    font-size: var(--text-base, 16px);
     margin: 0;
 }
 
 /* Status Filters */
 .status-filters {
     display: flex;
-    gap: 10px;
-    margin-bottom: 30px;
-    padding: 20px;
+    gap: var(--space-2-5, 10px);
+    margin-bottom: var(--space-7, 30px);
+    padding: var(--space-5, 20px);
     background: var(--card-bg);
-    border-radius: 12px;
+    border-radius: var(--radius-lg, 12px);
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .filter-btn {
-    padding: 10px 20px;
+    padding: var(--space-2-5, 10px) var(--space-5, 20px);
     background: var(--card-bg);
     border: 2px solid var(--border-light);
-    border-radius: 8px;
+    border-radius: var(--radius-md, 8px);
     color: var(--text-muted);
     font-size: 0.95rem;
     font-weight: 500;
@@ -67,7 +67,7 @@
 .filter-btn:hover {
     border-color: var(--status-info);
     color: var(--status-info);
-    background: #EFF6FF;
+    background: var(--primary-light, #EFF6FF);
 }
 
 .filter-btn.active {
@@ -80,15 +80,15 @@
 .campaigns-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
-    gap: 20px;
+    gap: var(--space-5, 20px);
 }
 
 /* Campaign Card */
 .campaign-card {
     background: var(--card-bg);
     border: 2px solid var(--border-light);
-    border-radius: 12px;
-    padding: 20px;
+    border-radius: var(--radius-lg, 12px);
+    padding: var(--space-5, 20px);
     transition: all 0.3s;
     display: flex;
     flex-direction: column;
@@ -112,7 +112,7 @@
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: var(--space-2, 8px);
 }
 
 .campaign-title h3 {
@@ -127,9 +127,9 @@
 .status-badge {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
-    padding: 6px 12px;
-    border-radius: 6px;
+    gap: var(--space-1-5, 6px);
+    padding: var(--space-1-5, 6px) var(--space-3, 12px);
+    border-radius: var(--radius-sm-alt, 6px);
     font-size: 0.85rem;
     font-weight: 500;
 }
@@ -140,17 +140,17 @@
 }
 
 .status-badge.status-green {
-    background: #ECFDF5;
+    background: var(--toast-success-bg-light, #ECFDF5);
     color: var(--status-success);
 }
 
 .status-badge.status-yellow {
-    background: #FEF3C7;
-    color: #F59E0B;
+    background: var(--toast-warning-bg, #FEF3C7);
+    color: var(--status-warning, #F59E0B);
 }
 
 .status-badge.status-blue {
-    background: #EFF6FF;
+    background: var(--primary-light, #EFF6FF);
     color: var(--status-info);
 }
 
@@ -158,11 +158,11 @@
 .channel-badge {
     display: flex;
     align-items: center;
-    gap: 6px;
-    padding: 8px 12px;
+    gap: var(--space-1-5, 6px);
+    padding: var(--space-2, 8px) var(--space-3, 12px);
     background: var(--input-bg);
     border: 1px solid var(--border-light);
-    border-radius: 8px;
+    border-radius: var(--radius-md, 8px);
     color: var(--text-muted);
     font-size: 0.85rem;
     font-weight: 500;
@@ -185,14 +185,14 @@
 .campaign-stats {
     display: flex;
     gap: 15px;
-    padding-top: 10px;
+    padding-top: var(--space-2-5, 10px);
     border-top: 1px solid var(--input-bg);
 }
 
 .stat-item {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: var(--space-1-5, 6px);
     color: var(--text-muted);
     font-size: 0.9rem;
 }
@@ -204,17 +204,17 @@
 /* Card Actions */
 .card-actions {
     display: flex;
-    gap: 8px;
-    padding-top: 10px;
+    gap: var(--space-2, 8px);
+    padding-top: var(--space-2-5, 10px);
     border-top: 1px solid var(--input-bg);
 }
 
 .btn-sm {
-    padding: 8px 12px;
+    padding: var(--space-2, 8px) var(--space-3, 12px);
     font-size: 0.85rem;
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: var(--space-1-5, 6px);
     flex: 1;
     justify-content: center;
 }
@@ -223,7 +223,7 @@
     background: var(--card-bg);
     border: 2px solid var(--border-light);
     color: var(--text-muted);
-    border-radius: 6px;
+    border-radius: var(--radius-sm-alt, 6px);
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s;
@@ -238,64 +238,64 @@
     background: var(--status-success);
     border: 2px solid var(--status-success);
     color: var(--card-bg);
-    border-radius: 6px;
+    border-radius: var(--radius-sm-alt, 6px);
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s;
 }
 
 .btn-success:hover {
-    background: #059669;
-    border-color: #059669;
+    background: var(--status-success-dark, #059669);
+    border-color: var(--status-success-dark, #059669);
 }
 
 .btn-warning {
-    background: #F59E0B;
-    border: 2px solid #F59E0B;
+    background: var(--status-warning, #F59E0B);
+    border: 2px solid var(--status-warning, #F59E0B);
     color: var(--card-bg);
-    border-radius: 6px;
+    border-radius: var(--radius-sm-alt, 6px);
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s;
 }
 
 .btn-warning:hover {
-    background: #D97706;
-    border-color: #D97706;
+    background: var(--status-warning-dark, #D97706);
+    border-color: var(--status-warning-dark, #D97706);
 }
 
 .btn-danger {
     background: var(--card-bg);
     border: 2px solid var(--status-error);
     color: var(--status-error);
-    border-radius: 6px;
+    border-radius: var(--radius-sm-alt, 6px);
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s;
 }
 
 .btn-danger:hover {
-    background: #FEE2E2;
+    background: var(--toast-error-bg, #FEE2E2);
 }
 
 /* Primary Button */
 .btn-primary {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: var(--space-2, 8px);
     background: var(--status-info);
     color: var(--card-bg);
     border: none;
-    padding: 12px 24px;
-    border-radius: 8px;
-    font-size: 1rem;
+    padding: var(--space-3, 12px) var(--space-6, 24px);
+    border-radius: var(--radius-md, 8px);
+    font-size: var(--text-base, 16px);
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s;
 }
 
 .btn-primary:hover {
-    background: #2563EB;
+    background: var(--status-info-dark, #2563EB);
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
 }
@@ -306,28 +306,28 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 80px 20px;
+    padding: var(--space-20, 80px) var(--space-5, 20px);
     background: var(--card-bg);
     border: 2px dashed var(--border-light);
-    border-radius: 12px;
+    border-radius: var(--radius-lg, 12px);
 }
 
 .empty-icon {
     color: var(--border-medium);
-    margin-bottom: 20px;
+    margin-bottom: var(--space-5, 20px);
 }
 
 .empty-state h3 {
-    font-size: 1.25rem;
+    font-size: var(--text-xl-alt, 20px);
     font-weight: 600;
     color: var(--text-primary);
-    margin: 0 0 8px 0;
+    margin: 0 0 var(--space-2, 8px) 0;
 }
 
 .empty-state p {
     color: var(--text-muted);
-    font-size: 1rem;
-    margin: 0 0 24px 0;
+    font-size: var(--text-base, 16px);
+    margin: 0 0 var(--space-6, 24px) 0;
 }
 
 /* Loading State */
@@ -336,7 +336,7 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 80px 20px;
+    padding: var(--space-20, 80px) var(--space-5, 20px);
 }
 
 .spinner {
@@ -346,7 +346,7 @@
     border-top-color: var(--status-info);
     border-radius: 50%;
     animation: spin 1s linear infinite;
-    margin-bottom: 20px;
+    margin-bottom: var(--space-5, 20px);
 }
 
 @keyframes spin {
@@ -355,13 +355,13 @@
 
 .loading-state p {
     color: var(--text-muted);
-    font-size: 1rem;
+    font-size: var(--text-base, 16px);
 }
 
 /* Responsive Design */
 @media (max-width: 768px) {
     .drip-dashboard {
-        padding: 20px;
+        padding: var(--space-5, 20px);
     }
 
     .dashboard-header {
@@ -372,11 +372,11 @@
 
     .status-filters {
         flex-wrap: wrap;
-        gap: 8px;
+        gap: var(--space-2, 8px);
     }
 
     .filter-btn {
-        padding: 8px 16px;
+        padding: var(--space-2, 8px) var(--space-4, 16px);
         font-size: 0.9rem;
     }
 
@@ -386,7 +386,7 @@
 
     .campaign-stats {
         flex-direction: column;
-        gap: 8px;
+        gap: var(--space-2, 8px);
     }
 
     .card-actions {
