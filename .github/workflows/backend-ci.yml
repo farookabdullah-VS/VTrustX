@@ -91,7 +91,7 @@ jobs:
         run: npm test -- --coverage --coverageReporters=text --coverageReporters=lcov
 
       - name: Upload Coverage to Codecov
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
           files: ./server/coverage/lcov.info
           flags: backend

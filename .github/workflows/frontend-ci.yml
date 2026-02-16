@@ -63,7 +63,7 @@ jobs:
           NODE_ENV: test
 
       - name: Upload Coverage to Codecov
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
           files: ./client/coverage/lcov.info
           flags: frontend
