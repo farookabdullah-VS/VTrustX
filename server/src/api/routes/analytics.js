@@ -3,8 +3,7 @@ const router = express.Router();
 const { query } = require('../../infrastructure/database/db');
 const authenticate = require('../middleware/auth');
 const logger = require('../../infrastructure/logger');
-const NodeCache = require('node-cache');
-const analyticsCache = new NodeCache({ stdTTL: 600, maxKeys: 500 }); // 10 minutes cache, max 500 entries
+const analyticsCacheService = require('../../services/AnalyticsCacheService');
 
 // Import delivery analytics routes
 const deliveryRouter = require('./analytics/delivery');
@@ -681,6 +680,242 @@ router.post('/anomalies', authenticate, async (req, res) => {
     } catch (err) {
         logger.error("Anomaly Error", { error: err.message });
         res.status(500).json({ error: 'Failed to detect anomalies' });
+    }
+});
+
+// Cache Statistics & Management
+router.get('/cache/stats', authenticate, async (req, res) => {
+    try {
+        const stats = analyticsCacheService.getStats();
+        res.json(stats);
+    } catch (err) {
+        logger.error('Failed to get cache stats', { error: err.message });
+        res.status(500).json({ error: 'Failed to retrieve cache statistics' });
+    }
+});
+
+router.get('/cache/health', authenticate, async (req, res) => {
+    try {
+        const health = await analyticsCacheService.getHealth();
+        res.json(health);
+    } catch (err) {
+        logger.error('Failed to get cache health', { error: err.message });
+        res.status(500).json({ error: 'Failed to retrieve cache health' });
+    }
+});
+
+router.post('/cache/invalidate/:surveyId', authenticate, async (req, res) => {
+    try {
+        const { surveyId } = req.params;
+        const tenantId = req.user.tenant_id;
+
+        const deletedCount = await analyticsCacheService.invalidateSurvey(tenantId, surveyId);
+
+        res.json({
+            success: true,
+            message: `Cache invalidated for survey ${surveyId}`,
+            deletedCount
+        });
+    } catch (err) {
+        logger.error('Failed to invalidate cache', {
+            error: err.message,
+            surveyId: req.params.surveyId
+        });
+        res.status(500).json({ error: 'Failed to invalidate cache' });
+    }
+});
+
+// Query Data with Pagination (NEW)
+router.post('/query-data', authenticate, async (req, res) => {
+    try {
+        const { surveyId, filters = {}, page = 1, pageSize = 100 } = req.body;
+        const tenantId = req.user.tenant_id;
+
+        if (!surveyId) {
+            return res.status(400).json({ error: 'surveyId is required' });
+        }
+
+        // Validate pagination parameters
+        const currentPage = Math.max(1, parseInt(page) || 1);
+        const limit = Math.min(500, Math.max(1, parseInt(pageSize) || 100)); // Max 500 rows per page
+        const offset = (currentPage - 1) * limit;
+
+        // Build WHERE clause for filters
+        const whereClauses = ['s.tenant_id = $1', 's.form_id = $2'];
+        const queryParams = [tenantId, surveyId];
+        let paramIndex = 3;
+
+        // Apply filters (basic implementation)
+        if (filters && Object.keys(filters).length > 0) {
+            Object.entries(filters).forEach(([field, filter]) => {
+                if (filter && filter.value !== undefined && filter.value !== null) {
+                    const operator = filter.operator || 'equals';
+
+                    switch (operator) {
+                        case 'equals':
+                            whereClauses.push(`s.response_data->>'${field}' = $${paramIndex}`);
+                            queryParams.push(String(filter.value));
+                            paramIndex++;
+                            break;
+                        case 'contains':
+                            whereClauses.push(`s.response_data->>'${field}' ILIKE $${paramIndex}`);
+                            queryParams.push(`%${filter.value}%`);
+                            paramIndex++;
+                            break;
+                        case 'greaterThan':
+                            whereClauses.push(`(s.response_data->>'${field}')::numeric > $${paramIndex}`);
+                            queryParams.push(Number(filter.value));
+                            paramIndex++;
+                            break;
+                        case 'lessThan':
+                            whereClauses.push(`(s.response_data->>'${field}')::numeric < $${paramIndex}`);
+                            queryParams.push(Number(filter.value));
+                            paramIndex++;
+                            break;
+                    }
+                }
+            });
+        }
+
+        const whereClause = whereClauses.join(' AND ');
+
+        // Try to get cached count (5 minute cache)
+        let totalCount = await analyticsCacheService.getCachedCount(tenantId, surveyId, filters);
+
+        if (totalCount === null) {
+            // Query total count
+            const countSql = `
+                SELECT COUNT(*) as count
+                FROM submissions s
+                WHERE ${whereClause}
+            `;
+
+            const countResult = await query(countSql, queryParams);
+            totalCount = parseInt(countResult.rows[0].count) || 0;
+
+            // Cache count for 5 minutes
+            await analyticsCacheService.setCachedCount(tenantId, surveyId, filters, totalCount, 300);
+        }
+
+        // Query paginated data
+        const dataSql = `
+            SELECT
+                s.id,
+                s.form_id,
+                s.response_data,
+                s.created_at,
+                s.updated_at,
+                s.metadata
+            FROM submissions s
+            WHERE ${whereClause}
+            ORDER BY s.created_at DESC
+            LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
+        `;
+
+        queryParams.push(limit, offset);
+
+        const dataResult = await query(dataSql, queryParams);
+
+        // Transform data
+        const data = dataResult.rows.map(row => ({
+            id: row.id,
+            form_id: row.form_id,
+            submission_date: row.created_at,
+            ...row.response_data,
+            metadata: row.metadata
+        }));
+
+        // Calculate pagination metadata
+        const totalPages = Math.ceil(totalCount / limit);
+        const hasMore = offset + limit < totalCount;
+
+        res.json({
+            data,
+            pagination: {
+                page: currentPage,
+                pageSize: limit,
+                totalCount,
+                totalPages,
+                hasMore,
+                from: offset + 1,
+                to: Math.min(offset + limit, totalCount)
+            }
+        });
+
+    } catch (err) {
+        logger.error('Query data failed', {
+            error: err.message,
+            stack: err.stack,
+            surveyId: req.body.surveyId
+        });
+        res.status(500).json({ error: 'Failed to query data' });
+    }
+});
+
+/**
+ * Export report to PDF
+ * POST /api/analytics/reports/:reportId/export/pdf
+ * NOTE: Temporarily commented out - Phase 2 feature requiring puppeteer/pptxgenjs
+ */
+const ReportExportService = require('../../services/ReportExportService');
+
+router.post('/reports/:reportId/export/pdf', authenticate, async (req, res) => {
+    try {
+        const { reportId } = req.params;
+        const tenantId = req.user.tenant_id;
+        const options = req.body || {};
+
+        logger.info('PDF export requested', { reportId, tenantId, userId: req.user.id });
+
+        const result = await ReportExportService.exportToPDF(reportId, tenantId, options);
+
+        res.json({
+            success: true,
+            fileUrl: result.fileUrl,
+            filename: result.filename,
+            size: result.size,
+            expiresAt: result.expiresAt,
+            message: 'Report exported to PDF successfully'
+        });
+    } catch (error) {
+        logger.error('PDF export failed', {
+            error: error.message,
+            reportId: req.params.reportId,
+            userId: req.user.id
+        });
+        res.status(500).json({ error: 'Failed to export report to PDF' });
+    }
+});
+
+/**
+ * Export report to PowerPoint
+ * POST /api/analytics/reports/:reportId/export/pptx
+ */
+router.post('/reports/:reportId/export/pptx', authenticate, async (req, res) => {
+    try {
+        const { reportId } = req.params;
+        const tenantId = req.user.tenant_id;
+        const options = req.body || {};
+
+        logger.info('PowerPoint export requested', { reportId, tenantId, userId: req.user.id });
+
+        const result = await ReportExportService.exportToPowerPoint(reportId, tenantId, options);
+
+        res.json({
+            success: true,
+            fileUrl: result.fileUrl,
+            filename: result.filename,
+            size: result.size,
+            expiresAt: result.expiresAt,
+            message: 'Report exported to PowerPoint successfully'
+        });
+    } catch (error) {
+        logger.error('PowerPoint export failed', {
+            error: error.message,
+            reportId: req.params.reportId,
+            userId: req.user.id
+        });
+        res.status(500).json({ error: 'Failed to export report to PowerPoint' });
     }
 });
 

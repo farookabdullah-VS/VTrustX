@@ -12,7 +12,8 @@ import {
     Layout, LayoutGrid, GripVertical, X, Download, PieChart as PieIcon, Activity, Grid, Sidebar as SidebarIcon,
     ChevronRight, ChevronDown, List, MoreVertical, CreditCard, Calendar, Sliders, Minus,
     Paintbrush, Database, Loader2, Sparkles, AlertCircle, CheckCircle, Clock, User, Map, Smartphone, Globe,
-    Zap, Share2, Trash2, Layers, Table, Printer, Type, Bold, Italic, Palette, PenTool, LayoutDashboard
+    Zap, Share2, Trash2, Layers, Table, Printer, Type, Bold, Italic, Palette, PenTool, LayoutDashboard,
+    Users, TrendingUp
 } from 'lucide-react';
 import { Chart as GoogleChart } from "react-google-charts";
 import { Responsive, WidthProvider } from 'react-grid-layout';
@@ -29,6 +30,31 @@ import { Skeleton } from '../common/Skeleton';
 import { DeliveryAnalyticsDashboard } from './DeliveryAnalyticsDashboard';
 import { SentimentDashboard } from './SentimentDashboard';
 import SentimentAnalyticsDashboard from './SentimentAnalyticsDashboard';
+
+// Extracted widget components
+import { KPIWidget } from './widgets/KPIWidget';
+import { ChartWidget } from './widgets/ChartWidget';
+import { TableWidget } from './widgets/TableWidget';
+import { KeyDriverWidget } from './widgets/KeyDriverWidget';
+import { WordCloudWidget } from './widgets/WordCloudWidget';
+import { StatSigWidget } from './widgets/StatSigWidget';
+import { PivotWidget } from './widgets/PivotWidget';
+import { AnomalyWidget } from './widgets/AnomalyWidget';
+import { CohortWidget } from './widgets/CohortWidget';
+import { ForecastWidget } from './widgets/ForecastWidget';
+import { FilterModal } from './modals/FilterModal';
+import styles from './styles/Analytics.module.css';
+
+// Chart utilities
+import { processChartData, getSeriesKeys, getColor } from './utils/chartDataProcessor';
+import {
+    getXAxisProps,
+    getYAxisProps,
+    getSecondaryYAxisProps,
+    getCommonChartProps,
+    getElementProps
+} from './utils/chartAxisConfig';
+import { createChartClickHandler } from './utils/chartClickHandler';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d'];
 
@@ -74,84 +100,26 @@ const extractFieldsFromDefinition = (definition) => {
 
 
 // --- Visual Components ---
-
-const KPICard = React.memo(({ title, value, target, trend }) => (
-    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', padding: '10px' }}>
-        <div style={{ fontSize: '0.9rem', color: '#64748b', marginBottom: '5px' }}>{title || 'KPI Title'}</div>
-        <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: '#1e293b' }}>{value || '0'}</div>
-        {target && <div style={{ fontSize: '0.8rem', color: '#64748b' }}>Target: {target}</div>}
-        {trend && <div style={{ fontSize: '0.8rem', color: trend > 0 ? '#10b981' : '#ef4444' }}>{trend > 0 ? '▲' : '▼'} {Math.abs(trend)}%</div>}
-    </div>
-));
-
-const TableVisual = React.memo(({ data }) => (
-    <div style={{ height: '100%', overflow: 'auto' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
-            <thead>
-                <tr style={{ background: '#f1f5f9', textAlign: 'left' }}>
-                    {Object.keys(data[0] || {}).map(k => <th key={k} style={{ padding: '8px', borderBottom: '1px solid #e2e8f0' }}>{k}</th>)}
-                </tr>
-            </thead>
-            <tbody>
-                {data.map((row, i) => (
-                    <tr key={i}>
-                        {Object.values(row).map((v, j) => <td key={j} style={{ padding: '8px', borderBottom: '1px solid #f1f5f9' }}>{v}</td>)}
-                    </tr>
-                ))}
-            </tbody>
-        </table>
-    </div>
-));
-
-const KeyDriverVisual = ({ surveyId, targetMetric }) => {
-    const [drivers, setDrivers] = useState([]);
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null);
-
-    useEffect(() => {
-        if (!surveyId || !targetMetric) return;
-
-        setLoading(true);
-        axios.post('/api/analytics/key-drivers', { surveyId, targetMetric })
-            .then(res => {
-                if (res.data.drivers) setDrivers(res.data.drivers);
-                else if (res.data.error) setError(res.data.error);
-                setLoading(false);
-            })
-            .catch(err => {
-                console.error(err);
-                setError("Failed to load analysis");
-                setLoading(false);
-            });
-    }, [surveyId, targetMetric]);
-
-    if (!targetMetric) return <div style={{ padding: '20px', color: '#94a3b8' }}>Select a target metric (e.g., NPS) in settings.</div>;
-    if (loading) return <div style={{ padding: '20px', color: '#64748b' }}>Analyzing Correlations...</div>;
-    if (error) return <div style={{ padding: '20px', color: '#ef4444' }}>{error}</div>;
-    if (drivers.length === 0) return <div style={{ padding: '20px', color: '#94a3b8' }}>No significant drivers found.</div>;
-
-    return (
-        <div style={{ padding: '10px', height: '100%', overflowY: 'auto' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', fontSize: '0.75rem', fontWeight: '600', color: '#94a3b8', textTransform: 'uppercase' }}>
-                <span>Driver (Question)</span>
-                <span>Impact</span>
-            </div>
-            {drivers.map((d, i) => (
-                <div key={i} style={{ marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <div style={{ flex: 1 }}>
-                        <div style={{ fontSize: '0.85rem', color: '#1e293b', marginBottom: '4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={d.key}>{d.key}</div>
-                        <div style={{ height: '6px', background: '#f1f5f9', borderRadius: '3px', overflow: 'hidden' }}>
-                            <div style={{ height: '100%', width: `${Math.abs(d.correlation) * 100}%`, background: d.correlation > 0 ? '#10b981' : '#ef4444' }} />
-                        </div>
-                    </div>
-                </div>
-            ))}
-        </div>
-    );
-};
+// Note: KPIWidget, TableWidget, KeyDriverWidget, and WordCloudWidget have been extracted to separate files
 
 // --- Dataset Visualizer (Spreadsheet View) ---
 const DatasetViewer = ({ data, fields, filters, onFilterChange }) => {
+    const [filterModalOpen, setFilterModalOpen] = useState(false);
+    const [selectedFilterField, setSelectedFilterField] = useState(null);
+
+    const openFilterModal = (field) => {
+        setSelectedFilterField(field);
+        setFilterModalOpen(true);
+    };
+
+    const handleFilterApply = (fieldName, filterConfig) => {
+        if (filterConfig === null) {
+            onFilterChange(fieldName, null);
+        } else {
+            onFilterChange(fieldName, [filterConfig.value]);
+        }
+    };
+
     return (
         <div style={{ padding: '20px', height: '100%', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
             <div style={{ marginBottom: '15px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -179,11 +147,8 @@ const DatasetViewer = ({ data, fields, filters, onFilterChange }) => {
                                             <div style={{ position: 'relative', cursor: 'pointer' }} title="Filter">
                                                 <div
                                                     onClick={(e) => {
-                                                        const val = prompt(`Filter ${field.label} (Exact Match):`, filters[field.name]?.[0] || '');
-                                                        if (val !== null) {
-                                                            if (val === '') onFilterChange(field.name, null); // Clear
-                                                            else onFilterChange(field.name, [val]);
-                                                        }
+                                                        e.stopPropagation();
+                                                        openFilterModal(field);
                                                     }}
                                                     style={{
                                                         padding: '4px', borderRadius: '4px',
@@ -222,6 +187,16 @@ const DatasetViewer = ({ data, fields, filters, onFilterChange }) => {
                     </div>
                 )}
             </div>
+
+            {/* Filter Modal */}
+            {filterModalOpen && selectedFilterField && (
+                <FilterModal
+                    field={selectedFilterField}
+                    currentFilter={filters[selectedFilterField.name] ? { operator: 'equals', value: filters[selectedFilterField.name][0] } : null}
+                    onApply={handleFilterApply}
+                    onClose={() => setFilterModalOpen(false)}
+                />
+            )}
         </div>
     );
 };
@@ -229,235 +204,7 @@ const DatasetViewer = ({ data, fields, filters, onFilterChange }) => {
 
 
 // --- Slicer Components ---
-
-const WordCloudVisual = ({ surveyId, textField, sentimentMetric, onFilterChange, textFieldName }) => {
-    const [words, setWords] = useState([]);
-    const [loading, setLoading] = useState(false);
-
-    useEffect(() => {
-        if (!surveyId || !textField) return;
-
-        setLoading(true);
-        axios.post('/api/analytics/text-analytics', { surveyId, textField, sentimentMetric })
-            .then(res => {
-                if (res.data.words) setWords(res.data.words);
-                setLoading(false);
-            })
-            .catch(err => {
-                console.error(err);
-                setLoading(false);
-            });
-    }, [surveyId, textField, sentimentMetric]);
-
-    if (!textField) return <div style={{ padding: '20px', color: '#94a3b8' }}>Select a text field to analyze.</div>;
-    if (loading) return <div style={{ padding: '20px', color: '#64748b' }}>Analyzing Text...</div>;
-    if (words.length === 0) return <div style={{ padding: '20px', color: '#94a3b8' }}>No data found.</div>;
-
-    // Normalize sizes
-    const maxVal = Math.max(...words.map(w => w.value));
-    const minVal = Math.min(...words.map(w => w.value));
-
-    return (
-        <div style={{ padding: '10px', height: '100%', overflowY: 'auto', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-            {words.map((w, i) => {
-                const size = 12 + ((w.value - minVal) / (maxVal - minVal || 1)) * 24; // 12px to 36px
-                // Color by sentiment if available (0-10 scale assumed, or similar)
-                let color = '#64748b';
-                if (w.sentiment) {
-                    const s = parseFloat(w.sentiment);
-                    if (s > 8) color = '#16a34a'; // Green
-                    else if (s < 6) color = '#dc2626'; // Red
-                    else color = '#d97706'; // Orange
-                }
-
-                return (
-                    <span
-                        key={i}
-                        onClick={() => onFilterChange && onFilterChange(textFieldName, [w.text])} // Filter by the word
-                        style={{
-                            fontSize: `${size}px`,
-                            color: color,
-                            cursor: 'pointer',
-                            padding: '4px',
-                            transition: 'all 0.2s'
-                        }}
-                        onMouseEnter={e => e.currentTarget.style.opacity = 0.7}
-                        onMouseLeave={e => e.currentTarget.style.opacity = 1}
-                        title={`Frequency: ${w.value}, Sentiment: ${w.sentiment || 'N/A'}`}
-                    >
-                        {w.text}
-                    </span>
-                );
-            })}
-        </div>
-    );
-};
-
-const StatSigVisual = ({ surveyId }) => {
-    const [stats, setStats] = useState(null);
-    const [loading, setLoading] = useState(false);
-
-    useEffect(() => {
-        if (!surveyId) return;
-        setLoading(true);
-        axios.post('/api/analytics/nps-significance', { surveyId })
-            .then(res => {
-                setStats(res.data);
-                setLoading(false);
-            })
-            .catch(err => {
-                console.error(err);
-                setLoading(false);
-            });
-    }, [surveyId]);
-
-    if (!surveyId) return <div style={{ padding: '20px', color: '#94a3b8' }}>Bind report to survey first.</div>;
-    if (loading) return <div style={{ padding: '20px', color: '#64748b' }}>Running Z-Test...</div>;
-    if (!stats || stats.status === 'insufficient_data') return <div style={{ padding: '20px', color: '#94a3b8' }}>Insufficient data for significance testing.</div>;
-
-    const isGood = stats.verdict.includes('Improvement');
-    const isBad = stats.verdict.includes('Decline');
-
-    return (
-        <div style={{ padding: '20px', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
-            <div style={{ fontSize: '1rem', fontWeight: 'bold', color: isGood ? '#16a34a' : (isBad ? '#dc2626' : '#64748b'), marginBottom: '8px' }}>
-                {stats.verdict}
-            </div>
-            <div style={{ fontSize: '0.8rem', color: '#94a3b8', marginBottom: '15px' }}>
-                95% Confidence Level
-            </div>
-
-            <div style={{ display: 'flex', gap: '20px', alignItems: 'baseline' }}>
-                <div>
-                    <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#1e293b' }}>{stats.currentNPS}</div>
-                    <div style={{ fontSize: '0.75rem', color: '#64748b' }}>Current Month</div>
-                </div>
-                <div style={{ fontSize: '1rem', color: '#cbd5e1' }}>vs</div>
-                <div>
-                    <div style={{ fontSize: '1.2rem', fontWeight: '600', color: '#94a3b8' }}>{stats.previousNPS}</div>
-                    <div style={{ fontSize: '0.75rem', color: '#64748b' }}>Previous Month</div>
-                </div>
-            </div>
-        </div>
-    );
-};
-
-const PivotVisual = ({ surveyId, rowField, colField, valueField, operation }) => {
-    const [data, setData] = useState(null);
-    const [loading, setLoading] = useState(false);
-
-    useEffect(() => {
-        if (!surveyId || !rowField || !colField) return;
-
-        setLoading(true);
-        axios.post('/api/analytics/cross-tab', { surveyId, rowField, colField, valueField, operation })
-            .then(res => {
-                setData(res.data);
-                setLoading(false);
-            })
-            .catch(err => {
-                console.error(err);
-                setLoading(false);
-            });
-    }, [surveyId, rowField, colField, valueField, operation]);
-
-    if (!rowField || !colField) return <div style={{ padding: '20px', color: '#94a3b8' }}>Configure rows and columns.</div>;
-    if (loading) return <div style={{ padding: '20px', color: '#64748b' }}>Calculating Pivot...</div>;
-    if (!data || !data.rows.length) return <div style={{ padding: '20px', color: '#94a3b8' }}>No data.</div>;
-
-    return (
-        <div style={{ padding: '10px', height: '100%', overflow: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
-                <thead>
-                    <tr>
-                        <th style={{ padding: '8px', borderBottom: '2px solid #e2e8f0', textAlign: 'left', background: '#f8fafc', position: 'sticky', top: 0 }}>
-                            {rowField} / {colField}
-                        </th>
-                        {data.cols.map(c => (
-                            <th key={c} style={{ padding: '8px', borderBottom: '2px solid #e2e8f0', textAlign: 'right', background: '#f8fafc', position: 'sticky', top: 0 }}>
-                                {c}
-                            </th>
-                        ))}
-                    </tr>
-                </thead>
-                <tbody>
-                    {data.rows.map(r => {
-                        const rowData = data.data.find(d => d.name === r) || {};
-                        return (
-                            <tr key={r}>
-                                <td style={{ padding: '8px', borderBottom: '1px solid #f1f5f9', fontWeight: '500', color: '#475569' }}>{r}</td>
-                                {data.cols.map(c => (
-                                    <td key={c} style={{ padding: '8px', borderBottom: '1px solid #f1f5f9', textAlign: 'right', color: '#1e293b' }}>
-                                        {rowData[c] || 0}
-                                    </td>
-                                ))}
-                            </tr>
-                        );
-                    })}
-                </tbody>
-            </table>
-        </div>
-    );
-};
-
-const AnomalyVisual = ({ surveyId, targetMetric }) => {
-    const [data, setData] = useState(null);
-    const [loading, setLoading] = useState(false);
-
-    useEffect(() => {
-        if (!surveyId || !targetMetric) return;
-
-        setLoading(true);
-        axios.post('/api/analytics/anomalies', { surveyId, targetMetric })
-            .then(res => {
-                setData(res.data);
-                setLoading(false);
-            })
-            .catch(err => {
-                console.error(err);
-                setLoading(false);
-            });
-    }, [surveyId, targetMetric]);
-
-    if (!targetMetric) return <div style={{ padding: '20px', color: '#94a3b8' }}>Select a metric to watch.</div>;
-    if (loading) return <div style={{ padding: '20px', color: '#64748b' }}>Scanning for Anomalies...</div>;
-    if (!data || data.status === 'insufficient_data') return <div style={{ padding: '20px', color: '#94a3b8' }}>Need at least 10 days of data.</div>;
-
-    const hasAnomalies = data.anomalies.length > 0;
-
-    return (
-        <div style={{ padding: '15px', height: '100%', overflowY: 'auto' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px', paddingBottom: '10px', borderBottom: '1px solid #e2e8f0' }}>
-                <div>
-                    <div style={{ fontSize: '0.75rem', color: '#64748b' }}>Baseline (60 Days)</div>
-                    <div style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>{parseFloat(data.mean).toFixed(1)} <span style={{ fontSize: '0.8rem', fontWeight: 'normal', color: '#94a3b8' }}>± {parseFloat(data.stdDev).toFixed(1)}</span></div>
-                </div>
-                {!hasAnomalies && <div style={{ color: '#16a34a', fontWeight: '600', fontSize: '0.85rem' }}>All Clear</div>}
-                {hasAnomalies && <div style={{ color: '#dc2626', fontWeight: '600', fontSize: '0.85rem' }}>{data.anomalies.length} ALERTS</div>}
-            </div>
-
-            {data.anomalies.length === 0 ? (
-                <div style={{ textAlign: 'center', marginTop: '40px', color: '#cbd5e1' }}>
-                    <CheckCircle size={48} style={{ marginBottom: '10px' }} />
-                    <p>No statistical anomalies detected in the last 7 days.</p>
-                </div>
-            ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                    {data.anomalies.map((a, i) => (
-                        <div key={i} style={{ background: '#fef2f2', borderLeft: '4px solid #dc2626', padding: '12px', borderRadius: '4px' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                                <span style={{ fontWeight: 'bold', color: '#991b1b', fontSize: '0.85rem' }}>{a.type === 'spike' ? '📈 Spike Detected' : '📉 Drop Detected'}</span>
-                                <span style={{ fontSize: '0.75rem', color: '#ef4444' }}>{a.date}</span>
-                            </div>
-                            <div style={{ fontSize: '0.9rem', color: '#b91c1c', marginBottom: '4px' }}>Value: {a.value}</div>
-                            <div style={{ fontSize: '0.8rem', color: '#7f1d1d' }}>{a.message}</div>
-                        </div>
-                    ))}
-                </div>
-            )}
-        </div>
-    );
-};
+// Note: StatSigWidget, PivotWidget, and AnomalyWidget have been extracted to separate files
 
 const SlicerRenderer = ({ type, data, title, field, activeFilters, onFilterChange }) => {
     const distinctValues = useMemo(() => {
@@ -532,102 +279,15 @@ const SlicerRenderer = ({ type, data, title, field, activeFilters, onFilterChang
 };
 
 const ChartRenderer = ({ type, data, title, config = {}, filters = {}, onFilterChange, fullData, fields }) => {
-    // Hooks MUST be at the top
+    // Process chart data using utility function
     const chartData = useMemo(() => {
-        if (!data || data.length === 0 || !config.xKey) return [];
-
-        // Aggregation Logic (Now supports grouping by LegendKey)
-        const groups = {};
-
-        const getVal = (row, key) => {
-            if (!key) return 0;
-            const num = parseFloat(row[key]);
-            return !isNaN(num) ? num : 0;
-        };
-
-        const updateStats = (stats, val) => {
-            if (!stats) stats = { sum: 0, count: 0, min: Infinity, max: -Infinity };
-            stats.sum += val;
-            stats.count += 1;
-            stats.min = Math.min(stats.min, val);
-            stats.max = Math.max(stats.max, val);
-            return stats;
-        };
-
-        const getFinalValue = (stats, aggType, fieldKey, isMeasure) => {
-            if (!stats) return 0;
-            // Default inference
-            let type = aggType;
-            if (!type || type === 'auto') {
-                if (fieldKey) {
-                    const fieldDef = fields?.find(f => f.name === fieldKey);
-                    // Measures default to their defined agg, others default to sum (if numeric) or count
-                    if (fieldDef?.isMeasure) type = fieldDef.aggregation;
-                    else type = 'sum';
-                } else {
-                    type = 'count';
-                }
-            }
-
-            switch (type) {
-                case 'count': return stats.count;
-                case 'sum': return stats.sum;
-                case 'avg': return stats.count > 0 ? stats.sum / stats.count : 0;
-                case 'min': return stats.min === Infinity ? 0 : stats.min;
-                case 'max': return stats.max === -Infinity ? 0 : stats.max;
-                default: return stats.sum; // fallback
-            }
-        };
-
-        data.forEach(row => {
-            const xVal = row[config.xKey] || 'N/A';
-            if (!groups[xVal]) groups[xVal] = { _primary: {}, _secondary: {} };
-
-            // Primary Y Logic
-            const seriesVal = config.legendKey ? (row[config.legendKey] || 'Other') : 'value';
-
-            // For count agg, we just need row existence (val ignored actually, but standardizing on 1 for count logic elsewhere)
-            // But for min/max/avg we need the actual numeric magnitude.
-            // If explicit count, value itself matters less, but let's just get the raw numeric value.
-            const rawY = getVal(row, config.yKey);
-            groups[xVal]._primary[seriesVal] = updateStats(groups[xVal]._primary[seriesVal], rawY);
-
-            // Secondary Y Logic
-            if (config.secondaryYKey) {
-                const rawSecY = getVal(row, config.secondaryYKey);
-                groups[xVal]._secondary.lineValue = updateStats(groups[xVal]._secondary.lineValue, rawSecY);
-            }
-        });
-
-        // Flatten and Compute Finals
-        return Object.entries(groups).map(([name, statObj]) => {
-            const row = { name };
-
-            // Process Primary
-            Object.entries(statObj._primary).forEach(([series, stats]) => {
-                row[series] = parseFloat(getFinalValue(stats, config.yAggregation, config.yKey, true).toFixed(2));
-            });
-
-            // Process Secondary
-            if (config.secondaryYKey && statObj._secondary.lineValue) {
-                row.lineValue = parseFloat(getFinalValue(statObj._secondary.lineValue, config.secondaryYAggregation, config.secondaryYKey, true).toFixed(2));
-            }
-            return row;
-        });
-    }, [data, config.xKey, config.yKey, config.legendKey, fields]);
+        return processChartData(data, config, fields);
+    }, [data, config.xKey, config.yKey, config.legendKey, config.yAggregation, config.secondaryYKey, config.secondaryYAggregation, config.sortBy, config.topN, fields]);
 
     // Calculate unique series keys for dynamic Bars/Lines
     const seriesKeys = useMemo(() => {
-        if (!config.legendKey || chartData.length === 0) return [];
-        // Extract all keys from all data points, excluding 'name'
-        const keys = new Set();
-        chartData.forEach(row => {
-            Object.keys(row).forEach(k => {
-                if (k !== 'name') keys.add(k);
-            });
-        });
-        return Array.from(keys);
-    }, [chartData, config.legendKey]);
+        return getSeriesKeys(chartData);
+    }, [chartData]);
 
     if (type.startsWith('slicer_')) {
         return <SlicerRenderer type={type} data={fullData || data} title={title} field={config.xKey} activeFilters={filters[config.xKey]} onFilterChange={onFilterChange} />;
@@ -693,9 +353,10 @@ const ChartRenderer = ({ type, data, title, config = {}, filters = {}, onFilterC
         };
     };
 
+    // Axis configuration (keeping custom styling for now, can be further optimized)
     const xAxisProps = {
         dataKey: "name",
-        type: type === 'bar' && !config.swapAxis ? "category" : (config.swapAxis ? "number" : "category"), // Simple heuristic
+        type: type === 'bar' && !config.swapAxis ? "category" : (config.swapAxis ? "number" : "category"),
         hide: config.hideXAxis,
         tick: config.xAxisShowValues !== false ? { ...getAxisTickStyle('x') } : false,
         label: getAxisLabel('x'),
@@ -710,77 +371,34 @@ const ChartRenderer = ({ type, data, title, config = {}, filters = {}, onFilterC
         width: parseInt(config.yAxisWidth || 60),
         tickMargin: 10
     };
-    // Secondary Y Axis for combo charts
-    const getSecondaryLabel = () => {
-        if (!config.secondaryYKey) return undefined;
-
-        const key = config.secondaryYKey;
-        const agg = config.secondaryYAggregation;
-        let label = fields?.find(f => f.name === key)?.label || key;
-
-        if (agg && agg !== 'auto') {
-            label = `${agg.charAt(0).toUpperCase() + agg.slice(1)} of ${label}`;
-        }
-
-        return {
-            value: label,
-            angle: 90,
-            position: 'insideRight',
-            style: { fill: '#94a3b8', fontSize: 12 }
-        };
-    };
 
     const secondaryYAxisProps = {
         orientation: "right",
         yAxisId: "right",
-        tick: config.secondaryYAxisShowValues !== false ? { ...getAxisTickStyle('y') } : false, // Re-use Y styling for now
-        label: getSecondaryLabel()
-    };
-
-    const handleClick = (data, index) => {
-        if (!onFilterChange) return;
-
-        let key = null;
-        let value = null;
-
-        // 1. Check Legend/Series click (e.g. clicking a bar segment or legend item)
-        if (data && data.dataKey && config.legendKey) {
-            key = config.legendKey;
-            value = data.dataKey;
-        }
-        // 2. Check Categorical/X-Axis click (Bar, Line activePayload - clicking the axis/column background)
-        else if (data && data.activePayload && data.activePayload.length > 0 && config.xKey) {
-            key = config.xKey;
-            value = data.activePayload[0].payload.name;
-        }
-        // 3. Check Direct Item click (Pie, Funnel, Treemap returning item data directly)
-        else if (data && data.name && config.xKey) {
-            key = config.xKey;
-            value = data.name;
-        }
-
-        if (key && value !== null) {
-            const strVal = String(value);
-            const currentFilters = filters[key] || [];
-
-            // Toggle Logic: If currently filtered by this value, clear it. Else, set it.
-            if (currentFilters.includes(strVal)) {
-                onFilterChange(key, []);
-            } else {
-                onFilterChange(key, [strVal]);
+        tick: config.secondaryYAxisShowValues !== false ? { ...getAxisTickStyle('y') } : false,
+        label: (() => {
+            if (!config.secondaryYKey) return undefined;
+            const key = config.secondaryYKey;
+            const agg = config.secondaryYAggregation;
+            let label = fields?.find(f => f.name === key)?.label || key;
+            if (agg && agg !== 'auto') {
+                label = `${agg.charAt(0).toUpperCase() + agg.slice(1)} of ${label}`;
             }
-        }
+            return {
+                value: label,
+                angle: 90,
+                position: 'insideRight',
+                style: { fill: '#94a3b8', fontSize: 12 }
+            };
+        })()
     };
 
-    const commonProps = {
-        margin: { top: 10, right: 30, left: 10, bottom: 20 },
-        onClick: handleClick,  // Keep this for chart background/axis
-    };
+    // Create click handler using utility
+    const handleClick = createChartClickHandler(config, filters, onFilterChange);
 
-    const elementProps = {
-        onClick: handleClick,
-        cursor: 'pointer'
-    };
+    // Common props using utility functions
+    const commonProps = getCommonChartProps(handleClick);
+    const elementProps = getElementProps(handleClick);
 
     switch (type) {
         case 'bar':
@@ -974,12 +592,12 @@ const ChartRenderer = ({ type, data, title, config = {}, filters = {}, onFilterC
                 </ResponsiveContainer>
             );
         case 'kpi':
-            return <KPICard title={title} value={chartData[0]?.[singleSeriesKey] || "0"} trend={null} />;
+            return <KPIWidget title={title} value={chartData[0]?.[singleSeriesKey] || "0"} trend={null} />;
         case 'key_driver':
-            return <KeyDriverVisual surveyId={config.surveyId} targetMetric={config.targetMetric} />;
+            return <KeyDriverWidget surveyId={config.surveyId} targetMetric={config.targetMetric} />;
         case 'word_cloud':
             return (
-                <WordCloudVisual
+                <WordCloudWidget
                     surveyId={config.surveyId}
                     textField={config.xKey} // Reusing xKey for text field to keep schema simple
                     textFieldName={config.xKey}
@@ -988,10 +606,10 @@ const ChartRenderer = ({ type, data, title, config = {}, filters = {}, onFilterC
                 />
             );
         case 'stat_sig':
-            return <StatSigVisual surveyId={config.surveyId} />;
+            return <StatSigWidget surveyId={config.surveyId} />;
         case 'pivot':
             return (
-                <PivotVisual
+                <PivotWidget
                     surveyId={config.surveyId}
                     rowField={config.xKey}
                     colField={config.legendKey}
@@ -1000,9 +618,26 @@ const ChartRenderer = ({ type, data, title, config = {}, filters = {}, onFilterC
                 />
             );
         case 'anomaly':
-            return <AnomalyVisual surveyId={config.surveyId} targetMetric={config.targetMetric} />;
+            return <AnomalyWidget surveyId={config.surveyId} targetMetric={config.targetMetric} />;
+        case 'cohort':
+            return (
+                <CohortWidget
+                    surveyId={config.surveyId}
+                    metric={config.metric || 'nps'}
+                    cohortBy={config.cohortBy || 'month'}
+                />
+            );
+        case 'forecast':
+            return (
+                <ForecastWidget
+                    surveyId={config.surveyId}
+                    metric={config.metric || 'nps'}
+                    periods={config.periods || 7}
+                    interval={config.interval || 'day'}
+                />
+            );
         case 'table':
-            return <TableVisual data={chartData} />;
+            return <TableWidget data={chartData} />;
         case 'line_stacked_column':
         case 'line_clustered_column':
             return (
@@ -1763,6 +1398,8 @@ const VisualizationsPane = ({ onAddVisual, isCollapsed, onToggle, selectedWidget
         { type: 'stat_sig', icon: <Activity size={20} color="#3b82f6" />, label: 'Stat Sig Test' },
         { type: 'pivot', icon: <Grid size={20} />, label: 'Pivot Table' },
         { type: 'anomaly', icon: <AlertCircle size={20} color="#dc2626" />, label: 'AI Watchdog' },
+        { type: 'cohort', icon: <Users size={20} color="#8b5cf6" />, label: 'Cohort Analysis' },
+        { type: 'forecast', icon: <TrendingUp size={20} color="#10b981" />, label: 'Forecast' },
         { type: 'text', icon: <Type size={20} color="#334155" />, label: 'Text Box' },
     ];
 

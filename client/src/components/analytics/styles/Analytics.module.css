@@ -1,0 +1,855 @@
+/* Analytics Studio Design System */
+
+/* ============================================
+   LAYOUT & CONTAINERS
+   ============================================ */
+
+.container {
+  height: calc(100vh - 64px);
+  overflow: auto;
+  background: var(--background, #f8fafc);
+}
+
+.mainContent {
+  padding: var(--space-8, 32px);
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.splitView {
+  display: flex;
+  height: 100%;
+  gap: var(--space-4, 16px);
+}
+
+.leftPanel {
+  width: 280px;
+  background: var(--surface, white);
+  border-right: 1px solid var(--border-color, #e2e8f0);
+  overflow-y: auto;
+  flex-shrink: 0;
+}
+
+.rightPanel {
+  width: 320px;
+  background: var(--surface, white);
+  border-left: 1px solid var(--border-color, #e2e8f0);
+  overflow-y: auto;
+  flex-shrink: 0;
+}
+
+.centerContent {
+  flex: 1;
+  overflow: auto;
+  background: var(--background, #f8fafc);
+}
+
+/* ============================================
+   TABS
+   ============================================ */
+
+.tabNav {
+  background: white;
+  border-bottom: 2px solid var(--border-color, #e2e8f0);
+  padding: 0 30px;
+  display: flex;
+  gap: 8px;
+}
+
+.tab {
+  padding: 16px 24px;
+  border: none;
+  background: transparent;
+  border-bottom: 3px solid transparent;
+  color: var(--text-muted, #64748b);
+  font-weight: 400;
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: all 0.2s;
+}
+
+.tab:hover {
+  color: var(--primary, #2563eb);
+  background: rgba(37, 99, 235, 0.05);
+}
+
+.tab.active {
+  border-bottom-color: var(--primary, #2563eb);
+  color: var(--primary, #2563eb);
+  font-weight: 600;
+}
+
+/* ============================================
+   REPORT CARDS
+   ============================================ */
+
+.reportGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: var(--space-6, 24px);
+  padding: var(--space-6, 24px);
+}
+
+.reportCard {
+  background: var(--surface, white);
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: var(--radius-md, 12px);
+  padding: var(--space-5, 20px);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: var(--shadow-sm, 0 1px 2px rgba(0, 0, 0, 0.05));
+}
+
+.reportCard:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md, 0 4px 6px rgba(0, 0, 0, 0.1));
+  border-color: var(--primary, #2563eb);
+}
+
+.reportCard:focus {
+  outline: 2px solid var(--primary, #2563eb);
+  outline-offset: 2px;
+}
+
+.reportCardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: var(--space-3, 12px);
+}
+
+.reportCardTitle {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary, #1e293b);
+  margin: 0;
+}
+
+.reportCardMeta {
+  display: flex;
+  gap: var(--space-2, 8px);
+  font-size: 0.875rem;
+  color: var(--text-muted, #64748b);
+  margin-top: var(--space-2, 8px);
+}
+
+.reportCardActions {
+  display: flex;
+  gap: var(--space-2, 8px);
+}
+
+.iconButton {
+  padding: 6px;
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-sm, 6px);
+  cursor: pointer;
+  color: var(--text-muted, #64748b);
+  transition: all 0.2s;
+}
+
+.iconButton:hover {
+  background: var(--surface-hover, #f1f5f9);
+  color: var(--text-primary, #1e293b);
+}
+
+/* ============================================
+   WIDGETS
+   ============================================ */
+
+.widgetContainer {
+  padding: var(--space-4, 16px);
+  background: var(--surface, white);
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: var(--radius-md, 12px);
+  box-shadow: var(--shadow-sm, 0 1px 2px rgba(0, 0, 0, 0.05));
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.2s;
+}
+
+.widgetContainer:hover {
+  box-shadow: var(--shadow-md, 0 4px 6px rgba(0, 0, 0, 0.1));
+}
+
+.widgetContainer.focused {
+  outline: 2px solid var(--primary, #2563eb);
+  outline-offset: 2px;
+}
+
+.widgetHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-3, 12px);
+  padding-bottom: var(--space-2, 8px);
+  border-bottom: 1px solid var(--border-color, #e2e8f0);
+}
+
+.widgetTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary, #1e293b);
+  margin: 0;
+}
+
+.widgetToolbar {
+  display: flex;
+  gap: var(--space-1, 4px);
+}
+
+.widgetContent {
+  flex: 1;
+  overflow: auto;
+}
+
+/* ============================================
+   CHARTS
+   ============================================ */
+
+.chartArea {
+  height: 400px;
+  width: 100%;
+  min-height: 300px;
+}
+
+.chartAreaSmall {
+  height: 250px;
+  width: 100%;
+}
+
+.chartAreaLarge {
+  height: 600px;
+  width: 100%;
+}
+
+/* ============================================
+   KPI CARDS
+   ============================================ */
+
+.kpiCard {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: var(--space-4, 16px);
+}
+
+.kpiLabel {
+  font-size: 0.9rem;
+  color: var(--text-muted, #64748b);
+  margin-bottom: var(--space-2, 8px);
+  text-align: center;
+}
+
+.kpiValue {
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: var(--text-primary, #1e293b);
+  line-height: 1;
+}
+
+.kpiTarget {
+  font-size: 0.8rem;
+  color: var(--text-muted, #64748b);
+  margin-top: var(--space-2, 8px);
+}
+
+.kpiTrend {
+  font-size: 0.8rem;
+  margin-top: var(--space-1, 4px);
+  font-weight: 600;
+}
+
+.kpiTrend.positive {
+  color: var(--success, #10b981);
+}
+
+.kpiTrend.negative {
+  color: var(--error, #ef4444);
+}
+
+/* ============================================
+   TABLES
+   ============================================ */
+
+.tableContainer {
+  height: 100%;
+  overflow: auto;
+  border: 1px solid var(--border-color, #e2e8f0);
+  border-radius: var(--radius-md, 12px);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.table thead {
+  position: sticky;
+  top: 0;
+  background: var(--surface-secondary, #f8fafc);
+  z-index: 10;
+}
+
+.table th {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 2px solid var(--border-color, #e2e8f0);
+  font-weight: 600;
+  color: var(--text-primary, #334155);
+}
+
+.table td {
+  padding: 12px;
+  border-bottom: 1px solid var(--border-light, #f1f5f9);
+}
+
+.table tbody tr:hover {
+  background: var(--surface-hover, #f8fafc);
+}
+
+/* ============================================
+   PANELS & SIDEBARS
+   ============================================ */
+
+.panelContainer {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface, white);
+}
+
+.panelHeader {
+  padding: var(--space-4, 16px);
+  border-bottom: 1px solid var(--border-color, #e2e8f0);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.panelTitle {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary, #1e293b);
+  margin: 0;
+}
+
+.panelContent {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-4, 16px);
+}
+
+.panelCollapsed {
+  width: 48px;
+}
+
+.panelCollapsed .panelContent,
+.panelCollapsed .panelTitle {
+  display: none;
+}
+
+/* ============================================
+   RIBBON / TOOLBAR
+   ============================================ */
+
+.ribbon {
+  background: var(--surface, white);
+  border-bottom: 1px solid var(--border-color, #e2e8f0);
+  padding: var(--space-3, 12px) var(--space-4, 16px);
+  display: flex;
+  align-items: center;
+  gap: var(--space-4, 16px);
+}
+
+.ribbonTabs {
+  display: flex;
+  gap: var(--space-2, 8px);
+  border-right: 1px solid var(--border-color, #e2e8f0);
+  padding-right: var(--space-4, 16px);
+}
+
+.ribbonTab {
+  padding: 8px 16px;
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-sm, 6px);
+  cursor: pointer;
+  font-size: 0.875rem;
+  color: var(--text-muted, #64748b);
+  transition: all 0.2s;
+}
+
+.ribbonTab:hover {
+  background: var(--surface-hover, #f1f5f9);
+}
+
+.ribbonTab.active {
+  background: var(--primary, #2563eb);
+  color: white;
+}
+
+.ribbonSection {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2, 8px);
+}
+
+.ribbonDivider {
+  width: 1px;
+  height: 32px;
+  background: var(--border-color, #e2e8f0);
+}
+
+/* ============================================
+   BUTTONS
+   ============================================ */
+
+.button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: var(--radius-md, 8px);
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2, 8px);
+}
+
+.buttonPrimary {
+  background: var(--primary, #2563eb);
+  color: white;
+}
+
+.buttonPrimary:hover {
+  background: var(--primary-dark, #1d4ed8);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md, 0 4px 6px rgba(0, 0, 0, 0.1));
+}
+
+.buttonSecondary {
+  background: transparent;
+  border: 1px solid var(--border-color, #cbd5e1);
+  color: var(--text-secondary, #475569);
+}
+
+.buttonSecondary:hover {
+  background: var(--surface-hover, #f1f5f9);
+}
+
+.buttonDanger {
+  background: var(--error, #ef4444);
+  color: white;
+}
+
+.buttonDanger:hover {
+  background: var(--error-dark, #dc2626);
+}
+
+.buttonSmall {
+  padding: 6px 12px;
+  font-size: 0.875rem;
+}
+
+.buttonLarge {
+  padding: 12px 24px;
+  font-size: 1rem;
+}
+
+/* ============================================
+   MODALS
+   ============================================ */
+
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 100000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.2s;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.modalContent {
+  background: white;
+  padding: var(--space-6, 24px);
+  border-radius: var(--radius-lg, 16px);
+  width: 90%;
+  max-width: 600px;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow-xl, 0 20px 25px -5px rgba(0, 0, 0, 0.1));
+  animation: slideUp 0.3s;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-5, 20px);
+}
+
+.modalTitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-primary, #1e293b);
+  margin: 0;
+}
+
+.modalBody {
+  margin-bottom: var(--space-5, 20px);
+}
+
+.modalFooter {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3, 12px);
+  padding-top: var(--space-4, 16px);
+  border-top: 1px solid var(--border-color, #e2e8f0);
+}
+
+/* ============================================
+   FORM ELEMENTS
+   ============================================ */
+
+.formGroup {
+  margin-bottom: var(--space-4, 16px);
+}
+
+.label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-secondary, #475569);
+  margin-bottom: var(--space-2, 8px);
+}
+
+.input,
+.select,
+.textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border-color, #cbd5e1);
+  border-radius: var(--radius-md, 8px);
+  font-size: 0.95rem;
+  color: var(--text-primary, #1e293b);
+  transition: all 0.2s;
+}
+
+.input:focus,
+.select:focus,
+.textarea:focus {
+  outline: none;
+  border-color: var(--primary, #2563eb);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.checkbox {
+  width: auto;
+  margin-right: var(--space-2, 8px);
+}
+
+/* ============================================
+   BADGES & PILLS
+   ============================================ */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.badgePrimary {
+  background: rgba(37, 99, 235, 0.1);
+  color: var(--primary, #2563eb);
+}
+
+.badgeSuccess {
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--success, #10b981);
+}
+
+.badgeWarning {
+  background: rgba(245, 158, 11, 0.1);
+  color: var(--warning, #f59e0b);
+}
+
+.badgeError {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--error, #ef4444);
+}
+
+/* ============================================
+   LOADING & EMPTY STATES
+   ============================================ */
+
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-8, 32px);
+  color: var(--text-muted, #64748b);
+}
+
+.loadingSpinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--border-color, #e2e8f0);
+  border-top-color: var(--primary, #2563eb);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.emptyState {
+  text-align: center;
+  padding: var(--space-8, 32px);
+  color: var(--text-muted, #94a3b8);
+}
+
+.emptyStateIcon {
+  font-size: 3rem;
+  margin-bottom: var(--space-4, 16px);
+  opacity: 0.5;
+}
+
+.emptyStateText {
+  font-size: 1rem;
+  margin-bottom: var(--space-2, 8px);
+}
+
+/* ============================================
+   ACCESSIBILITY
+   ============================================ */
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+.focusVisible:focus-visible {
+  outline: 2px solid var(--primary, #2563eb);
+  outline-offset: 2px;
+}
+
+/* ============================================
+   RESPONSIVE BREAKPOINTS
+   ============================================ */
+
+@media (max-width: 1024px) {
+  .leftPanel,
+  .rightPanel {
+    width: 240px;
+  }
+
+  .reportGrid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    height: 100vh;
+  }
+
+  .mainContent {
+    padding: var(--space-4, 16px);
+  }
+
+  .splitView {
+    flex-direction: column;
+  }
+
+  .leftPanel,
+  .rightPanel {
+    width: 100%;
+    max-height: 300px;
+  }
+
+  .reportGrid {
+    grid-template-columns: 1fr;
+    gap: var(--space-4, 16px);
+    padding: var(--space-4, 16px);
+  }
+
+  .widgetContainer {
+    padding: var(--space-3, 12px);
+  }
+
+  .chartArea {
+    height: 300px;
+  }
+
+  .kpiValue {
+    font-size: 2rem;
+  }
+
+  .ribbon {
+    flex-wrap: wrap;
+    gap: var(--space-2, 8px);
+  }
+
+  .ribbonTabs {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid var(--border-color, #e2e8f0);
+    padding-right: 0;
+    padding-bottom: var(--space-2, 8px);
+  }
+
+  .modalContent {
+    width: 95%;
+    max-width: none;
+    margin: var(--space-4, 16px);
+  }
+
+  .tabNav {
+    padding: 0 var(--space-4, 16px);
+    overflow-x: auto;
+  }
+
+  .tab {
+    padding: 12px 16px;
+    font-size: 0.875rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .mainContent {
+    padding: var(--space-2, 8px);
+  }
+
+  .reportCard {
+    padding: var(--space-3, 12px);
+  }
+
+  .kpiValue {
+    font-size: 1.75rem;
+  }
+
+  .button {
+    padding: 8px 16px;
+    font-size: 0.875rem;
+  }
+}
+
+/* ============================================
+   UTILITY CLASSES
+   ============================================ */
+
+.textCenter {
+  text-align: center;
+}
+
+.textRight {
+  text-align: right;
+}
+
+.flexRow {
+  display: flex;
+  flex-direction: row;
+  gap: var(--space-3, 12px);
+}
+
+.flexCol {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3, 12px);
+}
+
+.flexBetween {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.flexCenter {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.mt1 {
+  margin-top: var(--space-1, 4px);
+}
+.mt2 {
+  margin-top: var(--space-2, 8px);
+}
+.mt3 {
+  margin-top: var(--space-3, 12px);
+}
+.mt4 {
+  margin-top: var(--space-4, 16px);
+}
+
+.mb1 {
+  margin-bottom: var(--space-1, 4px);
+}
+.mb2 {
+  margin-bottom: var(--space-2, 8px);
+}
+.mb3 {
+  margin-bottom: var(--space-3, 12px);
+}
+.mb4 {
+  margin-bottom: var(--space-4, 16px);
+}
+
+.p1 {
+  padding: var(--space-1, 4px);
+}
+.p2 {
+  padding: var(--space-2, 8px);
+}
+.p3 {
+  padding: var(--space-3, 12px);
+}
+.p4 {
+  padding: var(--space-4, 16px);
+}
