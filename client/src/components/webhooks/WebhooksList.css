@@ -1,6 +1,6 @@
 .webhooks-list {
-    padding: 30px;
-    max-width: 1400px;
+    padding: var(--space-7-5, 30px);
+    max-width: var(--space-350, 1400px);
     margin: 0 auto;
 }
 
@@ -8,59 +8,59 @@
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    margin-bottom: 30px;
+    margin-bottom: var(--space-7-5, 30px);
 }
 
 .header-left {
     display: flex;
-    gap: 16px;
+    gap: var(--space-4, 16px);
     align-items: center;
 }
 
 .webhooks-header h1 {
     margin: 0;
-    font-size: 28px;
+    font-size: var(--text-2xl-alt, 28px);
     font-weight: 600;
     color: var(--text-primary);
 }
 
 .subtitle {
-    margin: 5px 0 0 0;
-    font-size: 14px;
+    margin: var(--space-1-25, 5px) 0 0 0;
+    font-size: var(--text-sm, 14px);
     color: var(--text-muted);
 }
 
 .btn-create-webhook {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 10px 20px;
+    gap: var(--space-2, 8px);
+    padding: var(--space-2-5, 10px) var(--space-5, 20px);
     background: var(--status-info);
     color: var(--card-bg);
     border: none;
-    border-radius: 8px;
-    font-size: 14px;
+    border-radius: var(--radius-md, 8px);
+    font-size: var(--text-sm, 14px);
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all var(--transition-fast, 0.2s);
 }
 
 .btn-create-webhook:hover {
     background: #2563EB;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    transform: translateY(var(--space--0-25, -1px));
+    box-shadow: 0 var(--space-1, 4px) var(--space-3, 12px) rgba(59, 130, 246, var(--opacity-30, 0.3));
 }
 
 .error-banner {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 16px;
+    gap: var(--space-3, 12px);
+    padding: var(--space-4, 16px);
     background: #FEF2F2;
-    border: 2px solid #FCA5A5;
-    border-radius: 12px;
+    border: var(--space-0-5, 2px) solid #FCA5A5;
+    border-radius: var(--radius-lg, 12px);
     color: #991B1B;
-    margin-bottom: 24px;
+    margin-bottom: var(--space-6, 24px);
 }
 
 .loading-container {
@@ -68,22 +68,22 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 60px;
-    gap: 16px;
+    padding: var(--space-15, 60px);
+    gap: var(--space-4, 16px);
 }
 
 .spinner {
-    border: 3px solid var(--border-light);
-    border-top: 3px solid var(--status-info);
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    animation: spin 1s linear infinite;
+    border: var(--space-0-75, 3px) solid var(--border-light);
+    border-top: var(--space-0-75, 3px) solid var(--status-info);
+    border-radius: var(--radius-full, 50%);
+    width: var(--space-10, 40px);
+    height: var(--space-10, 40px);
+    animation: spin var(--duration-1000, 1s) linear infinite;
 }
 
 @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% { transform: rotate(var(--angle-0, 0deg)); }
+    100% { transform: rotate(var(--angle-360, 360deg)); }
 }
 
 .empty-state {
@@ -91,70 +91,70 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 80px 20px;
+    padding: var(--space-20, 80px) var(--space-5, 20px);
     text-align: center;
 }
 
 .empty-icon {
     color: var(--border-medium);
-    margin-bottom: 20px;
+    margin-bottom: var(--space-5, 20px);
 }
 
 .empty-state h3 {
-    margin: 0 0 8px 0;
-    font-size: 20px;
+    margin: 0 0 var(--space-2, 8px) 0;
+    font-size: var(--text-xl, 20px);
     color: var(--text-primary);
 }
 
 .empty-state p {
     margin: 0 0 24px 0;
-    font-size: 14px;
+    font-size: var(--text-sm, 14px);
     color: var(--text-muted);
 }
 
 .btn-primary {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    padding: 12px 24px;
+    gap: var(--space-2, 8px);
+    padding: var(--space-3, 12px) var(--space-6, 24px);
     background: var(--status-info);
     color: var(--card-bg);
     border: none;
-    border-radius: 8px;
-    font-size: 14px;
+    border-radius: var(--radius-md, 8px);
+    font-size: var(--text-sm, 14px);
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all var(--transition-fast, 0.2s);
 }
 
 .btn-primary:hover {
     background: #2563EB;
-    transform: translateY(-1px);
+    transform: translateY(var(--space--0-25, -1px));
 }
 
 .webhooks-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
-    gap: 24px;
+    gap: var(--space-6, 24px);
 }
 
 .webhook-card {
     background: var(--card-bg);
-    border: 2px solid var(--border-light);
-    border-radius: 12px;
-    padding: 24px;
-    transition: all 0.2s;
+    border: var(--space-0-5, 2px) solid var(--border-light);
+    border-radius: var(--radius-lg, 12px);
+    padding: var(--space-6, 24px);
+    transition: all var(--transition-fast, 0.2s);
     position: relative;
 }
 
 .webhook-card:hover {
     border-color: var(--status-info);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
-    transform: translateY(-2px);
+    box-shadow: 0 var(--space-2, 8px) var(--space-6, 24px) rgba(0, 0, 0, var(--opacity-8, 0.08));
+    transform: translateY(var(--space--0-5, -2px));
 }
 
 .webhook-card.inactive {
-    opacity: 0.7;
+    opacity: var(--opacity-70, 0.7);
     border-color: var(--border-medium);
 }
 
@@ -162,7 +162,7 @@
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    margin-bottom: 16px;
+    margin-bottom: var(--space-4, 16px);
 }
 
 .webhook-name-section {
@@ -170,26 +170,26 @@
 }
 
 .webhook-name-section h3 {
-    margin: 0 0 8px 0;
-    font-size: 18px;
+    margin: 0 0 var(--space-2, 8px) 0;
+    font-size: var(--text-lg, 18px);
     font-weight: 600;
     color: var(--text-primary);
 }
 
 .webhook-badges {
     display: flex;
-    gap: 8px;
+    gap: var(--space-2, 8px);
     align-items: center;
 }
 
 .status-badge {
     display: inline-block;
-    padding: 4px 10px;
-    border-radius: 12px;
-    font-size: 11px;
+    padding: var(--space-1, 4px) var(--space-2-5, 10px);
+    border-radius: var(--radius-lg, 12px);
+    font-size: var(--text-2xs, 11px);
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: var(--space-0-125, 0.5px);
 }
 
 .status-badge.active {
@@ -205,13 +205,13 @@
 .health-badge {
     display: inline-flex;
     align-items: center;
-    gap: 4px;
-    padding: 4px 8px;
-    border-radius: 12px;
-    font-size: 10px;
+    gap: var(--space-1, 4px);
+    padding: var(--space-1, 4px) var(--space-2, 8px);
+    border-radius: var(--radius-lg, 12px);
+    font-size: var(--text-2xs-alt, 10px);
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: var(--space-0-125, 0.5px);
 }
 
 .health-badge.healthy {
@@ -236,16 +236,16 @@
 
 .webhook-actions {
     display: flex;
-    gap: 8px;
+    gap: var(--space-2, 8px);
 }
 
 .btn-icon {
-    padding: 8px;
+    padding: var(--space-2, 8px);
     background: var(--input-bg);
     border: none;
-    border-radius: 6px;
+    border-radius: var(--radius-sm-alt, 6px);
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all var(--transition-fast, 0.2s);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -263,18 +263,18 @@
 .webhook-url {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 12px;
+    gap: var(--space-2, 8px);
+    padding: var(--space-3, 12px);
     background: var(--input-bg);
-    border: 1px solid var(--border-light);
-    border-radius: 8px;
-    margin-bottom: 16px;
+    border: var(--space-0-25, 1px) solid var(--border-light);
+    border-radius: var(--radius-md, 8px);
+    margin-bottom: var(--space-4, 16px);
 }
 
 .webhook-url code {
     flex: 1;
     font-family: 'Monaco', 'Courier New', monospace;
-    font-size: 12px;
+    font-size: var(--text-xs, 12px);
     color: var(--text-primary);
     overflow: hidden;
     text-overflow: ellipsis;
@@ -284,43 +284,43 @@
 .webhook-events {
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    margin-bottom: 16px;
+    gap: var(--space-2, 8px);
+    margin-bottom: var(--space-4, 16px);
 }
 
 .webhook-events strong {
-    font-size: 13px;
+    font-size: var(--text-xs-alt, 13px);
     color: var(--text-secondary);
 }
 
 .events-list {
     display: flex;
     flex-wrap: wrap;
-    gap: 6px;
+    gap: var(--space-1-5, 6px);
 }
 
 .event-badge {
-    padding: 4px 8px;
+    padding: var(--space-1, 4px) var(--space-2, 8px);
     background: #E0E7FF;
     color: #3730A3;
-    border-radius: 4px;
-    font-size: 11px;
+    border-radius: var(--radius-sm, 4px);
+    font-size: var(--text-2xs, 11px);
     font-weight: 500;
     font-family: 'Monaco', 'Courier New', monospace;
 }
 
 .delivery-summary {
-    padding: 12px;
+    padding: var(--space-3, 12px);
     background: var(--input-bg);
-    border-radius: 8px;
-    margin-bottom: 16px;
+    border-radius: var(--radius-md, 8px);
+    margin-bottom: var(--space-4, 16px);
 }
 
 .summary-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: 13px;
+    font-size: var(--text-xs-alt, 13px);
 }
 
 .success-count {
@@ -336,17 +336,17 @@
 .webhook-metadata {
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    padding: 12px 0;
-    margin-bottom: 16px;
-    border-top: 1px solid var(--border-light);
+    gap: var(--space-2, 8px);
+    padding: var(--space-3, 12px) 0;
+    margin-bottom: var(--space-4, 16px);
+    border-top: var(--space-0-25, 1px) solid var(--border-light);
 }
 
 .metadata-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: 13px;
+    font-size: var(--text-xs-alt, 13px);
 }
 
 .metadata-label {
@@ -361,7 +361,7 @@
 
 .webhook-card-actions {
     display: flex;
-    gap: 8px;
+    gap: var(--space-2, 8px);
 }
 
 .btn-secondary,
@@ -370,14 +370,14 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
-    padding: 10px;
+    gap: var(--space-1-5, 6px);
+    padding: var(--space-2-5, 10px);
     border: none;
-    border-radius: 8px;
-    font-size: 13px;
+    border-radius: var(--radius-md, 8px);
+    font-size: var(--text-xs-alt, 13px);
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all var(--transition-fast, 0.2s);
 }
 
 .btn-secondary {
@@ -405,7 +405,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(0, 0, 0, var(--opacity-50, 0.5));
     display: flex;
     align-items: center;
     justify-content: center;
@@ -414,41 +414,41 @@
 
 .confirm-delete-modal {
     background: var(--card-bg);
-    border-radius: 12px;
-    padding: 24px;
-    max-width: 400px;
+    border-radius: var(--radius-lg, 12px);
+    padding: var(--space-6, 24px);
+    max-width: var(--space-100, 400px);
     width: 90%;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 var(--space-5, 20px) var(--space-15, 60px) rgba(0, 0, 0, var(--opacity-30, 0.3));
 }
 
 .confirm-delete-modal h4 {
-    margin: 0 0 12px 0;
-    font-size: 18px;
+    margin: 0 0 var(--space-3, 12px) 0;
+    font-size: var(--text-lg, 18px);
     color: var(--text-primary);
 }
 
 .confirm-delete-modal p {
-    margin: 0 0 20px 0;
-    font-size: 14px;
+    margin: 0 0 var(--space-5, 20px) 0;
+    font-size: var(--text-sm, 14px);
     color: var(--text-muted);
     line-height: 1.5;
 }
 
 .confirm-actions {
     display: flex;
-    gap: 12px;
+    gap: var(--space-3, 12px);
     justify-content: flex-end;
 }
 
 .btn-cancel,
 .btn-confirm-delete {
-    padding: 10px 20px;
+    padding: var(--space-2-5, 10px) var(--space-5, 20px);
     border: none;
-    border-radius: 8px;
-    font-size: 14px;
+    border-radius: var(--radius-md, 8px);
+    font-size: var(--text-sm, 14px);
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all var(--transition-fast, 0.2s);
 }
 
 .btn-cancel {
@@ -470,6 +470,6 @@
 }
 
 .btn-confirm-delete:disabled {
-    opacity: 0.6;
+    opacity: var(--opacity-60, 0.6);
     cursor: not-allowed;
 }
