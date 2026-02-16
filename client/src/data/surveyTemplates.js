@@ -118,12 +118,12 @@ const healthTemplates = healthcareTitles.map((t, i) => createTemplate(`hlth-${i}
     { type: "comment", name: "notes", title: "Medical Notes / Feedback" }
 ]));
 
-const eduTemplates = educationTitles.map((t, i) => createTemplate(`edu-${i}`, t, "Education", <GraduationCap color="#8b5cf6" />, null, [
+const eduTemplates = educationTitles.map((t, i) => createTemplate(`edu-${i}`, t, "Education", GraduationCap, null, [
     { type: "rating", name: "score", title: "Evaluation Score", rateMax: 10 },
     { type: "text", name: "educator_name", title: "Instructor / Course Name" }
 ]));
 
-const eventTemplates = eventTitles.map((t, i) => createTemplate(`evt-${i}`, t, "Events", <PartyPopper color="#f59e0b" />, null, [
+const eventTemplates = eventTitles.map((t, i) => createTemplate(`evt-${i}`, t, "Events", PartyPopper, null, [
     { type: "rating", name: "rating", title: "Overall Rating", rateMax: 10 },
     { type: "boolean", name: "recommend", title: "Would you recommend this event?" }
 ]));
