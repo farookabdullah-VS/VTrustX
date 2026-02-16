@@ -216,6 +216,7 @@ app.use('/api/form-audience', require('./src/api/routes/form_contacts'));
 app.use('/api/calls', require('./src/api/routes/calls'));
 app.use('/api/ai-service', require('./src/api/routes/ai_proxy'));
 app.use('/api/analytics', require('./src/api/routes/analytics'));
+app.use('/api/report-templates', require('./src/api/routes/report-templates'));
 app.use('/api/sentiment', require('./src/api/routes/sentiment'));
 
 const agentChatRouter = require('./src/api/routes/agent_chat');
@@ -317,6 +318,41 @@ const server = app.listen(PORT, '0.0.0.0', () => {
 });
 
 // --- Start Cron Jobs ---
+// Report Scheduler (optional - can be disabled via env var)
+if (process.env.ENABLE_REPORT_SCHEDULER !== 'false') {
+    try {
+        const reportSchedulerService = require('./src/services/ReportSchedulerService');
+        reportSchedulerService.initialize().catch(err => {
+            logger.error('[Cron] Report scheduler initialization failed', {
+                error: err.message,
+                stack: err.stack
+            });
+        });
+        logger.info('[Cron] Report scheduler enabled');
+    } catch (err) {
+        logger.error('[Cron] Failed to load report scheduler', {
+            error: err.message,
+            stack: err.stack,
+            name: err.name
+        });
+    }
+}
+
+// Persona Sync Job (optional - can be disabled via env var)
+if (process.env.ENABLE_PERSONA_SYNC !== 'false') {
+    try {
+        const personaSyncJob = require('./src/jobs/personaSyncJob');
+        personaSyncJob.start();
+        logger.info('[Cron] Persona sync job enabled (daily at 2:00 AM)');
+    } catch (err) {
+        logger.error('[Cron] Failed to start persona sync job', {
+            error: err.message,
+            stack: err.stack,
+            name: err.name
+        });
+    }
+}
+
 // A/B Test Auto-Winner Detection (optional - can be disabled via env var)
 if (process.env.ENABLE_AB_AUTO_WINNER !== 'false') {
     try {

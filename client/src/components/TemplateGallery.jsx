@@ -113,8 +113,8 @@ export function TemplateGallery({ isOpen, onClose, onSelect, displayMode = 'moda
                                         e.currentTarget.style.boxShadow = 'none';
                                     }}
                                 >
-                                    <div style={{ height: '100px', background: 'linear-gradient(135deg, var(--input-bg) 0%, var(--sidebar-active-bg) 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '3em' }}>
-                                        {t.icon}
+                                    <div style={{ height: '100px', background: 'linear-gradient(135deg, var(--input-bg) 0%, var(--sidebar-active-bg) 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary-color)' }}>
+                                        {React.createElement(t.icon, { size: 48, strokeWidth: 1.5 })}
                                     </div>
                                     <div style={{ padding: '20px', flex: 1, display: 'flex', flexDirection: 'column' }}>
                                         <div style={{ fontSize: '0.8em', color: 'var(--secondary-color)', fontWeight: 'bold', marginBottom: '5px', textTransform: 'uppercase' }}>{t.category}</div>

@@ -103,7 +103,8 @@ export function FormViewer({ formId: propsFormId, submissionId: propsSubmissionI
             })
             .catch(err => {
                 console.error("Failed to load forms:", err);
-                setError(err.response?.data?.error || err.message || "Failed to load");
+                const msg = err.response?.data?.error?.message || (typeof err.response?.data?.error === 'string' ? err.response.data.error : null) || err.message || "Failed to load";
+                setError(msg);
                 setIsLoading(false);
             });
         loadFolders();
@@ -997,13 +998,13 @@ export function FormViewer({ formId: propsFormId, submissionId: propsSubmissionI
                             boxShadow: '0 10px 25px rgba(0,0,0,0.2)', width: '240px', zIndex: 100,
                             overflow: 'hidden', display: 'flex', flexDirection: 'column'
                         }}>
-                            <button onClick={() => onCreate('create-normal')} style={{ padding: '16px', background: 'transparent', border: 'none', borderBottom: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer', textAlign: 'left', color: '#ffffff', display: 'flex', alignItems: 'center', gap: '10px' }} onMouseEnter={e => e.currentTarget.style.background = '#f1f5f9'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                            <button onClick={() => { if (onCreate) onCreate('create-normal'); else navigate('/builder'); }} style={{ padding: '16px', background: 'transparent', border: 'none', borderBottom: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer', textAlign: 'left', color: '#ffffff', display: 'flex', alignItems: 'center', gap: '10px' }} onMouseEnter={e => e.currentTarget.style.background = '#f1f5f9'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
                                 <FilePlus size={18} /> {t('surveys.menu.blank')}
                             </button>
-                            <button onClick={() => onCreate('create-template')} style={{ padding: '16px', background: 'transparent', border: 'none', borderBottom: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer', textAlign: 'left', color: '#ffffff', display: 'flex', alignItems: 'center', gap: '10px' }} onMouseEnter={e => e.currentTarget.style.background = '#f1f5f9'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                            <button onClick={() => { if (onCreate) onCreate('create-template'); else navigate('/templates'); }} style={{ padding: '16px', background: 'transparent', border: 'none', borderBottom: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer', textAlign: 'left', color: '#ffffff', display: 'flex', alignItems: 'center', gap: '10px' }} onMouseEnter={e => e.currentTarget.style.background = '#f1f5f9'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
                                 <LayoutTemplate size={18} /> {t('surveys.menu.template')}
                             </button>
-                            <button onClick={() => onCreate('create-ai')} style={{ padding: '16px', background: 'transparent', border: 'none', borderBottom: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer', textAlign: 'left', color: '#ffffff', display: 'flex', alignItems: 'center', gap: '10px' }} onMouseEnter={e => e.currentTarget.style.background = '#f1f5f9'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                            <button onClick={() => { if (onCreate) onCreate('create-ai'); else navigate('/builder', { state: { openAI: true } }); }} style={{ padding: '16px', background: 'transparent', border: 'none', borderBottom: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer', textAlign: 'left', color: '#ffffff', display: 'flex', alignItems: 'center', gap: '10px' }} onMouseEnter={e => e.currentTarget.style.background = '#f1f5f9'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
                                 <Sparkles size={18} /> {t('surveys.menu.ai')}
                             </button>
 
@@ -1246,7 +1247,7 @@ export function FormViewer({ formId: propsFormId, submissionId: propsSubmissionI
                                                         e.dataTransfer.setData("formId", form.id);
                                                         e.dataTransfer.effectAllowed = "move";
                                                     }}
-                                                    onDoubleClick={() => onEditForm(form.id)}
+                                                    onDoubleClick={() => { if (onEditForm) onEditForm(form.id); else navigate(`/surveys/${form.id}/edit`); }}
                                                     style={{
                                                         display: 'grid', gridTemplateColumns: 'minmax(300px, 2fr) 100px 150px 100px',
                                                         alignItems: 'center',
@@ -1290,16 +1291,16 @@ export function FormViewer({ formId: propsFormId, submissionId: propsSubmissionI
                                                                 display: 'flex', flexDirection: 'column', textAlign: 'left',
                                                                 padding: '4px'
                                                             }}>
-                                                                <button onClick={() => onEditForm(form.id)} style={{ padding: '10px 12px', background: 'transparent', border: 'none', cursor: 'pointer', color: '#1e293b', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.9em', borderRadius: '6px' }} onMouseEnter={e => e.currentTarget.style.background = '#f1f5f9'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                                                                <button onClick={() => { if (onEditForm) onEditForm(form.id); else navigate(`/surveys/${form.id}/edit`); }} style={{ padding: '10px 12px', background: 'transparent', border: 'none', cursor: 'pointer', color: '#1e293b', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.9em', borderRadius: '6px' }} onMouseEnter={e => e.currentTarget.style.background = '#f1f5f9'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
                                                                     <Pencil size={16} color="#3b82f6" /> {t('surveys.action.edit_design')}
                                                                 </button>
-                                                                <button onClick={() => setResultsViewId(form.id)} style={{ padding: '10px 12px', background: 'transparent', border: 'none', cursor: 'pointer', color: '#1e293b', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.9em', borderRadius: '6px' }} onMouseEnter={e => e.currentTarget.style.background = '#f1f5f9'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                                                                <button onClick={() => navigate(`/surveys/${form.id}/results`)} style={{ padding: '10px 12px', background: 'transparent', border: 'none', cursor: 'pointer', color: '#1e293b', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.9em', borderRadius: '6px' }} onMouseEnter={e => e.currentTarget.style.background = '#f1f5f9'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
                                                                     <BarChart size={16} color="#8b5cf6" /> {t('surveys.action.results')}
                                                                 </button>
                                                                 <button onClick={() => handleExport(form)} style={{ padding: '10px 12px', background: 'transparent', border: 'none', cursor: 'pointer', color: '#1e293b', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.9em', borderRadius: '6px' }} onMouseEnter={e => e.currentTarget.style.background = '#f1f5f9'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
                                                                     <Download size={16} color="#6366f1" /> Export
                                                                 </button>
-                                                                <button onClick={() => setCollectViewId(form.id)} style={{ padding: '10px 12px', background: 'transparent', border: 'none', cursor: 'pointer', color: '#1e293b', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.9em', borderRadius: '6px' }} onMouseEnter={e => e.currentTarget.style.background = '#f1f5f9'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                                                                <button onClick={() => navigate(`/surveys/${form.id}/smartreach`)} style={{ padding: '10px 12px', background: 'transparent', border: 'none', cursor: 'pointer', color: '#1e293b', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.9em', borderRadius: '6px' }} onMouseEnter={e => e.currentTarget.style.background = '#f1f5f9'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
                                                                     <Share2 size={16} color="#10b981" /> SmartReach
                                                                 </button>
                                                                 <a
@@ -1393,7 +1394,7 @@ export function FormViewer({ formId: propsFormId, submissionId: propsSubmissionI
                                                     background: 'var(--card-bg)',
                                                     zIndex: actionMenuOpenId === form.id ? 100 : 1
                                                 }}
-                                                onDoubleClick={() => onEditForm(form.id)}
+                                                onDoubleClick={() => { if (onEditForm) onEditForm(form.id); else navigate(`/surveys/${form.id}/edit`); }}
                                                 onMouseEnter={e => {
                                                     e.currentTarget.style.transform = 'translateY(-5px)';
                                                     e.currentTarget.style.boxShadow = 'var(--primary-glow)';
@@ -1483,16 +1484,16 @@ export function FormViewer({ formId: propsFormId, submissionId: propsSubmissionI
                                                         display: 'flex', flexDirection: 'column', overflow: 'hidden', textAlign: 'left',
                                                         padding: '4px'
                                                     }}>
-                                                        <button onClick={() => onEditForm(form.id)} style={{ padding: '10px 12px', background: 'transparent', border: 'none', cursor: 'pointer', color: '#1e293b', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.9em', borderRadius: '6px' }} onMouseEnter={e => e.currentTarget.style.background = '#f1f5f9'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                                                        <button onClick={() => { if (onEditForm) onEditForm(form.id); else navigate(`/surveys/${form.id}/edit`); }} style={{ padding: '10px 12px', background: 'transparent', border: 'none', cursor: 'pointer', color: '#1e293b', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.9em', borderRadius: '6px' }} onMouseEnter={e => e.currentTarget.style.background = '#f1f5f9'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
                                                             <Pencil size={16} color="#3b82f6" /> {t('surveys.action.edit_design')}
                                                         </button>
-                                                        <button onClick={() => setResultsViewId(form.id)} style={{ padding: '10px 12px', background: 'transparent', border: 'none', cursor: 'pointer', color: '#1e293b', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.9em', borderRadius: '6px' }} onMouseEnter={e => e.currentTarget.style.background = '#f1f5f9'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                                                        <button onClick={() => navigate(`/surveys/${form.id}/results`)} style={{ padding: '10px 12px', background: 'transparent', border: 'none', cursor: 'pointer', color: '#1e293b', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.9em', borderRadius: '6px' }} onMouseEnter={e => e.currentTarget.style.background = '#f1f5f9'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
                                                             <BarChart size={16} color="#8b5cf6" /> {t('surveys.action.results')}
                                                         </button>
                                                         <button onClick={() => handleExport(form)} style={{ padding: '10px 12px', background: 'transparent', border: 'none', cursor: 'pointer', color: '#1e293b', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.9em', borderRadius: '6px' }} onMouseEnter={e => e.currentTarget.style.background = '#f1f5f9'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
                                                             <Download size={16} color="#6366f1" /> Export
                                                         </button>
-                                                        <button onClick={() => setCollectViewId(form.id)} style={{ padding: '10px 12px', background: 'transparent', border: 'none', cursor: 'pointer', color: '#1e293b', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.9em', borderRadius: '6px' }} onMouseEnter={e => e.currentTarget.style.background = '#f1f5f9'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                                                        <button onClick={() => navigate(`/surveys/${form.id}/smartreach`)} style={{ padding: '10px 12px', background: 'transparent', border: 'none', cursor: 'pointer', color: '#1e293b', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.9em', borderRadius: '6px' }} onMouseEnter={e => e.currentTarget.style.background = '#f1f5f9'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
                                                             <Share2 size={16} color="#10b981" /> {t('surveys.action.collect')}
                                                         </button>
 

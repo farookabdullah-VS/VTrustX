@@ -48,7 +48,7 @@ const AISurveyor = React.lazy(() => import('./components/AISurveyor').then(m => 
 const AIVideoAgentPage = React.lazy(() => import('./components/AIVideoAgentPage').then(m => ({ default: m.AIVideoAgentPage })));
 const VoiceAgentPublic = React.lazy(() => import('./components/VoiceAgentPublic').then(m => ({ default: m.VoiceAgentPublic })));
 const CxPersonaTemplates = React.lazy(() => import('./components/CxPersonaTemplates'));
-const AnalyticsStudio = React.lazy(() => import('./components/analytics/AnalyticsStudio').then(m => ({ default: m.AnalyticsStudio })));
+const AnalyticsStudio = React.lazy(() => import('./components/analytics/AnalyticsStudioWrapper'));
 const AnalyticsBuilder = React.lazy(() => import('./components/analytics/AnalyticsBuilder').then(m => ({ default: m.AnalyticsBuilder })));
 const SurveyAnalyticsDashboard = React.lazy(() => import('./components/analytics/SurveyAnalyticsDashboard').then(m => ({ default: m.SurveyAnalyticsDashboard })));
 const DynamicDashboard = React.lazy(() => import('./components/DynamicDashboard'));

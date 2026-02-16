@@ -19,6 +19,7 @@
     "migrate:form-passwords": "node src/scripts/migrate_form_passwords.js",
     "migrate:encryption-gcm": "node src/scripts/migrate_encryption_gcm.js",
     "migrate:encrypt-keys": "node src/scripts/migrate_encrypt_integration_keys.js",
+    "seed:templates": "node src/scripts/seed-report-templates.js",
     "lint": "eslint src/ --ext .js"
   },
   "keywords": [],
@@ -59,6 +60,7 @@
     "jsonwebtoken": "^9.0.3",
     "ldapjs": "^3.0.7",
     "mailparser": "^3.9.1",
+    "ml-regression": "^6.3.0",
     "moment": "^2.30.1",
     "multer": "^2.0.2",
     "node-cache": "^5.1.2",
@@ -74,6 +76,7 @@
     "pdfkit": "^0.17.2",
     "pg": "^8.16.3",
     "pptxgenjs": "^4.0.1",
+    "puppeteer": "^24.37.3",
     "qrcode": "^1.5.4",
     "sharp": "^0.34.5",
     "speakeasy": "^2.0.0",

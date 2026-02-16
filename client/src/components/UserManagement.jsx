@@ -54,7 +54,8 @@ export function UserManagement() {
                 setLoading(false);
             })
             .catch(err => {
-                setError(err.response?.data?.error || err.message);
+                const errorMsg = err.response?.data?.error?.message || (typeof err.response?.data?.error === 'string' ? err.response.data.error : null) || err.message;
+                setError(errorMsg);
                 setLoading(false);
             });
     }, [page, search, statusFilter]);

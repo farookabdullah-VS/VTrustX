@@ -46,6 +46,7 @@ gcloud run deploy $SERVICE `
   --set-env-vars MICROSOFT_CLIENT_ID="$MS_ID" `
   --set-env-vars MICROSOFT_CLIENT_SECRET="$MS_SECRET" `
   --set-env-vars GEMINI_API_KEY="$GEMINI_KEY" `
+  --set-env-vars JWT_SECRET=4a8138e0e88a5f5f479f7ec3c51f0c5a2c9438343725f3c19b48c037996c568acb9e18b8f36c5890e4f3a9e1451f201f8cfc26dc20399a4cd2bf2b04c0 `
   --set-env-vars DB_PORT="5432" `
   --set-env-vars AI_SERVICE_URL="https://rayix-ai-1072119297262.me-central1.run.app" `
   --set-env-vars NODE_ENV="production"

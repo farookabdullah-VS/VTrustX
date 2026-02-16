@@ -43,7 +43,7 @@ export function Login({ onLogin }) {
                     onLogin(data);
                 }
             } catch (err) {
-                const msg = err.response?.data?.error || `Authentication failed: ${err.message}`;
+                const msg = err.response?.data?.error?.message || (typeof err.response?.data?.error === 'string' ? err.response.data.error : null) || `Authentication failed: ${err.message}`;
                 setError(msg);
             }
         },

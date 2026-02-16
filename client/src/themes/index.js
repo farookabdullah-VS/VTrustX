@@ -6,11 +6,13 @@
 
 import { defaultTheme } from './default.theme';
 import { darkTheme } from './dark.theme';
+import { foundingDayTheme } from './founding-day.theme';
 
 // Theme registry
 const themes = {
   default: defaultTheme,
-  dark: darkTheme
+  dark: darkTheme,
+  founding: foundingDayTheme
 };
 
 /**

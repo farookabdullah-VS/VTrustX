@@ -243,6 +243,61 @@ router.delete('/metrics', authenticate, requireRole('super_admin'), (req, res) =
 });
 
 /**
+ * POST /api/performance/client-report
+ * Submit a client-side performance report
+ */
+router.post('/client-report', async (req, res) => {
+    try {
+        const {
+            timestamp,
+            summary,
+            metrics,
+            userAgent,
+            page,
+            version // 'legacy' or 'new'
+        } = req.body;
+
+        // Log client performance metrics
+        logger.info('[Client Performance] Report received', {
+            page,
+            version,
+            totalMeasurements: summary?.totalMeasurements || 0,
+            memoryUsage: summary?.memoryUsage?.usedPercent || 'N/A'
+        });
+
+        // Optionally store in database if table exists
+        try {
+            await query(
+                `INSERT INTO client_performance_metrics
+                 (timestamp, page, version, user_agent, metrics_data, summary_data)
+                 VALUES ($1, $2, $3, $4, $5, $6)`,
+                [
+                    timestamp || new Date().toISOString(),
+                    page || 'unknown',
+                    version || 'unknown',
+                    userAgent || req.headers['user-agent'],
+                    JSON.stringify(metrics),
+                    JSON.stringify(summary)
+                ]
+            );
+        } catch (dbError) {
+            // Table might not exist yet - just log the warning
+            logger.warn('[Client Performance] Failed to store in database', {
+                error: dbError.message
+            });
+        }
+
+        res.json({ success: true, message: 'Performance report received' });
+    } catch (error) {
+        logger.error('[Performance API] Failed to process client report', { error: error.message });
+        res.status(500).json({
+            success: false,
+            error: 'Failed to process performance report'
+        });
+    }
+});
+
+/**
  * GET /api/performance/system
  * Get current system resource usage
  */

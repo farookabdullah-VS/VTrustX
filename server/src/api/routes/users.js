@@ -91,8 +91,18 @@ async function getPlanUserLimit(tenant) {
 router.get('/', authenticate, authenticate.checkPermission('users', 'view'), async (req, res) => {
     try {
         const tenantId = req.user.tenant_id;
+
+        logger.info(`Fetching users for tenant ${tenantId}`, { query: req.query });
+
+        if (!tenantId) {
+            logger.warn('Tenant ID missing in request user context');
+            return res.json({ users: [], total: 0, page: 1, limit: 50 });
+        }
+
         const { search, status, role, page = 1, limit = 50 } = req.query;
-        const offset = (parseInt(page) - 1) * parseInt(limit);
+        const pageNum = parseInt(page) || 1;
+        const limitNum = parseInt(limit) || 50;
+        const offset = (pageNum - 1) * limitNum;
 
         let whereClause = 'WHERE u.tenant_id = $1';
         const params = [tenantId];
@@ -119,7 +129,7 @@ router.get('/', authenticate, authenticate.checkPermission('users', 'view'), asy
         const total = parseInt(countRes.rows[0].count);
 
         // Fetch page
-        params.push(parseInt(limit), offset);
+        params.push(limitNum, offset);
         const result = await pool.query(`
             SELECT u.*, r.name as role_name
             FROM users u
@@ -133,10 +143,10 @@ router.get('/', authenticate, authenticate.checkPermission('users', 'view'), asy
             const { password, ...rest } = u;
             return rest;
         });
-        res.json({ users: safeUsers, total, page: parseInt(page), limit: parseInt(limit) });
+        res.json({ users: safeUsers, total, page: pageNum, limit: limitNum });
     } catch (error) {
-        logger.error('Failed to fetch users', { error: error.message });
-        res.status(500).json({ error: 'Failed to fetch users' });
+        logger.error('Failed to fetch users', { error: error.message, stack: error.stack, tenantId: req.user?.tenant_id });
+        res.status(500).json({ error: 'Failed to fetch users. Check server logs.' });
     }
 });
 
