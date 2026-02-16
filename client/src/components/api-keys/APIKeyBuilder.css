@@ -64,7 +64,7 @@
 
 .section-description {
     margin: 0 0 var(--space-5, 20px) 0;
-    font-size: 14px;
+    font-size: var(--text-sm, 14px);
     color: var(--text-muted);
     line-height: 1.5;
 }
@@ -76,7 +76,7 @@
 .form-group label {
     display: block;
     margin-bottom: var(--space-2, 8px);
-    font-size: 14px;
+    font-size: var(--text-sm, 14px);
     font-weight: 500;
     color: var(--text-secondary);
 }
@@ -88,7 +88,7 @@
     padding: var(--space-3, 12px);
     border: var(--space-0-5, 2px) solid var(--border-light);
     border-radius: var(--radius-md, 8px);
-    font-size: 14px;
+    font-size: var(--text-sm, 14px);
     font-family: inherit;
     transition: all var(--transition-fast, 0.2s);
 }
@@ -98,7 +98,7 @@
 .form-group textarea:focus {
     outline: none;
     border-color: var(--status-info);
-    box-shadow: 0 0 0 var(--space-0-75, 3px) rgba(59, 130, 246, 0.1);
+    box-shadow: 0 0 0 var(--space-0-75, 3px) rgba(59, 130, 246, var(--opacity-10, 0.1));
 }
 
 .form-group textarea {
@@ -115,7 +115,7 @@
 .form-row {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 20px;
+    gap: var(--space-5, 20px);
 }
 
 .error-banner {
@@ -161,7 +161,7 @@
     background: var(--input-bg);
     border: none;
     border-radius: var(--radius-sm-alt, 6px);
-    font-size: 12px;
+    font-size: var(--text-xs, 12px);
     font-weight: 500;
     color: var(--text-secondary, #4B5563);
     cursor: pointer;
@@ -215,7 +215,7 @@
 
 .scope-description {
     margin: 0;
-    font-size: 13px;
+    font-size: var(--text-xs-alt, 13px);
     color: var(--text-muted);
     line-height: 1.4;
 }
@@ -226,7 +226,7 @@
     justify-content: flex-end;
     margin-top: var(--space-8, 32px);
     padding-top: var(--space-6, 24px);
-    border-top: 2px solid var(--border-light);
+    border-top: var(--space-0-5, 2px) solid var(--border-light);
 }
 
 .btn-cancel,
@@ -234,7 +234,7 @@
     padding: var(--space-3, 12px) var(--space-6, 24px);
     border: none;
     border-radius: var(--radius-md, 8px);
-    font-size: 14px;
+    font-size: var(--text-sm, 14px);
     font-weight: 500;
     cursor: pointer;
     transition: all var(--transition-fast, 0.2s);
@@ -257,7 +257,7 @@
 .btn-create:hover {
     background: var(--primary-hover, #2563EB);
     transform: translateY(var(--space--0-25, -1px));
-    box-shadow: var(--shadow-md, 0 var(--space-1, 4px) var(--space-3, 12px) rgba(59, 130, 246, 0.3));
+    box-shadow: var(--shadow-md, 0 var(--space-1, 4px) var(--space-3, 12px) rgba(59, 130, 246, var(--opacity-30, 0.3)));
 }
 
 .btn-create:disabled {
@@ -293,7 +293,7 @@
 
 .warning-banner p {
     margin: 0;
-    font-size: 14px;
+    font-size: var(--text-sm, 14px);
     color: var(--toast-warning-text, #92400E);
     line-height: 1.5;
 }
@@ -305,14 +305,14 @@
 .key-display-section label {
     display: block;
     margin-bottom: var(--space-3, 12px);
-    font-size: 14px;
+    font-size: var(--text-sm, 14px);
     font-weight: 600;
     color: var(--text-secondary);
 }
 
 .key-display-container {
     display: flex;
-    gap: 8px;
+    gap: var(--space-2, 8px);
 }
 
 .key-input-display {
@@ -321,7 +321,7 @@
     border: var(--space-0-5, 2px) solid var(--border-light);
     border-radius: var(--radius-md, 8px);
     font-family: 'Monaco', 'Courier New', monospace;
-    font-size: 14px;
+    font-size: var(--text-sm, 14px);
     color: var(--text-primary);
     background: var(--input-bg, #F9FAFB);
 }
@@ -333,12 +333,12 @@
     color: var(--card-bg);
     border: none;
     border-radius: var(--radius-md, 8px);
-    font-size: 14px;
+    font-size: var(--text-sm, 14px);
     font-weight: 500;
     cursor: pointer;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: var(--space-2, 8px);
     transition: all var(--transition-fast, 0.2s);
 }
 
@@ -361,7 +361,7 @@
 .key-details-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 20px;
+    gap: var(--space-5, 20px);
     margin-bottom: var(--space-8, 32px);
     padding: var(--space-6, 24px);
     background: var(--input-bg, #F9FAFB);
@@ -375,7 +375,7 @@
 }
 
 .detail-label {
-    font-size: 13px;
+    font-size: var(--text-xs-alt, 13px);
     font-weight: 500;
     color: var(--text-muted);
 }
@@ -417,7 +417,7 @@
     padding: var(--space-3, 12px) var(--space-6, 24px);
     border: none;
     border-radius: var(--radius-md, 8px);
-    font-size: 14px;
+    font-size: var(--text-sm, 14px);
     font-weight: 500;
     cursor: pointer;
     transition: all var(--transition-fast, 0.2s);
@@ -440,5 +440,5 @@
 .btn-done:hover {
     background: var(--status-success-dark, #059669);
     transform: translateY(var(--space--0-25, -1px));
-    box-shadow: var(--shadow-md, 0 var(--space-1, 4px) var(--space-3, 12px) rgba(16, 185, 129, 0.3));
+    box-shadow: var(--shadow-md, 0 var(--space-1, 4px) var(--space-3, 12px) rgba(16, 185, 129, var(--opacity-30, 0.3)));
 }
