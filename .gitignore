@@ -52,3 +52,20 @@ client/android/SIGNING_CREDENTIALS.txt
 client/android/app/release/
 client/android/app/build/outputs/bundle/
 client/android/app/build/outputs/apk/release/
+
+# Temporary development files
+combined_log.txt
+cookies.txt
+last_error.txt
+get_tenant_id.js
+server/fix_migration.js
+server/roles_schema.json
+server/run_persona_migration.js
+server/schema_output.json
+server/tenants.json
+server/test_user_fetch.js
+server/user_data.json
+server/check_schema.js
+
+# VTrustXserver files
+VTrustXserver/
