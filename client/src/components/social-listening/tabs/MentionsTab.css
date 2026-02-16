@@ -128,7 +128,7 @@
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--status-info) 0%, #764ba2 100%);
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -155,8 +155,8 @@
 
 .platform-badge {
   padding: 2px 8px;
-  background: #e0e7ff;
-  color: var(--status-info);
+  background: color-mix(in srgb, var(--primary-color) 10%, transparent);
+  color: var(--primary-color);
   border-radius: 4px;
   font-size: 11px;
   font-weight: 600;

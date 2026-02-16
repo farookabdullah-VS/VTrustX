@@ -68,9 +68,15 @@ class DataSyncService {
         throw new Error(`Connection test failed: ${testResult.message}`);
       }
 
+      // Load max mentions limit from settings
+      const settingsResult = await query("SELECT value FROM settings WHERE key = 'sl_max_mentions_per_sync'");
+      const maxMentions = settingsResult.rows.length > 0
+        ? parseInt(settingsResult.rows[0].value) || 100
+        : 100;
+
       // Determine since parameter (fetch mentions since last sync)
       const fetchOptions = {
-        limit: 100
+        limit: maxMentions
       };
 
       if (source.last_sync_at) {
@@ -224,19 +230,50 @@ class DataSyncService {
     try {
       logger.info('[DataSync] Starting scheduled sync');
 
+      // Load tenant settings for auto-sync configuration
+      const settingsResult = await query('SELECT key, value FROM settings');
+      const settings = {};
+      settingsResult.rows.forEach(row => {
+        settings[row.key] = row.value;
+      });
+
+      // Check if auto-sync is enabled globally
+      if (settings.sl_auto_sync_enabled === 'false') {
+        logger.debug('[DataSync] Auto-sync disabled in settings, skipping');
+        return {
+          success: true,
+          sourcesSynced: 0,
+          message: 'Auto-sync disabled'
+        };
+      }
+
+      // Get platform filter from settings
+      const enabledPlatforms = settings.sl_sync_platforms
+        ? settings.sl_sync_platforms.split(',').filter(Boolean)
+        : null; // null = all platforms
+
       // Find sources due for sync
-      const sourcesResult = await query(
-        `SELECT id, tenant_id, platform, name, sync_interval_minutes, last_sync_at
+      let queryStr = `SELECT id, tenant_id, platform, name, sync_interval_minutes, last_sync_at
          FROM sl_sources
-         WHERE status = 'connected'
-           AND (
+         WHERE status = 'connected'`;
+
+      // Add platform filter if specified
+      if (enabledPlatforms && enabledPlatforms.length > 0) {
+        queryStr += ` AND platform = ANY($1)`;
+      }
+
+      queryStr += ` AND (
              last_sync_at IS NULL
              OR last_sync_at < NOW() - (sync_interval_minutes || ' minutes')::INTERVAL
            )
          ORDER BY last_sync_at ASC NULLS FIRST
-         LIMIT 50` // Safety limit
-      );
+         LIMIT 50`; // Safety limit
 
+      const queryParams = enabledPlatforms && enabledPlatforms.length > 0
+        ? [enabledPlatforms]
+        : [];
+
+      const sourcesResult = await query(queryStr, queryParams);
       const sources = sourcesResult.rows;
 
       if (sources.length === 0) {

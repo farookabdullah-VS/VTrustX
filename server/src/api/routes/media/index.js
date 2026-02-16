@@ -108,8 +108,8 @@ router.post('/upload', authenticate, upload.single('file'), async (req, res) => 
         // Save metadata to database
         const result = await query(
             `INSERT INTO media_assets
-            (tenant_id, filename, original_name, media_type, mimetype, size_bytes, storage_path, cdn_url, uploaded_by, metadata)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+            (tenant_id, filename, original_name, media_type, mimetype, size_bytes, storage_path, cdn_url, thumbnail_path, uploaded_by, metadata)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
             RETURNING *`,
             [
                 tenantId,
@@ -120,6 +120,7 @@ router.post('/upload', authenticate, upload.single('file'), async (req, res) => 
                 file.size,
                 uploadResult.path,
                 uploadResult.url || null,
+                uploadResult.thumbnailPath || null,
                 userId,
                 JSON.stringify({
                     width: file.width || null,
@@ -148,6 +149,7 @@ router.post('/upload', authenticate, upload.single('file'), async (req, res) => 
                 mimetype: asset.mimetype,
                 size: asset.size_bytes,
                 url: asset.cdn_url || asset.storage_path,
+                thumbnailUrl: asset.thumbnail_path ? `/api/files/${asset.thumbnail_path}` : null,
                 createdAt: asset.created_at
             }
         });
@@ -188,7 +190,7 @@ router.post('/upload', authenticate, upload.single('file'), async (req, res) => 
 router.get('/', authenticate, async (req, res) => {
     try {
         const tenantId = req.user.tenant_id;
-        const { type, limit = 50, offset = 0 } = req.query;
+        const { type, folder, tag, limit = 50, offset = 0 } = req.query;
 
         let queryStr = 'SELECT * FROM media_assets WHERE tenant_id = $1';
         const params = [tenantId];
@@ -196,6 +198,20 @@ router.get('/', authenticate, async (req, res) => {
         if (type) {
             params.push(type);
             queryStr += ` AND media_type = $${params.length}`;
+        }
+
+        if (folder !== undefined) {
+            if (folder === 'null' || folder === '') {
+                queryStr += ' AND folder IS NULL';
+            } else {
+                params.push(folder);
+                queryStr += ` AND folder = $${params.length}`;
+            }
+        }
+
+        if (tag) {
+            params.push(tag);
+            queryStr += ` AND $${params.length} = ANY(tags)`;
         }
 
         queryStr += ' ORDER BY created_at DESC';
@@ -231,7 +247,10 @@ router.get('/', authenticate, async (req, res) => {
                 mimetype: asset.mimetype,
                 size: asset.size_bytes,
                 url: asset.cdn_url || asset.storage_path,
-                thumbnailUrl: asset.thumbnail_path,
+                thumbnailUrl: asset.thumbnail_path ? `/api/files/${asset.thumbnail_path}` : null,
+                folder: asset.folder,
+                tags: asset.tags || [],
+                description: asset.description,
                 metadata: asset.metadata,
                 createdAt: asset.created_at
             })),
@@ -418,6 +437,254 @@ router.delete('/:id', authenticate, async (req, res) => {
     } catch (error) {
         logger.error('[MediaAPI] Failed to delete asset', { error: error.message });
         res.status(500).json({ error: 'Failed to delete media asset' });
+    }
+});
+
+/**
+ * @swagger
+ * /api/media/{id}:
+ *   patch:
+ *     summary: Update media asset metadata
+ *     tags: [Media]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               folder:
+ *                 type: string
+ *               tags:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *               description:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Metadata updated successfully
+ *       404:
+ *         description: Asset not found
+ */
+router.patch('/:id', authenticate, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const tenantId = req.user.tenant_id;
+        const { folder, tags, description } = req.body;
+
+        // Verify asset exists and belongs to tenant
+        const checkResult = await query(
+            'SELECT id FROM media_assets WHERE id = $1 AND tenant_id = $2',
+            [id, tenantId]
+        );
+
+        if (checkResult.rows.length === 0) {
+            return res.status(404).json({ error: 'Media asset not found' });
+        }
+
+        // Build update query dynamically based on provided fields
+        const updates = [];
+        const values = [];
+        let paramIndex = 1;
+
+        if (folder !== undefined) {
+            updates.push(`folder = $${paramIndex++}`);
+            values.push(folder);
+        }
+
+        if (tags !== undefined) {
+            updates.push(`tags = $${paramIndex++}`);
+            values.push(tags);
+        }
+
+        if (description !== undefined) {
+            updates.push(`description = $${paramIndex++}`);
+            values.push(description);
+        }
+
+        if (updates.length === 0) {
+            return res.status(400).json({ error: 'No fields to update' });
+        }
+
+        updates.push(`updated_at = NOW()`);
+        values.push(id, tenantId);
+
+        const updateQuery = `
+            UPDATE media_assets
+            SET ${updates.join(', ')}
+            WHERE id = $${paramIndex++} AND tenant_id = $${paramIndex++}
+            RETURNING *
+        `;
+
+        const result = await query(updateQuery, values);
+        const asset = result.rows[0];
+
+        logger.info('[MediaAPI] Asset metadata updated', {
+            assetId: id,
+            tenantId,
+            updates: { folder, tags, description }
+        });
+
+        res.json({
+            success: true,
+            asset: {
+                id: asset.id,
+                folder: asset.folder,
+                tags: asset.tags,
+                description: asset.description,
+                updatedAt: asset.updated_at
+            }
+        });
+    } catch (error) {
+        logger.error('[MediaAPI] Failed to update metadata', { error: error.message });
+        res.status(500).json({ error: 'Failed to update metadata' });
+    }
+});
+
+/**
+ * @swagger
+ * /api/media/bulk-update:
+ *   post:
+ *     summary: Perform bulk operations on media assets
+ *     tags: [Media]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - assetIds
+ *               - action
+ *             properties:
+ *               assetIds:
+ *                 type: array
+ *                 items:
+ *                   type: integer
+ *               action:
+ *                 type: string
+ *                 enum: [move, tag, delete]
+ *               data:
+ *                 type: object
+ *                 properties:
+ *                   folder:
+ *                     type: string
+ *                   tags:
+ *                     type: array
+ *                     items:
+ *                       type: string
+ *     responses:
+ *       200:
+ *         description: Bulk operation completed
+ *       400:
+ *         description: Invalid request
+ */
+router.post('/bulk-update', authenticate, async (req, res) => {
+    try {
+        const tenantId = req.user.tenant_id;
+        const { assetIds, action, data } = req.body;
+
+        // Validate input
+        if (!Array.isArray(assetIds) || assetIds.length === 0) {
+            return res.status(400).json({ error: 'assetIds must be a non-empty array' });
+        }
+
+        if (!['move', 'tag', 'delete'].includes(action)) {
+            return res.status(400).json({ error: 'Invalid action' });
+        }
+
+        // Verify all assets belong to tenant
+        const verifyResult = await query(
+            'SELECT id FROM media_assets WHERE id = ANY($1) AND tenant_id = $2',
+            [assetIds, tenantId]
+        );
+
+        if (verifyResult.rows.length !== assetIds.length) {
+            return res.status(404).json({ error: 'Some assets not found or do not belong to tenant' });
+        }
+
+        let result;
+        let message;
+
+        switch (action) {
+            case 'move':
+                if (!data || !data.folder) {
+                    return res.status(400).json({ error: 'folder is required for move action' });
+                }
+
+                await query(
+                    `UPDATE media_assets SET folder = $1, updated_at = NOW()
+                     WHERE id = ANY($2) AND tenant_id = $3`,
+                    [data.folder, assetIds, tenantId]
+                );
+
+                message = `${assetIds.length} asset(s) moved to ${data.folder}`;
+                break;
+
+            case 'tag':
+                if (!data || !Array.isArray(data.tags)) {
+                    return res.status(400).json({ error: 'tags array is required for tag action' });
+                }
+
+                await query(
+                    `UPDATE media_assets SET tags = tags || $1::text[], updated_at = NOW()
+                     WHERE id = ANY($2) AND tenant_id = $3`,
+                    [data.tags, assetIds, tenantId]
+                );
+
+                message = `${assetIds.length} asset(s) tagged with ${data.tags.join(', ')}`;
+                break;
+
+            case 'delete':
+                // Get assets to delete from storage
+                const assetsToDelete = await query(
+                    'SELECT id, storage_path, thumbnail_path FROM media_assets WHERE id = ANY($1) AND tenant_id = $2',
+                    [assetIds, tenantId]
+                );
+
+                // Delete from storage
+                for (const asset of assetsToDelete.rows) {
+                    try {
+                        await storageService.delete(asset.storage_path, asset.thumbnail_path);
+                    } catch (storageError) {
+                        logger.warn('[MediaAPI] Failed to delete from storage during bulk delete', {
+                            assetId: asset.id,
+                            error: storageError.message
+                        });
+                    }
+                }
+
+                // Delete from database
+                await query(
+                    'DELETE FROM media_assets WHERE id = ANY($1) AND tenant_id = $2',
+                    [assetIds, tenantId]
+                );
+
+                message = `${assetIds.length} asset(s) deleted`;
+                break;
+        }
+
+        logger.info('[MediaAPI] Bulk operation completed', {
+            action,
+            assetCount: assetIds.length,
+            tenantId
+        });
+
+        res.json({ success: true, message });
+    } catch (error) {
+        logger.error('[MediaAPI] Bulk operation failed', { error: error.message });
+        res.status(500).json({ error: 'Bulk operation failed' });
     }
 });
 

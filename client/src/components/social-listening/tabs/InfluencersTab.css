@@ -66,12 +66,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
   color: var(--card-bg);
   border-radius: 50%;
   font-size: 14px;
   font-weight: 700;
-  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--primary-color) 30%, transparent);
 }
 
 /* Influencer Header */
@@ -85,7 +85,7 @@
   width: 64px;
   height: 64px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -93,7 +93,7 @@
   font-weight: 700;
   font-size: 24px;
   flex-shrink: 0;
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--primary-color) 20%, transparent);
 }
 
 .influencer-info {
@@ -122,8 +122,8 @@
 
 .platform-tag {
   padding: 3px 8px;
-  background: #e0e7ff;
-  color: var(--status-info);
+  background: color-mix(in srgb, var(--primary-color) 10%, transparent);
+  color: var(--primary-color);
   border-radius: 4px;
   font-size: 11px;
   font-weight: 600;
@@ -178,7 +178,7 @@
   background: var(--input-bg);
   border-radius: 8px;
   margin-bottom: 16px;
-  border-left: 3px solid #667eea;
+  border-left: 3px solid var(--primary-color);
 }
 
 .mention-label {
@@ -231,9 +231,9 @@
 }
 
 .action-btn-primary:hover:not(:disabled) {
-  background: #5568d3;
+  background: var(--primary-hover);
   transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 4px 8px color-mix(in srgb, var(--primary-color) 30%, transparent);
 }
 
 .action-btn-primary:disabled {
@@ -340,7 +340,7 @@
 
   .latest-mention {
     background: #2d3139;
-    border-left-color: #8b9dff;
+    border-left-color: var(--primary-color);
   }
 
   .mention-text {

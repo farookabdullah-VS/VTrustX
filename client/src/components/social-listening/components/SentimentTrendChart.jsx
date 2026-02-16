@@ -11,8 +11,14 @@ import socialListeningApi from '../../../services/socialListeningApi';
 const SentimentTrendChart = ({ dateRange }) => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [primaryColor, setPrimaryColor] = useState('#667eea');
 
   useEffect(() => {
+    // Get primary color from CSS variable
+    const rootStyles = getComputedStyle(document.documentElement);
+    const color = rootStyles.getPropertyValue('--primary-color').trim() || '#667eea';
+    setPrimaryColor(color);
+
     fetchData();
   }, [dateRange]);
 
@@ -137,9 +143,9 @@ const SentimentTrendChart = ({ dateRange }) => {
             type="monotone"
             dataKey="overall"
             name="Overall"
-            stroke="#667eea"
+            stroke={primaryColor}
             strokeWidth={3}
-            dot={{ fill: '#667eea', r: 4 }}
+            dot={{ fill: primaryColor, r: 4 }}
             activeDot={{ r: 6 }}
             strokeDasharray="5 5"
           />

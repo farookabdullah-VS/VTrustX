@@ -127,12 +127,12 @@
 }
 
 .action-btn-ack {
-  background: #dbeafe;
-  color: #3b82f6;
+  background: color-mix(in srgb, var(--primary-color) 15%, transparent);
+  color: var(--primary-color);
 }
 
 .action-btn-ack:hover {
-  background: #bfdbfe;
+  background: color-mix(in srgb, var(--primary-color) 25%, transparent);
 }
 
 .action-btn-resolve {
@@ -268,7 +268,7 @@
 
   .toggle-btn.active {
     background: #1e2836;
-    color: #8b9dff;
+    color: var(--primary-color);
   }
 
   .event-card {
@@ -293,12 +293,12 @@
   }
 
   .action-btn-ack {
-    background: #1e3a5f;
-    color: #60a5fa;
+    background: color-mix(in srgb, var(--primary-color) 20%, #1e2836);
+    color: var(--primary-color);
   }
 
   .action-btn-ack:hover {
-    background: #2d4a6f;
+    background: color-mix(in srgb, var(--primary-color) 30%, #1e2836);
   }
 
   .action-btn-resolve {
@@ -319,7 +319,7 @@
   }
 
   .rule-type {
-    color: #8b9dff;
+    color: var(--primary-color);
   }
 
   .rule-description {

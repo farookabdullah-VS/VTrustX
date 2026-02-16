@@ -174,7 +174,7 @@
 
 .form-group input:focus {
   outline: none;
-  border-color: #667eea;
+  border-color: var(--primary-color);
 }
 
 .modal-actions {
@@ -221,7 +221,7 @@
   }
 
   .sov-percentage {
-    color: #8b9dff;
+    color: var(--primary-color);
   }
 
   .sov-bar {

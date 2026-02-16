@@ -11,7 +11,7 @@
 
 /* Header */
 .sl-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, var(--primary-color, #00695C) 0%, var(--primary-hover, #004D40) 100%);
   color: var(--card-bg);
   padding: var(--space-8, 32px) var(--space-10, 40px);
   box-shadow: var(--shadow-md, 0 var(--space-1, 4px) var(--space-1-5, 6px) rgba(0, 0, 0, 0.1));
@@ -81,9 +81,9 @@
 }
 
 .sl-tab.active {
-  color: #667eea;
-  border-bottom-color: #667eea;
-  background-color: #f0f3ff;
+  color: var(--primary-color, #00695C);
+  border-bottom-color: var(--primary-color, #00695C);
+  background-color: color-mix(in srgb, var(--primary-color, #00695C) 10%, transparent);
 }
 
 .sl-tab svg {
@@ -106,7 +106,7 @@
 
 /* Tab Sections */
 .sl-tab-section {
-  background: white;
+  background: var(--card-bg, white);
   border-radius: var(--radius-lg, 12px);
   padding: var(--space-6, 24px);
   box-shadow: var(--shadow-sm, 0 var(--space-0-5, 2px) var(--space-2, 8px) rgba(0, 0, 0, 0.08));
@@ -123,7 +123,7 @@
 .sl-section-title {
   font-size: var(--text-xl, 20px);
   font-weight: 600;
-  color: #212529;
+  color: var(--text-color, #1a1c1e);
   margin: 0;
   display: flex;
   align-items: center;
@@ -137,7 +137,8 @@
 }
 
 .sl-empty-icon {
-  color: #adb5bd;
+  color: var(--text-muted, #444746);
+  opacity: 0.5;
   margin-bottom: var(--space-4, 16px);
 }
 
@@ -160,7 +161,7 @@
   align-items: center;
   gap: var(--space-2, 8px);
   padding: var(--space-2-5, 10px) var(--space-5, 20px);
-  background-color: #667eea;
+  background-color: var(--primary-color, #00695C);
   color: var(--card-bg);
   border: none;
   border-radius: var(--radius-md, 8px);
@@ -171,9 +172,9 @@
 }
 
 .sl-button:hover {
-  background-color: #5568d3;
+  background-color: var(--primary-hover, #004D40);
   transform: translateY(var(--space--0-25, -1px));
-  box-shadow: var(--shadow-md, 0 var(--space-1, 4px) var(--space-2, 8px) rgba(102, 126, 234, 0.3));
+  box-shadow: var(--shadow-md, 0 var(--space-1, 4px) var(--space-2, 8px) color-mix(in srgb, var(--primary-color, #00695C) 30%, transparent));
 }
 
 .sl-button:active {
@@ -237,36 +238,37 @@
   }
 }
 
-/* Dark mode support (optional) */
+/* Dark mode support - uses theme variables automatically */
+[data-theme="dark"] .social-listening-dashboard,
 @media (prefers-color-scheme: dark) {
   .social-listening-dashboard {
-    background-color: #1a1d23;
+    background-color: var(--deep-bg);
   }
 
   .sl-tab-section {
-    background: #25282e;
-    color: #e9ecef;
+    background: var(--card-bg);
+    color: var(--text-color);
   }
 
   .sl-section-title {
-    color: #f8f9fa;
+    color: var(--text-color);
   }
 
   .sl-tabs {
-    background-color: #25282e;
-    border-bottom-color: #404550;
+    background-color: var(--card-bg);
+    border-bottom-color: var(--border-light);
   }
 
   .sl-tab {
-    color: #adb5bd;
+    color: var(--text-muted);
   }
 
   .sl-tab:hover {
-    background-color: #2d3139;
-    color: #e9ecef;
+    background-color: var(--input-bg);
+    color: var(--text-color);
   }
 
   .sl-tab.active {
-    background-color: #1e2836;
+    background-color: color-mix(in srgb, var(--primary-color, #00695C) 15%, transparent);
   }
 }

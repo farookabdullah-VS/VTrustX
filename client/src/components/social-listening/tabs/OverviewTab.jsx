@@ -80,8 +80,8 @@ const OverviewTab = () => {
         <div className="kpi-cards">
           {/* Total Mentions */}
           <div className="kpi-card">
-            <div className="kpi-icon" style={{ backgroundColor: '#e0e7ff' }}>
-              <MessageCircle size={24} style={{ color: '#667eea' }} />
+            <div className="kpi-icon" style={{ backgroundColor: 'color-mix(in srgb, var(--primary-color) 10%, transparent)' }}>
+              <MessageCircle size={24} style={{ color: 'var(--primary-color)' }} />
             </div>
             <div className="kpi-content">
               <div className="kpi-label">Total Mentions</div>
@@ -109,8 +109,8 @@ const OverviewTab = () => {
 
           {/* Top Platform */}
           <div className="kpi-card">
-            <div className="kpi-icon" style={{ backgroundColor: '#e0f2fe' }}>
-              <TrendingUp size={24} style={{ color: '#0ea5e9' }} />
+            <div className="kpi-icon" style={{ backgroundColor: 'color-mix(in srgb, var(--secondary-color, #FFB300) 15%, transparent)' }}>
+              <TrendingUp size={24} style={{ color: 'var(--secondary-color, #FFB300)' }} />
             </div>
             <div className="kpi-content">
               <div className="kpi-label">Top Platform</div>
@@ -121,8 +121,8 @@ const OverviewTab = () => {
 
           {/* Top Intent */}
           <div className="kpi-card">
-            <div className="kpi-icon" style={{ backgroundColor: '#fef3c7' }}>
-              <BarChart3 size={24} style={{ color: '#f59e0b' }} />
+            <div className="kpi-icon" style={{ backgroundColor: 'color-mix(in srgb, var(--primary-color) 15%, transparent)' }}>
+              <BarChart3 size={24} style={{ color: 'var(--primary-color)' }} />
             </div>
             <div className="kpi-content">
               <div className="kpi-label">Top Intent</div>
@@ -166,7 +166,7 @@ const OverviewTab = () => {
                       className="breakdown-fill"
                       style={{
                         width: `${(item.count / overview.total_mentions) * 100}%`,
-                        backgroundColor: '#667eea'
+                        backgroundColor: 'var(--primary-color, #00695C)'
                       }}
                     />
                   </div>

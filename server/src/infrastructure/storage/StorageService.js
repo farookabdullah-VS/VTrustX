@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const sharp = require('sharp');
+const ffmpeg = require('fluent-ffmpeg');
 const { Storage } = require('@google-cloud/storage');
 const logger = require('../logger');
 
@@ -77,6 +78,81 @@ class StorageService {
       logger.warn('Image compression failed, using original', { error: err.message });
       return buffer;
     }
+  }
+
+  /**
+   * Generate thumbnail for media
+   * @param {Buffer} buffer - Original file buffer
+   * @param {string} mimetype - File MIME type
+   * @returns {Buffer|null} Thumbnail buffer or null if not applicable
+   */
+  async _generateThumbnail(buffer, mimetype) {
+    try {
+      if (mimetype.startsWith('image/')) {
+        // Generate image thumbnail using sharp
+        return await sharp(buffer)
+          .resize(200, 200, { fit: 'cover', position: 'center' })
+          .jpeg({ quality: 70 })
+          .toBuffer();
+      }
+
+      if (mimetype.startsWith('video/')) {
+        // Generate video thumbnail using ffmpeg
+        return await this._extractVideoFrame(buffer);
+      }
+
+      return null;
+    } catch (err) {
+      logger.warn('Thumbnail generation failed', { error: err.message, mimetype });
+      return null;
+    }
+  }
+
+  /**
+   * Extract first frame from video as thumbnail
+   * @param {Buffer} buffer - Video buffer
+   * @returns {Promise<Buffer>} Thumbnail buffer
+   */
+  async _extractVideoFrame(buffer) {
+    return new Promise((resolve, reject) => {
+      // Write buffer to temporary file
+      const tempInput = path.join(this.localUploadDir || '/tmp', `temp_${Date.now()}.mp4`);
+      const tempOutput = path.join(this.localUploadDir || '/tmp', `thumb_${Date.now()}.jpg`);
+
+      try {
+        fs.writeFileSync(tempInput, buffer);
+
+        ffmpeg(tempInput)
+          .screenshots({
+            count: 1,
+            folder: path.dirname(tempOutput),
+            filename: path.basename(tempOutput),
+            size: '200x200',
+            timemarks: ['1'] // Extract frame at 1 second
+          })
+          .on('end', () => {
+            try {
+              const thumbnailBuffer = fs.readFileSync(tempOutput);
+
+              // Cleanup temp files
+              fs.unlinkSync(tempInput);
+              fs.unlinkSync(tempOutput);
+
+              resolve(thumbnailBuffer);
+            } catch (err) {
+              reject(err);
+            }
+          })
+          .on('error', (err) => {
+            // Cleanup on error
+            if (fs.existsSync(tempInput)) fs.unlinkSync(tempInput);
+            if (fs.existsSync(tempOutput)) fs.unlinkSync(tempOutput);
+            reject(err);
+          });
+      } catch (err) {
+        reject(err);
+      }
+    });
   }
 
   /**
@@ -271,6 +347,97 @@ class StorageService {
 
     if (fs.existsSync(filepath)) {
       fs.unlinkSync(filepath);
+    }
+  }
+
+  /**
+   * Upload file with optional thumbnail generation
+   * @param {Buffer} buffer - File buffer
+   * @param {string} filename - Destination filename
+   * @param {Object} options - Upload options
+   * @param {string} options.contentType - MIME type
+   * @param {Object} options.metadata - Additional metadata
+   * @returns {Object} Upload result with path and URL
+   */
+  async upload(buffer, filename, options = {}) {
+    try {
+      const { contentType, metadata = {} } = options;
+
+      // 1. Compress if image
+      let processedBuffer = await this._compressImage(buffer, contentType);
+
+      // 2. Generate thumbnail
+      let thumbnailPath = null;
+      const thumbnailBuffer = await this._generateThumbnail(processedBuffer, contentType);
+
+      if (thumbnailBuffer) {
+        const thumbnailFilename = `thumb_${filename}`;
+        const encryptedThumbnail = this._encryptBuffer(thumbnailBuffer);
+        const thumbnailStoragePath = `${thumbnailFilename}.enc`;
+
+        // Upload thumbnail
+        if (this.storageType === 'gcs') {
+          await this._uploadToGCS(thumbnailStoragePath, encryptedThumbnail, 'image/jpeg');
+        } else {
+          await this._uploadToLocal(thumbnailStoragePath, encryptedThumbnail);
+        }
+
+        thumbnailPath = thumbnailFilename;
+      }
+
+      // 3. Encrypt main file
+      const encryptedBuffer = this._encryptBuffer(processedBuffer);
+
+      // 4. Upload main file
+      const storagePath = `${filename}.enc`;
+      if (this.storageType === 'gcs') {
+        await this._uploadToGCS(storagePath, encryptedBuffer, contentType);
+      } else {
+        await this._uploadToLocal(storagePath, encryptedBuffer);
+      }
+
+      logger.info('File uploaded with thumbnail', {
+        filename,
+        thumbnailPath,
+        storageType: this.storageType
+      });
+
+      return {
+        path: filename,
+        url: this.storageType === 'gcs' ? null : `/api/files/${filename}`,
+        thumbnailPath,
+        thumbnailUrl: thumbnailPath ? `/api/files/${thumbnailPath}` : null,
+        size: buffer.length
+      };
+    } catch (err) {
+      logger.error('Failed to upload file', { error: err.message, filename });
+      throw new Error('Failed to upload file');
+    }
+  }
+
+  /**
+   * Delete file and its thumbnail
+   * @param {string} filename - File name to delete
+   * @param {string} thumbnailPath - Optional thumbnail path
+   */
+  async delete(filename, thumbnailPath = null) {
+    try {
+      // Delete main file
+      await this.deleteFile(filename);
+
+      // Delete thumbnail if exists
+      if (thumbnailPath) {
+        try {
+          await this.deleteFile(thumbnailPath);
+        } catch (err) {
+          logger.warn('Failed to delete thumbnail', { thumbnailPath, error: err.message });
+        }
+      }
+
+      logger.info('File and thumbnail deleted', { filename, thumbnailPath });
+    } catch (err) {
+      logger.error('Failed to delete file', { error: err.message, filename });
+      throw new Error('Failed to delete file');
     }
   }
 

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import VideoAgentInterface from './VideoAgentInterface';
 import axios from 'axios';
-import { Settings, Shield, Globe, Database, Mail, Mic, Cpu, Save, Building2, Bot, Phone, Flag, ShieldCheck } from 'lucide-react';
+import { Settings, Shield, Globe, Database, Mail, Mic, Cpu, Save, Building2, Bot, Phone, Flag, ShieldCheck, Radio } from 'lucide-react';
 import { useToast } from './common/Toast';
 
 export function SystemSettings() {
@@ -51,7 +51,13 @@ export function SystemSettings() {
         use_mock_calls: 'false',
         idle_timeout: '0',
         public_url: '', // ngrok
-        core_service_url: 'http://localhost:3000'
+        core_service_url: 'http://localhost:3000',
+
+        // Social Listening Sync
+        sl_auto_sync_enabled: 'true',
+        sl_sync_interval: '15', // minutes
+        sl_sync_platforms: 'twitter,reddit,tiktok', // comma-separated
+        sl_max_mentions_per_sync: '100'
     });
 
     const [loading, setLoading] = useState(false);
@@ -201,6 +207,7 @@ export function SystemSettings() {
                 <TabButton id="database" label="Database" icon={Database} />
                 <TabButton id="smtp" label="Email (SMTP)" icon={Mail} />
                 <TabButton id="telephony" label="Telephony" icon={Mic} />
+                <TabButton id="sociallistening" label="Social Listening" icon={Radio} />
                 <TabButton id="system" label="System Flags" icon={Shield} />
             </div>
 
@@ -608,6 +615,129 @@ export function SystemSettings() {
                                 placeholder="+1234567890"
                                 style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--input-border)', background: 'var(--input-bg)', color: 'var(--input-text)' }}
                             />
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* ---> SOCIAL LISTENING <--- */}
+            {activeTab === 'sociallistening' && (
+                <div className="tab-content" style={{ animation: 'fadeIn 0.3s' }}>
+                    <div style={{ background: 'var(--input-bg)', padding: '30px', borderRadius: '16px', border: '1px solid var(--input-border)', boxShadow: '0 4px 6px rgba(0,0,0,0.02)', marginBottom: '30px' }}>
+                        <h2 style={{ fontSize: '1.2em', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--text-color)' }}>
+                            <Radio size={24} /> Auto-Sync Configuration
+                        </h2>
+
+                        <div style={{ marginBottom: '30px' }}>
+                            <label className="switch" style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', color: 'var(--text-color)' }}>
+                                <input
+                                    type="checkbox"
+                                    checked={settings.sl_auto_sync_enabled === 'true'}
+                                    onChange={(e) => setSettings({ ...settings, sl_auto_sync_enabled: e.target.checked ? 'true' : 'false' })}
+                                />
+                                <span className="slider"></span>
+                                <span style={{ fontWeight: '500' }}>Enable Auto-Sync</span>
+                            </label>
+                            <p style={{ marginTop: '8px', fontSize: '0.9em', color: 'var(--text-muted)', marginLeft: '60px' }}>
+                                Automatically fetch new mentions from connected social platforms at regular intervals
+                            </p>
+                        </div>
+
+                        <div style={{ marginBottom: '20px' }}>
+                            <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: 'var(--label-color)' }}>Sync Interval (minutes)</label>
+                            <select
+                                name="sl_sync_interval"
+                                value={settings.sl_sync_interval || '15'}
+                                onChange={handleChange}
+                                style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--input-border)', background: 'var(--input-bg)', color: 'var(--input-text)', fontSize: '1em' }}
+                                disabled={settings.sl_auto_sync_enabled !== 'true'}
+                            >
+                                <option value="5">Every 5 minutes</option>
+                                <option value="10">Every 10 minutes</option>
+                                <option value="15">Every 15 minutes (Recommended)</option>
+                                <option value="30">Every 30 minutes</option>
+                                <option value="60">Every hour</option>
+                            </select>
+                            <p style={{ marginTop: '8px', fontSize: '0.9em', color: 'var(--text-muted)' }}>
+                                ⚡ Lower intervals provide faster updates but may hit platform rate limits
+                            </p>
+                        </div>
+
+                        <div style={{ marginBottom: '20px' }}>
+                            <label style={{ display: 'block', marginBottom: '12px', fontWeight: '500', color: 'var(--label-color)' }}>Platforms to Monitor</label>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px' }}>
+                                {['twitter', 'reddit', 'tiktok', 'facebook', 'instagram', 'linkedin', 'youtube'].map(platform => {
+                                    const isEnabled = settings.sl_sync_platforms?.split(',').includes(platform);
+                                    return (
+                                        <label key={platform} className="switch" style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', color: 'var(--text-color)' }}>
+                                            <input
+                                                type="checkbox"
+                                                checked={isEnabled}
+                                                onChange={(e) => {
+                                                    const platforms = settings.sl_sync_platforms?.split(',').filter(Boolean) || [];
+                                                    if (e.target.checked) {
+                                                        platforms.push(platform);
+                                                    } else {
+                                                        const index = platforms.indexOf(platform);
+                                                        if (index > -1) platforms.splice(index, 1);
+                                                    }
+                                                    setSettings({ ...settings, sl_sync_platforms: platforms.join(',') });
+                                                }}
+                                                disabled={settings.sl_auto_sync_enabled !== 'true'}
+                                            />
+                                            <span className="slider"></span>
+                                            <span style={{ textTransform: 'capitalize' }}>{platform}</span>
+                                        </label>
+                                    );
+                                })}
+                            </div>
+                            <p style={{ marginTop: '12px', fontSize: '0.9em', color: 'var(--text-muted)' }}>
+                                💡 Only platforms with active connections will be synced
+                            </p>
+                        </div>
+
+                        <div style={{ marginBottom: '20px' }}>
+                            <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: 'var(--label-color)' }}>Max Mentions Per Sync</label>
+                            <input
+                                type="number"
+                                name="sl_max_mentions_per_sync"
+                                value={settings.sl_max_mentions_per_sync || '100'}
+                                onChange={handleChange}
+                                min="10"
+                                max="1000"
+                                step="10"
+                                style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--input-border)', background: 'var(--input-bg)', color: 'var(--input-text)', fontSize: '1em' }}
+                                disabled={settings.sl_auto_sync_enabled !== 'true'}
+                            />
+                            <p style={{ marginTop: '8px', fontSize: '0.9em', color: 'var(--text-muted)' }}>
+                                Limit the number of mentions fetched per sync to avoid overwhelming the system
+                            </p>
+                        </div>
+
+                        <div style={{ padding: '20px', background: 'color-mix(in srgb, var(--primary-color) 10%, transparent)', borderRadius: '12px', border: '1px solid var(--primary-color)' }}>
+                            <h3 style={{ fontSize: '1em', marginBottom: '10px', color: 'var(--primary-color)', fontWeight: '600' }}>
+                                📊 Sync Status
+                            </h3>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '15px', marginTop: '15px' }}>
+                                <div>
+                                    <div style={{ fontSize: '0.85em', color: 'var(--text-muted)', marginBottom: '4px' }}>Status</div>
+                                    <div style={{ fontSize: '1.1em', fontWeight: '600', color: 'var(--text-color)' }}>
+                                        {settings.sl_auto_sync_enabled === 'true' ? '🟢 Enabled' : '🔴 Disabled'}
+                                    </div>
+                                </div>
+                                <div>
+                                    <div style={{ fontSize: '0.85em', color: 'var(--text-muted)', marginBottom: '4px' }}>Interval</div>
+                                    <div style={{ fontSize: '1.1em', fontWeight: '600', color: 'var(--text-color)' }}>
+                                        {settings.sl_sync_interval || '15'} min
+                                    </div>
+                                </div>
+                                <div>
+                                    <div style={{ fontSize: '0.85em', color: 'var(--text-muted)', marginBottom: '4px' }}>Active Platforms</div>
+                                    <div style={{ fontSize: '1.1em', fontWeight: '600', color: 'var(--text-color)' }}>
+                                        {settings.sl_sync_platforms?.split(',').filter(Boolean).length || 0}
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

@@ -28,7 +28,7 @@
 }
 
 .topic-tag:hover {
-  background-color: #f0f3ff;
+  background-color: color-mix(in srgb, var(--primary-color) 10%, transparent);
   transform: scale(1.05);
 }
 
@@ -81,8 +81,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #e0e7ff;
-  color: var(--status-info);
+  background: color-mix(in srgb, var(--primary-color) 15%, transparent);
+  color: var(--primary-color);
   border-radius: 50%;
   font-size: 13px;
   font-weight: 700;
@@ -229,50 +229,51 @@
   }
 }
 
-/* Dark mode */
+/* Dark mode - uses theme variables */
+[data-theme="dark"] .topics-tab,
 @media (prefers-color-scheme: dark) {
   .topic-tag {
-    color: #8b9dff;
+    color: var(--primary-color);
   }
 
   .topic-tag:hover {
-    background-color: #2d3139;
+    background-color: var(--input-bg);
   }
 
   .topics-table-header {
-    background: #2d3139;
+    background: var(--input-bg);
     color: var(--text-disabled);
   }
 
   .topics-table-row:hover {
-    background-color: #2d3139;
+    background-color: var(--input-bg);
   }
 
   .topics-table-row {
-    border-bottom-color: #404550;
+    border-bottom-color: var(--border-light);
   }
 
   .topic-rank {
-    background: #1e2836;
-    color: #8b9dff;
+    background: color-mix(in srgb, var(--primary-color) 20%, transparent);
+    color: var(--primary-color);
   }
 
   .topic-name {
-    color: #f8f9fa;
+    color: var(--text-color);
   }
 
   .keyword-tag {
-    background: #2d3139;
+    background: var(--input-bg);
     color: var(--text-disabled);
   }
 
   .mention-count {
-    color: #e9ecef;
+    color: var(--text-color);
   }
 
   @media (max-width: 768px) {
     .topics-table-row {
-      background: #25282e;
+      background: var(--card-bg);
     }
   }
 }
