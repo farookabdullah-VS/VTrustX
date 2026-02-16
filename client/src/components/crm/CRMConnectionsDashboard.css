@@ -46,7 +46,7 @@
 .btn-add-connection:hover {
     background: var(--status-info-dark);
     transform: translateY(var(--space--0-5, -2px));
-    box-shadow: var(--shadow-md, 0 var(--space-1, 4px) var(--space-3, 12px) rgba(59, 130, 246, 0.3));
+    box-shadow: var(--shadow-md, 0 var(--space-1, 4px) var(--space-3, 12px) rgba(59, 130, 246, var(--opacity-30, 0.3)));
 }
 
 /* Platforms Showcase */
@@ -87,7 +87,7 @@
 
 .platform-card:hover {
     border-color: var(--status-info);
-    box-shadow: var(--shadow-lg, 0 var(--space-2, 8px) var(--space-6, 24px) rgba(0, 0, 0, 0.1));
+    box-shadow: var(--shadow-lg, 0 var(--space-2, 8px) var(--space-6, 24px) rgba(0, 0, 0, var(--opacity-10, 0.1)));
     transform: translateY(var(--space--1-25, -5px));
 }
 
@@ -186,7 +186,7 @@
 
 .connection-card:hover {
     border-color: #D1D5DB;
-    box-shadow: var(--shadow-lg, 0 var(--space-1-5, 6px) var(--space-5, 20px) rgba(0, 0, 0, 0.08));
+    box-shadow: var(--shadow-lg, 0 var(--space-1-5, 6px) var(--space-5, 20px) rgba(0, 0, 0, var(--opacity-8, 0.08)));
 }
 
 /* Connection Header */
