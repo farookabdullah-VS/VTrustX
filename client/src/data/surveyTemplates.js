@@ -1,3 +1,5 @@
+import React from 'react';
+import { Heart, Users, Hospital, GraduationCap, PartyPopper } from 'lucide-react';
 
 const generateTemplates = (category, baseTitle, icon, count, baseQuestions) => {
     return Array.from({ length: count }, (_, i) => ({
@@ -101,27 +103,27 @@ const createTemplate = (id, title, category, icon, description, elements) => ({
     }
 });
 
-const cxTemplates = cxTitles.map((t, i) => createTemplate(`cx-${i}`, t, "Customer Experience", "❤️", null, [
+const cxTemplates = cxTitles.map((t, i) => createTemplate(`cx-${i}`, t, "Customer Experience", Heart, null, [
     { type: "rating", name: "satisfaction", title: "How satisfied are you?", rateMax: 10 },
     { type: "comment", name: "feedback", title: "Any additional feedback?" }
 ]));
 
-const hrTemplates = hrTitles.map((t, i) => createTemplate(`hr-${i}`, t, "Human Resources", "👥", null, [
+const hrTemplates = hrTitles.map((t, i) => createTemplate(`hr-${i}`, t, "Human Resources", Users, null, [
     { type: "rating", name: "agreement", title: "I agree with the statement related to " + t, rateMax: 10 },
     { type: "comment", name: "details", title: "Please explain your rating." }
 ]));
 
-const healthTemplates = healthcareTitles.map((t, i) => createTemplate(`hlth-${i}`, t, "Healthcare", "🏥", null, [
+const healthTemplates = healthcareTitles.map((t, i) => createTemplate(`hlth-${i}`, t, "Healthcare", Hospital, null, [
     { type: "radiogroup", name: "quality", title: "Rate the quality of " + t, choices: ["Excellent", "Good", "Fair", "Poor"] },
     { type: "comment", name: "notes", title: "Medical Notes / Feedback" }
 ]));
 
-const eduTemplates = educationTitles.map((t, i) => createTemplate(`edu-${i}`, t, "Education", "🎓", null, [
+const eduTemplates = educationTitles.map((t, i) => createTemplate(`edu-${i}`, t, "Education", <GraduationCap color="#8b5cf6" />, null, [
     { type: "rating", name: "score", title: "Evaluation Score", rateMax: 10 },
     { type: "text", name: "educator_name", title: "Instructor / Course Name" }
 ]));
 
-const eventTemplates = eventTitles.map((t, i) => createTemplate(`evt-${i}`, t, "Events", "🎉", null, [
+const eventTemplates = eventTitles.map((t, i) => createTemplate(`evt-${i}`, t, "Events", <PartyPopper color="#f59e0b" />, null, [
     { type: "rating", name: "rating", title: "Overall Rating", rateMax: 10 },
     { type: "boolean", name: "recommend", title: "Would you recommend this event?" }
 ]));
