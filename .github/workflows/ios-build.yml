@@ -81,7 +81,7 @@ jobs:
           ls -lh
 
       - name: Upload iOS App Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: RayiX-iOS-Debug
           path: client/ios/App/build/ipa/RayiX-debug.ipa
