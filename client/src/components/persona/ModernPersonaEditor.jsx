@@ -12,6 +12,7 @@ import { ChartEditorModal } from './ChartEditorModal';
 import { DocumentSelectorModal } from './DocumentSelectorModal';
 import { AIPersonaImprover } from './AIPersonaImprover';
 import { AIPersonaChat } from './AIPersonaChat';
+import { PersonaAnalyticsDashboard } from './PersonaAnalyticsDashboard';
 
 const SECTION_TEMPLATES = {
     // --- IDENTITY / HEADER ---
@@ -304,6 +305,7 @@ export function ModernPersonaEditor({ persona, setPersona: setParentPersona, per
     const [showLeftPanel, setShowLeftPanel] = useState(true);
     const [showRightPanel, setShowRightPanel] = useState(true);
     const [activeTab, setActiveTab] = useState('text'); // text, graphs, media
+    const [viewMode, setViewMode] = useState('editor'); // editor, analytics
 
     // Channel / Chart / Doc State
     const [showChannelModal, setShowChannelModal] = useState(false);
@@ -555,8 +557,50 @@ export function ModernPersonaEditor({ persona, setPersona: setParentPersona, per
             <div className="no-print" style={{ height: '50px', background: 'var(--primary-color, #0f172a)', borderBottom: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 20px', color: 'white' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                     <div style={{ fontWeight: 'bold' }}>Persona Studio</div>
-                    <button onClick={() => setShowLeftPanel(!showLeftPanel)} style={{ display: 'flex', alignItems: 'center', gap: '5px', background: showLeftPanel ? 'rgba(255,255,255,0.2)' : 'transparent', border: '1px solid rgba(255,255,255,0.2)', color: 'white', padding: '4px 10px', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem', transition: 'all 0.2s' }}><PanelLeft size={14} /> Explorer</button>
-                    <button onClick={() => setShowRightPanel(!showRightPanel)} style={{ display: 'flex', alignItems: 'center', gap: '5px', background: showRightPanel ? 'rgba(255,255,255,0.2)' : 'transparent', border: '1px solid rgba(255,255,255,0.2)', color: 'white', padding: '4px 10px', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem', transition: 'all 0.2s' }}><PanelRight size={14} /> Properties</button>
+                    {viewMode === 'editor' && (
+                        <>
+                            <button onClick={() => setShowLeftPanel(!showLeftPanel)} style={{ display: 'flex', alignItems: 'center', gap: '5px', background: showLeftPanel ? 'rgba(255,255,255,0.2)' : 'transparent', border: '1px solid rgba(255,255,255,0.2)', color: 'white', padding: '4px 10px', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem', transition: 'all 0.2s' }}><PanelLeft size={14} /> Explorer</button>
+                            <button onClick={() => setShowRightPanel(!showRightPanel)} style={{ display: 'flex', alignItems: 'center', gap: '5px', background: showRightPanel ? 'rgba(255,255,255,0.2)' : 'transparent', border: '1px solid rgba(255,255,255,0.2)', color: 'white', padding: '4px 10px', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem', transition: 'all 0.2s' }}><PanelRight size={14} /> Properties</button>
+                        </>
+                    )}
+
+                    {/* View Mode Tabs */}
+                    <div style={{ display: 'flex', gap: '4px', background: 'rgba(255,255,255,0.1)', padding: '3px', borderRadius: '6px', marginLeft: '10px' }}>
+                        <button
+                            onClick={() => setViewMode('editor')}
+                            style={{
+                                padding: '5px 14px',
+                                borderRadius: '4px',
+                                border: 'none',
+                                cursor: 'pointer',
+                                fontSize: '0.75rem',
+                                fontWeight: '600',
+                                background: viewMode === 'editor' ? 'white' : 'transparent',
+                                color: viewMode === 'editor' ? '#0f172a' : 'rgba(255,255,255,0.8)',
+                                boxShadow: viewMode === 'editor' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
+                                transition: 'all 0.2s'
+                            }}
+                        >
+                            Editor
+                        </button>
+                        <button
+                            onClick={() => setViewMode('analytics')}
+                            style={{
+                                padding: '5px 14px',
+                                borderRadius: '4px',
+                                border: 'none',
+                                cursor: 'pointer',
+                                fontSize: '0.75rem',
+                                fontWeight: '600',
+                                background: viewMode === 'analytics' ? 'white' : 'transparent',
+                                color: viewMode === 'analytics' ? '#0f172a' : 'rgba(255,255,255,0.8)',
+                                boxShadow: viewMode === 'analytics' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
+                                transition: 'all 0.2s'
+                            }}
+                        >
+                            Analytics
+                        </button>
+                    </div>
 
                     {/* Print Styles */}
                     <style>
@@ -728,7 +772,7 @@ export function ModernPersonaEditor({ persona, setPersona: setParentPersona, per
             />
 
             <div className="print-layout-row" style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
-                {showLeftPanel && (
+                {viewMode === 'editor' && showLeftPanel && (
                     <div className="no-print" style={{ width: '250px', background: 'white', borderRight: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', overflowY: 'auto' }}>
                         <div style={{ display: 'flex', alignItems: 'center', borderBottom: '1px solid #e2e8f0' }}>
                             <div style={{ display: 'flex', flex: 1 }}>
@@ -784,30 +828,35 @@ export function ModernPersonaEditor({ persona, setPersona: setParentPersona, per
                     </div>
                 )}
 
-                <div className="print-container-wrapper" style={{ flex: 1, overflow: 'auto', padding: '30px', background: '#f1f5f9' }}>
-                    <div
-                        id="persona-canvas-container"
-                        style={{ width: '1200px', margin: '0 auto', padding: '40px', overflowY: 'auto', position: 'relative' }}
-                        onClick={() => setSelectedSectionId(null)}
-                    >
-                        <PersonaCanvas
-                            sections={localPersona.sections}
-                            updateSection={updateSection}
-                            removeSection={removeSection}
-                            updateLayouts={updateLayouts}
-                            selectedSectionId={selectedSectionId}
-                            onSelectSection={setSelectedSectionId}
-                            personalityColor={(localPersona.type === 'Idealist' ? '#A3E635' : localPersona.type === 'Rational' ? '#60A5FA' : localPersona.type === 'Artisan' ? '#FBBF24' : localPersona.type === 'Guardian' ? '#818CF8' : '#22d3ee')}
-                            onManageChannels={handleManageChannels}
-                            onManageChart={handleManageChart}
-                            onManageDocuments={handleManageDocuments}
-                            personaName={localPersona.sections.find(s => s.type === 'header')?.data?.name || localPersona.name}
-                            personaRole={localPersona.sections.find(s => s.type === 'header')?.data?.role || localPersona.title}
-                        />
-                    </div>
+                {/* Main Content Area - Editor or Analytics */}
+                <div className="print-container-wrapper" style={{ flex: 1, overflow: 'auto', padding: viewMode === 'analytics' ? '0' : '30px', background: viewMode === 'analytics' ? '#f8fafc' : '#f1f5f9' }}>
+                    {viewMode === 'editor' ? (
+                        <div
+                            id="persona-canvas-container"
+                            style={{ width: '1200px', margin: '0 auto', padding: '40px', overflowY: 'auto', position: 'relative' }}
+                            onClick={() => setSelectedSectionId(null)}
+                        >
+                            <PersonaCanvas
+                                sections={localPersona.sections}
+                                updateSection={updateSection}
+                                removeSection={removeSection}
+                                updateLayouts={updateLayouts}
+                                selectedSectionId={selectedSectionId}
+                                onSelectSection={setSelectedSectionId}
+                                personalityColor={(localPersona.type === 'Idealist' ? '#A3E635' : localPersona.type === 'Rational' ? '#60A5FA' : localPersona.type === 'Artisan' ? '#FBBF24' : localPersona.type === 'Guardian' ? '#818CF8' : '#22d3ee')}
+                                onManageChannels={handleManageChannels}
+                                onManageChart={handleManageChart}
+                                onManageDocuments={handleManageDocuments}
+                                personaName={localPersona.sections.find(s => s.type === 'header')?.data?.name || localPersona.name}
+                                personaRole={localPersona.sections.find(s => s.type === 'header')?.data?.role || localPersona.title}
+                            />
+                        </div>
+                    ) : (
+                        <PersonaAnalyticsDashboard personaId={personaId} />
+                    )}
                 </div>
 
-                {showRightPanel && (
+                {viewMode === 'editor' && showRightPanel && (
                     <div className="no-print" style={{ width: '300px', background: 'white', borderLeft: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column' }}>
                         <div style={{ padding: '15px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #f1f5f9' }}>
                             <div style={{ fontSize: '0.85em', fontWeight: 'bold', color: '#64748b' }}>PROPERTIES</div>

@@ -396,4 +396,440 @@ router.delete('/:id', authenticate, async (req, res) => {
     }
 });
 
+// =====================================================
+// PERSONA ANALYTICS ROUTES
+// =====================================================
+
+const PersonaAnalyticsService = require('../../services/PersonaAnalyticsService');
+
+/**
+ * @swagger
+ * /api/cx-personas/{id}/analytics:
+ *   get:
+ *     summary: Get persona performance analytics
+ *     description: Retrieve comprehensive analytics including match statistics, coverage analysis, and latest metrics for a persona.
+ *     tags: [Personas]
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Persona ID
+ *       - in: query
+ *         name: startDate
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Filter start date (YYYY-MM-DD)
+ *       - in: query
+ *         name: endDate
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Filter end date (YYYY-MM-DD)
+ *     responses:
+ *       200:
+ *         description: Persona analytics data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 persona_name:
+ *                   type: string
+ *                 match_statistics:
+ *                   type: object
+ *                   properties:
+ *                     total_responses:
+ *                       type: integer
+ *                     avg_match_score:
+ *                       type: string
+ *                     best_match_score:
+ *                       type: string
+ *                     distribution:
+ *                       type: object
+ *                       properties:
+ *                         strong:
+ *                           type: integer
+ *                         moderate:
+ *                           type: integer
+ *                         weak:
+ *                           type: integer
+ *                 coverage:
+ *                   type: object
+ *                   properties:
+ *                     persona_customers:
+ *                       type: integer
+ *                     total_customers:
+ *                       type: integer
+ *                     percentage:
+ *                       type: string
+ *       404:
+ *         description: Persona not found
+ *       500:
+ *         description: Internal server error
+ */
+router.get('/:id/analytics', authenticate, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { startDate, endDate } = req.query;
+
+        // Verify ownership
+        const persona = await query(
+            'SELECT id FROM cx_personas WHERE id = $1 AND tenant_id = $2',
+            [id, req.user.tenant_id]
+        );
+
+        if (persona.rows.length === 0) {
+            return res.status(404).json({ error: 'Persona not found' });
+        }
+
+        const metrics = await PersonaAnalyticsService.getPersonaMetrics(parseInt(id), {
+            startDate,
+            endDate
+        });
+
+        res.json(metrics);
+    } catch (error) {
+        logger.error('Failed to get persona analytics', {
+            error: error.message,
+            personaId: req.params.id
+        });
+        res.status(500).json({ error: 'Failed to fetch analytics' });
+    }
+});
+
+/**
+ * @swagger
+ * /api/cx-personas/{id}/evolution:
+ *   get:
+ *     summary: Get persona evolution over time
+ *     description: Retrieve historical snapshot data showing how persona metrics have evolved over the specified time period.
+ *     tags: [Personas]
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Persona ID
+ *       - in: query
+ *         name: days
+ *         schema:
+ *           type: integer
+ *           default: 30
+ *         description: Number of days to look back
+ *     responses:
+ *       200:
+ *         description: Historical persona data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   snapshot_date:
+ *                     type: string
+ *                     format: date
+ *                   metrics:
+ *                     type: object
+ *                   demographics:
+ *                     type: object
+ *                   response_count:
+ *                     type: integer
+ *       404:
+ *         description: Persona not found
+ *       500:
+ *         description: Internal server error
+ */
+router.get('/:id/evolution', authenticate, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const days = parseInt(req.query.days) || 30;
+
+        // Verify ownership
+        const persona = await query(
+            'SELECT id FROM cx_personas WHERE id = $1 AND tenant_id = $2',
+            [id, req.user.tenant_id]
+        );
+
+        if (persona.rows.length === 0) {
+            return res.status(404).json({ error: 'Persona not found' });
+        }
+
+        const evolution = await PersonaAnalyticsService.getPersonaEvolution(parseInt(id), days);
+
+        res.json(evolution);
+    } catch (error) {
+        logger.error('Failed to get persona evolution', {
+            error: error.message,
+            personaId: req.params.id
+        });
+        res.status(500).json({ error: 'Failed to fetch evolution data' });
+    }
+});
+
+/**
+ * @swagger
+ * /api/cx-personas/{id}/match-response:
+ *   post:
+ *     summary: Calculate match score for a response
+ *     description: Calculate how well a survey response matches a persona's profile. Returns match score and detailed attribute comparison.
+ *     tags: [Personas]
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Persona ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - responseId
+ *             properties:
+ *               responseId:
+ *                 type: integer
+ *                 description: ID of the form response to match
+ *     responses:
+ *       200:
+ *         description: Match score calculated
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 score:
+ *                   type: number
+ *                   description: Match score from 0 to 100
+ *                 matchedAttributes:
+ *                   type: object
+ *                   description: Details of matched/unmatched attributes
+ *                 totalRules:
+ *                   type: integer
+ *                 matchedRules:
+ *                   type: integer
+ *       400:
+ *         description: Invalid request body
+ *       404:
+ *         description: Persona or response not found
+ *       500:
+ *         description: Internal server error
+ */
+router.post('/:id/match-response', authenticate, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { responseId } = req.body;
+
+        if (!responseId) {
+            return res.status(400).json({ error: 'responseId is required' });
+        }
+
+        // Verify persona ownership
+        const persona = await query(
+            'SELECT id FROM cx_personas WHERE id = $1 AND tenant_id = $2',
+            [id, req.user.tenant_id]
+        );
+
+        if (persona.rows.length === 0) {
+            return res.status(404).json({ error: 'Persona not found' });
+        }
+
+        // Verify response ownership
+        const response = await query(
+            'SELECT id FROM form_responses WHERE id = $1 AND tenant_id = $2',
+            [responseId, req.user.tenant_id]
+        );
+
+        if (response.rows.length === 0) {
+            return res.status(404).json({ error: 'Response not found' });
+        }
+
+        const result = await PersonaAnalyticsService.calculateMatchScore(
+            parseInt(id),
+            parseInt(responseId)
+        );
+
+        res.json(result);
+    } catch (error) {
+        logger.error('Failed to calculate match score', {
+            error: error.message,
+            personaId: req.params.id,
+            responseId: req.body.responseId
+        });
+        res.status(500).json({ error: 'Failed to calculate match' });
+    }
+});
+
+/**
+ * @swagger
+ * /api/cx-personas/{id}/top-matches:
+ *   get:
+ *     summary: Get top matching responses
+ *     description: Retrieve the survey responses that best match the persona profile.
+ *     tags: [Personas]
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *           maximum: 50
+ *     responses:
+ *       200:
+ *         description: Top matching responses
+ *       404:
+ *         description: Persona not found
+ */
+router.get('/:id/top-matches', authenticate, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const limit = Math.min(parseInt(req.query.limit) || 10, 50);
+
+        // Verify ownership
+        const persona = await query(
+            'SELECT id FROM cx_personas WHERE id = $1 AND tenant_id = $2',
+            [id, req.user.tenant_id]
+        );
+
+        if (persona.rows.length === 0) {
+            return res.status(404).json({ error: 'Persona not found' });
+        }
+
+        const matches = await PersonaAnalyticsService.getTopMatches(parseInt(id), limit);
+
+        res.json(matches);
+    } catch (error) {
+        logger.error('Failed to get top matches', {
+            error: error.message,
+            personaId: req.params.id
+        });
+        res.status(500).json({ error: 'Failed to fetch top matches' });
+    }
+});
+
+/**
+ * @swagger
+ * /api/cx-personas/{id}/sync:
+ *   post:
+ *     summary: Trigger manual persona data sync
+ *     description: Manually trigger a data sync to update persona metrics from survey responses.
+ *     tags: [Personas]
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Sync completed
+ *       404:
+ *         description: Persona not found
+ */
+router.post('/:id/sync', authenticate, async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        // Verify ownership
+        const persona = await query(
+            'SELECT id FROM cx_personas WHERE id = $1 AND tenant_id = $2',
+            [id, req.user.tenant_id]
+        );
+
+        if (persona.rows.length === 0) {
+            return res.status(404).json({ error: 'Persona not found' });
+        }
+
+        const snapshot = await PersonaAnalyticsService.createDailySnapshot(parseInt(id));
+
+        res.json({
+            success: true,
+            snapshot,
+            message: snapshot ? 'Sync completed successfully' : 'No responses to sync for today'
+        });
+    } catch (error) {
+        logger.error('Failed to sync persona', {
+            error: error.message,
+            personaId: req.params.id
+        });
+        res.status(500).json({ error: 'Failed to sync persona' });
+    }
+});
+
+/**
+ * @swagger
+ * /api/cx-personas/{id}/batch-calculate:
+ *   post:
+ *     summary: Batch calculate match scores
+ *     description: Calculate match scores for all responses. Useful for initial setup or after updating mapping rules.
+ *     tags: [Personas]
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Batch calculation completed
+ *       404:
+ *         description: Persona not found
+ */
+router.post('/:id/batch-calculate', authenticate, async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        // Verify ownership
+        const persona = await query(
+            'SELECT id FROM cx_personas WHERE id = $1 AND tenant_id = $2',
+            [id, req.user.tenant_id]
+        );
+
+        if (persona.rows.length === 0) {
+            return res.status(404).json({ error: 'Persona not found' });
+        }
+
+        const result = await PersonaAnalyticsService.batchCalculateMatches(
+            parseInt(id),
+            req.user.tenant_id
+        );
+
+        res.json({
+            success: true,
+            ...result,
+            message: `Processed ${result.processed} responses, ${result.matched} matched`
+        });
+    } catch (error) {
+        logger.error('Failed to batch calculate matches', {
+            error: error.message,
+            personaId: req.params.id
+        });
+        res.status(500).json({ error: 'Failed to batch calculate' });
+    }
+});
+
 module.exports = router;
