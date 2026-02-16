@@ -1,0 +1,86 @@
+[
+  {
+    "column_name": "id",
+    "data_type": "integer"
+  },
+  {
+    "column_name": "username",
+    "data_type": "character varying"
+  },
+  {
+    "column_name": "password",
+    "data_type": "character varying"
+  },
+  {
+    "column_name": "email",
+    "data_type": "character varying"
+  },
+  {
+    "column_name": "phone",
+    "data_type": "character varying"
+  },
+  {
+    "column_name": "name",
+    "data_type": "character varying"
+  },
+  {
+    "column_name": "name_ar",
+    "data_type": "character varying"
+  },
+  {
+    "column_name": "photo_url",
+    "data_type": "character varying"
+  },
+  {
+    "column_name": "role",
+    "data_type": "character varying"
+  },
+  {
+    "column_name": "role_id",
+    "data_type": "integer"
+  },
+  {
+    "column_name": "status",
+    "data_type": "character varying"
+  },
+  {
+    "column_name": "tenant_id",
+    "data_type": "integer"
+  },
+  {
+    "column_name": "team_id",
+    "data_type": "integer"
+  },
+  {
+    "column_name": "last_login_at",
+    "data_type": "timestamp without time zone"
+  },
+  {
+    "column_name": "created_at",
+    "data_type": "timestamp without time zone"
+  },
+  {
+    "column_name": "updated_at",
+    "data_type": "timestamp without time zone"
+  },
+  {
+    "column_name": "two_factor_enabled",
+    "data_type": "boolean"
+  },
+  {
+    "column_name": "two_factor_secret",
+    "data_type": "text"
+  },
+  {
+    "column_name": "backup_codes",
+    "data_type": "jsonb"
+  },
+  {
+    "column_name": "two_factor_verified_at",
+    "data_type": "timestamp without time zone"
+  },
+  {
+    "column_name": "sso_only",
+    "data_type": "boolean"
+  }
+]

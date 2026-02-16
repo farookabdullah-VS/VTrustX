@@ -17,13 +17,13 @@ import ExportModal from './ExportModal';
 
 import { useTranslation } from 'react-i18next';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
-import { FilePlus, LayoutTemplate, Sparkles, Download, Upload, Pencil, Megaphone, Settings, Zap, Share2, BarChart, History as HistoryIcon, Copy, FileSignature, StickyNote, Image as ImageIcon, ChevronLeft, ChevronRight, Grid, List, User, Users, Archive, Folder } from 'lucide-react';
+import { FilePlus, LayoutTemplate, Sparkles, Download, Upload, Pencil, Megaphone, Settings, Zap, Share2, BarChart, History as HistoryIcon, Copy, FileSignature, StickyNote, Image as ImageIcon, ChevronLeft, ChevronRight, Grid, List, User, Users, Archive, Folder, Search, Trash2, MoreVertical, Eye, Ban, ArrowLeft, ArrowRight, ChevronDown } from 'lucide-react';
 import { registerCustomTypes, setupSurveyColors, VTrustTheme } from '../survey-config';
 import { initCustomControls } from './CustomSurveyControls';
 import { useToast } from './common/Toast';
 import { SkeletonCard } from './common/Skeleton';
 import { InlineHijriDate } from './common/HijriDate';
-import { WhatsAppShareButton } from './common/WhatsAppShare';
+import { WhatsAppShareButton, WhatsAppIcon } from './common/WhatsAppShare';
 import { trackSurveyViewed, trackSurveyStarted, trackSurveyCompleted, setupAbandonTracking } from '../utils/surveyTracking';
 
 const PREMIUM_GRADIENTS = [
@@ -717,12 +717,13 @@ export function FormViewer({ formId: propsFormId, submissionId: propsSubmissionI
                         data: results,
                         metadata: {
                             status: status,
+                            startedAt: startTimeRef.current?.toISOString(),
+                            durationSeconds: durationSeconds,
                             device_info: {
-                                userAgent: navigator.userAgent, // General tech info usually okay
+                                userAgent: navigator.userAgent,
                                 language: navigator.language,
                                 timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
                                 ...(consentGiven ? {
-                                    // Sensitive Fingerprinting - only with consent
                                     platform: navigator.platform,
                                     screenResolution: `${window.screen.width}x${window.screen.height}`,
                                     windowSize: `${window.innerWidth}x${window.innerHeight}`,
@@ -730,10 +731,8 @@ export function FormViewer({ formId: propsFormId, submissionId: propsSubmissionI
                                     hardwareConcurrency: navigator.hardwareConcurrency || 'unknown'
                                 } : {})
                             },
-                            ...metadata // Include location if acquired
+                            ...metadata
                         },
-                        startedAt: startTimeRef.current?.toISOString(),
-                        durationSeconds: durationSeconds,
                         consentGiven: consentGiven
                     };
 
@@ -884,7 +883,7 @@ export function FormViewer({ formId: propsFormId, submissionId: propsSubmissionI
                             onMouseOver={e => e.currentTarget.style.background = '#e2e8f0'}
                             onMouseOut={e => e.currentTarget.style.background = '#f1f5f9'}
                         >
-                            {isRtl ? '➡' : '⬅'} {t('settings.back') || 'Back'}
+                            {isRtl ? <ArrowRight size={18} /> : <ArrowLeft size={18} />} {t('settings.back') || 'Back'}
                         </button>
                         <div>
                             <h2 style={{ margin: 0, fontSize: '1.8em', fontWeight: '800', color: '#0f172a' }}>Response Quotas</h2>
@@ -938,8 +937,8 @@ export function FormViewer({ formId: propsFormId, submissionId: propsSubmissionI
             <div style={{ height: 'calc(100vh - 100px)', overflow: 'auto', position: 'relative' }}>
                 {!isPublic && !isKiosk && (
                     <div style={{ padding: '20px 20px 0 20px', position: 'relative', zIndex: 10 }}>
-                        <button onClick={() => { onSelectForm(null) }} aria-label="Back to survey listings" style={{ marginBottom: '15px', background: '#64748b', padding: '8px 16px', border: 'none', borderRadius: '4px', color: 'white' }}>
-                            &larr; Back to Listings
+                        <button onClick={() => { if (onSelectForm) onSelectForm(null); else navigate('/surveys'); }} aria-label="Back to survey listings" style={{ marginBottom: '15px', background: 'var(--primary-color)', padding: '8px 16px', border: 'none', borderRadius: '8px', color: 'white', display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontWeight: '600' }}>
+                            <ArrowLeft size={16} /> {t('common.back_to_listings', 'Back to Listings')}
                         </button>
                     </div>
                 )}
@@ -1157,7 +1156,9 @@ export function FormViewer({ formId: propsFormId, submissionId: propsSubmissionI
                                         boxShadow: '0 2px 4px rgba(0,0,0,0.02)', fontSize: '0.95em'
                                     }}
                                 />
-                                <div style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }}>🔍</div>
+                                <div style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }}>
+                                    <Search size={18} />
+                                </div>
                             </div>
 
                             {/* View Toggles & Creates */}
@@ -1217,7 +1218,9 @@ export function FormViewer({ formId: propsFormId, submissionId: propsSubmissionI
                                 if (filtered.length === 0) {
                                     return (
                                         <div style={{ textAlign: 'center', padding: '60px', color: '#94a3b8', background: 'rgba(255,255,255,0.5)', borderRadius: '16px', border: '2px dashed #e2e8f0', marginTop: '20px' }}>
-                                            <div style={{ fontSize: '3em', marginBottom: '15px', opacity: 0.5 }}>🔍</div>
+                                            <div style={{ fontSize: '3em', marginBottom: '15px', opacity: 0.5, display: 'flex', justifyContent: 'center' }}>
+                                                <Search size={48} />
+                                            </div>
                                             <div style={{ fontSize: '1.2em', fontWeight: '600', color: '#64748b' }}>No surveys found</div>
                                             <p style={{ marginTop: '5px' }}>Try adjusting your search or filters.</p>
                                         </div>
@@ -1275,9 +1278,9 @@ export function FormViewer({ formId: propsFormId, submissionId: propsSubmissionI
                                                             aria-label={`Options for ${form.title}`}
                                                             aria-expanded={actionMenuOpenId === form.id}
                                                             aria-haspopup="true"
-                                                            style={{ padding: '6px 10px', background: 'transparent', border: '1px solid #e2e8f0', cursor: 'pointer', borderRadius: '6px', color: '#64748b' }}
+                                                            style={{ padding: '6px 12px', background: 'white', border: '1px solid #e2e8f0', cursor: 'pointer', borderRadius: '8px', color: '#64748b', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: '600' }}
                                                         >
-                                                            Options ▼
+                                                            {t('common.options', 'Options')} <ChevronDown size={14} />
                                                         </button>
                                                         {actionMenuOpenId === form.id && (
                                                             <div style={{
@@ -1306,7 +1309,7 @@ export function FormViewer({ formId: propsFormId, submissionId: propsSubmissionI
                                                                     onMouseEnter={e => e.currentTarget.style.background = '#dcfce7'}
                                                                     onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                                                                 >
-                                                                    <span style={{ display: 'inline-flex', width: 16, height: 16, alignItems: 'center', justifyContent: 'center', color: '#25D366', fontWeight: 'bold', fontSize: '16px' }}>◉</span> Share via WhatsApp
+                                                                    <WhatsAppIcon size={16} color="#25D366" /> Share via WhatsApp
                                                                 </a>
                                                                 <div style={{ height: '1px', background: '#e2e8f0', margin: '4px 0' }}></div>
                                                                 <button onClick={() => setSettingsViewId(form.id)} style={{ padding: '10px 12px', background: 'transparent', border: 'none', cursor: 'pointer', color: '#1e293b', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.9em', borderRadius: '6px' }} onMouseEnter={e => e.currentTarget.style.background = '#f1f5f9'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
@@ -1344,7 +1347,7 @@ export function FormViewer({ formId: propsFormId, submissionId: propsSubmissionI
                                                                         onMouseEnter={e => e.currentTarget.style.background = '#f1f5f9'}
                                                                         onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                                                                     >
-                                                                        📁 {folder.name}
+                                                                        <Folder size={14} /> {folder.name}
                                                                     </button>
                                                                 ))}
                                                                 <button
@@ -1353,7 +1356,7 @@ export function FormViewer({ formId: propsFormId, submissionId: propsSubmissionI
                                                                     onMouseEnter={e => e.currentTarget.style.background = '#fef2f2'}
                                                                     onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                                                                 >
-                                                                    🚫 Remove from Folder
+                                                                    <Ban size={16} /> Remove from Folder
                                                                 </button>
                                                             </div>
                                                         )}
@@ -1457,7 +1460,7 @@ export function FormViewer({ formId: propsFormId, submissionId: propsSubmissionI
                                                             title="Delete"
                                                             aria-label={`Delete survey ${form.title}`}
                                                         >
-                                                            <div style={{ fontSize: '1.1em' }}>🗑️</div>
+                                                            <Trash2 size={18} />
                                                         </button>
                                                         <button
                                                             onClick={(e) => { e.stopPropagation(); setActionMenuOpenId(actionMenuOpenId === form.id ? null : form.id); }}
@@ -1466,7 +1469,7 @@ export function FormViewer({ formId: propsFormId, submissionId: propsSubmissionI
                                                             aria-expanded={actionMenuOpenId === form.id}
                                                             aria-haspopup="true"
                                                         >
-                                                            <div style={{ fontSize: '1.2em' }}>⋮</div>
+                                                            <MoreVertical size={20} />
                                                         </button>
                                                     </div>
                                                 </div>
@@ -1592,7 +1595,7 @@ export function FormViewer({ formId: propsFormId, submissionId: propsSubmissionI
                                                     style={{ padding: '6px 14px', borderRadius: '6px', border: '1px solid #3b82f6', background: 'white', cursor: 'pointer', fontSize: '0.9em', color: '#3b82f6', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: '500' }}
                                                     title="View/Take this version"
                                                 >
-                                                    <span>👁️</span> View
+                                                    <Eye size={16} /> View
                                                 </button>
                                                 <button
                                                     type="button"

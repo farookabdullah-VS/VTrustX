@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { useTranslation } from 'react-i18next';
-import { Plus, Search, Edit2, Trash2, UserCheck, UserX, X, Check, AlertCircle } from 'lucide-react';
+import { Plus, Search, Edit2, Trash2, UserCheck, UserX, X, Check, AlertCircle, Share2 } from 'lucide-react';
+import { ActiveDirectoryImport } from './ActiveDirectoryImport';
 
 export function UserManagement() {
     const { t, i18n } = useTranslation();
@@ -18,6 +19,7 @@ export function UserManagement() {
     // Modal State
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingUser, setEditingUser] = useState(null);
+    const [isAdImportOpen, setIsAdImportOpen] = useState(false);
 
     // Form State
     const [formData, setFormData] = useState({ username: '', password: '', name: '', name_ar: '', email: '', phone: '', role: 'user', role_id: '' });
@@ -62,13 +64,13 @@ export function UserManagement() {
     const loadRoles = () => {
         axios.get('/api/roles')
             .then(res => setAvailableRoles(res.data))
-            .catch(() => {});
+            .catch(() => { });
     };
 
     const loadSubscription = () => {
         axios.get('/api/settings/subscription')
             .then(res => setSubscription(res.data))
-            .catch(() => {});
+            .catch(() => { });
     };
 
     const validateForm = () => {
@@ -150,6 +152,13 @@ export function UserManagement() {
             .catch(err => showToast(err.response?.data?.error || 'Delete failed', 'error'));
     };
 
+    const handleAdImport = (selectedUsers) => {
+        // In a real app, this would be a POST to /api/users/import-ad
+        // For mockup, we simulate success
+        showToast(`Successfully imported ${selectedUsers.length} users from Active Directory`, 'success');
+        loadUsers();
+    };
+
     const totalPages = Math.ceil(total / limit);
 
     const inputStyle = {
@@ -213,15 +222,25 @@ export function UserManagement() {
                         </div>
                     )}
                 </div>
-                <button onClick={openCreateModal} style={{
-                    display: 'flex', alignItems: 'center', gap: '8px',
-                    background: 'var(--primary-color)', color: 'var(--button-text)',
-                    padding: '11px 22px', border: 'none', borderRadius: '10px',
-                    cursor: 'pointer', fontWeight: '600', fontSize: '0.9em',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
-                }}>
-                    <Plus size={18} /> {t('users.add_btn', 'Add User')}
-                </button>
+                <div style={{ display: 'flex', gap: '10px' }}>
+                    <button onClick={() => setIsAdImportOpen(true)} style={{
+                        display: 'flex', alignItems: 'center', gap: '8px',
+                        background: 'var(--bg-light)', color: 'var(--text-color)',
+                        padding: '11px 22px', border: '1px solid var(--border-color)', borderRadius: '10px',
+                        cursor: 'pointer', fontWeight: '600', fontSize: '0.9em'
+                    }}>
+                        <Share2 size={18} /> Import from AD
+                    </button>
+                    <button onClick={openCreateModal} style={{
+                        display: 'flex', alignItems: 'center', gap: '8px',
+                        background: 'var(--primary-color)', color: 'var(--button-text)',
+                        padding: '11px 22px', border: 'none', borderRadius: '10px',
+                        cursor: 'pointer', fontWeight: '600', fontSize: '0.9em',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                    }}>
+                        <Plus size={18} /> {t('users.add_btn', 'Add User')}
+                    </button>
+                </div>
             </div>
 
             {/* Filters */}
@@ -403,6 +422,12 @@ export function UserManagement() {
                     </div>
                 </div>
             )}
+
+            <ActiveDirectoryImport
+                isOpen={isAdImportOpen}
+                onClose={() => setIsAdImportOpen(false)}
+                onImport={handleAdImport}
+            />
         </div>
     );
 }

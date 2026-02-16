@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useTranslation } from 'react-i18next';
-import { Globe } from 'lucide-react';
+import { Globe, Check } from 'lucide-react';
 import { Signup } from './Signup';
 import { Login } from './Login';
 import { useToast } from './common/Toast';
@@ -214,8 +214,8 @@ export function LandingPage({ onLogin }) {
 
                                 <ul style={{ listStyle: 'none', padding: 0, margin: 0, marginBottom: '30px', flex: 1 }}>
                                     {plan.features?.map((f, i) => (
-                                        <li key={i} style={{ display: 'flex', gap: '10px', marginBottom: '15px', color: '#334155' }}>
-                                            <span style={{ color: 'var(--primary-color)', fontWeight: 'bold' }}>✓</span> {f}
+                                        <li key={i} style={{ display: 'flex', gap: '10px', marginBottom: '15px', color: '#334155', alignItems: 'center' }}>
+                                            <Check size={16} color="var(--primary-color)" /> {f}
                                         </li>
                                     ))}
                                 </ul>

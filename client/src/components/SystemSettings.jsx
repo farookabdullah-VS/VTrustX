@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import VideoAgentInterface from './VideoAgentInterface';
 import axios from 'axios';
-import { Settings, Shield, Globe, Database, Mail, Mic, Cpu, Save } from 'lucide-react';
+import { Settings, Shield, Globe, Database, Mail, Mic, Cpu, Save, Building2, Bot, Phone, Flag, ShieldCheck } from 'lucide-react';
 import { useToast } from './common/Toast';
 
 export function SystemSettings() {
@@ -211,7 +211,7 @@ export function SystemSettings() {
                 <div className="tab-content" style={{ animation: 'fadeIn 0.3s' }}>
                     <div style={{ background: 'var(--input-bg)', padding: '30px', borderRadius: '16px', border: '1px solid var(--input-border)', boxShadow: '0 4px 6px rgba(0,0,0,0.02)', marginBottom: '30px' }}>
                         <h2 style={{ fontSize: '1.2em', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--text-color)' }}>
-                            🏢 Organization Profile
+                            <Building2 size={24} /> Organization Profile
                         </h2>
                         <div style={{ display: 'grid', gridTemplateColumns: 'minmax(300px, 1fr) 200px', gap: '30px' }}>
                             <div>
@@ -293,7 +293,9 @@ export function SystemSettings() {
                                 {settings.tenant_logo ? (
                                     <img src={settings.tenant_logo} alt="Logo" style={{ maxWidth: '100%', maxHeight: '100px', marginBottom: '15px' }} />
                                 ) : (
-                                    <div style={{ fontSize: '3em', marginBottom: '10px', opacity: 0.3 }}>🏢</div>
+                                    <div style={{ marginBottom: '10px', opacity: 0.3 }}>
+                                        <Building2 size={64} />
+                                    </div>
                                 )}
                                 <div style={{ color: 'var(--text-muted)', fontSize: '0.9em', marginBottom: '10px' }}>Organization Logo</div>
                                 <button
@@ -320,7 +322,7 @@ export function SystemSettings() {
                 <div className="tab-content" style={{ animation: 'fadeIn 0.3s' }}>
                     <div style={{ background: 'var(--input-bg)', padding: '30px', borderRadius: '16px', border: '1px solid var(--input-border)', boxShadow: '0 4px 6px rgba(0,0,0,0.02)', marginBottom: '30px' }}>
                         <h2 style={{ fontSize: '1.2em', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--text-color)' }}>
-                            🤖 AI Services & Credentials
+                            <Bot size={24} /> AI Services & Credentials
                         </h2>
 
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '20px' }}>
@@ -407,7 +409,7 @@ export function SystemSettings() {
                     {/* AI AGENT DEMO */}
                     <div style={{ background: 'linear-gradient(135deg, var(--sidebar-bg) 0%, var(--deep-bg) 100%)', padding: '30px', borderRadius: '16px', color: 'white', marginTop: '30px', boxShadow: '0 4px 6px rgba(0,0,0,0.2)' }}>
                         <h2 style={{ fontSize: '1.5em', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                            🤖 AI Video Agent
+                            <Bot size={32} /> AI Video Agent
                         </h2>
                         <p style={{ color: 'var(--text-muted)', marginBottom: '20px' }}>
                             Test the new AI Video Call interface. This agent uses your active Gemini configuration to hold a real-time conversation.
@@ -456,7 +458,7 @@ export function SystemSettings() {
                 <div className="tab-content" style={{ animation: 'fadeIn 0.3s' }}>
                     <div style={{ background: 'var(--input-bg)', padding: '30px', borderRadius: '16px', border: '1px solid var(--input-border)', boxShadow: '0 4px 6px rgba(0,0,0,0.02)', marginBottom: '30px' }}>
                         <h2 style={{ fontSize: '1.2em', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--text-color)' }}>
-                            💾 Database Configuration
+                            <Database size={24} /> Database Configuration
                         </h2>
                         <div style={{ background: '#fef3f2', border: '1px solid #fecaca', color: '#b91c1c', padding: '15px', borderRadius: '8px', marginBottom: '20px', fontSize: '0.9em' }}>
                             <strong>Warning:</strong> Changing these settings will disconnect the application from the current database. Ensure the new credentials are correct before saving. You may need to restart the application for changes to take effect.
@@ -528,7 +530,7 @@ export function SystemSettings() {
                 <div className="tab-content" style={{ animation: 'fadeIn 0.3s' }}>
                     <div style={{ background: 'var(--input-bg)', padding: '30px', borderRadius: '16px', border: '1px solid var(--input-border)', boxShadow: '0 4px 6px rgba(0,0,0,0.02)', marginBottom: '30px' }}>
                         <h2 style={{ fontSize: '1.2em', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--text-color)' }}>
-                            📧 SMTP Configuration
+                            <Mail size={24} /> SMTP Configuration
                         </h2>
                         <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '20px', marginBottom: '15px' }}>
                             <div>
@@ -573,7 +575,7 @@ export function SystemSettings() {
                 <div className="tab-content" style={{ animation: 'fadeIn 0.3s' }}>
                     <div style={{ background: 'var(--input-bg)', padding: '30px', borderRadius: '16px', border: '1px solid var(--input-border)', boxShadow: '0 4px 6px rgba(0,0,0,0.02)', marginBottom: '30px' }}>
                         <h2 style={{ fontSize: '1.2em', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--text-color)' }}>
-                            📞 Voice & Telephony
+                            <Phone size={24} /> Voice & Telephony
                         </h2>
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
                             <div>
@@ -615,7 +617,9 @@ export function SystemSettings() {
             {activeTab === 'system' && (
                 <div className="tab-content" style={{ animation: 'fadeIn 0.3s' }}>
                     <div style={{ background: 'var(--input-bg)', padding: '30px', borderRadius: '16px', border: '1px solid var(--input-border)', boxShadow: '0 4px 6px rgba(0,0,0,0.02)', marginBottom: '30px' }}>
-                        <h2 style={{ fontSize: '1.2em', marginBottom: '20px', color: 'var(--text-color)' }}>🚩 System & Feature Flags</h2>
+                        <h2 style={{ fontSize: '1.2em', marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--text-color)' }}>
+                            <Flag size={24} /> System & Feature Flags
+                        </h2>
 
                         <div style={{ marginBottom: '20px' }}>
                             <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: 'var(--label-color)' }}>Webhook Public URL (ngrok)</label>
@@ -661,7 +665,9 @@ export function SystemSettings() {
                         </div>
 
                         {/* GOVERNANCE */}
-                        <h2 style={{ fontSize: '1.2em', marginBottom: '15px', color: 'var(--text-color)' }}>🛡️ Governance</h2>
+                        <h2 style={{ fontSize: '1.2em', marginBottom: '15px', color: 'var(--text-color)', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <ShieldCheck size={24} /> Governance
+                        </h2>
 
                         <div style={{ marginBottom: '20px' }}>
                             <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: 'var(--label-color)' }}>Idle Timeout (Minutes)</label>

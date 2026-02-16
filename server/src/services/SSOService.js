@@ -308,12 +308,20 @@ class SSOService {
                 }
 
                 // Update last login
-                await query(
-                    `UPDATE sso_connections
-                    SET last_login_at = NOW()
-                    WHERE id = $1`,
-                    [connection.id]
-                );
+                await Promise.all([
+                    query(
+                        `UPDATE sso_connections
+                        SET last_login_at = NOW()
+                        WHERE id = $1`,
+                        [connection.id]
+                    ),
+                    query(
+                        `UPDATE users
+                        SET last_login_at = NOW()
+                        WHERE id = $1`,
+                        [connection.user_id]
+                    )
+                ]);
 
                 return {
                     user: userResult.rows[0],
@@ -371,6 +379,9 @@ class SSOService {
                 RETURNING *`,
                 [tenantId, user.id, providerId, idp_user_id, email, display_name]
             );
+
+            // Update user last login
+            await query(`UPDATE users SET last_login_at = NOW() WHERE id = $1`, [user.id]);
 
             return {
                 user,

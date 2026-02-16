@@ -6,12 +6,13 @@ import { AIAgentChat } from '../AIAgentChat';
 import { AIFormGeneratorModal } from '../AIFormGeneratorModal';
 import { CreateSurveyModal } from '../CreateSurveyModal';
 import { TemplateGallery } from '../TemplateGallery';
-import { User, Globe, LogOut, Menu, Moon, Sun } from 'lucide-react';
+import { User, Globe, LogOut, Menu, Moon, Sun, ChevronDown } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useTranslation } from 'react-i18next';
 import { MobileBottomNav } from '../common/MobileBottomNav';
 import { CommandPalette } from '../common/CommandPalette';
+import { Logo } from '../common/Logo';
 import { PageTransition } from '../common/AnimatedLayout';
 import { useToast } from '../common/Toast';
 import { HamburgerMenu, SidebarOverlay } from '../common/HamburgerMenu';
@@ -120,14 +121,8 @@ export function AppLayout({ onNavigate, viewTitles }) {
       >
         <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
           {/* Logo Area */}
-          <div className="header-logo" style={{ display: 'flex', alignItems: 'center', gap: '12px', marginRight: '20px' }}>
-            <img
-              src="/rayix_v2.jpg"
-              alt="RAYI X"
-              style={{ height: '32px', width: 'auto', objectFit: 'contain' }}
-              onError={(e) => { e.target.style.display = 'none'; }}
-            />
-            {!isMobile && <span style={{ fontWeight: 800, fontSize: '1.2rem', color: 'var(--sidebar-text)' }}>RAYI X</span>}
+          <div className="header-logo" style={{ marginRight: '20px' }} onClick={() => onNavigate('dashboard')}>
+            <Logo size={isMobile ? 32 : 38} showText={!isMobile} />
           </div>
 
           {/* Hamburger menu for mobile */}
@@ -245,7 +240,7 @@ export function AppLayout({ onNavigate, viewTitles }) {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
                   <span style={{ fontWeight: '700', fontSize: '0.9rem', color: 'var(--username-color)', display: 'flex', alignItems: 'center', gap: '4px' }}>
                     {user?.user?.username || 'User'}
-                    <span style={{ fontSize: '0.6rem', color: 'var(--username-muted)', marginTop: '2px' }}>▼</span>
+                    <ChevronDown size={14} style={{ color: 'var(--username-muted)', marginTop: '2px' }} />
                   </span>
                   <span style={{ fontSize: '0.75rem', color: 'var(--username-muted)', fontWeight: '500' }}>
                     {t(`users.role_${user?.user?.role}`) || user?.user?.role || t('users.role_user')}

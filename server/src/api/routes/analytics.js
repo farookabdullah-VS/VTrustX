@@ -45,26 +45,45 @@ router.get('/daily-stats', authenticate, async (req, res) => {
     try {
         const tenantId = req.user.tenant_id;
         const sql = `
+            WITH daily_subs AS (
+                SELECT 
+                    date_trunc('day', s.created_at)::date as date,
+                    count(*) as completed
+                FROM submissions s
+                JOIN forms f ON s.form_id = f.id
+                WHERE f.tenant_id = $1 
+                AND (s.metadata->>'status' IS NULL OR s.metadata->>'status' = 'completed' OR s.metadata->>'status' = 'complete')
+                GROUP BY 1
+            ),
+            daily_views AS (
+                SELECT 
+                    date_trunc('day', created_at)::date as date,
+                    count(*) as viewed
+                FROM survey_events
+                WHERE tenant_id = $1 AND event_type = 'viewed'
+                GROUP BY 1
+            )
             SELECT 
-                date_trunc('day', created_at)::date as date,
-                count(*) as completed
-            FROM submissions s
-            JOIN forms f ON s.form_id = f.id
-            WHERE f.tenant_id = $1 
-            AND (s.metadata->>'status' IS NULL OR s.metadata->>'status' = 'completed')
-            GROUP BY 1
-            ORDER BY 1 ASC
+                COALESCE(s.date, v.date) as date,
+                COALESCE(s.completed, 0) as completed,
+                COALESCE(v.viewed, 0) as viewed
+            FROM daily_subs s
+            FULL OUTER JOIN daily_views v ON s.date = v.date
+            ORDER BY date ASC
             LIMIT 30
         `;
         const result = await query(sql, [tenantId]);
 
-        // Map viewed as completed * 1.5 (Mocking since no view table exists)
-        const stats = result.rows.map(r => ({
-            date: r.date.toISOString().split('T')[0],
-            completed: parseInt(r.completed),
-            viewed: Math.floor(parseInt(r.completed) * 1.5) + 5,
-            rate: Math.round((parseInt(r.completed) / (parseInt(r.completed) * 1.5 + 5)) * 100)
-        }));
+        const stats = result.rows.map(r => {
+            const completed = parseInt(r.completed);
+            const viewed = parseInt(r.viewed);
+            return {
+                date: r.date instanceof Date ? r.date.toISOString().split('T')[0] : r.date,
+                completed: completed,
+                viewed: viewed,
+                rate: viewed > 0 ? Math.round((completed / viewed) * 100) : 0
+            };
+        });
 
         res.json(stats);
     } catch (err) {

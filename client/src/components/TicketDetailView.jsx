@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { useTranslation } from 'react-i18next';
+import { useParams } from 'react-router-dom';
+import { Ticket, ArrowLeft, ArrowRight, Circle, Check } from 'lucide-react';
 
 const FONT = 'var(--font-family, "Outfit", "Google Sans", system-ui, sans-serif)';
 const RADIUS = 'var(--border-radius, 24px)';
@@ -14,7 +16,9 @@ const BTN_RESET = {
 
 const WORKFLOW_STEPS = ['new', 'open', 'pending', 'resolved', 'closed'];
 
-export function TicketDetailView({ ticketId, onBack, user }) {
+export function TicketDetailView({ ticketId: propsTicketId, onBack, user }) {
+    const { id: urlTicketId } = useParams();
+    const ticketId = propsTicketId || urlTicketId;
     const { t, i18n } = useTranslation();
     const isRtl = i18n.language?.startsWith('ar');
 
@@ -71,9 +75,9 @@ export function TicketDetailView({ ticketId, onBack, user }) {
             .catch(() => setLoading(false));
     };
 
-    const loadUsers = () => { axios.get('/api/users').then(r => setUsers(r.data)).catch(() => {}); };
-    const loadTransitions = () => { axios.get(`/api/crm/tickets/${ticketId}/transitions`).then(r => setTransitions(r.data.allowedTransitions || [])).catch(() => {}); };
-    const loadAuditLogs = () => { axios.get(`/api/crm/tickets/${ticketId}/audit`).then(r => setAuditLogs(r.data)).catch(() => {}); };
+    const loadUsers = () => { axios.get('/api/users').then(r => setUsers(r.data)).catch(() => { }); };
+    const loadTransitions = () => { axios.get(`/api/crm/tickets/${ticketId}/transitions`).then(r => setTransitions(r.data.allowedTransitions || [])).catch(() => { }); };
+    const loadAuditLogs = () => { axios.get(`/api/crm/tickets/${ticketId}/audit`).then(r => setAuditLogs(r.data)).catch(() => { }); };
 
     const handleUpdate = async () => {
         try {
@@ -178,8 +182,8 @@ export function TicketDetailView({ ticketId, onBack, user }) {
             {/* Top Action Bar */}
             <div style={{ ...glassCard, borderRadius: `calc(${RADIUS} * 0.5)`, padding: '10px 18px', marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
                 <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-                    <button onClick={onBack} style={{ ...BTN_RESET, padding: '8px 16px', borderRadius: `calc(${RADIUS} * 0.25)`, border: '1px solid var(--glass-border, rgba(0,0,0,0.08))', fontWeight: 600, fontSize: '0.9em', color: 'var(--text-color)' }}>
-                        {isRtl ? '\u2192' : '\u2190'} {t('common.back', 'Back')}
+                    <button onClick={onBack} style={{ ...BTN_RESET, padding: '8px 16px', borderRadius: `calc(${RADIUS} * 0.25)`, border: '1px solid var(--glass-border, rgba(0,0,0,0.08))', fontWeight: 600, fontSize: '0.9em', color: 'var(--text-color)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        {isRtl ? <ArrowRight size={16} /> : <ArrowLeft size={16} />} {t('common.back', 'Back')}
                     </button>
                     <button onClick={() => { if (isEditing) { handleUpdate(); } else { setIsEditing(true); } }} style={{ ...BTN_RESET, padding: '8px 16px', borderRadius: `calc(${RADIUS} * 0.25)`, border: '1px solid var(--glass-border, rgba(0,0,0,0.08))', fontWeight: 600, fontSize: '0.9em', color: isEditing ? '#22c55e' : 'var(--text-color)' }}>
                         {isEditing ? t('common.save', 'Save') : t('common.edit', 'Edit')}
@@ -203,8 +207,8 @@ export function TicketDetailView({ ticketId, onBack, user }) {
 
             {/* Header Card */}
             <div style={{ ...glassCard, marginBottom: 16, display: 'flex', gap: 16, alignItems: 'flex-start', flexWrap: 'wrap' }}>
-                <div style={{ width: 44, height: 44, borderRadius: `calc(${RADIUS} * 0.33)`, background: `color-mix(in srgb, var(--primary-color) 15%, transparent)`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.3em', flexShrink: 0 }}>
-                    &#127915;
+                <div style={{ width: 44, height: 44, borderRadius: `calc(${RADIUS} * 0.33)`, background: `color-mix(in srgb, var(--primary-color) 15%, transparent)`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary-color)', flexShrink: 0 }}>
+                    <Ticket size={24} />
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
@@ -216,8 +220,8 @@ export function TicketDetailView({ ticketId, onBack, user }) {
                         <span style={{ padding: '3px 10px', borderRadius: 16, fontSize: '0.85em', fontWeight: 700, background: `color-mix(in srgb, ${statusColors[ticket.status] || '#64748b'} 15%, transparent)`, color: statusColors[ticket.status] || 'var(--text-muted)', textTransform: 'uppercase' }}>
                             {ticket.status}
                         </span>
-                        <span style={{ color: prioColors[ticket.priority] || 'var(--text-muted)', fontWeight: 700 }}>
-                            &#9679; {ticket.priority}
+                        <span style={{ color: prioColors[ticket.priority] || 'var(--text-muted)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <Circle size={8} fill="currentColor" /> {ticket.priority}
                         </span>
                         <span>
                             SLA: <span style={{ color: sla.color, fontWeight: sla.bold ? 700 : 500 }}>{sla.text}</span>
@@ -259,7 +263,7 @@ export function TicketDetailView({ ticketId, onBack, user }) {
                                     transition: TRANSITION,
                                     boxShadow: isCurrent ? '0 0 0 4px color-mix(in srgb, var(--primary-color) 20%, transparent)' : 'none',
                                 }}>
-                                    {isPast ? '\u2713' : (i + 1)}
+                                    {isPast ? <Check size={14} /> : (i + 1)}
                                 </div>
                                 <span style={{ fontSize: '0.72em', fontWeight: isCurrent ? 700 : 500, color: isCurrent ? 'var(--primary-color)' : 'var(--text-muted)', marginTop: 6, textTransform: 'capitalize' }}>
                                     {step}
@@ -510,8 +514,8 @@ export function TicketDetailView({ ticketId, onBack, user }) {
                             {/* Priority */}
                             <div>
                                 <div style={labelSt}>Priority</div>
-                                <span style={{ color: prioColors[ticket.priority] || 'var(--text-muted)', fontWeight: 700, fontSize: '0.92em' }}>
-                                    &#9679; {ticket.priority}
+                                <span style={{ color: prioColors[ticket.priority] || 'var(--text-muted)', fontWeight: 700, fontSize: '0.92em', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                    <Circle size={8} fill="currentColor" /> {ticket.priority}
                                 </span>
                             </div>
 

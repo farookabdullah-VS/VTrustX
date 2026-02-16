@@ -13,7 +13,7 @@ import { StatusBadge } from './common/PremiumComponents';
 import { ThemeBarChart } from './common/UnifiedChart';
 import { Pagination, usePagination } from './common/Pagination';
 import * as XLSX from 'xlsx';
-import { Users, BarChart3, Zap, Sparkles, FileText, Settings } from 'lucide-react';
+import { Users, BarChart3, Zap, Sparkles, FileText, Settings, Calendar, ArrowUp, MoreVertical, Megaphone } from 'lucide-react';
 
 
 export function Dashboard({ onNavigate, onEdit, onEditSubmission }) {
@@ -88,7 +88,7 @@ export function Dashboard({ onNavigate, onEdit, onEditSubmission }) {
                 const now = new Date();
                 const oneDayAgo = new Date(now - 24 * 60 * 60 * 1000);
 
-                const newSubsCount = allSubmissions.filter(s => {
+                const newSubsCount = filteredSubmissions.filter(s => {
                     const dateStr = s.created_at || s.createdAt || s.updated_at;
                     return dateStr && new Date(dateStr) > oneDayAgo;
                 }).length;
@@ -190,6 +190,8 @@ export function Dashboard({ onNavigate, onEdit, onEditSubmission }) {
     const calculateCompletionRate = (subs) => {
         if (subs.length === 0) return 0;
         const completed = subs.filter(s =>
+            s.metadata?.status === 'completed' ||
+            s.status === 'completed' ||
             s.metadata?.status === 'complete' ||
             s.status === 'complete' ||
             (!s.metadata?.status && !s.status) // Assume complete if no status
@@ -200,12 +202,15 @@ export function Dashboard({ onNavigate, onEdit, onEditSubmission }) {
     // Calculate average completion time
     const calculateAverageTime = (subs) => {
         const timesInSeconds = subs
-            .map(s => s.metadata?.completion_time || s.completion_time)
+            .map(s => s.metadata?.durationSeconds || s.metadata?.completion_time || s.durationSeconds || s.completion_time)
             .filter(t => t && !isNaN(t));
 
         if (timesInSeconds.length === 0) return null;
 
-        const avgSeconds = timesInSeconds.reduce((sum, t) => sum + t, 0) / timesInSeconds.length;
+        const avgSeconds = timesInSeconds.reduce((sum, t) => sum + parseFloat(t), 0) / timesInSeconds.length;
+        if (avgSeconds < 60) {
+            return `${Math.round(avgSeconds)}s`;
+        }
         const minutes = Math.floor(avgSeconds / 60);
         const seconds = Math.round(avgSeconds % 60);
         return `${minutes}m ${seconds}s`;
@@ -270,7 +275,7 @@ export function Dashboard({ onNavigate, onEdit, onEditSubmission }) {
 
                 <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
                     <div style={{ background: 'var(--input-bg)', border: '1px solid var(--input-border)', padding: '6px 12px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
-                        <span style={{ fontSize: '1.2em' }}>📅</span>
+                        <Calendar size={18} color="var(--primary-color)" />
                         <input
                             type="date"
                             aria-label="Start date"
@@ -315,7 +320,7 @@ export function Dashboard({ onNavigate, onEdit, onEditSubmission }) {
                                             <AnimatedCounter value={stats.totalResponses} />
                                         </div>
                                         <div style={{ fontSize: '0.9em', color: '#10b981', marginTop: '5px', display: 'flex', alignItems: 'center', gap: '5px', fontWeight: '600' }}>
-                                            <span style={{ background: '#d1fae5', borderRadius: '50%', padding: '2px', width: '16px', height: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>▲</span>
+                                            <ArrowUp size={14} />
                                             {stats.newResponses} new (24h)
                                         </div>
                                     </div>
@@ -504,7 +509,7 @@ export function Dashboard({ onNavigate, onEdit, onEditSubmission }) {
                                                                 aria-expanded={activeMenuId === form.id}
                                                                 aria-haspopup="true"
                                                                 style={{ padding: '6px', border: 'none', background: 'transparent', cursor: 'pointer', fontSize: '1.2em', color: 'var(--text-muted)' }}>
-                                                                ⋮
+                                                                <MoreVertical size={20} />
                                                             </button>
                                                         </div>
                                                         {activeMenuId === form.id && (
@@ -528,7 +533,7 @@ export function Dashboard({ onNavigate, onEdit, onEditSubmission }) {
                                                                     onClick={() => { handleEdit(form.id, 'audience'); setActiveMenuId(null); }}
                                                                     style={{ width: '100%', padding: '10px 15px', cursor: 'pointer', fontSize: '0.9em', color: 'var(--text-color)', display: 'flex', alignItems: 'center', gap: '8px', background: 'transparent', border: 'none', textAlign: isRtl ? 'right' : 'left' }}
                                                                 >
-                                                                    <span>📢</span> Survey Audience
+                                                                    <Megaphone size={16} /> Survey Audience
                                                                 </button>
                                                                 <button
                                                                     role="menuitem"

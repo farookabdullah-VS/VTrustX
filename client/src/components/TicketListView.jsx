@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import axios from 'axios';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 
 const FONT = 'var(--font-family, "Outfit", "Google Sans", system-ui, sans-serif)';
 const RADIUS = 'var(--border-radius, 24px)';
@@ -18,6 +19,7 @@ const CHANNEL_OPTIONS = ['web', 'email', 'phone', 'chat'];
 
 export function TicketListView({ onSelectTicket, user }) {
     const { t, i18n } = useTranslation();
+    const navigate = useNavigate();
     const isRtl = i18n.language?.startsWith('ar');
 
     const [tickets, setTickets] = useState([]);
@@ -57,11 +59,11 @@ export function TicketListView({ onSelectTicket, user }) {
     }, [search]);
 
     const loadUsers = () => {
-        axios.get('/api/users').then(r => setUsers(r.data)).catch(() => {});
+        axios.get('/api/users').then(r => setUsers(r.data)).catch(() => { });
     };
 
     const loadStats = () => {
-        axios.get('/api/crm/stats').then(r => setStats(r.data)).catch(() => {});
+        axios.get('/api/crm/stats').then(r => setStats(r.data)).catch(() => { });
     };
 
     const loadTickets = useCallback(() => {
@@ -198,7 +200,7 @@ export function TicketListView({ onSelectTicket, user }) {
                     <p style={{ margin: '4px 0 0', color: 'var(--text-muted, #64748b)', fontSize: '0.95em' }}>{t('tickets.subtitle', 'Manage support requests')}</p>
                 </div>
                 <div style={{ display: 'flex', gap: 10 }}>
-                    <button onClick={() => onSelectTicket('reports')} style={{ ...BTN_RESET, background: 'var(--input-bg)', border: '1px solid var(--glass-border, rgba(0,0,0,0.08))', padding: '10px 20px', borderRadius: `calc(${RADIUS} * 0.33)`, fontWeight: 600, fontSize: '0.9em', color: 'var(--text-muted)' }}>
+                    <button onClick={() => navigate('/crm-reports')} style={{ ...BTN_RESET, background: 'var(--input-bg)', border: '1px solid var(--glass-border, rgba(0,0,0,0.08))', padding: '10px 20px', borderRadius: `calc(${RADIUS} * 0.33)`, fontWeight: 600, fontSize: '0.9em', color: 'var(--text-muted)' }}>
                         {t('tickets.reports', 'Reports')}
                     </button>
                     <button onClick={() => setShowCreate(true)} style={{ ...BTN_RESET, background: 'var(--primary-color)', color: '#fff', padding: '10px 24px', borderRadius: `calc(${RADIUS} * 0.33)`, fontWeight: 700, fontSize: '0.9em' }}>
@@ -361,14 +363,14 @@ export function TicketListView({ onSelectTicket, user }) {
                                                 <td style={{ padding: '14px 16px', textAlign: 'center' }} onClick={e => e.stopPropagation()}>
                                                     <input type="checkbox" checked={selectedIds.has(ticket.id)} onChange={() => toggleSelect(ticket.id)} style={{ cursor: 'pointer', accentColor: 'var(--primary-color)' }} />
                                                 </td>
-                                                <td onClick={() => onSelectTicket(ticket.id)} style={{ padding: '14px 16px', fontWeight: 700, color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
+                                                <td onClick={() => navigate(`/tickets/${ticket.id}`)} style={{ padding: '14px 16px', fontWeight: 700, color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
                                                     {ticket.ticket_code || `#${ticket.id}`}
                                                 </td>
-                                                <td onClick={() => onSelectTicket(ticket.id)} style={{ padding: '14px 16px' }}>
+                                                <td onClick={() => navigate(`/tickets/${ticket.id}`)} style={{ padding: '14px 16px' }}>
                                                     <div style={{ fontWeight: 600, color: 'var(--text-color)' }}>{ticket.subject}</div>
                                                     {ticket.description && <div style={{ fontSize: '0.85em', color: 'var(--text-muted)', marginTop: 2, maxWidth: 300, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ticket.description.substring(0, 60)}</div>}
                                                 </td>
-                                                <td onClick={() => onSelectTicket(ticket.id)} style={{ padding: '14px 16px' }}>
+                                                <td onClick={() => navigate(`/tickets/${ticket.id}`)} style={{ padding: '14px 16px' }}>
                                                     <span style={{
                                                         padding: '4px 12px', borderRadius: 20, fontSize: '0.8em', fontWeight: 700,
                                                         background: `color-mix(in srgb, ${sc} 15%, transparent)`, color: sc, textTransform: 'uppercase',
@@ -376,12 +378,12 @@ export function TicketListView({ onSelectTicket, user }) {
                                                         {t(`tickets.status.${ticket.status}`, ticket.status)}
                                                     </span>
                                                 </td>
-                                                <td onClick={() => onSelectTicket(ticket.id)} style={{ padding: '14px 16px' }}>
+                                                <td onClick={() => navigate(`/tickets/${ticket.id}`)} style={{ padding: '14px 16px' }}>
                                                     <span style={{ color: pc, fontWeight: 700, fontSize: '0.9em' }}>
                                                         &#9679; {ticket.priority}
                                                     </span>
                                                 </td>
-                                                <td onClick={() => onSelectTicket(ticket.id)} style={{ padding: '14px 16px' }}>
+                                                <td onClick={() => navigate(`/tickets/${ticket.id}`)} style={{ padding: '14px 16px' }}>
                                                     {ticket.assignee_name ? (
                                                         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                                                             <div style={{ width: 26, height: 26, borderRadius: '50%', background: `color-mix(in srgb, var(--primary-color) 15%, transparent)`, color: 'var(--primary-color)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7em', fontWeight: 700 }}>
@@ -391,12 +393,12 @@ export function TicketListView({ onSelectTicket, user }) {
                                                         </div>
                                                     ) : <span style={{ color: 'var(--text-muted)', opacity: 0.5, fontSize: '0.85em' }}>{t('tickets.unassigned', 'Unassigned')}</span>}
                                                 </td>
-                                                <td onClick={() => onSelectTicket(ticket.id)} style={{ padding: '14px 16px', whiteSpace: 'nowrap' }}>
+                                                <td onClick={() => navigate(`/tickets/${ticket.id}`)} style={{ padding: '14px 16px', whiteSpace: 'nowrap' }}>
                                                     <span style={{ color: sla.color, fontWeight: sla.bold ? 700 : 500, fontSize: '0.85em' }}>
                                                         {sla.text}
                                                     </span>
                                                 </td>
-                                                <td onClick={() => onSelectTicket(ticket.id)} style={{ padding: '14px 16px', color: 'var(--text-muted)', fontSize: '0.85em', whiteSpace: 'nowrap' }}>
+                                                <td onClick={() => navigate(`/tickets/${ticket.id}`)} style={{ padding: '14px 16px', color: 'var(--text-muted)', fontSize: '0.85em', whiteSpace: 'nowrap' }}>
                                                     {new Date(ticket.created_at).toLocaleDateString()}
                                                 </td>
                                             </tr>

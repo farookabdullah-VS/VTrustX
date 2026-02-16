@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import { SurveyCreatorComponent, SurveyCreator } from "survey-creator-react";
 import { Serializer, Action } from "survey-core";
 import { ReactElementFactory } from "survey-react-ui";
@@ -14,7 +14,7 @@ import './FormBuilder.css';
 import "survey-core/themes/index";
 import "survey-creator-core/themes/index";
 import axios from 'axios';
-import { User, Globe, LogOut, ChevronDown, Bell, Sparkles, Edit3, Eye, AlertTriangle } from 'lucide-react';
+import { User, Globe, LogOut, ChevronDown, Bell, Sparkles, Edit3, Eye, AlertTriangle, ArrowLeft, ArrowRight, Save, Clock, Check, X } from 'lucide-react';
 import { SettingsView } from './SettingsView';
 import { CollectView } from './CollectView';
 
@@ -39,16 +39,18 @@ const creatorOptions = {
     isAutoSave: false
 };
 
-export function FormBuilder({ user, formId: propsFormId, initialData, onBack, onNavigate, onFormChange }) {
+export function FormBuilder({ user, formId: propsFormId, initialData: propsInitialData, onBack, onNavigate, onFormChange }) {
     const { t, i18n } = useTranslation();
     const toast = useToast();
     const isRtl = i18n.language === 'ar';
     const navigate = useNavigate();
+    const location = useLocation();
     const { formId: urlFormId } = useParams();
     const [searchParams] = useSearchParams();
 
     // Prioritize URL param over prop (backward compatibility)
     const formId = urlFormId || propsFormId;
+    const initialData = propsInitialData || location.state?.initialData;
     const initialTab = searchParams.get('tab') || initialData?.initialTab;
     const [creator, setCreator] = useState(null);
     const [formMetadata, setFormMetadata] = useState(null);
@@ -576,7 +578,7 @@ export function FormBuilder({ user, formId: propsFormId, initialData, onBack, on
 
                     {/* LEFT: Back & Title */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                        {onBack && <button onClick={onBack} aria-label="Go back" style={{ border: 'none', background: 'none', cursor: 'pointer', fontSize: '18px', color: 'var(--text-muted, #64748b)', padding: '5px' }}>←</button>}
+                        {onBack && <button onClick={onBack} aria-label="Go back" style={{ border: 'none', background: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted, #64748b)', padding: '5px' }}><ArrowLeft size={18} /></button>}
                         <div>
                             <div style={{ fontWeight: '700', fontSize: '16px', color: 'var(--text-color, #0f172a)' }}>{formMetadata?.title || 'Survey Editor'}</div>
                             <div style={{ fontSize: '12px', color: '#64748b', display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px' }}>
@@ -627,7 +629,7 @@ export function FormBuilder({ user, formId: propsFormId, initialData, onBack, on
                             <button
                                 onClick={() => creator.saveSurvey()}
                                 style={{ padding: '8px 16px', background: 'var(--card-bg, white)', color: 'var(--primary-color, #064e3b)', border: '1px solid var(--primary-color, #064e3b)', borderRadius: '8px', cursor: 'pointer', fontWeight: '500', fontSize: '14px' }}>
-                                💾 {t('builder.btn.save')}
+                                <Save size={16} style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '6px' }} /> {t('builder.btn.save')}
                             </button>
                         )}
                         {/* WORKFLOW BUTTONS */}
@@ -650,14 +652,14 @@ export function FormBuilder({ user, formId: propsFormId, initialData, onBack, on
                                         <>
                                             <button
                                                 disabled
-                                                style={{ padding: '8px 16px', background: '#e2e8f0', color: '#64748b', border: 'none', borderRadius: '8px', cursor: 'not-allowed', fontWeight: '500', fontSize: '14px' }}>
-                                                🕒 {t('builder.btn.pending_approval')}
+                                                style={{ padding: '8px 16px', background: '#e2e8f0', color: '#64748b', border: 'none', borderRadius: '8px', cursor: 'not-allowed', fontWeight: '500', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                                <Clock size={16} /> {t('builder.btn.pending_approval')}
                                             </button>
-                                            <button onClick={handleApprove} style={{ padding: '8px 16px', background: '#22c55e', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '500', fontSize: '14px' }}>
-                                                ✓ {t('builder.btn.approve')}
+                                            <button onClick={handleApprove} style={{ padding: '8px 16px', background: '#22c55e', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '500', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                                <Check size={16} /> {t('builder.btn.approve')}
                                             </button>
-                                            <button onClick={handleReject} style={{ padding: '8px 16px', background: '#ef4444', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '500', fontSize: '14px' }}>
-                                                ✕ {t('builder.btn.reject')}
+                                            <button onClick={handleReject} style={{ padding: '8px 16px', background: '#ef4444', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '500', fontSize: '14px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                                <X size={16} /> {t('builder.btn.reject')}
                                             </button>
                                         </>
                                     );
@@ -718,7 +720,7 @@ export function FormBuilder({ user, formId: propsFormId, initialData, onBack, on
                             <h3 id="ai-modal-title" style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '10px', fontSize: '1.25em', color: '#1e293b' }}>
                                 <Sparkles size={20} /> {t('builder.ai_modal.title')}
                             </h3>
-                            <button onClick={() => setShowAIModal(false)} aria-label="Close AI assistant modal" style={{ border: 'none', background: 'none', cursor: 'pointer', fontSize: '1.5em', color: '#94a3b8', padding: 0, lineHeight: 1 }}>×</button>
+                            <button onClick={() => setShowAIModal(false)} aria-label="Close AI assistant modal" style={{ border: 'none', background: 'none', cursor: 'pointer', color: '#94a3b8', padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><X size={20} /></button>
                         </div>
                         <p style={{ color: '#64748b', fontSize: '0.95em', lineHeight: '1.6', marginBottom: '20px' }}>
                             {t('builder.ai_modal.desc')}
@@ -763,7 +765,7 @@ export function FormBuilder({ user, formId: propsFormId, initialData, onBack, on
                     <div style={{ padding: '30px', maxWidth: '800px', margin: '0 auto' }}>
                         <div style={{ display: 'flex', alignItems: 'center', marginBottom: '20px' }}>
                             <button onClick={() => setActiveNav('questionnaire')} style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px', fontSize: '1em' }}>
-                                {isRtl ? '➡' : '⬅'} {t('settings.back') || 'Back'}
+                                {isRtl ? <ArrowRight size={18} /> : <ArrowLeft size={18} />} {t('settings.back') || 'Back'}
                             </button>
                             <h2 style={{ margin: '0 0 0 20px', fontSize: '1.5em', color: '#1e293b' }}>Quota Management</h2>
                         </div>

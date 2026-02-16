@@ -3,7 +3,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import * as XLSX from 'xlsx';
 import { useToast } from './common/Toast';
-import { WhatsAppShareButton, SharePanel } from './common/WhatsAppShare';
+import { WhatsAppShareButton, SharePanel, WhatsAppIcon } from './common/WhatsAppShare';
+import { Link as LinkIcon, Users, Mail, Send, Slack, MessageCircle, Smartphone, ClipboardList, ArrowLeft, ArrowRight, Info, Copy } from 'lucide-react';
 
 export function SurveyDistribution({ formId: propsFormId, onBack, onNavigate }) {
     const { formId: paramsFormId } = useParams();
@@ -176,7 +177,7 @@ export function SurveyDistribution({ formId: propsFormId, onBack, onNavigate }) 
             {/* TOP NAVIGATION */}
             <div style={{ background: 'var(--surface-bg, white)', borderBottom: '1px solid var(--divider-color, #e2e8f0)', height: '64px', display: 'flex', alignItems: 'center', padding: '0 30px', justifyContent: 'space-between' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <button onClick={onBack} style={{ border: 'none', background: 'none', cursor: 'pointer', fontSize: '1.4em', color: 'var(--text-secondary, #64748b)', display: 'flex', alignItems: 'center' }}>←</button>
+                    <button onClick={onBack} aria-label="Go back" style={{ border: 'none', background: 'none', cursor: 'pointer', color: 'var(--text-secondary, #64748b)', display: 'flex', alignItems: 'center' }}><ArrowLeft size={20} /></button>
                     <div style={{ fontWeight: '800', fontSize: '1.2em', color: 'var(--text-primary, #0f172a)', letterSpacing: '-0.5px' }}>{formMetadata?.title || 'SmartReach'}</div>
                     {formId && <div style={{ background: 'var(--primary-light, #e0f2fe)', color: 'var(--primary-color, #0369a1)', padding: '2px 10px', borderRadius: '6px', fontSize: '0.75em', fontWeight: '700', marginLeft: '10px' }}>ID: {formId}</div>}
                 </div>
@@ -194,28 +195,28 @@ export function SurveyDistribution({ formId: propsFormId, onBack, onNavigate }) 
                 <div style={{ width: '280px', background: 'var(--surface-bg, white)', borderRight: '1px solid var(--divider-color, #e2e8f0)', padding: '24px 0' }}>
                     <div style={{ padding: '0 24px 20px', fontSize: '0.8rem', fontWeight: '800', color: 'var(--text-muted, #94a3b8)', textTransform: 'uppercase', letterSpacing: '1px' }}>Distribution Channels</div>
                     <div style={sidebarItemStyle(activeSidebar === 'link')} onClick={() => setActiveSidebar('link')}>
-                        <span>🔗</span> Web Link
+                        <LinkIcon size={18} /> Web Link
                     </div>
                     <div style={sidebarItemStyle(activeSidebar === 'audience')} onClick={() => setActiveSidebar('audience')}>
-                        <span>👥</span> Audience / Import
+                        <Users size={18} /> Audience / Import
                     </div>
                     <div style={sidebarItemStyle(activeSidebar === 'email')} onClick={() => setActiveSidebar('email')}>
-                        <span>📧</span> Email Campaign
+                        <Mail size={18} /> Email Campaign
                     </div>
                     <div style={sidebarItemStyle(activeSidebar === 'whatsapp')} onClick={() => setActiveSidebar('whatsapp')}>
-                        <span style={{ color: '#25D366', fontWeight: 'bold' }}>◉</span> WhatsApp
+                        <WhatsAppIcon size={18} color="#25D366" /> WhatsApp
                     </div>
                     <div style={sidebarItemStyle(activeSidebar === 'telegram')} onClick={() => setActiveSidebar('telegram')}>
-                        <span style={{ color: '#0088cc', fontWeight: 'bold' }}>✈</span> Telegram
+                        <Send size={18} color="#0088cc" /> Telegram
                     </div>
                     <div style={sidebarItemStyle(activeSidebar === 'slack')} onClick={() => setActiveSidebar('slack')}>
-                        <span style={{ color: '#611f69', fontWeight: 'bold' }}>#</span> Slack
+                        <Slack size={18} color="#611f69" /> Slack
                     </div>
                     <div style={sidebarItemStyle(activeSidebar === 'teams')} onClick={() => setActiveSidebar('teams')}>
-                        <span style={{ color: '#5059C9', fontWeight: 'bold' }}>T</span> Microsoft Teams
+                        <MessageCircle size={18} color="#5059C9" /> Microsoft Teams
                     </div>
                     <div style={sidebarItemStyle(activeSidebar === 'social')} onClick={() => setActiveSidebar('social')}>
-                        <span>📱</span> Social Media
+                        <Smartphone size={18} /> Social Media
                     </div>
                 </div>
 
@@ -232,7 +233,9 @@ export function SurveyDistribution({ formId: propsFormId, onBack, onNavigate }) 
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '20px' }}>
                                 {allForms.length === 0 && !loading && (
                                     <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '100px 0', color: '#64748b' }}>
-                                        <div style={{ fontSize: '3em', marginBottom: '10px' }}>📋</div>
+                                        <div style={{ marginBottom: '15px' }}>
+                                            <ClipboardList size={64} style={{ opacity: 0.2 }} />
+                                        </div>
                                         <h3>No surveys found</h3>
                                         <p>Create a survey first to use SmartReach.</p>
                                         <button
@@ -287,7 +290,7 @@ export function SurveyDistribution({ formId: propsFormId, onBack, onNavigate }) 
                                         </div>
                                         <div style={{ marginTop: 'auto', paddingTop: '12px', borderTop: '1px solid #f1f5f9', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                             <span style={{ fontSize: '0.8em', color: '#94a3b8' }}>Created: {new Date(form.created_at).toLocaleDateString()}</span>
-                                            <span style={{ color: '#2563eb', fontWeight: '600', fontSize: '0.85em' }}>Distribute →</span>
+                                            <span style={{ color: '#2563eb', fontWeight: '600', fontSize: '0.85em', display: 'flex', alignItems: 'center', gap: '4px' }}>Distribute <ArrowRight size={14} /></span>
                                         </div>
                                     </div>
                                 ))}
@@ -316,7 +319,7 @@ export function SurveyDistribution({ formId: propsFormId, onBack, onNavigate }) 
                                     />
                                     <WhatsAppShareButton
                                         url={`${window.location.origin}/s/${formMetadata.slug || formMetadata.id}`}
-                                        title={`📋 ${formMetadata.title}\n\nPlease take a moment to share your feedback!`}
+                                        title={`Survey: ${formMetadata.title}\n\nPlease take a moment to share your feedback!`}
                                         variant="button"
                                         style={{ background: '#128C7E' }}
                                     />
@@ -336,7 +339,7 @@ export function SurveyDistribution({ formId: propsFormId, onBack, onNavigate }) 
 
                             <div style={{ background: '#f1f9ff', padding: '20px', borderRadius: '12px', border: '1px solid #bfe3ff', marginBottom: '24px' }}>
                                 <h3 style={{ margin: '0 0 12px', fontSize: '1em', color: '#0088cc', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                    <span>ℹ️</span> Setup Required
+                                    <Info size={18} /> Setup Required
                                 </h3>
                                 <p style={{ color: '#475569', margin: '0 0 12px', fontSize: '0.9em' }}>
                                     To send surveys via Telegram, you need to configure a Telegram Bot. Once configured, you can send survey invitations to contacts with Telegram Chat IDs.
@@ -354,7 +357,7 @@ export function SurveyDistribution({ formId: propsFormId, onBack, onNavigate }) 
                                         fontSize: '0.9em'
                                     }}
                                 >
-                                    Configure Telegram Bot →
+                                    Configure Telegram Bot <ArrowRight size={16} />
                                 </button>
                             </div>
 

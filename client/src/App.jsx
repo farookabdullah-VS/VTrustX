@@ -170,74 +170,48 @@ function AppRoutes() {
   const { user, login, isAuthenticated, setUser } = useAuth();
   const navigate = useNavigate();
 
-  // Shared state for form editing context
-  const [currentFormId, setCurrentFormId] = useState(null);
-  const [currentTicketId, setCurrentTicketId] = useState(null);
-  const [currentSubmissionId, setCurrentSubmissionId] = useState(null);
-  const [initialData, setInitialData] = useState(null);
-  const [currentCjmMapId, setCurrentCjmMapId] = useState(null);
+  // No more global state for IDs - handled via URLs
 
   const handleNavigate = useCallback((id, payload) => {
-    setCurrentSubmissionId(null);
-    setCurrentFormId(null);
-
     if (id === 'create-normal') {
-      navigate('/viewer');
-      // Signal to open create modal — handled in AppLayout
+      navigate('/surveys'); // Open listing or show create modal? Usually /surveys shows listing with Create button.
       return;
     }
     if (id === 'create-template') {
       navigate('/templates');
       return;
     }
-    if (id === 'create-ai') {
-      navigate('/viewer');
-      return;
-    }
     if (id === 'take-survey') {
-      setCurrentFormId(payload);
-      setCurrentSubmissionId(null);
-      navigate('/viewer');
+      navigate(`/surveys/${payload}`);
       return;
     }
     if (id === 'view-results') {
-      if (typeof payload === 'object' && payload !== null) {
-        setCurrentFormId(payload.id);
-        setInitialData({ view: payload.view });
-      } else {
-        setCurrentFormId(payload);
-        setInitialData(null);
-      }
-      navigate('/results');
+      const formId = payload.id || payload;
+      navigate(`/surveys/${formId}/results`);
       return;
     }
-    // Builder with payload
     if (id === 'builder' && payload?.initialData) {
-      setInitialData(payload.initialData);
-      setCurrentFormId(null);
-      navigate('/builder');
+      navigate('/builder', { state: { initialData: payload.initialData } });
       return;
     }
+
     // Map sidebar IDs that don't match route paths
     const routeMap = {
       'survey-results': 'survey-reports',
       'mobile-app': 'mobile-app',
-      'xm-center': 'cx-ratings'
+      'xm-center': 'cx-ratings',
+      'surveys': 'surveys',
+      'tickets': 'tickets'
     };
     navigate(`/${routeMap[id] || id}`);
   }, [navigate]);
 
   const handleEditForm = useCallback((id, tab = 'questionnaire') => {
-    setCurrentFormId(id);
-    setCurrentSubmissionId(null);
-    setInitialData({ initialTab: tab });
-    navigate('/builder');
+    navigate(`/surveys/${id}/edit?tab=${tab}`);
   }, [navigate]);
 
   const handleEditSubmission = useCallback((subId, formId) => {
-    setCurrentFormId(formId);
-    setCurrentSubmissionId(subId);
-    navigate('/viewer');
+    navigate(`/surveys/${formId}?submissionId=${subId}`);
   }, [navigate]);
 
   return (
@@ -263,84 +237,23 @@ function AppRoutes() {
                     <AppLayout onNavigate={handleNavigate} viewTitles={VIEW_TITLES} />
                   </ProtectedRoute>
                 }>
-                  <Route index element={<Dashboard onNavigate={handleNavigate} onEdit={handleEditForm} onEditSubmission={handleEditSubmission} />} />
-                  <Route path="dashboard" element={<Dashboard onNavigate={handleNavigate} onEdit={handleEditForm} onEditSubmission={handleEditSubmission} />} />
+                  <Route index element={<Dashboard user={user} />} />
+                  <Route path="dashboard" element={<Dashboard user={user} />} />
                   <Route path="cx-ratings" element={<CxDashboard onNavigate={handleNavigate} />} />
-                  <Route path="survey-reports" element={<SurveyReportSelector onSelect={(id) => { setCurrentFormId(id); navigate('/results'); }} />} />
-                  <Route path="builder" element={
-                    <FormBuilder user={user} formId={currentFormId} initialData={initialData}
-                      onBack={() => { setCurrentFormId(null); navigate('/viewer'); }}
-                      onNavigate={(target) => { if (target === 'results') navigate('/results'); }}
-                      onFormChange={handleEditForm}
-                    />
-                  } />
-                  <Route path="builder/:id" element={<BuilderWithParam handleEditForm={handleEditForm} />} />
+                  <Route path="survey-reports" element={<SurveyReportSelector onSelect={(id) => navigate(`/surveys/${id}/results`)} />} />
 
-                  {/* NEW: URL-based survey routes */}
-                  <Route path="surveys" element={
-                    <FormViewer formId={currentFormId} submissionId={currentSubmissionId}
-                      onSelectForm={(id) => setCurrentFormId(id)}
-                      onEditSubmission={handleEditSubmission}
-                      onEditForm={handleEditForm}
-                      onCreate={(type) => handleNavigate(type)}
-                      user={user}
-                    />
-                  } />
-                  <Route path="surveys/:formId" element={
-                    <FormViewer
-                      onEditSubmission={(subId, fId) => navigate(`/surveys/${fId}?submissionId=${subId}`)}
-                      onEditForm={(fId) => navigate(`/surveys/${fId}/edit`)}
-                      onCreate={(type) => handleNavigate(type)}
-                      user={user}
-                    />
-                  } />
-                  <Route path="surveys/:formId/edit" element={
-                    <FormBuilder user={user}
-                      onFormChange={(id) => navigate(`/surveys/${id}/edit`)}
-                    />
-                  } />
-                  <Route path="surveys/:formId/results" element={
-                    <ResultsViewer
-                      onBack={() => navigate('/surveys')}
-                      onEditSubmission={(subId, fId) => navigate(`/surveys/${fId}?submissionId=${subId}`)}
-                      onNavigate={(target, payload) => {
-                        if (target === 'builder') navigate(`/surveys/${payload}/edit`);
-                        else navigate(`/${target}`);
-                      }}
-                    />
-                  } />
-                  <Route path="surveys/:formId/smartreach" element={
-                    <SurveyDistribution
-                      onBack={() => navigate('/surveys')}
-                      onNavigate={(target, payload) => {
-                        if (target === 'builder') navigate(`/surveys/${payload}/edit`);
-                        else navigate(`/${target}`);
-                      }}
-                    />
-                  } />
+                  {/* Standardized Survey Routes */}
+                  <Route path="surveys" element={<FormViewer user={user} />} />
+                  <Route path="surveys/:formId" element={<FormViewer user={user} />} />
+                  <Route path="surveys/:formId/edit" element={<FormBuilder user={user} />} />
+                  <Route path="surveys/:formId/results" element={<ResultsViewer onBack={() => navigate('/surveys')} />} />
+                  <Route path="surveys/:formId/smartreach" element={<SurveyDistribution onBack={() => navigate('/surveys')} />} />
 
-                  <Route path="results" element={
-                    <ResultsViewer formId={currentFormId} initialView={initialData?.view}
-                      onBack={() => navigate('/')}
-                      onEditSubmission={handleEditSubmission}
-                      onNavigate={(target) => { if (target === 'builder') handleEditForm(currentFormId); else navigate(`/${target}`); }}
-                    />
-                  } />
-                  <Route path="smartreach" element={
-                    <SurveyDistribution formId={currentFormId}
-                      onBack={() => navigate('/')}
-                      onNavigate={(target) => { if (target === 'builder') handleEditForm(currentFormId); else navigate(`/${target}`); }}
-                    />
-                  } />
-                  <Route path="viewer" element={
-                    <FormViewer formId={currentFormId} submissionId={currentSubmissionId}
-                      onSelectForm={(id) => setCurrentFormId(id)}
-                      onEditSubmission={handleEditSubmission}
-                      onEditForm={handleEditForm}
-                      onCreate={(type) => handleNavigate(type)}
-                      user={user}
-                    />
-                  } />
+                  {/* Legacy/Shortcut routes (Redirected or handled by param-less components) */}
+                  <Route path="builder" element={<FormBuilder user={user} />} />
+                  <Route path="results" element={<FormViewer user={user} />} /> {/* FormViewer handles list if no param */}
+                  <Route path="smartreach" element={<FormViewer user={user} />} />
+                  <Route path="viewer" element={<FormViewer user={user} />} />
                   <Route path="ai-settings" element={<AIIntegrations />} />
                   <Route path="system-settings" element={<SystemSettings />} />
                   <Route path="ticket-settings" element={<TicketSettings />} />
@@ -355,6 +268,7 @@ function AppRoutes() {
                   <Route path="role-master" element={<RoleMaster />} />
                   <Route path="subscription" element={<SubscriptionManagement />} />
                   <Route path="global-admin" element={<GlobalAdminDashboard />} />
+                  <Route path="admin" element={<Navigate to="/global-admin" replace />} />
                   <Route path="contact-master" element={<ContactMaster />} />
                   <Route path="contact-segments" element={<ContactSegments />} />
                   <Route path="custom-fields" element={<CustomFieldsManager />} />
@@ -368,24 +282,15 @@ function AppRoutes() {
                   <Route path="templates" element={
                     <div style={{ height: 'calc(100vh - 100px)' }}>
                       <TemplateGallery displayMode="page" onSelect={(template) => {
-                        setInitialData({ ...template.definition, title: template.title });
-                        setCurrentFormId(null);
-                        navigate('/builder');
+                        navigate('/builder', { state: { initialData: { ...template.definition, title: template.title } } });
                       }} />
                     </div>
                   } />
-                  <Route path="tickets" element={
-                    <TicketListView user={user} onSelectTicket={(id) => {
-                      if (id === 'reports') navigate('/crm-reports');
-                      else { setCurrentTicketId(id); navigate('/ticket-detail'); }
-                    }} />
-                  } />
+                  <Route path="tickets" element={<TicketListView user={user} />} />
+                  <Route path="tickets/:id" element={<TicketDetailView user={user} onBack={() => navigate('/tickets')} />} />
                   <Route path="crm-reports" element={<CrmDashboard user={user} />} />
-                  <Route path="ticket-detail" element={
-                    <TicketDetailView ticketId={currentTicketId} user={user}
-                      onBack={() => { navigate('/tickets'); setCurrentTicketId(null); }}
-                    />
-                  } />
+                  <Route path="ticket-detail" element={<TicketDetailView user={user} />} /> {/* Legacy fallback */}
+
                   <Route path="analytics-studio" element={<AnalyticsStudio />} />
                   <Route path="analytics-builder" element={<AnalyticsBuilder onNavigate={(v) => navigate(`/${v}`)} />} />
                   <Route path="analytics-dashboard" element={<DynamicDashboard />} />
@@ -395,11 +300,8 @@ function AppRoutes() {
                   <Route path="actions" element={<ActionPlanning />} />
                   <Route path="social-media" element={<SocialMediaMarketing />} />
                   <Route path="reputation" element={<ReputationManager />} />
-                  <Route path="cjm" element={
-                    currentCjmMapId
-                      ? <CJMBuilder mapId={currentCjmMapId} onBack={() => setCurrentCjmMapId(null)} />
-                      : <CJMDashboard onSelectMap={(id) => setCurrentCjmMapId(id)} />
-                  } />
+                  <Route path="cjm" element={<CJMDashboard />} />
+                  <Route path="cjm/:mapId" element={<CJMBuilder onBack={() => navigate('/cjm')} />} />
                   <Route path="cjm-analytics" element={<CJMAnalyticsDashboard />} />
 
                   {/* A/B Testing Routes */}

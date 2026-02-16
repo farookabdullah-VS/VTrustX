@@ -6,7 +6,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useSocialListening } from '../../../contexts/SocialListeningContext';
 import {
   MessageCircle, Filter, Search, ThumbsUp, ThumbsDown, Minus,
-  ExternalLink, Reply, Flag, CheckCircle, Clock, AlertCircle
+  ExternalLink, Reply, Flag, CheckCircle, Clock, AlertCircle,
+  Instagram, Twitter, Facebook, Linkedin, Youtube, Music, MessageSquare, Eye
 } from 'lucide-react';
 import { LoadingSpinner } from '../../common/LoadingSpinner';
 import socialListeningApi from '../../../services/socialListeningApi';
@@ -113,6 +114,28 @@ const MentionsTab = () => {
         {badge.label}
       </span>
     );
+  };
+
+  const renderPlatformIcon = (platform) => {
+    const iconProps = { size: 14, style: { marginRight: '4px' } };
+    switch (platform?.toLowerCase()) {
+      case 'instagram':
+        return <Instagram {...iconProps} style={{ ...iconProps.style, color: '#E4405F' }} />;
+      case 'twitter':
+        return <Twitter {...iconProps} style={{ ...iconProps.style, color: '#1DA1F2' }} />;
+      case 'facebook':
+        return <Facebook {...iconProps} style={{ ...iconProps.style, color: '#4267B2' }} />;
+      case 'linkedin':
+        return <Linkedin {...iconProps} style={{ ...iconProps.style, color: '#0077B5' }} />;
+      case 'youtube':
+        return <Youtube {...iconProps} style={{ ...iconProps.style, color: '#FF0000' }} />;
+      case 'tiktok':
+        return <Music {...iconProps} style={{ ...iconProps.style, color: '#000000' }} />;
+      case 'reddit':
+        return <MessageSquare {...iconProps} style={{ ...iconProps.style, color: '#FF4500' }} />;
+      default:
+        return null;
+    }
   };
 
   const formatTimeAgo = (dateString) => {
@@ -246,7 +269,10 @@ const MentionsTab = () => {
                   <div>
                     <div className="author-name">{mention.author_name || 'Unknown'}</div>
                     <div className="mention-meta">
-                      <span className="platform-badge">{mention.platform}</span>
+                      <span className="platform-badge">
+                        {renderPlatformIcon(mention.platform)}
+                        {mention.platform}
+                      </span>
                       <span className="mention-time">{formatTimeAgo(mention.published_at)}</span>
                     </div>
                   </div>
@@ -276,11 +302,10 @@ const MentionsTab = () => {
                   <MessageCircle size={14} />
                   {mention.shares_count || 0}
                 </div>
-                {mention.reach && (
-                  <div className="metric">
-                    👁️ {mention.reach.toLocaleString()} reach
-                  </div>
-                )}
+                <div className="metric">
+                  <Eye size={14} />
+                  {mention.reach.toLocaleString()} reach
+                </div>
               </div>
 
               {/* Actions */}

@@ -5,6 +5,7 @@ import { login, register } from '../services/authService';
 import { fetchCsrfToken } from '../axiosConfig';
 import { useToast } from './common/Toast';
 import { useFormValidation, ValidatedInput, rules } from './common/FormValidation';
+import { Logo } from './common/Logo';
 
 export function Login({ onLogin }) {
     const toast = useToast();
@@ -169,9 +170,11 @@ export function Login({ onLogin }) {
             `}</style>
             <div style={{ background: 'var(--card-bg, #ffffff)', padding: 'clamp(24px, 5vw, 48px)', borderRadius: '24px', boxShadow: 'var(--glass-shadow, 0 25px 50px -12px rgba(0,0,0,0.1))', width: '100%', maxWidth: '420px', border: '1px solid var(--glass-border, #e2e8f0)', boxSizing: 'border-box' }}>
                 <div style={{ textAlign: 'center', marginBottom: '30px' }}>
-                    <img src="/rayix_v2.jpg" alt="RayiX" style={{ width: '150px', height: 'auto', display: 'block', margin: '0 auto 15px' }} />
-                    <h2 style={{ margin: 0, fontSize: '1.8em', color: 'var(--primary-color)', letterSpacing: '-0.5px', fontWeight: '700' }}>RayiX</h2>
-                    <p style={{ margin: '5px 0 0 0', color: 'var(--text-muted)', fontSize: '0.9em', fontWeight: '500' }}>{t('login.subtitle')}</p>
+                    <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '15px' }}>
+                        <Logo size={60} showText={false} />
+                    </div>
+                    <h2 style={{ margin: 0, fontSize: '2em', color: 'var(--primary-color)', letterSpacing: '-1px', fontWeight: '800' }}>RayiX</h2>
+                    <p style={{ margin: '5px 0 0 0', color: 'var(--text-muted)', fontSize: '0.95em', fontWeight: '500', letterSpacing: '0.5px' }}>{t('login.subtitle')}</p>
                 </div>
 
                 <h3 style={{ marginTop: 0, textAlign: 'center', color: 'var(--text-color)', marginBottom: '30px', fontWeight: '500', fontSize: '1.2em' }}>
@@ -285,19 +288,19 @@ export function Login({ onLogin }) {
                                     {/* Icon based on provider type */}
                                     {provider.provider_type === 'saml' ? (
                                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                            <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
-                                            <path d="M2 17L12 22L22 17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                                            <path d="M2 12L12 17L22 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                            <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
+                                            <path d="M2 17L12 22L22 17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                            <path d="M2 12L12 17L22 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                                         </svg>
                                     ) : provider.provider_type === 'ldap' ? (
                                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                            <circle cx="9" cy="7" r="4" stroke="currentColor" strokeWidth="2"/>
-                                            <path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2M16 3.13a4 4 0 0 1 0 7.75M21 21v-2a4 4 0 0 0-3-3.85" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                            <circle cx="9" cy="7" r="4" stroke="currentColor" strokeWidth="2" />
+                                            <path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2M16 3.13a4 4 0 0 1 0 7.75M21 21v-2a4 4 0 0 0-3-3.85" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                                         </svg>
                                     ) : (
                                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                            <path d="M15 7C15 9.20914 13.2091 11 11 11C8.79086 11 7 9.20914 7 7C7 4.79086 8.79086 3 11 3C13.2091 3 15 4.79086 15 7Z" stroke="currentColor" strokeWidth="2"/>
-                                            <path d="M3 21V19C3 16.2386 5.23858 14 8 14H12C13.1046 14 14 14.8954 14 16M16 11L18 13L22 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                            <path d="M15 7C15 9.20914 13.2091 11 11 11C8.79086 11 7 9.20914 7 7C7 4.79086 8.79086 3 11 3C13.2091 3 15 4.79086 15 7Z" stroke="currentColor" strokeWidth="2" />
+                                            <path d="M3 21V19C3 16.2386 5.23858 14 8 14H12C13.1046 14 14 14.8954 14 16M16 11L18 13L22 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                                         </svg>
                                     )}
                                     {provider.name}

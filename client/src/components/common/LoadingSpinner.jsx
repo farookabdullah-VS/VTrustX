@@ -1,11 +1,12 @@
 import React from 'react';
 import './LoadingSpinner.css';
+import { Logo } from './Logo';
 
 export function LoadingSpinner({
   size = 50,
   message = 'Loading...',
-  variant = 'modern', // modern, dots, pulse, dual-ring
-  color = 'var(--primary-color, #10B981)'
+  variant = 'brand', // brand, ai, modern, dots, pulse, dual-ring
+  color = 'var(--primary-color, #00F5FF)'
 }) {
   const renderSpinner = () => {
     switch (variant) {
@@ -26,10 +27,28 @@ export function LoadingSpinner({
           </div>
         );
 
+      case 'brand':
+        return (
+          <div className="spinner-brand" style={{ width: size, height: size }}>
+            <Logo size={size} variant="icon" color={color} showText={false} />
+          </div>
+        );
+
       case 'dual-ring':
         return (
           <div className="spinner-dual-ring" style={{ width: size, height: size }}>
             <div className="ring" style={{ borderTopColor: color, borderBottomColor: color }}></div>
+          </div>
+        );
+
+      case 'ai':
+        return (
+          <div className="spinner-ai" style={{ width: size, height: size }}>
+            <div className="ai-core"></div>
+            <div className="ai-orbit orbit-1"></div>
+            <div className="ai-orbit orbit-2"></div>
+            <div className="ai-orbit orbit-3"></div>
+            <div className="ai-atmosphere"></div>
           </div>
         );
 

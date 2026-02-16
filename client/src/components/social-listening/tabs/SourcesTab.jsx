@@ -3,7 +3,10 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { Settings, Plus, CheckCircle, AlertCircle, RefreshCw, Trash2 } from 'lucide-react';
+import {
+  Settings, Plus, CheckCircle, AlertCircle, RefreshCw, Trash2,
+  Instagram, Facebook, Twitter, Linkedin, Youtube, Music, MessageSquare
+} from 'lucide-react';
 import { useSocialListening } from '../../../contexts/SocialListeningContext';
 import { LoadingSpinner } from '../../common/LoadingSpinner';
 import socialListeningApi from '../../../services/socialListeningApi';
@@ -16,13 +19,13 @@ const SourcesTab = () => {
   const [showAddModal, setShowAddModal] = useState(false);
 
   const platformsAvailable = [
-    { id: 'twitter', name: 'Twitter', icon: '𝕏', color: '#1DA1F2' },
-    { id: 'facebook', name: 'Facebook', icon: 'f', color: '#4267B2' },
-    { id: 'instagram', name: 'Instagram', icon: '📷', color: '#E4405F' },
-    { id: 'linkedin', name: 'LinkedIn', icon: 'in', color: '#0077B5' },
-    { id: 'youtube', name: 'YouTube', icon: '▶', color: '#FF0000' },
-    { id: 'tiktok', name: 'TikTok', icon: '♪', color: '#000000' },
-    { id: 'reddit', name: 'Reddit', icon: '🤖', color: '#FF4500' }
+    { id: 'twitter', name: 'Twitter', icon: <Twitter size={18} />, color: '#1DA1F2' },
+    { id: 'facebook', name: 'Facebook', icon: <Facebook size={18} />, color: '#4267B2' },
+    { id: 'instagram', name: 'Instagram', icon: <Instagram size={18} />, color: '#E4405F' },
+    { id: 'linkedin', name: 'LinkedIn', icon: <Linkedin size={18} />, color: '#0077B5' },
+    { id: 'youtube', name: 'YouTube', icon: <Youtube size={18} />, color: '#FF0000' },
+    { id: 'tiktok', name: 'TikTok', icon: <Music size={18} />, color: '#000000' },
+    { id: 'reddit', name: 'Reddit', icon: <MessageSquare size={18} />, color: '#FF4500' }
   ];
 
   const handleTestConnection = async (sourceId) => {

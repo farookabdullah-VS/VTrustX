@@ -48,14 +48,46 @@ body {
 }
 
 .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'Outfit', sans-serif;
     font-size: 1.8rem;
     font-weight: 800;
     letter-spacing: -1px;
     color: var(--text-main);
 }
 
-.logo-accent {
+.logo-icon {
+    width: 38px;
+    height: 38px;
+    flex-shrink: 0;
+}
+
+.logo-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1;
+}
+
+.logo-arabic {
+    font-family: 'Noto Sans Arabic', 'Outfit', sans-serif;
+    font-size: 0.8rem;
     color: var(--primary-color);
+    margin-top: -2px;
+    font-weight: 900;
+    text-align: right;
+    letter-spacing: 0;
+}
+
+.logo-accent {
+    color: var(--text-main);
+}
+
+.highlight-x {
+    color: var(--primary-color);
+    font-style: italic;
+    text-shadow: 0 0 15px rgba(0, 245, 255, 0.3);
 }
 
 .nav-links {
@@ -601,6 +633,14 @@ footer {
 .footer-info .logo {
     color: #FFF;
     margin-bottom: 20px;
+}
+
+.footer-info .logo .logo-accent {
+    color: #FFF;
+}
+
+.footer-info .logo .highlight-x {
+    color: var(--primary-color);
 }
 
 .footer-links h4 {

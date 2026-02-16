@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useMemo, useCallback } from 'react';
+import { useParams, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 import * as XLSX from 'xlsx';
 import { AnalyticsView } from './AnalyticsView';
@@ -28,7 +29,9 @@ const ShareModal = React.memo(({ isOpen, onClose, shareUrl }) => {
     );
 });
 
-export function ResultsViewer({ formId, onBack, onEditSubmission, initialView, onNavigate, publicToken, isPublic }) {
+export function ResultsViewer({ formId: propsFormId, onBack, onEditSubmission, initialView, onNavigate, publicToken, isPublic }) {
+    const { formId: urlFormId } = useParams();
+    const formId = propsFormId || urlFormId;
     const toast = useToast();
     const [rawSubmissions, setRawSubmissions] = useState([]);
     const [formMetadata, setFormMetadata] = useState(null);

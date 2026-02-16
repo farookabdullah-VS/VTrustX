@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Core Spinner Preview</title>
+    <style>
+        :root {
+            --primary-color: #00F5FF;
+            --primary-light: rgba(0, 245, 255, 0.05);
+            --bg-dark: #05070A;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            font-family: 'Outfit', sans-serif;
+            color: white;
+        }
+
+        .spinner-ai {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100px;
+            height: 100px;
+        }
+
+        .ai-core {
+            position: absolute;
+            width: 30%;
+            height: 30%;
+            background: var(--primary-color);
+            border-radius: 50%;
+            box-shadow: 0 0 20px var(--primary-color),
+                0 0 40px var(--primary-color);
+            animation: ai-pulse 2s ease-in-out infinite;
+            z-index: 2;
+        }
+
+        .ai-orbit {
+            position: absolute;
+            border-radius: 50%;
+            border: 1px solid rgba(0, 245, 255, 0.1);
+            border-top: 2px solid var(--primary-color);
+        }
+
+        .orbit-1 {
+            width: 100%;
+            height: 100%;
+            animation: ai-rotate 1.5s linear infinite;
+        }
+
+        .orbit-2 {
+            width: 75%;
+            height: 75%;
+            animation: ai-rotate-reverse 2s linear infinite;
+            border-top-color: #8B5CF6;
+            /* Purple accent */
+        }
+
+        .orbit-3 {
+            width: 50%;
+            height: 50%;
+            animation: ai-rotate 2.5s linear infinite;
+        }
+
+        .ai-atmosphere {
+            position: absolute;
+            width: 120%;
+            height: 120%;
+            background: radial-gradient(circle, var(--primary-light) 0%, transparent 70%);
+            border-radius: 50%;
+            animation: ai-breathe 4s ease-in-out infinite;
+        }
+
+        @keyframes ai-pulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+                opacity: 1;
+                box-shadow: 0 0 20px var(--primary-color);
+            }
+
+            50% {
+                transform: scale(1.2);
+                opacity: 0.8;
+                box-shadow: 0 0 30px var(--primary-color), 0 0 50px var(--primary-color);
+            }
+        }
+
+        @keyframes ai-rotate {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes ai-rotate-reverse {
+            from {
+                transform: rotate(360deg);
+            }
+
+            to {
+                transform: rotate(0deg);
+            }
+        }
+
+        @keyframes ai-breathe {
+
+            0%,
+            100% {
+                transform: scale(1);
+                opacity: 0.3;
+            }
+
+            50% {
+                transform: scale(1.1);
+                opacity: 0.6;
+            }
+        }
+
+        .message {
+            margin-top: 30px;
+            font-size: 1.1rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            opacity: 0.8;
+            animation: fadeIn 1s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 0.8;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="spinner-ai">
+        <div class="ai-core"></div>
+        <div class="ai-orbit orbit-1"></div>
+        <div class="ai-orbit orbit-2"></div>
+        <div class="ai-orbit orbit-3"></div>
+        <div class="ai-atmosphere"></div>
+    </div>
+    <div class="message">RayiX Intelligence Generating...</div>
+</body>
+
+</html>

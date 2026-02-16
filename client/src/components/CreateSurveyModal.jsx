@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useToast } from './common/Toast';
+import { X } from 'lucide-react';
 
 export function CreateSurveyModal({ isOpen, onClose, onCreate }) {
     const { t } = useTranslation();
@@ -75,13 +76,15 @@ export function CreateSurveyModal({ isOpen, onClose, onCreate }) {
                         style={{
                             background: 'transparent',
                             border: 'none',
-                            fontSize: '24px',
                             color: '#94a3b8',
                             cursor: 'pointer',
-                            padding: '4px'
+                            padding: '4px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
                         }}
                     >
-                        ×
+                        <X size={20} />
                     </button>
                 </div>
 

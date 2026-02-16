@@ -297,6 +297,7 @@ async function runMigrations() {
         { name: 'indexes', fn: require('./src/scripts/ensure_indexes') },
         { name: 'refresh_tokens', fn: require('./src/scripts/ensure_refresh_tokens_table') },
         { name: 'social_listening', fn: require('./src/scripts/ensure_social_listening_tables') },
+        { name: 'users', fn: require('./src/scripts/ensure_users_columns') },
     ];
 
     for (const script of scripts) {

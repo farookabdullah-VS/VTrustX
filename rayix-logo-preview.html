@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RayiX Brand Identity - Special Editions</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800;900&family=Noto+Sans+Arabic:wght@300;600;800;900&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --primary: #00F5FF;
+            --accent: #8B5CF6;
+            --bg: #05070A;
+            --surface: #0A0D14;
+            --gold: #C1A062;
+            --maroon: #7C2230;
+            --vision-green: #00FFA3;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: white;
+            font-family: 'Outfit', sans-serif;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 60px 20px;
+        }
+
+        .showcase-container {
+            display: flex;
+            flex-direction: column;
+            gap: 60px;
+            max-width: 1000px;
+            width: 100%;
+        }
+
+        .logo-section {
+            background: var(--surface);
+            padding: 50px;
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .section-tag {
+            background: rgba(255, 255, 255, 0.05);
+            color: rgba(255, 255, 255, 0.6);
+            padding: 6px 16px;
+            border-radius: 100px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            z-index: 2;
+        }
+
+        /* Master Branding */
+        .master-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            width: 100%;
+        }
+
+        @media (max-width: 768px) {
+            .master-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .edition-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.3s ease;
+        }
+
+        .edition-card:hover {
+            transform: translateY(-5px);
+        }
+
+        /* Typography Styling */
+        .logo-english {
+            font-size: 2.8rem;
+            font-weight: 800;
+            letter-spacing: -1px;
+            line-height: 1;
+        }
+
+        .logo-arabic {
+            font-family: 'Noto Sans Arabic', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 900;
+            margin-top: -5px;
+            text-align: right;
+            width: 100%;
+        }
+
+        /* Special Effects */
+        .gold-text {
+            color: var(--gold);
+        }
+
+        .vision-text {
+            color: var(--vision-green);
+        }
+
+        .reflection-glow {
+            position: absolute;
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.15;
+            z-index: 0;
+        }
+
+        .details-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            width: 100%;
+        }
+
+        .detail-card {
+            background: rgba(255, 255, 255, 0.02);
+            padding: 25px;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .detail-card h3 {
+            margin: 0 0 10px 0;
+            font-size: 1.1rem;
+        }
+
+        .detail-card p {
+            margin: 0;
+            font-size: 0.9rem;
+            color: #94A3B8;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="showcase-container">
+
+        <!-- Master Concept -->
+        <div class="logo-section" style="background: radial-gradient(circle at top right, #00F5FF11, transparent);">
+            <div class="reflection-glow" style="background: var(--primary); top: 10%; right: 10%;"></div>
+            <span class="section-tag">Standard Master Identity</span>
+
+            <div style="display: flex; align-items: center; gap: 25px; z-index: 2;">
+                <svg width="100" height="100" viewBox="0 0 100 100" fill="none">
+                    <circle cx="50" cy="50" r="48" stroke="var(--primary)" stroke-width="0.5" opacity="0.3" />
+                    <path d="M20 50C20 33.4315 33.4315 20 50 20C66.5685 20 80 33.4315 80 50C80 66.5685 66.5685 80 50 80"
+                        stroke="var(--primary)" stroke-width="8" stroke-linecap="round" />
+                    <path d="M35 35L65 65M65 35L35 65" stroke="white" stroke-width="12" stroke-linecap="round" />
+                </svg>
+                <div style="display: flex; flex-direction: column;">
+                    <div class="logo-english">Rayi<span style="color: var(--primary); font-style: italic;">X</span>
+                    </div>
+                    <div class="logo-arabic" style="color: var(--primary);">رأيـ<span
+                            style="font-style: italic;">X</span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Special Editions Grid -->
+        <div class="master-grid">
+
+            <!-- Saudi Foundation Day -->
+            <div class="logo-section"
+                style="border-color: var(--gold); background: radial-gradient(circle at center, #7C223033, #05070A);">
+                <div class="reflection-glow" style="background: var(--gold); top: 20%; left: 20%;"></div>
+                <span class="section-tag" style="background: #7C2230; color: var(--gold);">Foundation Day
+                    MASTERPIECE</span>
+
+                <div style="display: flex; align-items: center; gap: 20px; z-index: 2;">
+                    <svg width="100" height="100" viewBox="0 0 100 100" fill="none">
+                        <rect x="5" y="5" width="90" height="90" rx="10" stroke="var(--gold)" stroke-width="2"
+                            opacity="0.8" />
+                        <circle cx="50" cy="50" r="38" fill="#7C2230" />
+                        <g stroke="var(--gold)" stroke-width="1.5" stroke-linecap="round">
+                            <path d="M50 35V65M50 40C40 40 35 30 35 30M50 45C40 45 32 38 32 38" />
+                            <path d="M50 40C60 40 65 30 65 30M50 45C60 45 68 38 68 38" />
+                        </g>
+                        <path d="M35 50C35 41.7157 41.7157 35 50 35C58.2843 35 65 41.7157 65 50" stroke="var(--gold)"
+                            stroke-width="4" stroke-linecap="round" />
+                        <path d="M42 42L58 58M58 42L42 58" stroke="white" stroke-width="8" stroke-linecap="round" />
+                        <path d="M42 42L58 58M58 42L42 58" stroke="var(--gold)" stroke-width="3"
+                            stroke-linecap="round" />
+                        <text x="50" y="82" font-family="Outfit" font-size="6" font-weight="800" fill="var(--gold)"
+                            text-anchor="middle">1727 • ٢٠٢٤</text>
+                    </svg>
+                    <div style="display: flex; flex-direction: column;">
+                        <div class="logo-english">Rayi<span class="gold-text">X</span></div>
+                        <div class="logo-arabic" style="color: white; font-size: 1.4rem;">يوم التأسيس</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Saudi Vision 2030 -->
+            <div class="logo-section"
+                style="border-color: var(--vision-green); background: radial-gradient(circle at center, #7000FF22, #05070A);">
+                <div class="reflection-glow" style="background: #00FFA3; bottom: 20%; right: 20%;"></div>
+                <span class="section-tag" style="background: #00FFA322; color: var(--vision-green);">Vision 2030
+                    SPECIAL</span>
+
+                <div style="display: flex; align-items: center; gap: 20px; z-index: 2;">
+                    <svg width="100" height="100" viewBox="0 0 100 100" fill="none">
+                        <path d="M15 30L50 85L85 30" stroke="#00FFA3" stroke-width="4" stroke-linecap="round"
+                            opacity="0.4" />
+                        <circle cx="50" cy="50" r="35" stroke="#7000FF" stroke-width="2" stroke-dasharray="5 5" />
+                        <path d="M25 50C25 36.1929 36.1929 25 50 25C63.8071 25 75 36.1929 75 50" stroke="#00FFA3"
+                            stroke-width="8" stroke-linecap="round" />
+                        <path d="M38 38L62 62M62 38L38 62" stroke="white" stroke-width="12" stroke-linecap="round" />
+                        <text x="50" y="92" font-family="Outfit" font-size="7" font-weight="900" fill="#00FFA3"
+                            text-anchor="middle">VISION 2030</text>
+                    </svg>
+                    <div style="display: flex; flex-direction: column;">
+                        <div class="logo-english">Rayi<span class="vision-text">X</span></div>
+                        <div class="logo-arabic" style="color: var(--vision-green); font-size: 1.4rem;">رؤية المملكة
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Principles -->
+        <div class="details-grid">
+            <div class="detail-card">
+                <h3 style="color: var(--primary);">Master Intelligence</h3>
+                <p>The core RayiX identity focuses on precision, data cycles, and the amplificaiton of human opinion
+                    (رأي).</p>
+            </div>
+            <div class="detail-card" style="border-color: var(--gold);">
+                <h3 style="color: var(--gold);">Heritage Masterpiece</h3>
+                <p>The Foundation Day edition honors Diriyah's roots with maroon silk textures and royal gold embossing.
+                </p>
+            </div>
+            <div class="detail-card" style="border-color: var(--vision-green);">
+                <h3 style="color: var(--vision-green);">Visionary Innovation</h3>
+                <p>The Vision 2030 edition uses neon spectrums to represent the Kingdom's digital transformation and
+                    future-forward energy.</p>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+
+</html>
