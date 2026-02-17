@@ -39,6 +39,40 @@ function getAllQuestions(json) {
     return questions;
 }
 
+/**
+ * @swagger
+ * /api/analytics/daily-stats:
+ *   get:
+ *     tags: [Analytics]
+ *     summary: Get daily overview statistics
+ *     description: Returns daily completed and viewed counts for the last 30 days across all forms belonging to the authenticated user's tenant.
+ *     security:
+ *       - cookieAuth: []
+ *     responses:
+ *       200:
+ *         description: Array of daily stat objects
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   date:
+ *                     type: string
+ *                     format: date
+ *                   completed:
+ *                     type: integer
+ *                   viewed:
+ *                     type: integer
+ *                   rate:
+ *                     type: integer
+ *                     description: Completion rate as a percentage
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Server error
+ */
 // 1. Daily Overview
 router.get('/daily-stats', authenticate, async (req, res) => {
     try {
@@ -91,6 +125,54 @@ router.get('/daily-stats', authenticate, async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ * /api/analytics/question-stats:
+ *   get:
+ *     tags: [Analytics]
+ *     summary: Get per-question analytics
+ *     description: Returns completion rates and answer distributions for all questions across all forms in the tenant.
+ *     security:
+ *       - cookieAuth: []
+ *     responses:
+ *       200:
+ *         description: Question statistics and answer distributions
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 questions:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: string
+ *                       text:
+ *                         type: string
+ *                       form:
+ *                         type: string
+ *                       type:
+ *                         type: string
+ *                       completionRate:
+ *                         type: integer
+ *                 answers:
+ *                   type: object
+ *                   additionalProperties:
+ *                     type: array
+ *                     items:
+ *                       type: object
+ *                       properties:
+ *                         label:
+ *                           type: string
+ *                         count:
+ *                           type: integer
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Server error
+ */
 // 2. Question Analytics
 router.get('/question-stats', authenticate, async (req, res) => {
     try {
@@ -156,6 +238,53 @@ router.get('/question-stats', authenticate, async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ * /api/analytics/csat-stats:
+ *   get:
+ *     tags: [Analytics]
+ *     summary: Get CSAT and sentiment trends
+ *     description: Returns a daily timeline of average CSAT and NPS scores plus a breakdown by form for the tenant.
+ *     security:
+ *       - cookieAuth: []
+ *     responses:
+ *       200:
+ *         description: CSAT timeline and form breakdown
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 timeline:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       date:
+ *                         type: string
+ *                         format: date
+ *                       csat:
+ *                         type: string
+ *                       nps:
+ *                         type: string
+ *                       sentiment:
+ *                         type: integer
+ *                 breakdown:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       name:
+ *                         type: string
+ *                       count:
+ *                         type: integer
+ *                       avg:
+ *                         type: string
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Server error
+ */
 // 3. CSAT & Sentiment Trends
 router.get('/csat-stats', authenticate, async (req, res) => {
     try {
@@ -209,6 +338,36 @@ router.get('/csat-stats', authenticate, async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ * /api/analytics/sentiment-timeline:
+ *   get:
+ *     tags: [Analytics]
+ *     summary: Get hourly sentiment timeline
+ *     description: Returns the last 40 hourly sentiment values derived from CSAT scores. Intended for the CX real-time dashboard.
+ *     security:
+ *       - cookieAuth: []
+ *     responses:
+ *       200:
+ *         description: Array of hourly sentiment data points
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   time:
+ *                     type: string
+ *                     format: date-time
+ *                   value:
+ *                     type: number
+ *                     description: Sentiment score between -1 (negative) and 1 (positive)
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Server error
+ */
 // 4. Sentiment Timeline (for CX Dashboard)
 router.get('/sentiment-timeline', authenticate, async (req, res) => {
     try {
@@ -239,6 +398,43 @@ router.get('/sentiment-timeline', authenticate, async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ * /api/analytics/detailed-responses:
+ *   get:
+ *     tags: [Analytics]
+ *     summary: Get detailed submission responses
+ *     description: Returns the last 200 submission responses flattened to question-answer pairs, joined with ticket/agent/team data where available.
+ *     security:
+ *       - cookieAuth: []
+ *     responses:
+ *       200:
+ *         description: Array of flattened question-answer records
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   date:
+ *                     type: string
+ *                     format: date
+ *                   form:
+ *                     type: string
+ *                   question:
+ *                     type: string
+ *                   answer:
+ *                     type: string
+ *                   agent:
+ *                     type: string
+ *                   group:
+ *                     type: string
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Server error
+ */
 // 5. Detailed Responses (Live Data Mapping)
 router.get('/detailed-responses', authenticate, async (req, res) => {
     try {
@@ -297,6 +493,58 @@ router.get('/detailed-responses', authenticate, async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ * /api/analytics/key-drivers:
+ *   post:
+ *     tags: [Analytics]
+ *     summary: Run key driver analysis
+ *     description: Calculates Pearson correlation between potential driver fields and a target metric (e.g. NPS) for the specified survey. Results are cached.
+ *     security:
+ *       - cookieAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [surveyId, targetMetric]
+ *             properties:
+ *               surveyId:
+ *                 type: string
+ *                 format: uuid
+ *               targetMetric:
+ *                 type: string
+ *                 description: The field name to treat as the dependent variable (e.g. "nps")
+ *     responses:
+ *       200:
+ *         description: Correlation analysis results
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 drivers:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       key:
+ *                         type: string
+ *                       correlation:
+ *                         type: number
+ *                       impact:
+ *                         type: string
+ *                         enum: [High, Medium, Low]
+ *       400:
+ *         description: Missing surveyId or targetMetric
+ *       404:
+ *         description: Form not found
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Server error
+ */
 // 6. Key Driver Analysis (Pearson Correlation)
 router.post('/key-drivers', authenticate, async (req, res) => {
     try {
@@ -373,6 +621,63 @@ router.post('/key-drivers', authenticate, async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ * /api/analytics/text-analytics:
+ *   post:
+ *     tags: [Analytics]
+ *     summary: Run text analytics
+ *     description: Generates word frequency data for a text field in the specified survey. Optionally scores each word by average sentiment from a numeric metric field. Results are cached.
+ *     security:
+ *       - cookieAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [surveyId, textField]
+ *             properties:
+ *               surveyId:
+ *                 type: string
+ *                 format: uuid
+ *               textField:
+ *                 type: string
+ *                 description: The field name containing free-text answers
+ *               sentimentMetric:
+ *                 type: string
+ *                 nullable: true
+ *                 description: Optional numeric field to derive per-word sentiment scores
+ *     responses:
+ *       200:
+ *         description: Top 50 words by frequency with optional sentiment scores
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 words:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       text:
+ *                         type: string
+ *                       value:
+ *                         type: integer
+ *                         description: Frequency count
+ *                       sentiment:
+ *                         type: string
+ *                         nullable: true
+ *       400:
+ *         description: Missing surveyId or textField
+ *       404:
+ *         description: Form not found
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Server error
+ */
 // 7. Text Analytics (Word Cloud & Sentiment)
 router.post('/text-analytics', authenticate, async (req, res) => {
     try {
@@ -438,6 +743,53 @@ router.post('/text-analytics', authenticate, async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ * /api/analytics/nps-significance:
+ *   post:
+ *     tags: [Analytics]
+ *     summary: Test NPS statistical significance
+ *     description: Compares NPS from the current 30-day period against the previous 30-day period using a two-proportion Z-test at 95% confidence. Requires at least 10 responses per period.
+ *     security:
+ *       - cookieAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [surveyId]
+ *             properties:
+ *               surveyId:
+ *                 type: string
+ *                 format: uuid
+ *     responses:
+ *       200:
+ *         description: NPS significance test result
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 currentNPS:
+ *                   type: integer
+ *                 previousNPS:
+ *                   type: integer
+ *                 change:
+ *                   type: integer
+ *                 isSignificant:
+ *                   type: boolean
+ *                 verdict:
+ *                   type: string
+ *                 confidence:
+ *                   type: string
+ *       404:
+ *         description: Form not found
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Server error
+ */
 // 8. Statistical Significance (NPS Z-Test)
 router.post('/nps-significance', authenticate, async (req, res) => {
     try {
@@ -517,6 +869,69 @@ router.post('/nps-significance', authenticate, async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ * /api/analytics/cross-tab:
+ *   post:
+ *     tags: [Analytics]
+ *     summary: Run cross-tabulation analysis
+ *     description: Builds a pivot table from two categorical fields in the specified survey. Supports count and average operations.
+ *     security:
+ *       - cookieAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [surveyId, rowField, colField]
+ *             properties:
+ *               surveyId:
+ *                 type: string
+ *                 format: uuid
+ *               rowField:
+ *                 type: string
+ *                 description: Field to use as row labels
+ *               colField:
+ *                 type: string
+ *                 description: Field to use as column labels
+ *               valueField:
+ *                 type: string
+ *                 nullable: true
+ *                 description: Numeric field to aggregate (required when operation is "average")
+ *               operation:
+ *                 type: string
+ *                 enum: [count, average]
+ *                 default: count
+ *     responses:
+ *       200:
+ *         description: Cross-tabulation matrix
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 rows:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *                 cols:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *       400:
+ *         description: Missing required fields
+ *       404:
+ *         description: Form not found
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Server error
+ */
 // 9. Cross-Tabulation (Pivot Table)
 router.post('/cross-tab', authenticate, async (req, res) => {
     try {
@@ -598,6 +1013,76 @@ router.post('/cross-tab', authenticate, async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ * /api/analytics/anomalies:
+ *   post:
+ *     tags: [Analytics]
+ *     summary: Detect metric anomalies
+ *     description: Uses a 2-sigma control chart to detect unusual spikes or drops in a numeric metric field over the last 7 days relative to a 60-day baseline.
+ *     security:
+ *       - cookieAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [surveyId, targetMetric]
+ *             properties:
+ *               surveyId:
+ *                 type: string
+ *                 format: uuid
+ *               targetMetric:
+ *                 type: string
+ *                 description: The numeric field to monitor for anomalies
+ *     responses:
+ *       200:
+ *         description: Anomaly detection results
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 metric:
+ *                   type: string
+ *                 mean:
+ *                   type: string
+ *                 stdDev:
+ *                   type: string
+ *                 bounds:
+ *                   type: object
+ *                   properties:
+ *                     upper:
+ *                       type: string
+ *                     lower:
+ *                       type: string
+ *                 anomalies:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       date:
+ *                         type: string
+ *                         format: date
+ *                       type:
+ *                         type: string
+ *                         enum: [spike, drop]
+ *                       value:
+ *                         type: string
+ *                       deviation:
+ *                         type: string
+ *                       message:
+ *                         type: string
+ *       400:
+ *         description: Missing surveyId or targetMetric
+ *       404:
+ *         description: Form not found
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Server error
+ */
 // 10. Anomaly Detection (AI Watchdog)
 router.post('/anomalies', authenticate, async (req, res) => {
     try {
@@ -683,6 +1168,23 @@ router.post('/anomalies', authenticate, async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ * /api/analytics/cache/stats:
+ *   get:
+ *     tags: [Analytics]
+ *     summary: Get analytics cache statistics
+ *     description: Returns hit/miss counts and memory usage for the analytics cache service.
+ *     security:
+ *       - cookieAuth: []
+ *     responses:
+ *       200:
+ *         description: Cache statistics object
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Server error
+ */
 // Cache Statistics & Management
 router.get('/cache/stats', authenticate, async (req, res) => {
     try {
@@ -694,6 +1196,23 @@ router.get('/cache/stats', authenticate, async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ * /api/analytics/cache/health:
+ *   get:
+ *     tags: [Analytics]
+ *     summary: Get analytics cache health
+ *     description: Returns health status information for the analytics cache service.
+ *     security:
+ *       - cookieAuth: []
+ *     responses:
+ *       200:
+ *         description: Cache health object
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Server error
+ */
 router.get('/cache/health', authenticate, async (req, res) => {
     try {
         const health = await analyticsCacheService.getHealth();
@@ -704,6 +1223,42 @@ router.get('/cache/health', authenticate, async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ * /api/analytics/cache/invalidate/{surveyId}:
+ *   post:
+ *     tags: [Analytics]
+ *     summary: Invalidate cache for a survey
+ *     description: Removes all cached analytics entries for the specified survey in the tenant's cache namespace.
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: surveyId
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Survey ID whose cache entries should be invalidated
+ *     responses:
+ *       200:
+ *         description: Cache invalidated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 deletedCount:
+ *                   type: integer
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Server error
+ */
 router.post('/cache/invalidate/:surveyId', authenticate, async (req, res) => {
     try {
         const { surveyId } = req.params;
@@ -725,6 +1280,79 @@ router.post('/cache/invalidate/:surveyId', authenticate, async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ * /api/analytics/query-data:
+ *   post:
+ *     tags: [Analytics]
+ *     summary: Query submission data with pagination and filters
+ *     description: Returns paginated submission records for a survey with optional field-level filtering. Supports equals, contains, greaterThan, and lessThan operators. Max 500 rows per page.
+ *     security:
+ *       - cookieAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [surveyId]
+ *             properties:
+ *               surveyId:
+ *                 type: string
+ *                 format: uuid
+ *               page:
+ *                 type: integer
+ *                 default: 1
+ *               pageSize:
+ *                 type: integer
+ *                 default: 100
+ *                 maximum: 500
+ *               filters:
+ *                 type: object
+ *                 additionalProperties:
+ *                   type: object
+ *                   properties:
+ *                     value:
+ *                       description: Value to filter by
+ *                     operator:
+ *                       type: string
+ *                       enum: [equals, contains, greaterThan, lessThan]
+ *     responses:
+ *       200:
+ *         description: Paginated submission data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                 pagination:
+ *                   type: object
+ *                   properties:
+ *                     page:
+ *                       type: integer
+ *                     pageSize:
+ *                       type: integer
+ *                     totalCount:
+ *                       type: integer
+ *                     totalPages:
+ *                       type: integer
+ *                     hasMore:
+ *                       type: boolean
+ *                     from:
+ *                       type: integer
+ *                     to:
+ *                       type: integer
+ *       400:
+ *         description: surveyId is required
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Server error
+ */
 // Query Data with Pagination (NEW)
 router.post('/query-data', authenticate, async (req, res) => {
     try {
@@ -859,6 +1487,54 @@ router.post('/query-data', authenticate, async (req, res) => {
  */
 const ReportExportService = require('../../services/ReportExportService');
 
+/**
+ * @swagger
+ * /api/analytics/reports/{reportId}/export/pdf:
+ *   post:
+ *     tags: [Analytics]
+ *     summary: Export report to PDF
+ *     description: Generates a PDF export of the specified analytics report. Returns a temporary file URL.
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: reportId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Report ID to export
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             description: Optional export configuration options
+ *     responses:
+ *       200:
+ *         description: PDF export successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 fileUrl:
+ *                   type: string
+ *                 filename:
+ *                   type: string
+ *                 size:
+ *                   type: integer
+ *                 expiresAt:
+ *                   type: string
+ *                   format: date-time
+ *                 message:
+ *                   type: string
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Server error
+ */
 router.post('/reports/:reportId/export/pdf', authenticate, async (req, res) => {
     try {
         const { reportId } = req.params;
@@ -888,8 +1564,52 @@ router.post('/reports/:reportId/export/pdf', authenticate, async (req, res) => {
 });
 
 /**
- * Export report to PowerPoint
- * POST /api/analytics/reports/:reportId/export/pptx
+ * @swagger
+ * /api/analytics/reports/{reportId}/export/pptx:
+ *   post:
+ *     tags: [Analytics]
+ *     summary: Export report to PowerPoint
+ *     description: Generates a PowerPoint (.pptx) export of the specified analytics report. Returns a temporary file URL.
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: reportId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Report ID to export
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             description: Optional export configuration options
+ *     responses:
+ *       200:
+ *         description: PowerPoint export successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 fileUrl:
+ *                   type: string
+ *                 filename:
+ *                   type: string
+ *                 size:
+ *                   type: integer
+ *                 expiresAt:
+ *                   type: string
+ *                   format: date-time
+ *                 message:
+ *                   type: string
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Server error
  */
 router.post('/reports/:reportId/export/pptx', authenticate, async (req, res) => {
     try {

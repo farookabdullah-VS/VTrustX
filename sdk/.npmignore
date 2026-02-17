@@ -1,0 +1,8 @@
+src/
+tsconfig.json
+*.test.ts
+*.test.js
+*.spec.ts
+*.spec.js
+.env
+.env.*
