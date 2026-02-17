@@ -69,3 +69,26 @@ server/check_schema.js
 
 # VTrustXserver files
 VTrustXserver/
+
+# Development and migration helpers
+apply_*.js
+run_*_migration.js
+check_admin.js
+check_cooldown_columns.js
+
+# Backup files
+*.backup
+
+# SDK directories (keep separate)
+/client/android-sdk/
+/client/ios-sdk/
+/sdk/
+
+# Development tools
+lighthouserc.js
+start-db.bat
+
+# Keep these exceptions
+!server/check_schema.js
+!server/check_tenants.js
+!server/test_cooldown.js
