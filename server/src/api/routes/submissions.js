@@ -8,6 +8,7 @@ const logger = require('../../infrastructure/logger');
 const WorkflowTriggerService = require('../../services/WorkflowTriggerService');
 const { classifySubmission } = require('../../core/ctlClassifier');
 const sentimentService = require('../../services/sentimentService');
+const SurveyCooldownService = require('../../services/SurveyCooldownService');
 
 // Initialize Repositories
 const submissionRepo = new PostgresRepository('submissions');
@@ -219,6 +220,29 @@ router.post('/', validate(createSubmissionSchema), async (req, res) => {
     try {
         const clientMetadata = req.body.metadata || {};
         const formId = req.body.formId;
+
+        // 0. Check Cool Down (before transaction to avoid DB load)
+        const formPreCheck = await query(
+            "SELECT id, cooldown_enabled, cooldown_period, cooldown_type, tenant_id FROM forms WHERE id = $1",
+            [formId]
+        );
+        if (formPreCheck.rows.length === 0) {
+            return res.status(404).json({ error: 'Form not found' });
+        }
+
+        const form = formPreCheck.rows[0];
+        const ipAddress = req.ip;
+        const userId = req.body.userId || null;
+
+        const cooldownCheck = await SurveyCooldownService.checkCooldown(form, ipAddress, userId);
+        if (!cooldownCheck.allowed) {
+            return res.status(429).json({
+                error: cooldownCheck.reason,
+                code: 'COOLDOWN_ACTIVE',
+                remainingTime: cooldownCheck.remainingTime,
+                cooldownType: cooldownCheck.cooldownType
+            });
+        }
 
         // Use transaction for atomic limit/quota check + insert
         const result = await transaction(async (client) => {
@@ -703,6 +727,11 @@ router.post('/', validate(createSubmissionSchema), async (req, res) => {
             logger.warn('[Webhooks] Webhook trigger setup failed (non-critical)', {
                 error: webhookErr.message
             });
+        }
+
+        // Record Cool Down (only for completed submissions)
+        if (savedEntity.metadata?.status === 'completed') {
+            await SurveyCooldownService.recordSubmission(form, ipAddress, userId);
         }
 
         res.status(201).json(savedEntity);

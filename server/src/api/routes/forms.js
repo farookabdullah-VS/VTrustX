@@ -53,6 +53,9 @@ const toEntity = (row) => {
         ai: row.ai || {},
         enableVoiceAgent: row.enable_voice_agent,
         allowedIps: row.allowed_ips,
+        cooldownEnabled: row.cooldown_enabled,
+        cooldownPeriod: row.cooldown_period,
+        cooldownType: row.cooldown_type,
         createdAt: row.created_at,
         updatedAt: row.updated_at,
         createdBy: row.created_by,
@@ -72,6 +75,7 @@ const checkIpAccess = (allowedIps, reqIp) => {
 };
 
 const debugLog = require('./debug_logger');
+const SurveyCooldownService = require('../../services/SurveyCooldownService');
 
 /**
  * @swagger
@@ -391,6 +395,9 @@ router.post('/', authenticate, validate(createFormSchema), authenticate.checkPer
             enable_voice_agent: req.body.enableVoiceAgent || false,
             allowed_ips: req.body.allowedIps || null,
             password: hashedPassword,
+            cooldown_enabled: req.body.cooldownEnabled || false,
+            cooldown_period: req.body.cooldownPeriod || 3600,
+            cooldown_type: req.body.cooldownType || 'both',
             status: 'draft',
             version: 1,
             created_at: new Date(),
@@ -516,6 +523,9 @@ router.put('/:id', authenticate, validate(updateFormSchema), authenticate.checkP
             ai: req.body.ai !== undefined ? req.body.ai : existing.ai,
             enable_voice_agent: req.body.enableVoiceAgent !== undefined ? req.body.enableVoiceAgent : existing.enable_voice_agent,
             allowed_ips: req.body.allowedIps !== undefined ? req.body.allowedIps : existing.allowed_ips,
+            cooldown_enabled: req.body.cooldownEnabled !== undefined ? req.body.cooldownEnabled : existing.cooldown_enabled,
+            cooldown_period: req.body.cooldownPeriod !== undefined ? req.body.cooldownPeriod : existing.cooldown_period,
+            cooldown_type: req.body.cooldownType !== undefined ? req.body.cooldownType : existing.cooldown_type,
             folder_id: req.body.folderId !== undefined ? req.body.folderId : existing.folder_id,
 
             updated_at: new Date()
@@ -904,6 +914,116 @@ router.delete('/:id', authenticate, authenticate.checkPermission('forms', 'delet
     } catch (error) {
         logger.error("Delete Error", { error: error.message });
         res.status(500).json({ error: 'Failed to delete form' });
+    }
+});
+
+/**
+ * @swagger
+ * /api/forms/{id}/cooldown/check:
+ *   post:
+ *     summary: Check cool down status
+ *     description: Check if a user/IP can submit the form based on cool down settings. Public endpoint for respondents to check before attempting submission.
+ *     tags: [Forms]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Form ID
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               userId:
+ *                 type: string
+ *                 nullable: true
+ *     responses:
+ *       200:
+ *         description: Cool down status
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 onCooldown:
+ *                   type: boolean
+ *                 remainingTime:
+ *                   type: integer
+ *                 reason:
+ *                   type: string
+ *                   nullable: true
+ *       404:
+ *         description: Form not found
+ */
+router.post('/:id/cooldown/check', async (req, res) => {
+    try {
+        const form = await formRepo.findById(req.params.id);
+        if (!form) return res.status(404).json({ error: 'Form not found' });
+
+        const ipAddress = req.ip;
+        const userId = req.body.userId || null;
+
+        const status = await SurveyCooldownService.getRemainingTime(form, ipAddress, userId);
+        res.json(status);
+    } catch (error) {
+        logger.error('Cool down check error', { error: error.message });
+        res.status(500).json({ error: 'Failed to check cool down status' });
+    }
+});
+
+/**
+ * @swagger
+ * /api/forms/{id}/cooldown/clear:
+ *   delete:
+ *     summary: Clear cool down for a form
+ *     description: Admin endpoint to clear cool down restrictions for a specific IP/user. Requires authentication and form update permission.
+ *     tags: [Forms]
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Form ID
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               ipAddress:
+ *                 type: string
+ *                 nullable: true
+ *               userId:
+ *                 type: string
+ *                 nullable: true
+ *     responses:
+ *       200:
+ *         description: Cool down cleared
+ *       404:
+ *         description: Form not found
+ */
+router.delete('/:id/cooldown/clear', authenticate, authenticate.checkPermission('forms', 'update'), async (req, res) => {
+    try {
+        const form = await formRepo.findById(req.params.id);
+        if (!form || form.tenant_id !== req.user.tenant_id) {
+            return res.status(404).json({ error: 'Form not found' });
+        }
+
+        const { ipAddress, userId } = req.body;
+        await SurveyCooldownService.clearCooldown(form.id, ipAddress, userId);
+
+        res.json({ message: 'Cool down cleared successfully' });
+    } catch (error) {
+        logger.error('Clear cool down error', { error: error.message });
+        res.status(500).json({ error: 'Failed to clear cool down' });
     }
 });
 
