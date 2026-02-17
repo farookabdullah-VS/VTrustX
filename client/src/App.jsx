@@ -27,6 +27,8 @@ const ContactMaster = React.lazy(() => import('./components/ContactMaster').then
 const ContactSegments = React.lazy(() => import('./components/contacts/ContactSegments'));
 const CustomFieldsManager = React.lazy(() => import('./components/contacts/CustomFieldsManager'));
 const TagsManager = React.lazy(() => import('./components/contacts/TagsManager'));
+const DuplicateMergeManager = React.lazy(() => import('./components/contacts/DuplicateMergeManager'));
+const SuppressionListManager = React.lazy(() => import('./components/contacts/SuppressionListManager'));
 const TicketListView = React.lazy(() => import('./components/TicketListView').then(m => ({ default: m.TicketListView })));
 const TicketDetailView = React.lazy(() => import('./components/TicketDetailView').then(m => ({ default: m.TicketDetailView })));
 const CrmDashboard = React.lazy(() => import('./components/CrmDashboard').then(m => ({ default: m.CrmDashboard })));
@@ -57,9 +59,9 @@ const XMDirectory = React.lazy(() => import('./components/XMDirectory').then(m =
 const ActionPlanning = React.lazy(() => import('./components/ActionPlanning').then(m => ({ default: m.ActionPlanning })));
 const SocialMediaMarketing = React.lazy(() => import('./components/SocialMediaMarketing.jsx'));
 const ReputationManager = React.lazy(() => import('./components/ReputationManager.jsx'));
-const CJMBuilder = React.lazy(() => import('./components/CJM/CJMBuilder').then(m => ({ default: m.CJMBuilder })));
-const CJMDashboard = React.lazy(() => import('./components/CJM/CJMDashboard').then(m => ({ default: m.CJMDashboard })));
-const CJMAnalyticsDashboard = React.lazy(() => import('./components/CJM/CJMAnalyticsDashboard').then(m => ({ default: m.CJMAnalyticsDashboard })));
+const CJMBuilder = React.lazy(() => import('./components/CJM/CJMBuilder.jsx'));
+const CJMDashboard = React.lazy(() => import('./components/CJM/CJMDashboard.jsx'));
+const CJMAnalyticsDashboard = React.lazy(() => import('./components/CJM/CJMAnalyticsDashboard.jsx'));
 const InteractiveManual = React.lazy(() => import('./components/InteractiveManual').then(m => ({ default: m.InteractiveManual })));
 const MobileExperience = React.lazy(() => import('./components/MobileExperience').then(m => ({ default: m.MobileExperience })));
 const Notifications = React.lazy(() => import('./components/Notifications').then(m => ({ default: m.Notifications })));
@@ -120,6 +122,8 @@ const VIEW_TITLES = {
   'contact-segments': 'Contact Segments',
   'custom-fields': 'Custom Fields',
   'contact-tags': 'Contact Tags',
+  'contact-duplicates': 'Duplicate Contacts',
+  'suppression-list': 'Suppression List',
   'role-master': 'Roles',
   subscription: 'Subscription',
   customer360: 'Unified Customer Profile',
@@ -286,6 +290,8 @@ function AppRoutes() {
                   <Route path="contact-segments" element={<ContactSegments />} />
                   <Route path="custom-fields" element={<CustomFieldsManager />} />
                   <Route path="contact-tags" element={<TagsManager />} />
+                  <Route path="contact-duplicates" element={<DuplicateMergeManager />} />
+                  <Route path="suppression-list" element={<SuppressionListManager />} />
                   <Route path="customer360" element={<Customer360 />} />
                   <Route path="personas" element={<CxPersonaBuilder onNavigate={(v) => navigate(`/${v}`)} />} />
                   <Route path="journeys" element={<JourneyBuilder />} />
@@ -324,7 +330,7 @@ function AppRoutes() {
                   <Route path="ab-tests/:id" element={<ABStatsComparison />} />
 
                   {/* Social Listening Route */}
-                  <Route path="social-listening" element={<SocialListeningDashboard />} />
+                  <Route path="social-listening/*" element={<SocialListeningDashboard />} />
 
                   {/* Custom Reports Routes */}
                   <Route path="custom-reports" element={<CustomReportsDashboard />} />
