@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useTranslation } from 'react-i18next';
-import { Shield, Mic, Bot } from 'lucide-react';
+import { Shield, Mic, Bot, Clock } from 'lucide-react';
 import { QuotaSettings } from './QuotaSettings';
 import { useToast } from './common/Toast';
 
@@ -30,7 +30,10 @@ export function SettingsView({ form, onBack, onUpdate }) {
         isAnonymous: form.isAnonymous || false,
         enableVoiceAgent: form.enableVoiceAgent || false,
         slug: form.slug || '',
-        allowedIps: form.allowedIps || ''
+        allowedIps: form.allowedIps || '',
+        cooldownEnabled: form.cooldownEnabled || false,
+        cooldownPeriod: form.cooldownPeriod || 3600,
+        cooldownType: form.cooldownType || 'both'
     });
 
     const [saving, setSaving] = useState(false);
@@ -63,7 +66,8 @@ export function SettingsView({ form, onBack, onUpdate }) {
             ...formData,
             startDate: formData.startDate || null,
             endDate: formData.endDate || null,
-            responseLimit: formData.responseLimit ? parseInt(formData.responseLimit) : null
+            responseLimit: formData.responseLimit ? parseInt(formData.responseLimit) : null,
+            cooldownPeriod: formData.cooldownPeriod ? parseInt(formData.cooldownPeriod) : 3600
         })
             .then(res => {
                 toast.success("Settings saved!");
@@ -388,6 +392,188 @@ export function SettingsView({ form, onBack, onUpdate }) {
                 onChange={handleChange}
                 info={true}
             />
+
+            {/* SUBMISSION COOLDOWN */}
+            <div style={sectionHeaderStyle}>
+                <Clock size={16} style={{ display: 'inline', marginRight: '8px', verticalAlign: 'middle' }} />
+                SUBMISSION COOLDOWN
+            </div>
+
+            <Toggle
+                label="Enable Submission Cooldown"
+                name="cooldownEnabled"
+                checked={formData.cooldownEnabled}
+                onChange={handleChange}
+                info={true}
+            />
+
+            {formData.cooldownEnabled && (
+                <div style={{ padding: '16px 20px', background: 'var(--input-bg)', border: '1px solid var(--input-border)', borderRadius: '10px', marginBottom: '15px' }}>
+                    <div style={{ marginBottom: '20px' }}>
+                        <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: 'var(--text-color)' }}>
+                            Cooldown Period
+                        </label>
+                        <div style={{ fontSize: '0.85em', color: 'var(--text-muted)', marginBottom: '10px' }}>
+                            Time period before the same user can submit again
+                        </div>
+                        <select
+                            name="cooldownPeriod"
+                            value={formData.cooldownPeriod}
+                            onChange={handleChange}
+                            style={{
+                                width: '100%',
+                                padding: '10px',
+                                borderRadius: '6px',
+                                border: '1px solid var(--input-border)',
+                                background: 'var(--input-bg)',
+                                color: 'var(--input-text)',
+                                fontSize: '0.95em'
+                            }}
+                        >
+                            <option value="60">1 minute</option>
+                            <option value="300">5 minutes</option>
+                            <option value="600">10 minutes</option>
+                            <option value="900">15 minutes</option>
+                            <option value="1800">30 minutes</option>
+                            <option value="3600">1 hour</option>
+                            <option value="7200">2 hours</option>
+                            <option value="21600">6 hours</option>
+                            <option value="43200">12 hours</option>
+                            <option value="86400">1 day</option>
+                            <option value="172800">2 days</option>
+                            <option value="604800">1 week</option>
+                            <option value="2592000">1 month</option>
+                        </select>
+                    </div>
+
+                    <div style={{ borderTop: '1px solid var(--input-border)', margin: '20px 0' }}></div>
+
+                    <div>
+                        <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: 'var(--text-color)' }}>
+                            Rate Limit Type
+                        </label>
+                        <div style={{ fontSize: '0.85em', color: 'var(--text-muted)', marginBottom: '10px' }}>
+                            Choose how to identify repeat submissions
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                            <label
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'flex-start',
+                                    gap: '12px',
+                                    cursor: 'pointer',
+                                    padding: '12px',
+                                    background: formData.cooldownType === 'ip' ? 'var(--sidebar-bg)' : 'transparent',
+                                    border: `1px solid ${formData.cooldownType === 'ip' ? 'var(--primary-color)' : 'var(--input-border)'}`,
+                                    borderRadius: '8px',
+                                    transition: 'all 0.2s'
+                                }}
+                            >
+                                <input
+                                    type="radio"
+                                    name="cooldownType"
+                                    value="ip"
+                                    checked={formData.cooldownType === 'ip'}
+                                    onChange={handleChange}
+                                    style={{ marginTop: '2px' }}
+                                />
+                                <div style={{ flex: 1 }}>
+                                    <div style={{ color: 'var(--text-color)', fontWeight: '500', marginBottom: '4px' }}>
+                                        IP Address Only
+                                    </div>
+                                    <div style={{ fontSize: '0.85em', color: 'var(--text-muted)' }}>
+                                        Prevents multiple submissions from the same IP address. Good for anonymous surveys.
+                                    </div>
+                                </div>
+                            </label>
+
+                            <label
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'flex-start',
+                                    gap: '12px',
+                                    cursor: 'pointer',
+                                    padding: '12px',
+                                    background: formData.cooldownType === 'user' ? 'var(--sidebar-bg)' : 'transparent',
+                                    border: `1px solid ${formData.cooldownType === 'user' ? 'var(--primary-color)' : 'var(--input-border)'}`,
+                                    borderRadius: '8px',
+                                    transition: 'all 0.2s'
+                                }}
+                            >
+                                <input
+                                    type="radio"
+                                    name="cooldownType"
+                                    value="user"
+                                    checked={formData.cooldownType === 'user'}
+                                    onChange={handleChange}
+                                    style={{ marginTop: '2px' }}
+                                />
+                                <div style={{ flex: 1 }}>
+                                    <div style={{ color: 'var(--text-color)', fontWeight: '500', marginBottom: '4px' }}>
+                                        User Only
+                                    </div>
+                                    <div style={{ fontSize: '0.85em', color: 'var(--text-muted)' }}>
+                                        Limits by authenticated user ID. Requires user login. Allows submissions from different IPs.
+                                    </div>
+                                </div>
+                            </label>
+
+                            <label
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'flex-start',
+                                    gap: '12px',
+                                    cursor: 'pointer',
+                                    padding: '12px',
+                                    background: formData.cooldownType === 'both' ? 'var(--sidebar-bg)' : 'transparent',
+                                    border: `1px solid ${formData.cooldownType === 'both' ? 'var(--primary-color)' : 'var(--input-border)'}`,
+                                    borderRadius: '8px',
+                                    transition: 'all 0.2s'
+                                }}
+                            >
+                                <input
+                                    type="radio"
+                                    name="cooldownType"
+                                    value="both"
+                                    checked={formData.cooldownType === 'both'}
+                                    onChange={handleChange}
+                                    style={{ marginTop: '2px' }}
+                                />
+                                <div style={{ flex: 1 }}>
+                                    <div style={{ color: 'var(--text-color)', fontWeight: '500', marginBottom: '4px' }}>
+                                        Both (Recommended)
+                                        <span style={{
+                                            marginLeft: '8px',
+                                            padding: '2px 8px',
+                                            background: 'var(--primary-color)',
+                                            color: 'white',
+                                            borderRadius: '4px',
+                                            fontSize: '0.75em',
+                                            fontWeight: '600'
+                                        }}>
+                                            RECOMMENDED
+                                        </span>
+                                    </div>
+                                    <div style={{ fontSize: '0.85em', color: 'var(--text-muted)' }}>
+                                        Hybrid approach: Checks both IP address and user ID. Best protection against duplicate submissions.
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div style={{ marginTop: '20px', padding: '12px', background: 'var(--sidebar-bg)', borderRadius: '8px', border: '1px solid var(--input-border)' }}>
+                        <div style={{ fontSize: '0.85em', color: 'var(--text-color)' }}>
+                            <strong>How it works:</strong>
+                        </div>
+                        <ul style={{ fontSize: '0.85em', color: 'var(--text-muted)', marginTop: '8px', marginBottom: '0', paddingLeft: '20px' }}>
+                            <li>Users who submit too soon will see a message with the remaining time</li>
+                            <li>Cooldown resets after the specified period</li>
+                            <li>Admins can clear cooldown manually if needed</li>
+                        </ul>
+                    </div>
+                </div>
+            )}
 
             {/* SECURITY */}
             <div style={sectionHeaderStyle}>SECURITY</div>

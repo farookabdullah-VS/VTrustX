@@ -391,7 +391,7 @@ export function FormViewer({ formId: propsFormId, submissionId: propsSubmissionI
         let fetchUrl = formId ? `/api/forms/${formId}` : `/api/forms/slug/${slug}`;
 
         axios.get(fetchUrl)
-            .then(res => {
+            .then(async res => {
                 const formDef = res.data;
                 const resolvedId = formDef.id; // Get ID from resolved form
 
@@ -446,6 +446,44 @@ export function FormViewer({ formId: propsFormId, submissionId: propsSubmissionI
                         setError("Password required.");
                         setIsLoading(false);
                         return;
+                    }
+                }
+
+                // CHECK COOLDOWN (Rate Limiting)
+                if (formDef.cooldownEnabled && isPublic) {
+                    try {
+                        const cooldownResponse = await axios.post(`/api/forms/${resolvedId}/cooldown/check`, {
+                            userId: user?.id || null
+                        });
+
+                        if (cooldownResponse.data.onCooldown) {
+                            const { remainingTime, reason } = cooldownResponse.data;
+                            const formatTime = (seconds) => {
+                                if (seconds < 60) return `${seconds} seconds`;
+                                if (seconds < 3600) return `${Math.ceil(seconds / 60)} minutes`;
+                                if (seconds < 86400) return `${Math.ceil(seconds / 3600)} hours`;
+                                return `${Math.ceil(seconds / 86400)} days`;
+                            };
+
+                            setError(
+                                <div style={{ textAlign: 'center' }}>
+                                    <div style={{ fontSize: '3em', marginBottom: '10px' }}>⏳</div>
+                                    <h3 style={{ marginBottom: '15px' }}>Please Wait</h3>
+                                    <p style={{ marginBottom: '10px' }}>{reason}</p>
+                                    <p style={{ color: 'var(--primary-color)', fontWeight: '600' }}>
+                                        Time remaining: {formatTime(remainingTime)}
+                                    </p>
+                                    <p style={{ marginTop: '20px', fontSize: '0.9em', color: 'var(--text-muted)' }}>
+                                        You can submit this survey again after the cooldown period expires.
+                                    </p>
+                                </div>
+                            );
+                            setIsLoading(false);
+                            return;
+                        }
+                    } catch (err) {
+                        console.warn("Cooldown check failed:", err);
+                        // Continue if cooldown check fails - don't block legitimate submissions
                     }
                 }
 
