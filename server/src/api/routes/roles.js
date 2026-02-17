@@ -242,4 +242,172 @@ router.delete('/:id', authenticate, async (req, res) => {
     }
 });
 
+// ============================================
+// MENU-ITEM PERMISSIONS ENDPOINTS
+// ============================================
+
+/**
+ * @swagger
+ * /api/roles/menu-items:
+ *   get:
+ *     tags: [Roles]
+ *     summary: Get all menu items
+ *     description: Returns all available menu items organized by group
+ *     security:
+ *       - cookieAuth: []
+ *     responses:
+ *       200:
+ *         description: List of menu items
+ *       401:
+ *         description: Unauthorized
+ */
+router.get('/menu-items', authenticate, async (req, res) => {
+    try {
+        const result = await query(`
+            SELECT * FROM menu_items
+            WHERE is_active = TRUE
+            ORDER BY sort_order, id
+        `);
+        res.json(result.rows);
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+/**
+ * @swagger
+ * /api/roles/{id}/menu-permissions:
+ *   get:
+ *     tags: [Roles]
+ *     summary: Get role menu permissions
+ *     description: Returns menu-item permissions for a specific role
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Role ID
+ *     responses:
+ *       200:
+ *         description: Role menu permissions
+ *       404:
+ *         description: Role not found
+ */
+router.get('/:id/menu-permissions', authenticate, async (req, res) => {
+    try {
+        const roleId = req.params.id;
+        const tenantId = req.user.tenant_id;
+
+        // Verify role belongs to tenant
+        const roleCheck = await query(
+            'SELECT id FROM roles WHERE id = $1 AND tenant_id = $2',
+            [roleId, tenantId]
+        );
+        if (roleCheck.rowCount === 0) {
+            return res.status(404).json({ error: 'Role not found' });
+        }
+
+        // Get all menu items with permission status for this role
+        const result = await query(`
+            SELECT
+                m.id,
+                m.label,
+                m.group_id,
+                m.group_title,
+                m.route,
+                m.requires_admin,
+                COALESCE(rmp.can_access, FALSE) as can_access
+            FROM menu_items m
+            LEFT JOIN role_menu_permissions rmp
+                ON m.id = rmp.menu_item_id AND rmp.role_id = $1
+            WHERE m.is_active = TRUE
+            ORDER BY m.sort_order, m.id
+        `, [roleId]);
+
+        res.json(result.rows);
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+/**
+ * @swagger
+ * /api/roles/{id}/menu-permissions:
+ *   post:
+ *     tags: [Roles]
+ *     summary: Update role menu permissions
+ *     description: Updates menu-item permissions for a role
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Role ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [menuPermissions]
+ *             properties:
+ *               menuPermissions:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     menu_item_id:
+ *                       type: string
+ *                     can_access:
+ *                       type: boolean
+ *     responses:
+ *       200:
+ *         description: Permissions updated
+ *       404:
+ *         description: Role not found
+ */
+router.post('/:id/menu-permissions', authenticate, async (req, res) => {
+    try {
+        const roleId = req.params.id;
+        const tenantId = req.user.tenant_id;
+        const { menuPermissions } = req.body;
+
+        // Verify role belongs to tenant
+        const roleCheck = await query(
+            'SELECT id FROM roles WHERE id = $1 AND tenant_id = $2',
+            [roleId, tenantId]
+        );
+        if (roleCheck.rowCount === 0) {
+            return res.status(404).json({ error: 'Role not found' });
+        }
+
+        // Delete all existing permissions for this role
+        await query('DELETE FROM role_menu_permissions WHERE role_id = $1', [roleId]);
+
+        // Insert new permissions (only for items with can_access = true)
+        if (menuPermissions && menuPermissions.length > 0) {
+            const valuesToInsert = menuPermissions
+                .filter(p => p.can_access)
+                .map(p => `(${roleId}, '${p.menu_item_id}', TRUE)`);
+
+            if (valuesToInsert.length > 0) {
+                await query(`
+                    INSERT INTO role_menu_permissions (role_id, menu_item_id, can_access)
+                    VALUES ${valuesToInsert.join(', ')}
+                `);
+            }
+        }
+
+        res.json({ message: 'Menu permissions updated successfully' });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
 module.exports = router;
