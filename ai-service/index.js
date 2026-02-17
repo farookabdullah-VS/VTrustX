@@ -63,6 +63,26 @@ const { analyzeSentiment } = require('./src/handlers/sentimentHandler');
 app.post('/analyze-batch', handleBatchAnalysis);
 app.post('/agent-interact', handleAgentInteract);
 
+const { analyzeSocialMention } = require('./src/handlers/socialListeningHandler');
+
+app.post('/analyze-social', async (req, res) => {
+    try {
+        const { text, platform, author, aiConfig } = req.body;
+        console.log(`[SocialListeningEndpoint] Analyzing mention from ${platform}`);
+
+        if (!text) {
+            return res.status(400).json({ error: 'Text is required' });
+        }
+
+        const result = await analyzeSocialMention(text, platform, author, aiConfig);
+        res.json(result);
+
+    } catch (error) {
+        console.error('[SocialListeningEndpoint] Analysis failed:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
 app.post('/analyze-sentiment', async (req, res) => {
     try {
         const { prompt, aiConfig } = req.body;

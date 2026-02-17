@@ -304,6 +304,91 @@ class GeminiProvider {
             }
         });
     }
+    async analyzeSocialMention(text, platform, authorName) {
+        if (!this.apiKey) {
+            // Mock Fallback
+            return {
+                sentiment: "neutral",
+                sentiment_score: 0.0,
+                intent: "general",
+                topics: ["simulation", "demo"],
+                entities: { brands: [], products: [], people: [], locations: [] },
+                language: "en",
+                is_spam: false,
+                is_bot: false
+            };
+        }
+
+        const modelId = process.env.GEMINI_MODEL || 'gemini-1.5-flash';
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:generateContent?key=${this.apiKey}`;
+
+        const prompt = `
+            Analyze the following social media post from ${platform} (Author: ${authorName || 'Unknown'}).
+
+            Post Content:
+            "${text}"
+
+            Perform the following analysis:
+            1. Determine Sentiment (positive, neutral, negative) and a Score (-1.0 to +1.0).
+            2. Classify Intent (inquiry, complaint, praise, news, spam, or general).
+            3. Extract Topics (list of 1-3 short topic labels).
+            4. Extract Entities (brands, products, people, locations).
+            5. Detect Language (ISO 639-1 code).
+            6. Flag if it looks like Spam or Bot content.
+
+            Return ONLY a valid JSON object with this exact structure:
+            {
+                "sentiment": "negative",
+                "sentiment_score": -0.5,
+                "intent": "complaint",
+                "topics": ["topic1", "topic2"],
+                "entities": {
+                    "brands": [], "products": [], "people": [], "locations": []
+                },
+                "language": "en",
+                "is_spam": false,
+                "is_bot": false
+            }
+        `;
+
+        try {
+            const response = await this.retryWithBackoff(async () => axios.post(url, {
+                contents: [{ role: 'user', parts: [{ text: prompt }] }],
+                safetySettings: [
+                    { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_LOW_AND_ABOVE' },
+                    { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_LOW_AND_ABOVE' },
+                    { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_LOW_AND_ABOVE' },
+                    { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_LOW_AND_ABOVE' }
+                ]
+            }));
+
+            const candidate = response.data.candidates?.[0];
+            if (!candidate) throw new Error("No candidates returned.");
+
+            const textResponse = candidate.content.parts[0].text;
+            const cleanText = textResponse.replace(/```json/g, '').replace(/```/g, '').trim();
+            const jsonMatch = cleanText.match(/\{[\s\S]*\}/);
+
+            if (jsonMatch) {
+                return JSON.parse(jsonMatch[0]);
+            }
+            return JSON.parse(cleanText);
+
+        } catch (error) {
+            console.error("Gemini Social Analysis Error:", error.message);
+            // Return a safe fallback rather than crashing
+            return {
+                sentiment: "neutral",
+                sentiment_score: 0.0,
+                intent: "general",
+                topics: ["error_fallback"],
+                entities: { brands: [], products: [], people: [], locations: [] },
+                language: "en",
+                is_spam: false,
+                is_bot: false
+            };
+        }
+    }
 }
 
 module.exports = GeminiProvider;
