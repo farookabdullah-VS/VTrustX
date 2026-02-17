@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VTrustX Survey - Vanilla JS Example</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/survey-core@1.9.116/defaultV2.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .auth-section {
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .status {
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            display: block;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            display: block;
+        }
+
+        .survey-list {
+            margin-top: 20px;
+        }
+
+        .survey-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .survey-item h3 {
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .survey-item p {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        #survey-container {
+            margin-top: 20px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📋 VTrustX Survey Demo</h1>
+            <p>Vanilla JavaScript Example</p>
+        </div>
+
+        <div class="content">
+            <!-- Authentication Section -->
+            <div id="auth-section" class="auth-section">
+                <h2>Login to VTrustX</h2>
+                <div id="status" class="status"></div>
+
+                <div class="form-group">
+                    <label for="api-url">API URL</label>
+                    <input type="text" id="api-url" value="http://localhost:3000/api" placeholder="https://api.vtrustx.com/api">
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" value="admin@vtrustx.com" placeholder="your@email.com">
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" value="admin123" placeholder="Your password">
+                </div>
+
+                <button id="login-btn" onclick="login()">Login</button>
+            </div>
+
+            <!-- Survey List Section -->
+            <div id="survey-section" class="hidden">
+                <h2>Available Surveys</h2>
+                <div id="survey-list" class="survey-list"></div>
+            </div>
+
+            <!-- Survey Display Section -->
+            <div id="survey-container"></div>
+        </div>
+    </div>
+
+    <!-- SurveyJS Library -->
+    <script src="https://cdn.jsdelivr.net/npm/survey-core@1.9.116/survey.core.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/survey-js-ui@1.9.116/survey-js-ui.min.js"></script>
+
+    <script>
+        // Simple VTrustX Client Implementation
+        class VTrustXClient {
+            constructor(baseURL) {
+                this.baseURL = baseURL;
+                this.token = null;
+            }
+
+            async request(endpoint, options = {}) {
+                const url = `${this.baseURL}${endpoint}`;
+                const headers = {
+                    'Content-Type': 'application/json',
+                    ...options.headers
+                };
+
+                if (this.token) {
+                    headers['Authorization'] = `Bearer ${this.token}`;
+                }
+
+                const response = await fetch(url, {
+                    ...options,
+                    headers,
+                    credentials: 'include'
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                return await response.json();
+            }
+
+            async login(email, password) {
+                const data = await this.request('/auth/login', {
+                    method: 'POST',
+                    body: JSON.stringify({ email, password })
+                });
+                this.token = data.token;
+                return data;
+            }
+
+            async getForms() {
+                return await this.request('/forms');
+            }
+
+            async getForm(id) {
+                return await this.request(`/forms/${id}`);
+            }
+
+            async submitForm(id, data) {
+                return await this.request('/submissions', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        formId: id,
+                        data: data,
+                        metadata: {
+                            platform: 'web',
+                            userAgent: navigator.userAgent
+                        }
+                    })
+                });
+            }
+        }
+
+        let client;
+        let currentSurvey;
+
+        function showStatus(message, type = 'success') {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = `status ${type}`;
+            setTimeout(() => {
+                status.className = 'status';
+            }, 3000);
+        }
+
+        async function login() {
+            const apiUrl = document.getElementById('api-url').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            const loginBtn = document.getElementById('login-btn');
+            loginBtn.disabled = true;
+            loginBtn.textContent = 'Logging in...';
+
+            try {
+                client = new VTrustXClient(apiUrl);
+                await client.login(email, password);
+
+                showStatus('✅ Login successful!', 'success');
+
+                // Hide auth section, show surveys
+                document.getElementById('auth-section').classList.add('hidden');
+                document.getElementById('survey-section').classList.remove('hidden');
+
+                // Load surveys
+                await loadSurveys();
+            } catch (error) {
+                showStatus('❌ Login failed: ' + error.message, 'error');
+                loginBtn.disabled = false;
+                loginBtn.textContent = 'Login';
+            }
+        }
+
+        async function loadSurveys() {
+            const surveyList = document.getElementById('survey-list');
+            surveyList.innerHTML = '<div class="loading">Loading surveys...</div>';
+
+            try {
+                const surveys = await client.getForms();
+
+                if (surveys.length === 0) {
+                    surveyList.innerHTML = '<p>No surveys available.</p>';
+                    return;
+                }
+
+                surveyList.innerHTML = surveys.map(survey => `
+                    <div class="survey-item">
+                        <div>
+                            <h3>${survey.title}</h3>
+                            <p>ID: ${survey.id}</p>
+                        </div>
+                        <button onclick="loadSurvey('${survey.id}')">
+                            Take Survey
+                        </button>
+                    </div>
+                `).join('');
+            } catch (error) {
+                surveyList.innerHTML = `<p style="color: red;">Failed to load surveys: ${error.message}</p>`;
+            }
+        }
+
+        async function loadSurvey(surveyId) {
+            const container = document.getElementById('survey-container');
+            container.innerHTML = '<div class="loading">Loading survey...</div>';
+
+            try {
+                const surveyData = await client.getForm(surveyId);
+
+                // Create SurveyJS model
+                const survey = new Survey.Model(surveyData.definition);
+
+                // Handle completion
+                survey.onComplete.add(async (sender) => {
+                    const responses = sender.data;
+
+                    try {
+                        await client.submitForm(surveyId, responses);
+                        container.innerHTML = `
+                            <div style="text-align: center; padding: 40px;">
+                                <h2 style="color: #28a745;">✅ Thank you!</h2>
+                                <p>Your response has been submitted successfully.</p>
+                                <button onclick="location.reload()">Take Another Survey</button>
+                            </div>
+                        `;
+                    } catch (error) {
+                        alert('Failed to submit survey: ' + error.message);
+                    }
+                });
+
+                // Render survey
+                container.innerHTML = '';
+                survey.render(container);
+
+            } catch (error) {
+                container.innerHTML = `<p style="color: red;">Failed to load survey: ${error.message}</p>`;
+            }
+        }
+
+        // Handle Enter key for login
+        document.addEventListener('DOMContentLoaded', () => {
+            ['api-url', 'email', 'password'].forEach(id => {
+                document.getElementById(id).addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') login();
+                });
+            });
+        });
+    </script>
+</body>
+</html>
