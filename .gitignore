@@ -79,10 +79,14 @@ check_cooldown_columns.js
 # Backup files
 *.backup
 
-# SDK directories (keep separate)
-/client/android-sdk/
-/client/ios-sdk/
-/sdk/
+# SDK directories (keep separate, but allow documentation)
+/client/android-sdk/*
+!/client/android-sdk/docs/
+/client/ios-sdk/*
+!/client/ios-sdk/docs/
+/sdk/*
+!/sdk/docs/
+!/sdk/examples/
 
 # Development tools
 lighthouserc.js
