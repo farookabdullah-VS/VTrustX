@@ -55,8 +55,8 @@ const DynamicDashboard = React.lazy(() => import('./components/DynamicDashboard'
 const TextIQDashboard = React.lazy(() => import('./components/TextIQDashboard').then(m => ({ default: m.TextIQDashboard })));
 const XMDirectory = React.lazy(() => import('./components/XMDirectory').then(m => ({ default: m.XMDirectory })));
 const ActionPlanning = React.lazy(() => import('./components/ActionPlanning').then(m => ({ default: m.ActionPlanning })));
-const SocialMediaMarketing = React.lazy(() => import('./components/SocialMediaMarketing').then(m => ({ default: m.SocialMediaMarketing })));
-const ReputationManager = React.lazy(() => import('./components/ReputationManager').then(m => ({ default: m.ReputationManager })));
+const SocialMediaMarketing = React.lazy(() => import('./components/SocialMediaMarketing.jsx'));
+const ReputationManager = React.lazy(() => import('./components/ReputationManager.jsx'));
 const CJMBuilder = React.lazy(() => import('./components/CJM/CJMBuilder').then(m => ({ default: m.CJMBuilder })));
 const CJMDashboard = React.lazy(() => import('./components/CJM/CJMDashboard').then(m => ({ default: m.CJMDashboard })));
 const CJMAnalyticsDashboard = React.lazy(() => import('./components/CJM/CJMAnalyticsDashboard').then(m => ({ default: m.CJMAnalyticsDashboard })));
@@ -92,6 +92,10 @@ const TwoFactorSettings = React.lazy(() => import('./components/settings/TwoFact
 const SSOProvidersList = React.lazy(() => import('./components/sso/SSOProvidersList'));
 const SSOProviderWizard = React.lazy(() => import('./components/sso/SSOProviderWizard'));
 const TenantManagement = React.lazy(() => import('./components/TenantManagement').then(m => ({ default: m.default })));
+const IdentityView = React.lazy(() => import('./components/IdentityView.jsx'));
+const PersonaEngineDashboard = React.lazy(() => import('./components/PersonaEngine/PersonaEngineDashboard.jsx'));
+const SubscriptionConfig = React.lazy(() => import('./components/SubscriptionConfig.jsx'));
+const MediaLibraryPage = React.lazy(() => import('./components/distributions/MediaLibraryPage').then(m => ({ default: m.MediaLibraryPage })));
 
 // --- View title mapping ---
 const VIEW_TITLES = {
@@ -111,6 +115,7 @@ const VIEW_TITLES = {
   'cx-ratings': 'CX Dashboard',
   personas: 'CX Personas',
   templates: 'Templates',
+  'media-library': 'Media Library',
   'contact-master': 'Contacts',
   'contact-segments': 'Contact Segments',
   'custom-fields': 'Custom Fields',
@@ -157,6 +162,9 @@ const VIEW_TITLES = {
   'ip-whitelist': 'IP Whitelisting',
   '2fa-settings': 'Two-Factor Authentication',
   'sso-providers': 'SSO Providers',
+  identity: 'Identity & Consent',
+  'persona-engine': 'GN Persona Engine',
+  'subscription-config': 'Plans & Billing',
 };
 
 // --- Protected Route Wrapper ---
@@ -253,7 +261,7 @@ function AppRoutes() {
                   {/* Legacy/Shortcut routes (Redirected or handled by param-less components) */}
                   <Route path="builder" element={<FormBuilder user={user} />} />
                   <Route path="results" element={<FormViewer user={user} />} /> {/* FormViewer handles list if no param */}
-                  <Route path="smartreach" element={<FormViewer user={user} />} />
+                  <Route path="smartreach" element={<SurveyDistribution onBack={() => navigate('/')} />} />
                   <Route path="viewer" element={<FormViewer user={user} />} />
                   <Route path="ai-settings" element={<AIIntegrations />} />
                   <Route path="system-settings" element={<SystemSettings />} />
@@ -264,9 +272,12 @@ function AppRoutes() {
                   <Route path="ai-video-agent" element={<AIVideoAgentPage />} />
                   <Route path="profile" element={<UserProfile user={user} onUpdateUser={(updatedUser) => setUser(prev => ({ ...prev, user: updatedUser }))} />} />
                   <Route path="integrations" element={<IntegrationsView />} />
+                  <Route path="identity" element={<IdentityView />} />
                   <Route path="workflows" element={<WorkflowsPage />} />
                   <Route path="user-management" element={<UserManagement />} />
                   <Route path="role-master" element={<RoleMaster />} />
+                  <Route path="persona-engine" element={<PersonaEngineDashboard />} />
+                  <Route path="subscription-config" element={<SubscriptionConfig />} />
                   <Route path="tenant-management" element={<TenantManagement />} />
                   <Route path="subscription" element={<SubscriptionManagement />} />
                   <Route path="global-admin" element={<GlobalAdminDashboard />} />
@@ -288,6 +299,7 @@ function AppRoutes() {
                       }} />
                     </div>
                   } />
+                  <Route path="media-library" element={<MediaLibraryPage />} />
                   <Route path="tickets" element={<TicketListView user={user} />} />
                   <Route path="tickets/:id" element={<TicketDetailView user={user} onBack={() => navigate('/tickets')} />} />
                   <Route path="crm-reports" element={<CrmDashboard user={user} />} />

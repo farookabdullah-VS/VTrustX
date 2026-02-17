@@ -6,7 +6,7 @@ import {
     LayoutDashboard, UserCircle, Contact, Fingerprint, Map, UserCog,
     BarChart3, Bot, ClipboardList, Library, Ticket, Settings, Plug,
     Shield, Users, CreditCard, Palette, Wrench, Globe, HelpCircle,
-    GripVertical, Star, PieChart, PhoneCall, Video, Share2, Target, Database, Megaphone, Smartphone, BookOpen, Menu, FlaskConical, Zap, Key, Webhook, Radio, Building2
+    GripVertical, Star, PieChart, PhoneCall, Video, Share2, Target, Database, Megaphone, Smartphone, BookOpen, Menu, FlaskConical, Zap, Key, Webhook, Radio, Building2, ImageIcon
 } from 'lucide-react';
 
 const getInitialGroups = (user) => [
@@ -15,8 +15,8 @@ const getInitialGroups = (user) => [
         title: null,
         items: [
             { id: 'dashboard', label: 'sidebar.item.dashboard', icon: <LayoutDashboard size={16} /> },
-            { id: 'xm-center', label: 'XM Center', icon: <Globe size={16} /> },
-            { id: 'textiq', label: 'CogniVue', icon: <Bot size={16} /> }
+            { id: 'xm-center', label: 'sidebar.item.cx_dashboards', icon: <Globe size={16} /> },
+            { id: 'textiq', label: 'sidebar.item.cognivue', icon: <Bot size={16} /> }
         ]
     },
     {
@@ -24,19 +24,20 @@ const getInitialGroups = (user) => [
         title: "sidebar.group.surveys",
         items: [
             { id: 'surveys', label: 'sidebar.item.surveys', icon: <ClipboardList size={16} /> },
-            { id: 'survey-results', label: 'Survey Results', icon: <PieChart size={16} /> },
-            { id: 'smartreach', label: 'SmartReach', icon: <Megaphone size={16} /> },
-            { id: 'ab-tests', label: 'A/B Testing', icon: <FlaskConical size={16} /> },
-            { id: 'mobile-app', label: 'Frontline App', icon: <Smartphone size={16} /> },
-            { id: 'templates', label: 'sidebar.item.templates', icon: <Library size={16} /> }
+            { id: 'survey-results', label: 'sidebar.item.survey_reports', icon: <PieChart size={16} /> },
+            { id: 'smartreach', label: 'sidebar.item.smartreach', icon: <Megaphone size={16} /> },
+            { id: 'ab-tests', label: 'sidebar.item.ab_tests', icon: <FlaskConical size={16} /> },
+            { id: 'mobile-app', label: 'sidebar.item.mobile_app', icon: <Smartphone size={16} /> },
+            { id: 'templates', label: 'sidebar.item.templates', icon: <Library size={16} /> },
+            { id: 'media-library', label: 'sidebar.item.media_library', icon: <ImageIcon size={16} /> }
         ]
     },
     {
         id: 'ai-agents',
         title: "sidebar.group.ai_agents",
         items: [
-            { id: 'ai-surveyor', label: 'Rayi Voice Agent', icon: <PhoneCall size={16} /> },
-            { id: 'ai-video-agent', label: 'Rayi Video Agent', icon: <Video size={16} /> }
+            { id: 'ai-surveyor', label: 'sidebar.item.voice_agent', icon: <PhoneCall size={16} /> },
+            { id: 'ai-video-agent', label: 'sidebar.item.video_agent', icon: <Video size={16} /> }
         ]
     },
     {
@@ -44,8 +45,8 @@ const getInitialGroups = (user) => [
         title: "sidebar.group.engagement",
         items: [
             { id: 'tickets', label: 'sidebar.item.tickets', icon: <Ticket size={16} /> },
-            { id: 'xm-directory', label: 'XM Directory', icon: <Contact size={16} /> },
-            { id: 'actions', label: 'Action Planning', icon: <Target size={16} /> },
+            { id: 'xm-directory', label: 'sidebar.item.xm_directory', icon: <Contact size={16} /> },
+            { id: 'actions', label: 'sidebar.item.action_planning', icon: <Target size={16} /> },
             { id: 'ticket-settings', label: 'sidebar.item.ticket_config', icon: <Settings size={16} /> }
         ]
     },
@@ -54,8 +55,8 @@ const getInitialGroups = (user) => [
         title: "sidebar.group.marketing",
         items: [
             { id: 'social-media', label: 'sidebar.item.smm', icon: <Share2 size={16} /> },
-            { id: 'social-listening', label: 'Social Listening', icon: <Radio size={16} /> },
-            { id: 'reputation', label: 'Reputation', icon: <Star size={16} /> }
+            { id: 'social-listening', label: 'sidebar.item.social_listening', icon: <Radio size={16} /> },
+            { id: 'reputation', label: 'sidebar.item.reputation_manager', icon: <Star size={16} /> }
         ]
     },
     {
@@ -82,10 +83,8 @@ const getInitialGroups = (user) => [
         items: [
             { id: 'cx-ratings', label: 'sidebar.item.cx_dashboards', icon: <BarChart3 size={16} /> },
             { id: 'survey-reports', label: 'sidebar.item.survey_reports', icon: <PieChart size={16} /> },
-            { id: 'analytics-builder', label: 'Analytics Builder', icon: <BarChart3 size={16} /> },
-            { id: 'analytics-studio', label: 'Analytics Studio', icon: <Database size={16} /> },
-            { id: 'analytics-dashboard', label: 'Dynamic Dashboard', icon: <BarChart3 size={16} /> },
-            { id: 'survey-activity-dashboard', label: 'Survey Activity', icon: <BarChart3 size={16} /> }
+            { id: 'analytics-studio', label: 'sidebar.item.analytics_studio', icon: <Database size={16} /> },
+            { id: 'survey-activity-dashboard', label: 'sidebar.item.survey_activity', icon: <BarChart3 size={16} /> }
         ]
     },
     {

@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import { Image as ImageIcon, Video, FileText, Type, Bold, Italic, Link as LinkIcon, Code } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Image as ImageIcon, Video, FileText, Type, Bold, Italic, Link as LinkIcon, Code, BookOpen, Save } from 'lucide-react';
 import { MediaLibrary } from './MediaLibrary';
+import axios from '../../axiosConfig';
 
 /**
  * Rich Template Editor
@@ -8,10 +9,52 @@ import { MediaLibrary } from './MediaLibrary';
  * For email: supports HTML
  * For SMS/WhatsApp: supports text only
  */
-export function RichTemplateEditor({ value, onChange, channel = 'email', showMediaButton = true }) {
+export function RichTemplateEditor({ value, onChange, channel = 'email', showMediaButton = true, subject, onSubjectChange }) {
     const [showMediaLibrary, setShowMediaLibrary] = useState(false);
     const [cursorPosition, setCursorPosition] = useState(0);
+    const [showSaveDialog, setShowSaveDialog] = useState(false);
+    const [showLoadDialog, setShowLoadDialog] = useState(false);
+    const [saveName, setSaveName] = useState('');
+    const [saveDesc, setSaveDesc] = useState('');
+    const [savedTemplates, setSavedTemplates] = useState([]);
+    const [loadingTemplates, setLoadingTemplates] = useState(false);
     const textareaRef = React.useRef(null);
+
+    const loadTemplates = async () => {
+        setLoadingTemplates(true);
+        try {
+            const res = await axios.get('/api/templates', { params: { channel } });
+            setSavedTemplates(res.data);
+        } catch (e) {
+            console.error('Failed to load templates', e);
+        } finally {
+            setLoadingTemplates(false);
+        }
+    };
+
+    const handleSaveTemplate = async () => {
+        if (!saveName.trim()) return;
+        try {
+            await axios.post('/api/templates', {
+                name: saveName.trim(),
+                description: saveDesc.trim() || undefined,
+                channel,
+                subject: subject || undefined,
+                body: value,
+            });
+            setSaveName('');
+            setSaveDesc('');
+            setShowSaveDialog(false);
+        } catch (e) {
+            console.error('Failed to save template', e);
+        }
+    };
+
+    const handleLoadTemplate = (tmpl) => {
+        if (onSubjectChange && tmpl.subject) onSubjectChange(tmpl.subject);
+        onChange(tmpl.body);
+        setShowLoadDialog(false);
+    };
 
     const insertPlaceholder = (placeholder) => {
         if (!textareaRef.current) return;
@@ -127,6 +170,51 @@ export function RichTemplateEditor({ value, onChange, channel = 'email', showMed
                         Add Media
                     </button>
                 )}
+
+                {/* Template divider */}
+                <div style={{ width: '1px', height: '24px', background: '#D1D5DB' }} />
+
+                {/* Load Template */}
+                <button
+                    onClick={() => { loadTemplates(); setShowLoadDialog(true); }}
+                    style={{
+                        padding: '6px 12px',
+                        border: '1px solid #D1D5DB',
+                        borderRadius: '6px',
+                        background: 'white',
+                        color: '#374151',
+                        cursor: 'pointer',
+                        fontSize: '0.85rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                    }}
+                    title="Load a saved template"
+                >
+                    <BookOpen size={15} />
+                    Load
+                </button>
+
+                {/* Save Template */}
+                <button
+                    onClick={() => setShowSaveDialog(true)}
+                    style={{
+                        padding: '6px 12px',
+                        border: '1px solid #D1D5DB',
+                        borderRadius: '6px',
+                        background: 'white',
+                        color: '#374151',
+                        cursor: 'pointer',
+                        fontSize: '0.85rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                    }}
+                    title="Save as template"
+                >
+                    <Save size={15} />
+                    Save
+                </button>
             </div>
 
             {/* Editor */}
@@ -205,6 +293,83 @@ Insert media using the Add Media button above."
                     onClose={() => setShowMediaLibrary(false)}
                     multiSelect={true}
                 />
+            )}
+
+            {/* Save Template Dialog */}
+            {showSaveDialog && (
+                <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10001 }}
+                    onClick={() => setShowSaveDialog(false)}>
+                    <div style={{ background: 'white', borderRadius: '16px', padding: '32px', width: '420px', maxWidth: '95vw', boxShadow: '0 20px 60px rgba(0,0,0,0.3)' }}
+                        onClick={e => e.stopPropagation()}>
+                        <h3 style={{ marginTop: 0, marginBottom: '4px' }}>Save as Template</h3>
+                        <p style={{ color: '#6B7280', fontSize: '0.9rem', marginBottom: '20px' }}>Save the current message body for reuse in future distributions.</p>
+                        <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '600', marginBottom: '6px' }}>Template Name *</label>
+                        <input
+                            type="text"
+                            value={saveName}
+                            onChange={e => setSaveName(e.target.value)}
+                            onKeyDown={e => e.key === 'Enter' && handleSaveTemplate()}
+                            placeholder="e.g. NPS Follow-up Email"
+                            autoFocus
+                            style={{ width: '100%', padding: '10px', border: '1px solid #D1D5DB', borderRadius: '8px', boxSizing: 'border-box', marginBottom: '12px' }}
+                        />
+                        <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: '600', marginBottom: '6px' }}>Description (optional)</label>
+                        <input
+                            type="text"
+                            value={saveDesc}
+                            onChange={e => setSaveDesc(e.target.value)}
+                            placeholder="Short description…"
+                            style={{ width: '100%', padding: '10px', border: '1px solid #D1D5DB', borderRadius: '8px', boxSizing: 'border-box', marginBottom: '20px' }}
+                        />
+                        <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+                            <button onClick={() => setShowSaveDialog(false)} style={{ padding: '10px 20px', border: '1px solid #D1D5DB', borderRadius: '8px', background: 'white', cursor: 'pointer', fontWeight: '600' }}>Cancel</button>
+                            <button onClick={handleSaveTemplate} disabled={!saveName.trim()}
+                                style={{ padding: '10px 20px', border: 'none', borderRadius: '8px', background: saveName.trim() ? 'var(--primary)' : '#E5E7EB', color: 'white', cursor: saveName.trim() ? 'pointer' : 'not-allowed', fontWeight: '700' }}>
+                                Save Template
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Load Template Dialog */}
+            {showLoadDialog && (
+                <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10001 }}
+                    onClick={() => setShowLoadDialog(false)}>
+                    <div style={{ background: 'white', borderRadius: '16px', padding: '32px', width: '560px', maxWidth: '95vw', maxHeight: '80vh', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 60px rgba(0,0,0,0.3)' }}
+                        onClick={e => e.stopPropagation()}>
+                        <h3 style={{ marginTop: 0, marginBottom: '4px' }}>Load Template</h3>
+                        <p style={{ color: '#6B7280', fontSize: '0.9rem', marginBottom: '20px' }}>Select a saved template to load into the editor.</p>
+                        <div style={{ flex: 1, overflow: 'auto' }}>
+                            {loadingTemplates && <p style={{ textAlign: 'center', color: '#6B7280', padding: '40px 0' }}>Loading…</p>}
+                            {!loadingTemplates && savedTemplates.length === 0 && (
+                                <div style={{ textAlign: 'center', padding: '40px 0', color: '#6B7280' }}>
+                                    <BookOpen size={40} style={{ opacity: 0.3 }} />
+                                    <p style={{ marginTop: '12px' }}>No saved templates for {channel} yet.<br />Write a message and click Save to create one.</p>
+                                </div>
+                            )}
+                            {!loadingTemplates && savedTemplates.map(tmpl => (
+                                <div key={tmpl.id}
+                                    onClick={() => handleLoadTemplate(tmpl)}
+                                    style={{ padding: '16px', border: '2px solid #E5E7EB', borderRadius: '10px', marginBottom: '10px', cursor: 'pointer', transition: 'all 0.15s' }}
+                                    onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--primary)'}
+                                    onMouseLeave={e => e.currentTarget.style.borderColor = '#E5E7EB'}
+                                >
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                        <div>
+                                            <p style={{ margin: 0, fontWeight: '700', fontSize: '0.95rem' }}>{tmpl.name}</p>
+                                            {tmpl.description && <p style={{ margin: '2px 0 0', fontSize: '0.82rem', color: '#6B7280' }}>{tmpl.description}</p>}
+                                        </div>
+                                        <span style={{ fontSize: '0.75rem', color: '#6B7280', whiteSpace: 'nowrap', marginLeft: '12px' }}>{new Date(tmpl.updated_at).toLocaleDateString()}</span>
+                                    </div>
+                                    {tmpl.subject && <p style={{ margin: '8px 0 0', fontSize: '0.82rem', color: '#374151' }}><strong>Subject:</strong> {tmpl.subject}</p>}
+                                    <p style={{ margin: '8px 0 0', fontSize: '0.82rem', color: '#9CA3AF', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{tmpl.body}</p>
+                                </div>
+                            ))}
+                        </div>
+                        <button onClick={() => setShowLoadDialog(false)} style={{ marginTop: '16px', padding: '10px', border: '1px solid #D1D5DB', borderRadius: '8px', background: 'white', cursor: 'pointer', fontWeight: '600' }}>Close</button>
+                    </div>
+                </div>
             )}
         </div>
     );

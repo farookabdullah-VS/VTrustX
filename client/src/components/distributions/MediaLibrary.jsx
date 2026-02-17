@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from '../../axiosConfig';
-import { Upload, X, Image as ImageIcon, Video, FileText, Music, Trash2, Download, Eye, Search, Filter } from 'lucide-react';
+import { Upload, X, Image as ImageIcon, Video, FileText, Music, Trash2, Download, Eye, Search, Filter, FolderOpen } from 'lucide-react';
 import { useToast } from '../common/Toast';
 
 const MEDIA_TYPE_ICONS = {
@@ -24,24 +24,29 @@ export function MediaLibrary({ onSelect, multiSelect = false, onClose }) {
     const [selectedAssets, setSelectedAssets] = useState([]);
     const [filterType, setFilterType] = useState('all');
     const [searchQuery, setSearchQuery] = useState('');
+    const [filterFolder, setFilterFolder] = useState(null);
+    const [folders, setFolders] = useState([]);
     const [previewAsset, setPreviewAsset] = useState(null);
     const [dragActive, setDragActive] = useState(false);
     const toast = useToast();
 
     useEffect(() => {
         fetchAssets();
-    }, [filterType]);
+    }, [filterType, filterFolder]);
 
     const fetchAssets = async () => {
         setLoading(true);
         try {
             const params = {};
-            if (filterType !== 'all') {
-                params.type = filterType;
-            }
+            if (filterType !== 'all') params.type = filterType;
+            if (filterFolder !== null) params.folder = filterFolder || 'null';
 
             const response = await axios.get('/api/media', { params });
-            setAssets(response.data.assets);
+            const data = response.data.assets || [];
+            setAssets(data);
+            // Derive folders for filter chips
+            const folderSet = new Set(data.map(a => a.folder).filter(Boolean));
+            setFolders([...folderSet].sort());
         } catch (error) {
             console.error('Failed to fetch media assets:', error);
             toast?.error('Failed to load media library');
@@ -274,6 +279,23 @@ export function MediaLibrary({ onSelect, multiSelect = false, onClose }) {
                     </div>
                 </div>
 
+                {/* Folder filter chips */}
+                {folders.length > 0 && (
+                    <div style={{ padding: '0 20px 12px', display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
+                        <FolderOpen size={14} color="var(--text-muted)" />
+                        <button onClick={() => setFilterFolder(null)}
+                            style={{ padding: '4px 12px', borderRadius: '20px', border: 'none', background: filterFolder === null ? 'var(--primary, #3B82F6)' : '#F3F4F6', color: filterFolder === null ? 'white' : '#374151', cursor: 'pointer', fontSize: '0.8rem', fontWeight: filterFolder === null ? '700' : '500' }}>
+                            All
+                        </button>
+                        {folders.map(f => (
+                            <button key={f} onClick={() => setFilterFolder(filterFolder === f ? null : f)}
+                                style={{ padding: '4px 12px', borderRadius: '20px', border: 'none', background: filterFolder === f ? 'var(--primary, #3B82F6)' : '#F3F4F6', color: filterFolder === f ? 'white' : '#374151', cursor: 'pointer', fontSize: '0.8rem', fontWeight: filterFolder === f ? '700' : '500' }}>
+                                {f}
+                            </button>
+                        ))}
+                    </div>
+                )}
+
                 {/* Upload Drop Zone */}
                 <div
                     onDragEnter={handleDrag}
@@ -341,9 +363,9 @@ export function MediaLibrary({ onSelect, multiSelect = false, onClose }) {
                                             justifyContent: 'center',
                                             background: asset.mediaType === 'image' ? '#F9FAFB' : `${MEDIA_TYPE_COLORS[asset.mediaType]}10`
                                         }}>
-                                            {asset.mediaType === 'image' ? (
+                                            {(asset.mediaType === 'image' || asset.thumbnailUrl) ? (
                                                 <img
-                                                    src={asset.url}
+                                                    src={asset.thumbnailUrl || asset.url}
                                                     alt={asset.originalName}
                                                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                                 />
@@ -368,6 +390,18 @@ export function MediaLibrary({ onSelect, multiSelect = false, onClose }) {
                                             <p style={{ margin: '4px 0 0 0', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
                                                 {formatFileSize(asset.size)}
                                             </p>
+                                            {asset.folder && (
+                                                <p style={{ margin: '4px 0 0', fontSize: '0.72rem', color: '#6B7280', display: 'flex', alignItems: 'center', gap: '3px' }}>
+                                                    <FolderOpen size={11} />{asset.folder}
+                                                </p>
+                                            )}
+                                            {asset.tags?.length > 0 && (
+                                                <div style={{ display: 'flex', gap: '3px', marginTop: '5px', flexWrap: 'wrap' }}>
+                                                    {asset.tags.slice(0, 3).map(t => (
+                                                        <span key={t} style={{ fontSize: '0.65rem', padding: '1px 5px', borderRadius: '10px', background: '#F3F4F6', color: '#6B7280' }}>{t}</span>
+                                                    ))}
+                                                </div>
+                                            )}
                                         </div>
 
                                         {/* Actions */}
