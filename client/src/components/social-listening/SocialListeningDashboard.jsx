@@ -4,9 +4,10 @@
  * Tabs: Overview, Mentions, Topics, Influencers, Competitors, Alerts, Sources
  */
 
-import React, { useState, lazy, Suspense } from 'react';
+import React, { lazy, Suspense, useEffect } from 'react';
+import { Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { SocialListeningProvider } from '../../contexts/SocialListeningContext';
-import { Radio, Ear, MessageCircle, TrendingUp, Users, Award, Bell, Settings, AlertTriangle } from 'lucide-react';
+import { Radio, Ear, MessageCircle, TrendingUp, Users, Award, Bell, Settings, AlertTriangle, Reply } from 'lucide-react';
 import { LoadingSpinner } from '../common/LoadingSpinner';
 import './SocialListeningDashboard.css';
 
@@ -17,11 +18,17 @@ const TopicsTab = lazy(() => import('./tabs/TopicsTab'));
 const InfluencersTab = lazy(() => import('./tabs/InfluencersTab'));
 const CompetitorsTab = lazy(() => import('./tabs/CompetitorsTab'));
 const AlertsTab = lazy(() => import('./tabs/AlertsTab'));
+const ResponsesTab = lazy(() => import('./tabs/ResponsesTab'));
 const CrisisControlCenter = lazy(() => import('./CrisisControlCenter'));
 const SourcesTab = lazy(() => import('./tabs/SourcesTab'));
 
 const SocialListeningDashboard = () => {
-  const [activeTab, setActiveTab] = useState('overview');
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // Extract active tab from URL path
+  const pathParts = location.pathname.split('/');
+  const activeTab = pathParts[2] || 'overview';
 
   const tabs = [
     { id: 'overview', label: 'Overview', icon: Radio },
@@ -30,31 +37,13 @@ const SocialListeningDashboard = () => {
     { id: 'influencers', label: 'Influencers', icon: Award },
     { id: 'competitors', label: 'Competitors', icon: Users },
     { id: 'alerts', label: 'Alerts', icon: Bell },
+    { id: 'responses', label: 'Responses', icon: Reply },
     { id: 'crisis', label: 'Crisis Control', icon: AlertTriangle },
     { id: 'sources', label: 'Sources', icon: Settings }
   ];
 
-  const renderTabContent = () => {
-    switch (activeTab) {
-      case 'overview':
-        return <OverviewTab />;
-      case 'mentions':
-        return <MentionsTab />;
-      case 'topics':
-        return <TopicsTab />;
-      case 'influencers':
-        return <InfluencersTab />;
-      case 'competitors':
-        return <CompetitorsTab />;
-      case 'alerts':
-        return <AlertsTab />;
-      case 'crisis':
-        return <CrisisControlCenter />;
-      case 'sources':
-        return <SourcesTab />;
-      default:
-        return <OverviewTab />;
-    }
+  const handleTabClick = (tabId) => {
+    navigate(`/social-listening/${tabId}`);
   };
 
   return (
@@ -81,7 +70,7 @@ const SocialListeningDashboard = () => {
               <button
                 key={tab.id}
                 className={`sl-tab ${activeTab === tab.id ? 'active' : ''}`}
-                onClick={() => setActiveTab(tab.id)}
+                onClick={() => handleTabClick(tab.id)}
               >
                 <Icon size={18} />
                 <span>{tab.label}</span>
@@ -97,7 +86,18 @@ const SocialListeningDashboard = () => {
               <LoadingSpinner />
             </div>
           }>
-            {renderTabContent()}
+            <Routes>
+              <Route path="/" element={<Navigate to="overview" replace />} />
+              <Route path="overview" element={<OverviewTab />} />
+              <Route path="mentions" element={<MentionsTab />} />
+              <Route path="topics" element={<TopicsTab />} />
+              <Route path="influencers" element={<InfluencersTab />} />
+              <Route path="competitors" element={<CompetitorsTab />} />
+              <Route path="alerts" element={<AlertsTab />} />
+              <Route path="responses" element={<ResponsesTab />} />
+              <Route path="crisis" element={<CrisisControlCenter />} />
+              <Route path="sources" element={<SourcesTab />} />
+            </Routes>
           </Suspense>
         </div>
       </div>
