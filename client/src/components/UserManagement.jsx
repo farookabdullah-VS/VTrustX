@@ -4,6 +4,12 @@ import { useTranslation } from 'react-i18next';
 import { Plus, Search, Edit2, Trash2, UserCheck, UserX, X, Check, AlertCircle, Share2 } from 'lucide-react';
 import { ActiveDirectoryImport } from './ActiveDirectoryImport';
 
+const inputStyle = {
+    width: '100%', padding: '10px 12px', borderRadius: '8px',
+    border: '1px solid var(--input-border)', background: 'var(--input-bg)',
+    color: 'var(--input-text)', fontSize: '0.9em', boxSizing: 'border-box', outline: 'none'
+};
+
 export function UserManagement() {
     const { t, i18n } = useTranslation();
     const isRtl = i18n.language === 'ar';
@@ -74,6 +80,14 @@ export function UserManagement() {
             .catch(() => { });
     };
 
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            [name]: value
+        }));
+    };
+
     const validateForm = () => {
         const errs = {};
         if (!formData.username.trim()) errs.username = 'Username is required';
@@ -95,7 +109,7 @@ export function UserManagement() {
         setEditingUser(user);
         setFormData({
             username: user.username || '',
-            password: '',
+            password: '', // Reset password for security
             name: user.name || '',
             name_ar: user.name_ar || '',
             email: user.email || '',
@@ -110,9 +124,16 @@ export function UserManagement() {
     const handleSave = () => {
         if (!validateForm()) return;
 
+        // Prepare payload, sanitize role_id
+        const payload = { ...formData };
+        if (!payload.password) delete payload.password;
+        if (payload.role_id === '') {
+            payload.role_id = null;
+        } else {
+            payload.role_id = parseInt(payload.role_id, 10);
+        }
+
         if (editingUser) {
-            const payload = { ...formData };
-            if (!payload.password) delete payload.password;
             axios.put(`/api/users/${editingUser.id}`, payload)
                 .then(() => {
                     showToast('User updated successfully');
@@ -125,7 +146,7 @@ export function UserManagement() {
                 showToast('User limit reached. Upgrade your plan.', 'error');
                 return;
             }
-            axios.post('/api/users', { ...formData, role_id: formData.role_id || null })
+            axios.post('/api/users', payload)
                 .then(() => {
                     showToast('User created successfully');
                     setIsModalOpen(false);
@@ -161,12 +182,6 @@ export function UserManagement() {
     };
 
     const totalPages = Math.ceil(total / limit);
-
-    const inputStyle = {
-        width: '100%', padding: '10px 12px', borderRadius: '8px',
-        border: '1px solid var(--input-border)', background: 'var(--input-bg)',
-        color: 'var(--input-text)', fontSize: '0.9em', boxSizing: 'border-box', outline: 'none'
-    };
 
     const statusBadge = (status) => {
         const colors = {
@@ -372,39 +387,39 @@ export function UserManagement() {
 
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                             <FieldGroup label={t('login.username', 'Username')} error={formErrors.username} required>
-                                <input style={inputStyle} value={formData.username} onChange={e => setFormData({ ...formData, username: e.target.value })} placeholder="john_doe" />
+                                <input name="username" style={inputStyle} value={formData.username} onChange={handleInputChange} placeholder="john_doe" />
                             </FieldGroup>
 
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
                                 <FieldGroup label="Name (English)">
-                                    <input style={inputStyle} value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} />
+                                    <input name="name" style={inputStyle} value={formData.name} onChange={handleInputChange} />
                                 </FieldGroup>
                                 <FieldGroup label="Name (Arabic)">
-                                    <input style={{ ...inputStyle, direction: 'rtl' }} value={formData.name_ar} onChange={e => setFormData({ ...formData, name_ar: e.target.value })} />
+                                    <input name="name_ar" style={{ ...inputStyle, direction: 'rtl' }} value={formData.name_ar} onChange={handleInputChange} />
                                 </FieldGroup>
                             </div>
 
                             <FieldGroup label="Email" error={formErrors.email}>
-                                <input type="email" style={inputStyle} value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} placeholder="user@company.com" />
+                                <input name="email" type="email" style={inputStyle} value={formData.email} onChange={handleInputChange} placeholder="user@company.com" />
                             </FieldGroup>
 
                             <FieldGroup label="Phone">
-                                <input type="tel" style={inputStyle} value={formData.phone} onChange={e => setFormData({ ...formData, phone: e.target.value })} placeholder="+1234567890" />
+                                <input name="phone" type="tel" style={inputStyle} value={formData.phone} onChange={handleInputChange} placeholder="+1234567890" />
                             </FieldGroup>
 
                             <FieldGroup label={t('login.password', 'Password')} error={formErrors.password} required={!editingUser}>
-                                <input type="password" style={inputStyle} value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} placeholder={editingUser ? 'Leave blank to keep current' : 'Min 6 characters'} />
+                                <input name="password" type="password" style={inputStyle} value={formData.password} onChange={handleInputChange} placeholder={editingUser ? 'Leave blank to keep current' : 'Min 6 characters'} />
                             </FieldGroup>
 
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
                                 <FieldGroup label={t('users.permission_role', 'Permission Role')}>
-                                    <select style={inputStyle} value={formData.role_id} onChange={e => setFormData({ ...formData, role_id: e.target.value })}>
+                                    <select name="role_id" style={inputStyle} value={formData.role_id} onChange={handleInputChange}>
                                         <option value="">{t('users.select_role', 'Select Role')}</option>
                                         {availableRoles.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
                                     </select>
                                 </FieldGroup>
                                 <FieldGroup label={t('users.global_role', 'System Role')}>
-                                    <select style={inputStyle} value={formData.role} onChange={e => setFormData({ ...formData, role: e.target.value })}>
+                                    <select name="role" style={inputStyle} value={formData.role} onChange={handleInputChange}>
                                         <option value="user">User</option>
                                         <option value="admin">Admin</option>
                                     </select>

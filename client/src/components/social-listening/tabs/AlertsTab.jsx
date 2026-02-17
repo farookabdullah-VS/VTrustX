@@ -1,12 +1,8 @@
-/**
- * Alerts Tab - Alert rules and recent events
- */
-
 import React, { useState, useEffect } from 'react';
 import { Bell, Plus, AlertCircle, CheckCircle, Clock } from 'lucide-react';
 import { LoadingSpinner } from '../../common/LoadingSpinner';
 import socialListeningApi from '../../../services/socialListeningApi';
-import './AlertsTab.css';
+// import './AlertsTab.css'; // Temporarily disabled to debug import issues
 
 const AlertsTab = () => {
   const [alerts, setAlerts] = useState([]);

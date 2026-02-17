@@ -91,6 +91,7 @@ const IPWhitelistManager = React.lazy(() => import('./components/ip-whitelist/IP
 const TwoFactorSettings = React.lazy(() => import('./components/settings/TwoFactorSettings'));
 const SSOProvidersList = React.lazy(() => import('./components/sso/SSOProvidersList'));
 const SSOProviderWizard = React.lazy(() => import('./components/sso/SSOProviderWizard'));
+const TenantManagement = React.lazy(() => import('./components/TenantManagement').then(m => ({ default: m.default })));
 
 // --- View title mapping ---
 const VIEW_TITLES = {
@@ -219,7 +220,7 @@ function AppRoutes() {
       <ToastProvider>
         <ConfirmProvider>
           <NotificationProvider isAuthenticated={isAuthenticated}>
-            <Suspense fallback={<LoadingSpinner />}>
+            <Suspense fallback={<LoadingSpinner variant="fullscreen" size={60} message="Loading VTrustX..." showProgress={true} />}>
               <Routes>
                 {/* Public routes */}
                 <Route path="/login" element={
@@ -266,6 +267,7 @@ function AppRoutes() {
                   <Route path="workflows" element={<WorkflowsPage />} />
                   <Route path="user-management" element={<UserManagement />} />
                   <Route path="role-master" element={<RoleMaster />} />
+                  <Route path="tenant-management" element={<TenantManagement />} />
                   <Route path="subscription" element={<SubscriptionManagement />} />
                   <Route path="global-admin" element={<GlobalAdminDashboard />} />
                   <Route path="admin" element={<Navigate to="/global-admin" replace />} />
@@ -383,7 +385,7 @@ function PublicSurveyRoute() {
   const { slug } = useParams();
   return (
     <div style={{ width: '100%', minHeight: '100vh', background: '#ffffff' }}>
-      <Suspense fallback={<LoadingSpinner />}>
+      <Suspense fallback={<LoadingSpinner variant="fullscreen" size={60} message="Loading Survey..." />}>
         <FormViewer slug={slug} isPublic={true} />
       </Suspense>
     </div>
@@ -392,12 +394,12 @@ function PublicSurveyRoute() {
 
 function PublicReportRoute() {
   const { slug } = useParams();
-  return <Suspense fallback={<LoadingSpinner />}><PublicReportViewer token={slug} /></Suspense>;
+  return <Suspense fallback={<LoadingSpinner variant="fullscreen" size={60} message="Loading Report..." />}><PublicReportViewer token={slug} /></Suspense>;
 }
 
 function PublicVoiceRoute() {
   const { slug } = useParams();
-  return <Suspense fallback={<LoadingSpinner />}><VoiceAgentPublic slug={slug} /></Suspense>;
+  return <Suspense fallback={<LoadingSpinner variant="fullscreen" size={60} message="Loading Voice Agent..." />}><VoiceAgentPublic slug={slug} /></Suspense>;
 }
 
 function BuilderWithParam({ handleEditForm }) {

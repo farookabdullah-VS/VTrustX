@@ -242,6 +242,7 @@ app.use('/api/actions', require('./src/api/routes/actions'));
 app.use('/api/close-loop', require('./src/api/routes/close_loop'));
 app.use('/api/distributions', require('./src/api/routes/distributions/index'));
 app.use('/api/media', require('./src/api/routes/media/index'));
+app.use('/api/templates', require('./src/api/routes/templates/index'));
 app.use('/api/ab-tests', require('./src/api/routes/ab-testing/index'));
 app.use('/api/webhooks/whatsapp', require('./src/api/routes/webhooks/whatsapp'));
 app.use('/api/webhooks/email', require('./src/api/routes/webhooks/email-webhooks'));

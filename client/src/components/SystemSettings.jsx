@@ -665,11 +665,69 @@ export function SystemSettings() {
 
                         <div style={{ marginBottom: '20px' }}>
                             <label style={{ display: 'block', marginBottom: '12px', fontWeight: '500', color: 'var(--label-color)' }}>Platforms to Monitor</label>
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px' }}>
-                                {['twitter', 'reddit', 'tiktok', 'facebook', 'instagram', 'linkedin', 'youtube'].map(platform => {
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '15px' }}>
+                                {[
+                                    { name: 'twitter', available: true },
+                                    { name: 'reddit', available: true },
+                                    { name: 'tiktok', available: true },
+                                    { name: 'facebook', available: false },
+                                    { name: 'instagram', available: false },
+                                    { name: 'linkedin', available: false },
+                                    { name: 'youtube', available: false }
+                                ].map(({ name: platform, available }) => {
                                     const isEnabled = settings.sl_sync_platforms?.split(',').includes(platform);
+
+                                    // For unavailable platforms, show info card without checkbox
+                                    if (!available) {
+                                        return (
+                                            <div
+                                                key={platform}
+                                                style={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'space-between',
+                                                    gap: '10px',
+                                                    padding: '12px 16px',
+                                                    borderRadius: '8px',
+                                                    background: 'var(--input-bg)',
+                                                    border: '1px dashed var(--border-medium)',
+                                                    opacity: 0.7
+                                                }}
+                                            >
+                                                <span style={{ textTransform: 'capitalize', color: 'var(--text-muted)', fontWeight: '500' }}>
+                                                    {platform}
+                                                </span>
+                                                <span style={{
+                                                    fontSize: '10px',
+                                                    fontWeight: '700',
+                                                    padding: '4px 10px',
+                                                    borderRadius: '4px',
+                                                    background: 'linear-gradient(135deg, var(--primary-color), var(--secondary-color))',
+                                                    color: 'white',
+                                                    textTransform: 'uppercase',
+                                                    letterSpacing: '0.5px',
+                                                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                                                }}>
+                                                    Coming Soon
+                                                </span>
+                                            </div>
+                                        );
+                                    }
+
+                                    // For available platforms, show checkbox toggle
                                     return (
-                                        <label key={platform} className="switch" style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', color: 'var(--text-color)' }}>
+                                        <label
+                                            key={platform}
+                                            className="switch"
+                                            style={{
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                gap: '10px',
+                                                cursor: 'pointer',
+                                                color: 'var(--text-color)',
+                                                padding: '10px'
+                                            }}
+                                        >
                                             <input
                                                 type="checkbox"
                                                 checked={isEnabled}
@@ -686,13 +744,13 @@ export function SystemSettings() {
                                                 disabled={settings.sl_auto_sync_enabled !== 'true'}
                                             />
                                             <span className="slider"></span>
-                                            <span style={{ textTransform: 'capitalize' }}>{platform}</span>
+                                            <span style={{ textTransform: 'capitalize', flex: 1 }}>{platform}</span>
                                         </label>
                                     );
                                 })}
                             </div>
                             <p style={{ marginTop: '12px', fontSize: '0.9em', color: 'var(--text-muted)' }}>
-                                💡 Only platforms with active connections will be synced
+                                💡 Only platforms with active connections will be synced. Twitter, Reddit, and TikTok are currently available.
                             </p>
                         </div>
 

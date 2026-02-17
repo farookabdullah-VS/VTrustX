@@ -19,13 +19,13 @@ const SourcesTab = () => {
   const [showAddModal, setShowAddModal] = useState(false);
 
   const platformsAvailable = [
-    { id: 'twitter', name: 'Twitter', icon: <Twitter size={18} />, color: '#1DA1F2' },
-    { id: 'facebook', name: 'Facebook', icon: <Facebook size={18} />, color: '#4267B2' },
-    { id: 'instagram', name: 'Instagram', icon: <Instagram size={18} />, color: '#E4405F' },
-    { id: 'linkedin', name: 'LinkedIn', icon: <Linkedin size={18} />, color: '#0077B5' },
-    { id: 'youtube', name: 'YouTube', icon: <Youtube size={18} />, color: '#FF0000' },
-    { id: 'tiktok', name: 'TikTok', icon: <Music size={18} />, color: '#000000' },
-    { id: 'reddit', name: 'Reddit', icon: <MessageSquare size={18} />, color: '#FF4500' }
+    { id: 'twitter', name: 'Twitter (X)', icon: <Twitter size={18} />, color: '#1DA1F2', available: true },
+    { id: 'reddit', name: 'Reddit', icon: <MessageSquare size={18} />, color: '#FF4500', available: true },
+    { id: 'tiktok', name: 'TikTok', icon: <Music size={18} />, color: '#000000', available: true },
+    { id: 'facebook', name: 'Facebook', icon: <Facebook size={18} />, color: '#4267B2', available: false },
+    { id: 'instagram', name: 'Instagram', icon: <Instagram size={18} />, color: '#E4405F', available: false },
+    { id: 'linkedin', name: 'LinkedIn', icon: <Linkedin size={18} />, color: '#0077B5', available: false },
+    { id: 'youtube', name: 'YouTube', icon: <Youtube size={18} />, color: '#FF0000', available: false }
   ];
 
   const handleTestConnection = async (sourceId) => {
@@ -248,8 +248,17 @@ const SourcesTab = () => {
                   key={platform.id}
                   className="platform-option"
                   onClick={() => {
+                    if (!platform.available) {
+                      alert(`${platform.name} integration coming soon! 🚀\n\nWe're working hard to bring you ${platform.name} connectivity. Stay tuned!`);
+                      return;
+                    }
                     alert(`${platform.name} integration coming soon!\n\nYou'll need:\n- API Key\n- Access Token\n- Account credentials`);
                     setShowAddModal(false);
+                  }}
+                  style={{
+                    opacity: platform.available ? 1 : 0.6,
+                    cursor: platform.available ? 'pointer' : 'not-allowed',
+                    position: 'relative'
                   }}
                 >
                   <div
@@ -259,6 +268,24 @@ const SourcesTab = () => {
                     {platform.icon}
                   </div>
                   <div className="platform-name">{platform.name}</div>
+                  {!platform.available && (
+                    <div style={{
+                      position: 'absolute',
+                      top: '8px',
+                      right: '8px',
+                      fontSize: '9px',
+                      fontWeight: '700',
+                      padding: '3px 8px',
+                      borderRadius: '4px',
+                      background: 'linear-gradient(135deg, var(--primary-color), var(--secondary-color))',
+                      color: 'white',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.5px',
+                      boxShadow: '0 2px 4px rgba(0,0,0,0.15)'
+                    }}>
+                      Soon
+                    </div>
+                  )}
                 </button>
               ))}
             </div>
