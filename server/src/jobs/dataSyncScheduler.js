@@ -1,95 +1,129 @@
-/**
- * Data Sync Scheduler
- *
- * Cron job that syncs social media data at regular intervals
- * Runs every 15 minutes to fetch new mentions from connected sources
- */
+'use strict';
 
 const cron = require('node-cron');
-const DataSyncService = require('../services/DataSyncService');
+const { query } = require('../infrastructure/database/db');
 const logger = require('../infrastructure/logger');
+const DataSyncService = require('../services/DataSyncService');
 
-class DataSyncScheduler {
-  constructor() {
-    this.cronJob = null;
-    this.isRunning = false;
-  }
+let task = null;
+let isRunning = false;
+let lastRunAt = null;
+let lastRunResult = null;
 
-  /**
-   * Start the scheduler
-   */
-  start() {
-    // Run every 15 minutes
-    this.cronJob = cron.schedule('*/15 * * * *', async () => {
-      await this.runSync();
-    });
+const dataSyncScheduler = {
+    /**
+     * Start the cron job.
+     * Runs every 15 minutes and syncs all tenants that have active sources.
+     */
+    start() {
+        if (task) {
+            logger.warn('[DataSyncScheduler] Already started');
+            return;
+        }
 
-    logger.info('[DataSyncScheduler] Scheduler started (every 15 minutes)');
+        // Run immediately on startup (next tick), then every 15 minutes
+        task = cron.schedule('*/15 * * * *', async () => {
+            await _runSync();
+        }, {
+            timezone: 'UTC'
+        });
 
-    // Run immediately on startup (after 30 seconds)
-    setTimeout(() => {
-      this.runSync();
-    }, 30000);
-  }
+        logger.info('[DataSyncScheduler] Started — runs every 15 minutes');
+    },
 
-  /**
-   * Stop the scheduler
-   */
-  stop() {
-    if (this.cronJob) {
-      this.cronJob.stop();
-      logger.info('[DataSyncScheduler] Scheduler stopped');
+    /**
+     * Stop the cron job.
+     */
+    stop() {
+        if (task) {
+            task.stop();
+            task = null;
+            logger.info('[DataSyncScheduler] Stopped');
+        }
+    },
+
+    /**
+     * Return the current scheduler state.
+     * Called synchronously by sync.js routes.
+     *
+     * @returns {{ active, isRunning, lastRunAt, lastRunResult }}
+     */
+    getStatus() {
+        return {
+            active: task !== null,
+            isRunning,
+            lastRunAt,
+            lastRunResult
+        };
     }
-  }
+};
 
-  /**
-   * Run sync cycle
-   */
-  async runSync() {
-    if (this.isRunning) {
-      logger.debug('[DataSyncScheduler] Sync already running, skipping');
-      return;
+// ---------------------------------------------------------------------------
+
+async function _runSync() {
+    if (isRunning) {
+        logger.warn('[DataSyncScheduler] Previous run still active — skipping this cycle');
+        return;
     }
 
-    this.isRunning = true;
-    const startTime = Date.now();
+    isRunning = true;
+    const startedAt = new Date();
 
     try {
-      logger.info('[DataSyncScheduler] Starting sync cycle');
+        logger.info('[DataSyncScheduler] Starting scheduled sync cycle');
 
-      const result = await DataSyncService.syncDueSources();
+        // Fetch all tenants that have at least one non-paused/disconnected source
+        const result = await query(
+            `SELECT DISTINCT tenant_id
+             FROM sl_sources
+             WHERE status NOT IN ('paused', 'disconnected')`
+        );
+        const tenants = result.rows;
 
-      const duration = Date.now() - startTime;
+        if (tenants.length === 0) {
+            logger.info('[DataSyncScheduler] No active sources found, nothing to sync');
+            lastRunResult = { tenantsProcessed: 0, totalMentionsSaved: 0 };
+            lastRunAt = startedAt;
+            isRunning = false;
+            return;
+        }
 
-      logger.info('[DataSyncScheduler] Sync cycle complete', {
-        ...result,
-        durationMs: duration
-      });
+        let tenantsProcessed = 0;
+        let tenantsFailed = 0;
+        let totalMentionsSaved = 0;
 
-    } catch (error) {
-      logger.error('[DataSyncScheduler] Sync cycle failed', {
-        error: error.message,
-        stack: error.stack
-      });
+        for (const { tenant_id } of tenants) {
+            try {
+                const res = await DataSyncService.syncTenant(tenant_id);
+                totalMentionsSaved += res.totalMentionsSaved || 0;
+                tenantsProcessed++;
+            } catch (err) {
+                tenantsFailed++;
+                logger.error('[DataSyncScheduler] Tenant sync failed', {
+                    tenant_id,
+                    error: err.message
+                });
+            }
+        }
+
+        const durationMs = Date.now() - startedAt.getTime();
+        lastRunResult = {
+            tenantsProcessed,
+            tenantsFailed,
+            totalMentionsSaved,
+            durationMs
+        };
+        lastRunAt = startedAt;
+
+        logger.info('[DataSyncScheduler] Sync cycle complete', lastRunResult);
+
+    } catch (err) {
+        logger.error('[DataSyncScheduler] Sync cycle error', { error: err.message });
+        lastRunResult = { error: err.message };
+        lastRunAt = startedAt;
     } finally {
-      this.isRunning = false;
+        isRunning = false;
     }
-  }
-
-  /**
-   * Get scheduler status
-   * @returns {Object} Status
-   */
-  getStatus() {
-    return {
-      running: this.cronJob !== null,
-      syncing: this.isRunning,
-      schedule: '*/15 * * * *', // Every 15 minutes
-      activeSyncs: DataSyncService.getActiveSyncs()
-    };
-  }
 }
 
-// Export singleton instance
-const scheduler = new DataSyncScheduler();
-module.exports = scheduler;
+module.exports = dataSyncScheduler;

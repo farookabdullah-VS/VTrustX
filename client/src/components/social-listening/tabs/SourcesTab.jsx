@@ -12,20 +12,55 @@ import { LoadingSpinner } from '../../common/LoadingSpinner';
 import socialListeningApi from '../../../services/socialListeningApi';
 import './SourcesTab.css';
 
+// Credential fields required by each platform's connector.
+// Field ids must exactly match the keys expected by the server-side connector.
+const PLATFORM_CREDENTIAL_FIELDS = {
+  facebook: [
+    { id: 'page_access_token', label: 'Page Access Token', type: 'password', placeholder: 'Long-lived Page Access Token' },
+    { id: 'page_id',           label: 'Page ID',           type: 'text',     placeholder: 'Numeric or named Facebook Page ID' }
+  ],
+  instagram: [
+    { id: 'access_token',          label: 'Access Token',          type: 'password', placeholder: 'Instagram Graph API access token' },
+    { id: 'instagram_account_id',  label: 'Instagram Account ID',  type: 'text',     placeholder: 'Numeric Instagram Business Account ID' }
+  ],
+  linkedin: [
+    { id: 'access_token',   label: 'Access Token',   type: 'password', placeholder: 'OAuth 2.0 token with r_organization_social scope' },
+    { id: 'organization_id', label: 'Organization ID', type: 'text',    placeholder: 'Numeric LinkedIn Organization ID' }
+  ],
+  youtube: [
+    { id: 'api_key',    label: 'API Key',    type: 'text', placeholder: 'YouTube Data API v3 key' },
+    { id: 'channel_id', label: 'Channel ID', type: 'text', placeholder: 'Channel ID (UCxxxxxxxxxxxxxxxx)' }
+  ],
+  twitter: [
+    { id: 'apiKey',       label: 'API Key (Consumer Key)',  type: 'text',     placeholder: 'Twitter API Key' },
+    { id: 'apiSecret',    label: 'API Secret',              type: 'password', placeholder: 'Twitter API Secret' },
+    { id: 'accessToken',  label: 'Access Token',            type: 'text',     placeholder: 'Twitter Access Token' },
+    { id: 'accessSecret', label: 'Access Token Secret',     type: 'password', placeholder: 'Twitter Access Token Secret' }
+  ]
+};
+
+const DEFAULT_CREDENTIAL_FIELDS = [
+  { id: 'apiKey',    label: 'API Key / Client ID',          type: 'text',     placeholder: 'Enter API Key' },
+  { id: 'apiSecret', label: 'API Secret / Client Secret',   type: 'password', placeholder: 'Enter API Secret' }
+];
+
 const SourcesTab = () => {
   const { sources, fetchSources, loading } = useSocialListening();
   const [testingSource, setTestingSource] = useState(null);
   const [syncingSource, setSyncingSource] = useState(null);
   const [showAddModal, setShowAddModal] = useState(false);
 
+  const [selectedPlatform, setSelectedPlatform] = useState(null);
+  const [formValues, setFormValues] = useState({});
+
   const platformsAvailable = [
-    { id: 'twitter', name: 'Twitter (X)', icon: <Twitter size={18} />, color: '#1DA1F2', available: true },
-    { id: 'reddit', name: 'Reddit', icon: <MessageSquare size={18} />, color: '#FF4500', available: true },
-    { id: 'tiktok', name: 'TikTok', icon: <Music size={18} />, color: '#000000', available: true },
-    { id: 'facebook', name: 'Facebook', icon: <Facebook size={18} />, color: '#4267B2', available: false },
-    { id: 'instagram', name: 'Instagram', icon: <Instagram size={18} />, color: '#E4405F', available: false },
-    { id: 'linkedin', name: 'LinkedIn', icon: <Linkedin size={18} />, color: '#0077B5', available: false },
-    { id: 'youtube', name: 'YouTube', icon: <Youtube size={18} />, color: '#FF0000', available: false }
+    { id: 'twitter',   name: 'Twitter (X)',  icon: <Twitter   size={18} />, color: '#1DA1F2', available: true },
+    { id: 'reddit',    name: 'Reddit',       icon: <MessageSquare size={18} />, color: '#FF4500', available: true },
+    { id: 'tiktok',    name: 'TikTok',       icon: <Music     size={18} />, color: '#000000', available: true },
+    { id: 'facebook',  name: 'Facebook',     icon: <Facebook  size={18} />, color: '#4267B2', available: true },
+    { id: 'instagram', name: 'Instagram',    icon: <Instagram size={18} />, color: '#E4405F', available: true },
+    { id: 'linkedin',  name: 'LinkedIn',     icon: <Linkedin  size={18} />, color: '#0077B5', available: true },
+    { id: 'youtube',   name: 'YouTube',      icon: <Youtube   size={18} />, color: '#FF0000', available: true }
   ];
 
   const handleTestConnection = async (sourceId) => {
@@ -234,66 +269,122 @@ const SourcesTab = () => {
         </div>
       )}
 
-      {/* Add Source Modal (Placeholder) */}
+      {/* Add Source Modal */}
       {showAddModal && (
-        <div className="modal-overlay" onClick={() => setShowAddModal(false)}>
+        <div className="modal-overlay" onClick={() => { setShowAddModal(false); setSelectedPlatform(null); setFormValues({}); }}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <h3>Connect New Source</h3>
-            <p className="modal-subtitle">
-              Choose a platform to connect. You'll need API credentials for authentication.
-            </p>
-            <div className="platforms-grid">
-              {platformsAvailable.map((platform) => (
-                <button
-                  key={platform.id}
-                  className="platform-option"
-                  onClick={() => {
-                    if (!platform.available) {
-                      alert(`${platform.name} integration coming soon! 🚀\n\nWe're working hard to bring you ${platform.name} connectivity. Stay tuned!`);
-                      return;
-                    }
-                    alert(`${platform.name} integration coming soon!\n\nYou'll need:\n- API Key\n- Access Token\n- Account credentials`);
+            {selectedPlatform ? (
+              // CONFIGURATION FORM — fields driven by per-platform config
+              (() => {
+                const credentialFields =
+                  PLATFORM_CREDENTIAL_FIELDS[selectedPlatform.id] || DEFAULT_CREDENTIAL_FIELDS;
+
+                const handleFieldChange = (fieldId, value) =>
+                  setFormValues(prev => ({ ...prev, [fieldId]: value }));
+
+                const handleConnect = async () => {
+                  const missing = credentialFields.filter(f => !formValues[f.id]);
+                  if (missing.length > 0) {
+                    alert(`Please fill in: ${missing.map(f => f.label).join(', ')}`);
+                    return;
+                  }
+                  try {
+                    await socialListeningApi.sources.create({
+                      platform: selectedPlatform.id,
+                      name: selectedPlatform.name,
+                      connection_type: 'direct_api',
+                      credentials: { ...formValues },
+                      config: { is_active: true },
+                      sync_interval_minutes: 15
+                    });
+                    alert('Source connected successfully!');
                     setShowAddModal(false);
-                  }}
-                  style={{
-                    opacity: platform.available ? 1 : 0.6,
-                    cursor: platform.available ? 'pointer' : 'not-allowed',
-                    position: 'relative'
-                  }}
-                >
-                  <div
-                    className="platform-icon-small"
-                    style={{ backgroundColor: platform.color + '20', color: platform.color }}
-                  >
-                    {platform.icon}
-                  </div>
-                  <div className="platform-name">{platform.name}</div>
-                  {!platform.available && (
-                    <div style={{
-                      position: 'absolute',
-                      top: '8px',
-                      right: '8px',
-                      fontSize: '9px',
-                      fontWeight: '700',
-                      padding: '3px 8px',
-                      borderRadius: '4px',
-                      background: 'linear-gradient(135deg, var(--primary-color), var(--secondary-color))',
-                      color: 'white',
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.5px',
-                      boxShadow: '0 2px 4px rgba(0,0,0,0.15)'
-                    }}>
-                      Soon
+                    setSelectedPlatform(null);
+                    setFormValues({});
+                    fetchSources();
+                  } catch (e) {
+                    alert('Failed to connect: ' + (e.response?.data?.error || e.message));
+                  }
+                };
+
+                return (
+                  <>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
+                      <button
+                        onClick={() => { setSelectedPlatform(null); setFormValues({}); }}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                      >
+                        <Settings size={20} />
+                      </button>
+                      <h3 style={{ margin: 0 }}>Configure {selectedPlatform.name}</h3>
                     </div>
-                  )}
-                </button>
-              ))}
-            </div>
-            <div className="modal-actions">
-              <button className="sl-button-secondary" onClick={() => setShowAddModal(false)}>
-                Cancel
-              </button>
-            </div>
+
+                    {credentialFields.map((field, idx) => (
+                      <div
+                        className="form-group"
+                        key={field.id}
+                        style={{ marginBottom: idx === credentialFields.length - 1 ? '20px' : '15px' }}
+                      >
+                        <label style={{ display: 'block', marginBottom: '5px', fontWeight: 600 }}>
+                          {field.label}
+                        </label>
+                        <input
+                          type={field.type}
+                          className="sl-input"
+                          placeholder={field.placeholder}
+                          value={formValues[field.id] || ''}
+                          onChange={(e) => handleFieldChange(field.id, e.target.value)}
+                          style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #e2e8f0' }}
+                        />
+                      </div>
+                    ))}
+
+                    <div className="modal-actions" style={{ marginTop: '20px', display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+                      <button className="sl-button-secondary" onClick={() => { setSelectedPlatform(null); setFormValues({}); }}>
+                        Back
+                      </button>
+                      <button className="sl-button" onClick={handleConnect}>
+                        Connect {selectedPlatform.name}
+                      </button>
+                    </div>
+                  </>
+                );
+              })()
+            ) : (
+              // PLATFORM SELECTION
+              <>
+                <h3>Connect New Source</h3>
+                <p className="modal-subtitle">
+                  Choose a platform to connect. You'll need API credentials for authentication.
+                </p>
+                <div className="platforms-grid">
+                  {platformsAvailable.map((platform) => (
+                    <button
+                      key={platform.id}
+                      className="platform-option"
+                      onClick={() => {
+                        setSelectedPlatform(platform);
+                        setFormValues({});
+                      }}
+                      style={{ position: 'relative' }}
+                    >
+                      <div
+                        className="platform-icon-small"
+                        style={{ backgroundColor: platform.color + '20', color: platform.color }}
+                      >
+                        {platform.icon}
+                      </div>
+                      <div className="platform-name">{platform.name}</div>
+                    </button>
+                  ))}
+                </div>
+                <div className="modal-actions">
+                  <button className="sl-button-secondary" onClick={() => setShowAddModal(false)}>
+                    Cancel
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}
