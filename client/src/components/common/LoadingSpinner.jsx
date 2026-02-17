@@ -5,8 +5,10 @@ import { Logo } from './Logo';
 export function LoadingSpinner({
   size = 50,
   message = 'Loading...',
-  variant = 'brand', // brand, ai, modern, dots, pulse, dual-ring
-  color = 'var(--primary-color, #00F5FF)'
+  variant = 'brand', // brand, ai, modern, dots, pulse, dual-ring, fullscreen
+  color = 'var(--primary-color, #00F5FF)',
+  fullscreen = false,
+  showProgress = false
 }) {
   const renderSpinner = () => {
     switch (variant) {
@@ -52,6 +54,27 @@ export function LoadingSpinner({
           </div>
         );
 
+      case 'fullscreen':
+        return (
+          <div className="spinner-fullscreen-content">
+            <div className="spinner-brand-logo" style={{ width: size * 1.5, height: size * 1.5 }}>
+              <Logo size={size * 1.5} variant="full" showText={true} />
+            </div>
+            <div className="spinner-ai" style={{ width: size, height: size }}>
+              <div className="ai-core"></div>
+              <div className="ai-orbit orbit-1"></div>
+              <div className="ai-orbit orbit-2"></div>
+              <div className="ai-orbit orbit-3"></div>
+              <div className="ai-atmosphere"></div>
+            </div>
+            {showProgress && (
+              <div className="loading-progress-bar">
+                <div className="progress-bar-fill"></div>
+              </div>
+            )}
+          </div>
+        );
+
       case 'modern':
       default:
         return (
@@ -73,6 +96,22 @@ export function LoadingSpinner({
         );
     }
   };
+
+  // Fullscreen overlay mode
+  if (fullscreen || variant === 'fullscreen') {
+    return (
+      <div className="loading-spinner-overlay">
+        <div className="loading-spinner-container fullscreen-mode" role="status" aria-label={message}>
+          {renderSpinner()}
+          {message && (
+            <div className="spinner-message fullscreen-message">
+              {message}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="loading-spinner-container" role="status" aria-label={message}>

@@ -6,7 +6,7 @@ import {
     LayoutDashboard, UserCircle, Contact, Fingerprint, Map, UserCog,
     BarChart3, Bot, ClipboardList, Library, Ticket, Settings, Plug,
     Shield, Users, CreditCard, Palette, Wrench, Globe, HelpCircle,
-    GripVertical, Star, PieChart, PhoneCall, Video, Share2, Target, Database, Megaphone, Smartphone, BookOpen, Menu, FlaskConical, Zap, Key, Webhook, Radio
+    GripVertical, Star, PieChart, PhoneCall, Video, Share2, Target, Database, Megaphone, Smartphone, BookOpen, Menu, FlaskConical, Zap, Key, Webhook, Radio, Building2
 } from 'lucide-react';
 
 const getInitialGroups = (user) => [
@@ -138,6 +138,7 @@ const getInitialGroups = (user) => [
         title: "sidebar.group.admin",
         items: [
             { id: 'user-management', label: 'sidebar.item.user_management', icon: <Users size={16} /> },
+            ...(user?.user?.role === 'global_admin' || user?.user?.username === 'admin' ? [{ id: 'tenant-management', label: 'Tenant Management', icon: <Building2 size={16} /> }] : []),
             { id: 'subscription', label: 'sidebar.item.subscription', icon: <CreditCard size={16} /> },
             { id: 'subscription-config', label: 'sidebar.item.subscription_config', icon: <CreditCard size={16} /> }, // For admins but currently open to verify
             { id: 'theme-settings', label: 'sidebar.item.theme', icon: <Palette size={16} /> },

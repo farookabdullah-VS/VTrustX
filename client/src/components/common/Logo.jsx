@@ -1,67 +1,98 @@
 import React from 'react';
+import './Logo.css';
 
 export function Logo({
     size = 40,
     variant = 'full', // 'full', 'icon', 'monogram', 'saudi-foundation', 'saudi-vision'
     color = 'var(--primary-color, #00F5FF)',
+    textColor = 'var(--text-main, #1A1C21)',
     showText = true,
-    className = ''
+    className = '',
+    spinning = false
 }) {
     const iconSize = size;
+    const secondaryColor = '#8B5CF6'; // Deep Purple
+    const bananaAccent = '#FFE135'; // Neon Banana Yellow
 
     const LogoIcon = () => (
-        <div style={{ position: 'relative', width: iconSize, height: iconSize, flexShrink: 0 }}>
+        <div className={spinning ? 'logo-spinning' : ''} style={{ position: 'relative', width: iconSize, height: iconSize, flexShrink: 0 }}>
             <svg width={iconSize} height={iconSize} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="50" cy="50" r="48" stroke={color} strokeWidth="0.5" opacity="0.3" />
-                <path
-                    d="M20 50C20 33.4315 33.4315 20 50 20C66.5685 20 80 33.4315 80 50C80 66.5685 66.5685 80 50 80"
-                    stroke={color}
-                    strokeWidth="8"
-                    strokeLinecap="round"
-                />
-                <path d="M35 35L65 65M65 35L35 65" stroke="white" strokeWidth="12" strokeLinecap="round" />
                 <defs>
-                    <linearGradient id="logo_grad" x1="0" y1="0" x2="100" y2="100" gradientUnits="userSpaceOnUse">
-                        <stop stopColor={color} />
-                        <stop offset="1" stopColor="#8B5CF6" />
+                    <linearGradient id="logo_grad_main" x1="10" y1="10" x2="90" y2="90" gradientUnits="userSpaceOnUse">
+                        <stop offset="0%" stopColor={color} />
+                        <stop offset="100%" stopColor={secondaryColor} />
                     </linearGradient>
+                    <linearGradient id="logo_grad_glow" x1="50" y1="0" x2="50" y2="100" gradientUnits="userSpaceOnUse">
+                        <stop offset="0%" stopColor={color} stopOpacity="0.8" />
+                        <stop offset="100%" stopColor={bananaAccent} stopOpacity="0" />
+                    </linearGradient>
+                    <filter id="glow">
+                        <feGaussianBlur stdDeviation="2.5" result="coloredBlur" />
+                        <feMerge>
+                            <feMergeNode in="coloredBlur" />
+                            <feMergeNode in="SourceGraphic" />
+                        </feMerge>
+                    </filter>
                 </defs>
+
+                {/* Background Glow */}
+                <circle cx="50" cy="50" r="40" fill="url(#logo_grad_glow)" opacity="0.1" />
+
+                {/* Stylized X Shape - Unique Nano/Tech Style */}
+                <g filter="url(#glow)">
+                    {/* Primary Stroke (Tech Blue) */}
+                    <path
+                        d="M20 20 L 45 50 L 20 80"
+                        stroke={color}
+                        strokeWidth="8"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        fill="none"
+                    />
+                    {/* Secondary Stroke (Banana Yellow Accent) */}
+                    <path
+                        d="M80 20 L 55 50 L 80 80"
+                        stroke={bananaAccent}
+                        strokeWidth="8"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        fill="none"
+                    />
+                    {/* Central Connection */}
+                    <circle cx="50" cy="50" r="6" fill="white" stroke={secondaryColor} strokeWidth="2" />
+
+                    {/* Tech Dots */}
+                    <circle cx="20" cy="20" r="3" fill={color} />
+                    <circle cx="80" cy="80" r="3" fill={bananaAccent} />
+                </g>
             </svg>
-            <div style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                width: '100%',
-                height: '100%',
-                background: `radial-gradient(circle, ${color} 0%, transparent 70%)`,
-                opacity: 0.15,
-                filter: 'blur(5px)',
-                zIndex: -1
-            }}></div>
         </div>
     );
 
     const LogoText = () => (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 0, marginLeft: '12px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', marginLeft: '12px', height: iconSize }}>
             <div style={{
-                fontSize: size * 0.8,
-                fontWeight: 800,
-                letterSpacing: '-0.02em',
+                fontSize: size * 0.65,
+                fontWeight: 900,
+                letterSpacing: '-0.03em',
                 lineHeight: 1,
-                color: 'white',
-                fontFamily: "'Outfit', sans-serif"
+                color: textColor,
+                fontFamily: "'Outfit', sans-serif",
+                display: 'flex',
+                alignItems: 'center'
             }}>
-                Rayi<span style={{ color: color, fontStyle: 'italic', textShadow: `0 0 10px ${color}44` }}>X</span>
+                RAYI <span style={{ color: bananaAccent, marginLeft: '2px', textShadow: `0 0 10px ${bananaAccent}66` }}>X</span>
             </div>
             <div style={{
-                fontSize: size * 0.45,
-                fontWeight: 800,
+                fontSize: size * 0.35,
+                fontWeight: 700,
                 color: color,
-                marginTop: '-4px',
-                textAlign: 'right',
-                fontFamily: "'Noto Sans Arabic', sans-serif"
+                marginTop: '3px',
+                fontFamily: "'Noto Sans Arabic', sans-serif",
+                letterSpacing: '0.05em',
+                textAlign: 'right'
             }}>
-                رأيـ<span style={{ fontStyle: 'italic' }}>X</span>
+                رأيــــي
             </div>
         </div>
     );
@@ -73,26 +104,27 @@ export function Logo({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            background: 'rgba(255,255,255,0.03)',
+            background: `linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%)`,
             borderRadius: '12px',
             border: '1px solid rgba(255,255,255,0.1)',
             position: 'relative',
-            overflow: 'hidden'
+            overflow: 'hidden',
+            boxShadow: `0 4px 12px ${color}22`
         }}>
             <div style={{
-                fontFamily: "'Noto Sans Arabic', sans-serif",
-                fontSize: size * 0.6,
-                fontWeight: 800,
+                fontFamily: "'Outfit', sans-serif",
+                fontSize: size * 0.5,
+                fontWeight: 900,
                 color: 'white',
                 zIndex: 1
             }}>
-                رأ
+                R<span style={{ color: bananaAccent }}>X</span>
             </div>
             <div style={{
                 position: 'absolute',
                 width: '150%',
                 height: '150%',
-                background: `radial-gradient(circle, ${color}22 0%, transparent 70%)`,
+                background: `radial-gradient(circle at top left, ${color}22 0%, transparent 60%)`,
                 zIndex: 0
             }}></div>
         </div>

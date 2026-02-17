@@ -32,6 +32,7 @@ export function AppLayout({ onNavigate, viewTitles }) {
   const [isAIModalOpen, setIsAIModalOpen] = useState(false);
   const [isTemplateGalleryOpen, setIsTemplateGalleryOpen] = useState(false);
   const [isCreateSurveyModalOpen, setIsCreateSurveyModalOpen] = useState(false);
+  const [isNavigating, setIsNavigating] = useState(false);
 
   // Mobile detection
   const [isMobile, setIsMobile] = useState(() => window.innerWidth <= 768);
@@ -90,6 +91,13 @@ export function AppLayout({ onNavigate, viewTitles }) {
     }
   }, [location.pathname, isMobile]);
 
+  // Add navigation loading indicator
+  useEffect(() => {
+    setIsNavigating(true);
+    const timer = setTimeout(() => setIsNavigating(false), 600);
+    return () => clearTimeout(timer);
+  }, [location.pathname]);
+
   return (
     <div className="App" style={{ background: 'var(--deep-bg)', minHeight: '100vh' }}>
       {/* Skip to main content link for keyboard navigation */}
@@ -122,7 +130,7 @@ export function AppLayout({ onNavigate, viewTitles }) {
         <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
           {/* Logo Area */}
           <div className="header-logo" style={{ marginRight: '20px' }} onClick={() => onNavigate('dashboard')}>
-            <Logo size={isMobile ? 32 : 38} showText={!isMobile} />
+            <Logo size={isMobile ? 32 : 38} showText={!isMobile} spinning={isNavigating} />
           </div>
 
           {/* Hamburger menu for mobile */}
