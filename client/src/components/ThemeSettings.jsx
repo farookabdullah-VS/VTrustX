@@ -27,6 +27,8 @@ const DEFAULT_THEME = {
     fontFamily: "'Outfit', sans-serif",
     headingFont: "'Outfit', sans-serif",
     bodyFont: "'Inter', sans-serif",
+    englishFont: "'Outfit', sans-serif",
+    arabicFont: "'Cairo', sans-serif",
     fontSize: '16px',
     headingWeight: '700',
     bodyWeight: '400',
@@ -222,9 +224,21 @@ const THEME_TEMPLATES = [
             textColor: '#450a0a',
             borderRadius: '0px',
         }
+    },
+    {
+        id: 'ocean-breeze',
+        name: 'Ocean Breeze',
+        colors: {
+            primaryColor: '#0284c7',
+            secondaryColor: '#38bdf8',
+            backgroundColor: '#f0f9ff',
+            textColor: '#0c4a6e',
+            borderRadius: '12px',
+        }
     }
 ];
 
+// English / Latin fonts
 const FONT_OPTIONS = [
     { value: "'Outfit', sans-serif", label: 'Outfit (Modern)' },
     { value: "'Inter', sans-serif", label: 'Inter (Professional)' },
@@ -235,11 +249,22 @@ const FONT_OPTIONS = [
     { value: "'Lato', sans-serif", label: 'Lato (Light)' },
     { value: "'Open Sans', sans-serif", label: 'Open Sans (Readable)' },
     { value: "'Raleway', sans-serif", label: 'Raleway (Stylish)' },
-    { value: "'Cairo', sans-serif", label: 'Cairo (Arabic Support)' },
-    { value: "'Tajawal', sans-serif", label: 'Tajawal (Arabic)' },
     { value: "Georgia, serif", label: 'Georgia (Classic)' },
     { value: "'Times New Roman', serif", label: 'Times New Roman (Traditional)' },
     { value: "Arial, sans-serif", label: 'Arial (System)' },
+];
+
+// Arabic / RTL fonts
+const ARABIC_FONT_OPTIONS = [
+    { value: "'Cairo', sans-serif", label: 'Cairo — خط القاهرة (Modern, bilingual)' },
+    { value: "'Tajawal', sans-serif", label: 'Tajawal — تجوال (Clean, bilingual)' },
+    { value: "'Noto Kufi Arabic', sans-serif", label: 'Noto Kufi Arabic — نوتو كوفي (Geometric)' },
+    { value: "'Noto Naskh Arabic', serif", label: 'Noto Naskh Arabic — نوتو نسخ (Readable)' },
+    { value: "'IBM Plex Arabic', sans-serif", label: 'IBM Plex Arabic — (Professional)' },
+    { value: "'Amiri', serif", label: 'Amiri — أميري (Traditional, formal)' },
+    { value: "'Scheherazade New', serif", label: 'Scheherazade New — شهرزاد (Calligraphic)' },
+    { value: "'Reem Kufi', sans-serif", label: 'Reem Kufi — ريم كوفي (Display)' },
+    { value: "'Lateef', serif", label: 'Lateef — لطيف (Nastaliq style)' },
 ];
 
 export function ThemeSettings() {
@@ -247,8 +272,20 @@ export function ThemeSettings() {
     const { isDark, toggleDarkMode } = useTheme();
     const [theme, setTheme] = useState(DEFAULT_THEME);
     const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState('colors'); // colors, typography, company, logos, email, social, layout, buttons, forms, darkmode, mobile, notifications, animations, brandAssets, accessibility, localization, advanced
+    const [activeTab, setActiveTab] = useState('colors'); // colors, typography, company, logos, email, social, layout, buttons, forms, darkmode, mobile, notifications, animations, brandAssets, accessibility, localization, advanced, myThemes
     const [showFigmaImporter, setShowFigmaImporter] = useState(false);
+    const [savedThemes, setSavedThemes] = useState([]);
+    const [editingThemeId, setEditingThemeId] = useState(null);
+    const [editingThemeName, setEditingThemeName] = useState('');
+    const [showSaveAsDialog, setShowSaveAsDialog] = useState(false);
+    const [newThemeName, setNewThemeName] = useState('');
+    const [deleteConfirmId, setDeleteConfirmId] = useState(null);
+
+    const loadSavedThemes = () => {
+        axios.get('/api/settings/theme/saved')
+            .then(res => setSavedThemes(res.data))
+            .catch(err => console.error('Failed to load saved themes', err));
+    };
 
     useEffect(() => {
         axios.get('/api/settings/theme')
@@ -262,6 +299,7 @@ export function ThemeSettings() {
                 console.error(err);
                 setLoading(false);
             });
+        loadSavedThemes();
     }, []);
 
     const handleChange = (key, value) => {
@@ -292,12 +330,63 @@ export function ThemeSettings() {
     };
 
     const handleSave = () => {
-        axios.post('/api/settings/theme', theme)
+        if (editingThemeId) {
+            axios.put(`/api/settings/theme/saved/${editingThemeId}`, { name: editingThemeName, config: theme })
+                .then(() => {
+                    toast.success('Theme updated!');
+                    loadSavedThemes();
+                })
+                .catch(err => toast.error('Error updating theme: ' + err.message));
+        } else {
+            axios.post('/api/settings/theme', theme)
+                .then(() => {
+                    toast.success('Theme saved successfully! Please refresh to see changes.');
+                })
+                .catch(err => toast.error('Error saving theme: ' + err.message));
+        }
+    };
+
+    const saveAsNewTheme = () => {
+        if (!newThemeName.trim()) return;
+        axios.post('/api/settings/theme/saved', { name: newThemeName.trim(), config: theme })
             .then(() => {
-                toast.success("Theme saved successfully! Please refresh to see changes.");
-                // Optionally trigger a global theme update here if we had detailed context
+                toast.success(`Theme "${newThemeName.trim()}" saved!`);
+                setNewThemeName('');
+                setShowSaveAsDialog(false);
+                loadSavedThemes();
             })
-            .catch(err => toast.error("Error saving theme: " + err.message));
+            .catch(err => toast.error('Error saving theme: ' + err.message));
+    };
+
+    const deleteSavedTheme = (id) => {
+        axios.delete(`/api/settings/theme/saved/${id}`)
+            .then(() => {
+                toast.success('Theme deleted.');
+                setDeleteConfirmId(null);
+                if (editingThemeId === id) {
+                    setEditingThemeId(null);
+                    setEditingThemeName('');
+                }
+                loadSavedThemes();
+            })
+            .catch(err => toast.error('Error deleting theme: ' + err.message));
+    };
+
+    const loadThemeIntoEditor = (savedTheme) => {
+        setTheme({ ...DEFAULT_THEME, ...savedTheme.config });
+        setEditingThemeId(savedTheme.id);
+        setEditingThemeName(savedTheme.name);
+        setActiveTab('colors');
+        toast.success(`Editing "${savedTheme.name}" — make changes then click Update Theme.`);
+    };
+
+    const setAsOrgDefault = (id) => {
+        axios.post(`/api/settings/theme/saved/${id}/set-default`)
+            .then(() => {
+                toast.success('Default theme updated! Refresh to apply globally.');
+                loadSavedThemes();
+            })
+            .catch(err => toast.error('Error setting default theme: ' + err.message));
     };
 
     const ColorInput = ({ label, value, onChange }) => (
@@ -369,6 +458,18 @@ export function ThemeSettings() {
                     >
                         {isDark ? 'Light Mode' : 'Dark Mode'}
                     </button>
+                    {editingThemeId && (
+                        <button
+                            onClick={() => { setEditingThemeId(null); setEditingThemeName(''); }}
+                            style={{
+                                padding: '12px 24px', border: '1px solid var(--input-border)',
+                                borderRadius: '8px', cursor: 'pointer', fontWeight: '600',
+                                background: 'var(--input-bg)', color: 'var(--text-color)', fontSize: '0.9em'
+                            }}
+                        >
+                            Cancel Edit
+                        </button>
+                    )}
                     <button
                         onClick={handleSave}
                         style={{
@@ -377,7 +478,7 @@ export function ThemeSettings() {
                             boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
                         }}
                     >
-                        Save Changes
+                        {editingThemeId ? 'Update Theme' : 'Save Changes'}
                     </button>
                 </div>
             </div>
@@ -402,6 +503,7 @@ export function ThemeSettings() {
                     { key: 'accessibility', label: '♿ Access' },
                     { key: 'localization', label: '🌍 Locale' },
                     { key: 'advanced', label: '⚙️ Advanced' },
+                    { key: 'myThemes', label: '📚 My Themes' },
                 ].map(tab => (
                     <button
                         key={tab.key}
@@ -426,6 +528,27 @@ export function ThemeSettings() {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px' }}>
                 {/* SETTINGS COLUMN */}
                 <div style={{ padding: '0' }}>
+
+                    {/* Editing banner */}
+                    {editingThemeId && (
+                        <div style={{
+                            marginBottom: '16px', padding: '12px 16px', borderRadius: '10px',
+                            background: 'var(--primary-color)', color: 'white',
+                            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                            fontSize: '0.9em', fontWeight: '600'
+                        }}>
+                            <span>✏️ Editing: <em style={{ fontStyle: 'normal', opacity: 0.9 }}>{editingThemeName}</em></span>
+                            <button
+                                onClick={() => { setEditingThemeId(null); setEditingThemeName(''); }}
+                                style={{
+                                    background: 'rgba(255,255,255,0.2)', border: 'none', color: 'white',
+                                    borderRadius: '6px', padding: '4px 10px', cursor: 'pointer', fontSize: '0.85em'
+                                }}
+                            >
+                                Stop Editing
+                            </button>
+                        </div>
+                    )}
 
                     {/* Template Gallery - Show on colors tab */}
                     {activeTab === 'colors' && (
@@ -501,6 +624,66 @@ export function ThemeSettings() {
                         <div style={{ background: 'var(--card-bg)', padding: '30px', borderRadius: '16px', border: '1px solid var(--glass-border)', boxShadow: 'var(--glass-shadow)' }}>
                             <h3 style={{ marginTop: 0, marginBottom: '20px', color: 'var(--text-color)' }}>Typography Settings</h3>
 
+                            {/* ── Bilingual Font Assignment ─────────────────── */}
+                            <div style={{ marginBottom: '28px', padding: '20px', background: 'var(--input-bg)', borderRadius: '12px', border: '2px solid var(--primary-color)' }}>
+                                <p style={{ margin: '0 0 16px', fontWeight: '700', fontSize: '0.95em', color: 'var(--primary-color)' }}>
+                                    🌐 Bilingual Font Assignment <span style={{ fontWeight: '400', fontSize: '0.85em', color: 'var(--text-muted)' }}>(Required for bilingual / Arabic platforms)</span>
+                                </p>
+
+                                <div style={{ marginBottom: '16px' }}>
+                                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: 'var(--text-color)', fontSize: '0.9em' }}>
+                                        English / Latin Font <span style={{ color: '#ef4444' }}>*</span>
+                                    </label>
+                                    <select
+                                        value={theme.englishFont || "'Outfit', sans-serif"}
+                                        onChange={e => handleChange('englishFont', e.target.value)}
+                                        style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--input-border)', background: 'var(--card-bg)', color: 'var(--text-color)', fontFamily: theme.englishFont }}
+                                    >
+                                        {FONT_OPTIONS.map(font => (
+                                            <option key={font.value} value={font.value}>{font.label}</option>
+                                        ))}
+                                    </select>
+                                    <p style={{ margin: '6px 0 0', fontSize: '0.8em', color: 'var(--text-muted)' }}>
+                                        Applied to English text, LTR pages, and Latin characters.
+                                    </p>
+                                </div>
+
+                                <div>
+                                    <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: 'var(--text-color)', fontSize: '0.9em' }}>
+                                        Arabic Font <span style={{ color: '#ef4444' }}>*</span>
+                                    </label>
+                                    <select
+                                        value={theme.arabicFont || "'Cairo', sans-serif"}
+                                        onChange={e => handleChange('arabicFont', e.target.value)}
+                                        style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--input-border)', background: 'var(--card-bg)', color: 'var(--text-color)', fontFamily: theme.arabicFont, direction: 'rtl' }}
+                                    >
+                                        {ARABIC_FONT_OPTIONS.map(font => (
+                                            <option key={font.value} value={font.value}>{font.label}</option>
+                                        ))}
+                                    </select>
+                                    <p style={{ margin: '6px 0 0', fontSize: '0.8em', color: 'var(--text-muted)' }}>
+                                        Applied to Arabic text, RTL pages, and survey forms shown in Arabic.
+                                    </p>
+                                </div>
+
+                                {/* Live bilingual preview */}
+                                <div style={{ marginTop: '16px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                                    <div style={{ padding: '12px', background: 'var(--card-bg)', borderRadius: '8px', border: '1px solid var(--glass-border)', textAlign: 'center' }}>
+                                        <div style={{ fontSize: '0.7em', color: 'var(--text-muted)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>EN preview</div>
+                                        <div style={{ fontFamily: theme.englishFont || "'Outfit', sans-serif", fontSize: '1em', color: 'var(--text-color)' }}>
+                                            The quick brown fox
+                                        </div>
+                                    </div>
+                                    <div style={{ padding: '12px', background: 'var(--card-bg)', borderRadius: '8px', border: '1px solid var(--glass-border)', textAlign: 'center' }}>
+                                        <div style={{ fontSize: '0.7em', color: 'var(--text-muted)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>AR preview</div>
+                                        <div style={{ fontFamily: theme.arabicFont || "'Cairo', sans-serif", fontSize: '1.1em', color: 'var(--text-color)', direction: 'rtl' }}>
+                                            الثعلب البني السريع
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* ── Heading / Body Font (legacy UI controls) ── */}
                             <div style={{ marginBottom: '20px' }}>
                                 <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: 'var(--text-color)' }}>Heading Font Family</label>
                                 <select
@@ -511,6 +694,11 @@ export function ThemeSettings() {
                                     {FONT_OPTIONS.map(font => (
                                         <option key={font.value} value={font.value}>{font.label}</option>
                                     ))}
+                                    <optgroup label="Arabic / RTL Fonts">
+                                        {ARABIC_FONT_OPTIONS.map(font => (
+                                            <option key={font.value} value={font.value}>{font.label}</option>
+                                        ))}
+                                    </optgroup>
                                 </select>
                             </div>
 
@@ -524,6 +712,11 @@ export function ThemeSettings() {
                                     {FONT_OPTIONS.map(font => (
                                         <option key={font.value} value={font.value}>{font.label}</option>
                                     ))}
+                                    <optgroup label="Arabic / RTL Fonts">
+                                        {ARABIC_FONT_OPTIONS.map(font => (
+                                            <option key={font.value} value={font.value}>{font.label}</option>
+                                        ))}
+                                    </optgroup>
                                 </select>
                             </div>
 
@@ -1513,6 +1706,148 @@ export function ThemeSettings() {
                             </div>
                         </div>
                     )}
+
+                    {/* My Themes Tab */}
+                    {activeTab === 'myThemes' && (
+                        <div style={{ background: 'var(--card-bg)', padding: '30px', borderRadius: '16px', border: '1px solid var(--glass-border)', boxShadow: 'var(--glass-shadow)' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+                                <h3 style={{ marginTop: 0, marginBottom: 0, color: 'var(--text-color)' }}>My Saved Themes</h3>
+                                <button
+                                    onClick={() => { setNewThemeName(''); setShowSaveAsDialog(true); }}
+                                    style={{
+                                        padding: '8px 16px', borderRadius: '8px', border: 'none',
+                                        background: 'var(--primary-color)', color: 'white',
+                                        fontWeight: '600', cursor: 'pointer', fontSize: '0.85em',
+                                        display: 'flex', alignItems: 'center', gap: '6px'
+                                    }}
+                                >
+                                    + Save Current as Theme
+                                </button>
+                            </div>
+
+                            {savedThemes.length === 0 ? (
+                                <div style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--text-muted)' }}>
+                                    <div style={{ fontSize: '2em', marginBottom: '12px' }}>📚</div>
+                                    <p style={{ margin: 0, fontSize: '0.95em' }}>No saved themes yet.</p>
+                                    <p style={{ margin: '8px 0 0', fontSize: '0.85em' }}>Configure your colors and settings, then click "Save Current as Theme" to create a reusable preset.</p>
+                                </div>
+                            ) : (
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '16px' }}>
+                                    {savedThemes.map(st => (
+                                        <div
+                                            key={st.id}
+                                            style={{
+                                                border: `2px solid ${editingThemeId === st.id ? 'var(--primary-color)' : st.is_active ? '#10b981' : 'var(--glass-border)'}`,
+                                                borderRadius: '12px',
+                                                overflow: 'hidden',
+                                                background: 'var(--input-bg)',
+                                                transition: 'border-color 0.2s',
+                                            }}
+                                        >
+                                            {/* Color swatch */}
+                                            <div style={{ display: 'flex', height: '36px' }}>
+                                                <div style={{ flex: 1, background: st.config?.primaryColor || '#0f172a' }} />
+                                                <div style={{ flex: 1, background: st.config?.secondaryColor || '#64748b' }} />
+                                                <div style={{ flex: 1, background: st.config?.backgroundColor || '#ffffff' }} />
+                                            </div>
+                                            <div style={{ padding: '12px' }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+                                                    <span style={{ fontWeight: '600', fontSize: '0.9em', color: 'var(--text-color)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                                        {st.name}
+                                                    </span>
+                                                    {st.is_active && (
+                                                        <span style={{
+                                                            fontSize: '0.65em', fontWeight: '700', padding: '2px 6px',
+                                                            borderRadius: '4px', background: '#10b981', color: 'white',
+                                                            whiteSpace: 'nowrap', flexShrink: 0
+                                                        }}>
+                                                            Default
+                                                        </span>
+                                                    )}
+                                                    {editingThemeId === st.id && (
+                                                        <span style={{
+                                                            fontSize: '0.65em', fontWeight: '700', padding: '2px 6px',
+                                                            borderRadius: '4px', background: 'var(--primary-color)', color: 'white',
+                                                            whiteSpace: 'nowrap', flexShrink: 0
+                                                        }}>
+                                                            Editing
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                                    <button
+                                                        onClick={() => loadThemeIntoEditor(st)}
+                                                        style={{
+                                                            padding: '6px 10px', borderRadius: '6px', border: '1px solid var(--input-border)',
+                                                            background: 'var(--card-bg)', color: 'var(--text-color)',
+                                                            cursor: 'pointer', fontSize: '0.8em', fontWeight: '600', width: '100%'
+                                                        }}
+                                                    >
+                                                        ✏️ Edit
+                                                    </button>
+                                                    {!st.is_active && (
+                                                        <button
+                                                            onClick={() => setAsOrgDefault(st.id)}
+                                                            style={{
+                                                                padding: '6px 10px', borderRadius: '6px', border: '1px solid #10b981',
+                                                                background: 'transparent', color: '#10b981',
+                                                                cursor: 'pointer', fontSize: '0.8em', fontWeight: '600', width: '100%'
+                                                            }}
+                                                        >
+                                                            Set as Default
+                                                        </button>
+                                                    )}
+                                                    {deleteConfirmId === st.id ? (
+                                                        <div style={{ display: 'flex', gap: '4px' }}>
+                                                            <button
+                                                                onClick={() => deleteSavedTheme(st.id)}
+                                                                style={{
+                                                                    flex: 1, padding: '5px', borderRadius: '6px', border: 'none',
+                                                                    background: '#ef4444', color: 'white',
+                                                                    cursor: 'pointer', fontSize: '0.75em', fontWeight: '700'
+                                                                }}
+                                                            >
+                                                                Confirm
+                                                            </button>
+                                                            <button
+                                                                onClick={() => setDeleteConfirmId(null)}
+                                                                style={{
+                                                                    flex: 1, padding: '5px', borderRadius: '6px',
+                                                                    border: '1px solid var(--input-border)',
+                                                                    background: 'var(--card-bg)', color: 'var(--text-color)',
+                                                                    cursor: 'pointer', fontSize: '0.75em'
+                                                                }}
+                                                            >
+                                                                Cancel
+                                                            </button>
+                                                        </div>
+                                                    ) : (
+                                                        <button
+                                                            onClick={() => setDeleteConfirmId(st.id)}
+                                                            style={{
+                                                                padding: '6px 10px', borderRadius: '6px',
+                                                                border: '1px solid #fca5a5',
+                                                                background: 'transparent', color: '#ef4444',
+                                                                cursor: 'pointer', fontSize: '0.8em', fontWeight: '600', width: '100%'
+                                                            }}
+                                                        >
+                                                            Delete
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+
+                            <div style={{ marginTop: '24px', padding: '16px', background: 'var(--input-bg)', borderRadius: '8px', border: '1px solid var(--glass-border)' }}>
+                                <p style={{ margin: 0, fontSize: '0.85em', color: 'var(--text-muted)', lineHeight: '1.6' }}>
+                                    <strong>💡 How it works:</strong> Click <strong>Edit</strong> to load a theme into the editor, make changes, then click <strong>Update Theme</strong>. Click <strong>Set as Default</strong> to apply a saved theme as the active org theme for all users.
+                                </p>
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 {/* PREVIEW COLUMN */}
@@ -1636,6 +1971,69 @@ export function ThemeSettings() {
                     </div>
                 </div>
             </div>
+
+            {/* Save As New Theme Dialog */}
+            {showSaveAsDialog && (
+                <div
+                    style={{
+                        position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+                        background: 'rgba(0,0,0,0.5)', display: 'flex',
+                        alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: '20px'
+                    }}
+                    onClick={() => setShowSaveAsDialog(false)}
+                >
+                    <div
+                        style={{
+                            background: 'var(--card-bg)', borderRadius: '16px', padding: '32px',
+                            width: '400px', maxWidth: '100%', border: '1px solid var(--glass-border)',
+                            boxShadow: '0 20px 60px rgba(0,0,0,0.3)'
+                        }}
+                        onClick={e => e.stopPropagation()}
+                    >
+                        <h3 style={{ marginTop: 0, marginBottom: '8px', color: 'var(--text-color)' }}>Save Current Theme</h3>
+                        <p style={{ color: 'var(--text-muted)', fontSize: '0.9em', marginBottom: '20px' }}>
+                            Give this theme a name so you can reuse it later.
+                        </p>
+                        <input
+                            type="text"
+                            value={newThemeName}
+                            onChange={e => setNewThemeName(e.target.value)}
+                            onKeyDown={e => e.key === 'Enter' && saveAsNewTheme()}
+                            placeholder="e.g. Corporate Blue, Dark Mode, Q1 Campaign…"
+                            autoFocus
+                            style={{
+                                width: '100%', padding: '12px', borderRadius: '8px', boxSizing: 'border-box',
+                                border: '1px solid var(--input-border)', background: 'var(--input-bg)',
+                                color: 'var(--text-color)', fontSize: '1em', marginBottom: '16px'
+                            }}
+                        />
+                        <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+                            <button
+                                onClick={() => setShowSaveAsDialog(false)}
+                                style={{
+                                    padding: '10px 20px', borderRadius: '8px',
+                                    border: '1px solid var(--input-border)', background: 'var(--input-bg)',
+                                    color: 'var(--text-color)', cursor: 'pointer', fontWeight: '600'
+                                }}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={saveAsNewTheme}
+                                disabled={!newThemeName.trim()}
+                                style={{
+                                    padding: '10px 20px', borderRadius: '8px', border: 'none',
+                                    background: newThemeName.trim() ? 'var(--primary-color)' : 'var(--text-muted)',
+                                    color: 'white', cursor: newThemeName.trim() ? 'pointer' : 'not-allowed',
+                                    fontWeight: '700'
+                                }}
+                            >
+                                Save Theme
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Figma Import Modal */}
             {showFigmaImporter && (

@@ -1235,6 +1235,107 @@ router.delete('/theme/saved/:id', authenticate, async (req, res) => {
     }
 });
 
+// UPDATE Saved Theme
+
+/**
+ * @swagger
+ * /api/settings/theme/saved/{id}:
+ *   put:
+ *     tags: [Settings]
+ *     summary: Update saved theme
+ *     description: Updates the name and/or config of a saved theme preset by ID.
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [name, config]
+ *             properties:
+ *               name:
+ *                 type: string
+ *               config:
+ *                 type: object
+ *     responses:
+ *       200:
+ *         description: Theme updated
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Server error
+ */
+router.put('/theme/saved/:id', authenticate, async (req, res) => {
+    try {
+        const { name, config } = req.body;
+        await query(
+            "UPDATE themes SET name=$1, config=$2, updated_at=NOW() WHERE id=$3 AND tenant_id=$4",
+            [name, config, req.params.id, req.user.tenant_id]
+        );
+        res.json({ success: true });
+    } catch (e) {
+        logger.error('Failed to update saved theme', { error: e.message });
+        res.status(500).json({ error: 'Failed to update saved theme' });
+    }
+});
+
+// SET Saved Theme as Org Default
+
+/**
+ * @swagger
+ * /api/settings/theme/saved/{id}/set-default:
+ *   post:
+ *     tags: [Settings]
+ *     summary: Set saved theme as org default
+ *     description: Applies a saved theme preset as the active org theme and marks it as default.
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Default theme updated
+ *       404:
+ *         description: Theme not found
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Server error
+ */
+router.post('/theme/saved/:id/set-default', authenticate, async (req, res) => {
+    try {
+        const tenantId = req.user.tenant_id;
+        const themeResult = await query(
+            "SELECT * FROM themes WHERE id = $1 AND tenant_id = $2",
+            [req.params.id, tenantId]
+        );
+        if (themeResult.rows.length === 0) {
+            return res.status(404).json({ error: 'Theme not found' });
+        }
+        const savedTheme = themeResult.rows[0];
+        // Apply config as active org theme
+        await query("UPDATE tenants SET theme = $1 WHERE id = $2", [savedTheme.config, tenantId]);
+        // Mark this as active, clear others
+        await query("UPDATE themes SET is_active = false WHERE tenant_id = $1", [tenantId]);
+        await query("UPDATE themes SET is_active = true WHERE id = $1 AND tenant_id = $2", [req.params.id, tenantId]);
+        res.json({ success: true });
+    } catch (e) {
+        logger.error('Failed to set default theme', { error: e.message });
+        res.status(500).json({ error: 'Failed to set default theme' });
+    }
+});
+
 // FIGMA THEME IMPORT
 
 const FigmaThemeImporter = require('../../services/FigmaThemeImporter');
