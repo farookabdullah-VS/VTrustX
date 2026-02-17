@@ -56,7 +56,7 @@ export function SystemSettings() {
         // Social Listening Sync
         sl_auto_sync_enabled: 'true',
         sl_sync_interval: '15', // minutes
-        sl_sync_platforms: 'twitter,reddit,tiktok', // comma-separated
+        sl_sync_platforms: 'twitter,reddit,tiktok,facebook,instagram,linkedin,youtube', // comma-separated
         sl_max_mentions_per_sync: '100'
     });
 
@@ -670,10 +670,10 @@ export function SystemSettings() {
                                     { name: 'twitter', available: true },
                                     { name: 'reddit', available: true },
                                     { name: 'tiktok', available: true },
-                                    { name: 'facebook', available: false },
-                                    { name: 'instagram', available: false },
-                                    { name: 'linkedin', available: false },
-                                    { name: 'youtube', available: false }
+                                    { name: 'facebook', available: true },
+                                    { name: 'instagram', available: true },
+                                    { name: 'linkedin', available: true },
+                                    { name: 'youtube', available: true }
                                 ].map(({ name: platform, available }) => {
                                     const isEnabled = settings.sl_sync_platforms?.split(',').includes(platform);
 
@@ -750,7 +750,7 @@ export function SystemSettings() {
                                 })}
                             </div>
                             <p style={{ marginTop: '12px', fontSize: '0.9em', color: 'var(--text-muted)' }}>
-                                💡 Only platforms with active connections will be synced. Twitter, Reddit, and TikTok are currently available.
+                                💡 Only platforms with active connections will be synced. Enable only the platforms you have credentials configured for.
                             </p>
                         </div>
 
