@@ -8,7 +8,10 @@ Multi-tenant Customer Experience Management Platform built with React + Express 
 RayiX/
 ├── client/          React 18 + Vite frontend
 ├── server/          Express.js REST API
-├── ai-service/      Standalone AI microservice
+├── sdk/                Native Mobile SDK & JS Client
+├── client/ios-sdk/     Native iOS SDK (Swift Package)
+├── client/android-sdk/ Native Android SDK (Gradle Library)
+├── ai-service/         Standalone AI microservice
 └── docs/            Technical documentation
 ```
 
