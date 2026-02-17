@@ -87,6 +87,7 @@ check_cooldown_columns.js
 /sdk/*
 !/sdk/docs/
 !/sdk/examples/
+!/sdk/mock-server/
 
 # Development tools
 lighthouserc.js
