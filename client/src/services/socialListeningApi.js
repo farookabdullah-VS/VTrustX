@@ -104,6 +104,21 @@ export const socialListeningApi = {
 
       action: (id, status) => axios.put(`${BASE_URL}/alerts/events/${id}`, { status })
     }
+  },
+
+  // Responses
+  responses: {
+    list: (params) => axios.get(`${BASE_URL}/responses`, { params }),
+
+    create: (data) => axios.post(`${BASE_URL}/responses`, data),
+
+    update: (id, data) => axios.put(`${BASE_URL}/responses/${id}`, data),
+
+    delete: (id) => axios.delete(`${BASE_URL}/responses/${id}`),
+
+    send: (id) => axios.post(`${BASE_URL}/responses/${id}/send`),
+
+    aiGenerate: (data) => axios.post(`${BASE_URL}/responses/ai-generate`, data)
   }
 };
 
