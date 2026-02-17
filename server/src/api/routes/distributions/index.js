@@ -11,6 +11,7 @@ const TemplateService = require('../../../services/TemplateService');
 const validate = require('../../middleware/validate');
 const { createDistributionSchema } = require('../../schemas/distributions.schemas');
 const logger = require('../../../infrastructure/logger');
+const { emitAnalyticsUpdate } = require('../analytics/sse');
 
 /**
  * @swagger
@@ -188,6 +189,14 @@ router.post('/', validate(createDistributionSchema), async (req, res) => {
             [name, type, surveyId, tenantId, experimentId || null]
         );
         const distributionId = distResult.rows[0].id;
+
+        // Emit real-time event: distribution started
+        emitAnalyticsUpdate(tenantId, 'distribution_started', {
+            distributionId,
+            name,
+            channel: type,
+            contactCount: contacts.length
+        });
 
         if (type === 'email') {
             sendBatch(contacts, subject, body, surveyId, 'email', frontendUrl, tenantId, distributionId, mediaAssets, experimentId);
@@ -442,6 +451,17 @@ async function sendBatch(contacts, subject, body, surveyId, type, frontendUrl, t
         } catch (e) {
             logger.error(`Failed to send to ${contact.email || contact.phone}`, { error: e.message, stack: e.stack });
         }
+    }
+
+    // Emit real-time event: distribution completed
+    if (distributionId) {
+        emitAnalyticsUpdate(tenantId, 'distribution_completed', {
+            distributionId,
+            channel: type,
+            totalContacts: contacts.length,
+            successfulSends: sent,
+            failedSends: contacts.length - sent
+        });
     }
 
     // Trigger webhook: distribution.completed

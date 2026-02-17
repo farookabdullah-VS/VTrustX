@@ -3,6 +3,7 @@ const router = express.Router();
 const { query } = require('../../../infrastructure/database/db');
 const authenticate = require('../../middleware/auth');
 const logger = require('../../../infrastructure/logger');
+const { emitAnalyticsUpdate } = require('./sse');
 
 /**
  * @swagger
@@ -93,6 +94,14 @@ router.post('/survey-events', async (req, res) => {
         const counterField = `${eventType === 'viewed' ? 'view' : eventType === 'started' ? 'start' : eventType === 'completed' ? 'completion' : 'abandon'}_count`;
         query(`UPDATE forms SET ${counterField} = ${counterField} + 1 WHERE id = $1`, [formId])
             .catch(err => logger.error('Failed to update form counter', { error: err.message, formId, eventType }));
+
+        // Emit real-time analytics event for survey funnel tracking
+        emitAnalyticsUpdate(tenantId, 'survey_event', {
+            formId,
+            distributionId: distributionId || null,
+            eventType,
+            sessionId: sessionId || null
+        });
 
         res.status(201).json({ success: true });
     } catch (error) {
