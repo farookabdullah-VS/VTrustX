@@ -1,112 +1,222 @@
 const express = require('express');
 const router = express.Router();
-const bcrypt = require('bcryptjs');
 const { query, transaction } = require('../../infrastructure/database/db');
-const PostgresRepository = require('../../infrastructure/database/PostgresRepository');
+const authenticate = require('../middleware/auth');
+const { requireRole } = require('../middleware/authorize');
 const logger = require('../../infrastructure/logger');
-const validate = require('../middleware/validate');
-const { registerTenantSchema } = require('../schemas/tenants.schemas');
 
-const userRepo = new PostgresRepository('users');
-const tenantRepo = new PostgresRepository('tenants');
-
-/**
- * @swagger
- * /api/tenants/register:
- *   post:
- *     tags: [Tenants]
- *     summary: Register new tenant
- *     description: Registers a new tenant with an admin user account. Creates the tenant, admin user, and optional subscription in a single atomic transaction. Password must be at least 10 characters with uppercase, lowercase, and a number.
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required: [companyName, email, password]
- *             properties:
- *               companyName:
- *                 type: string
- *               email:
- *                 type: string
- *                 format: email
- *               password:
- *                 type: string
- *                 format: password
- *                 minLength: 10
- *               phone:
- *                 type: string
- *               name:
- *                 type: string
- *               planId:
- *                 type: integer
- *     responses:
- *       201:
- *         description: Registration successful
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                 tenantId:
- *                   type: integer
- *       400:
- *         description: Validation error
- *       409:
- *         description: User with this email already exists
- *       500:
- *         description: Server error
- */
-router.post('/register', validate(registerTenantSchema), async (req, res) => {
+// GET all tenants (Global Admin only)
+router.get('/', authenticate, requireRole('global_admin'), async (req, res) => {
     try {
-        const { companyName, email, password, phone, name, planId } = req.body;
+        const result = await query(`
+            SELECT
+                t.*,
+                COUNT(DISTINCT u.id) as user_count,
+                COUNT(DISTINCT tsm.id) as active_modules_count
+            FROM tenants t
+            LEFT JOIN users u ON t.id = u.tenant_id
+            LEFT JOIN tenant_subscription_modules tsm ON t.id = tsm.tenant_id AND tsm.enabled = true
+            GROUP BY t.id
+            ORDER BY t.created_at DESC
+        `);
+        res.json(result.rows);
+    } catch (error) {
+        logger.error('Error fetching tenants:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
 
-        // Check if user already exists (outside transaction — read-only check)
-        const userExists = await query('SELECT id FROM users WHERE username = $1 OR email = $1', [email]);
-        if (userExists.rows.length > 0) {
-            return res.status(409).json({ error: "User with this email already exists" });
+// GET tenant by ID
+router.get('/:id', authenticate, requireRole('global_admin'), async (req, res) => {
+    try {
+        const { id } = req.params;
+        const result = await query('SELECT * FROM tenants WHERE id = $1', [id]);
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Tenant not found' });
+        }
+        res.json(result.rows[0]);
+    } catch (error) {
+        logger.error('Error fetching tenant:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// CREATE tenant
+router.post('/', authenticate, requireRole('global_admin'), async (req, res) => {
+    try {
+        const {
+            name, domain, subdomain, contact_email, contact_phone,
+            status = 'active', plan, max_users = 10, max_surveys = 100,
+            max_responses = 1000, storage_limit_mb = 1000,
+            billing_email, billing_address, tax_id, notes
+        } = req.body;
+
+        if (!name) {
+            return res.status(400).json({ error: 'Tenant name is required' });
         }
 
-        // Hash password before entering transaction (CPU-bound work)
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(password, salt);
-
-        // Wrap tenant + user + subscription creation in a single transaction
-        const tenantId = await transaction(async (client) => {
-            // Create Tenant
-            const tenantRes = await client.query(`
-                INSERT INTO tenants (name, plan, subscription_status, contact_email, contact_phone, created_at, updated_at)
-                VALUES ($1, 'free', 'active', $2, $3, NOW(), NOW())
+        await transaction(async (client) => {
+            const tenantResult = await client.query(`
+                INSERT INTO tenants (
+                    name, domain, subdomain, contact_email, contact_phone,
+                    status, plan, max_users, max_surveys, max_responses,
+                    storage_limit_mb, billing_email, billing_address, tax_id, notes
+                )
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
                 RETURNING *
-            `, [companyName, email, phone || null]);
-            const tenant = tenantRes.rows[0];
+            `, [
+                name, domain, subdomain, contact_email, contact_phone,
+                status, plan, max_users, max_surveys, max_responses,
+                storage_limit_mb, billing_email, billing_address, tax_id, notes
+            ]);
 
-            // Create Admin User
-            const now = new Date();
+            const newTenant = tenantResult.rows[0];
+
             await client.query(`
-                INSERT INTO users (username, password, role, tenant_id, name, email, phone, status, created_at, updated_at)
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-            `, [email, hashedPassword, 'admin', tenant.id, name || null, email, phone || null, 'active', now, now]);
+                INSERT INTO tenant_subscription_modules (tenant_id, module_id, enabled)
+                SELECT $1, id, true FROM subscription_modules WHERE is_core = true
+            `, [newTenant.id]);
 
-            // If planId provided, create initial subscription
-            if (planId) {
-                await client.query(`
-                    INSERT INTO subscriptions (tenant_id, plan_id, status, current_period_start, current_period_end, next_billing_at)
-                    VALUES ($1, $2, 'ACTIVE', NOW(), NOW() + INTERVAL '1 month', NOW() + INTERVAL '1 month')
-                `, [tenant.id, planId]);
-                await client.query('UPDATE tenants SET plan_id = $1 WHERE id = $2', [planId, tenant.id]);
+            logger.info('Tenant created', { tenantId: newTenant.id, name: newTenant.name });
+            res.status(201).json(newTenant);
+        });
+    } catch (error) {
+        logger.error('Error creating tenant:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// UPDATE tenant
+router.put('/:id', authenticate, requireRole('global_admin'), async (req, res) => {
+    try {
+        const { id } = req.params;
+        const {
+            name, domain, subdomain, contact_email, contact_phone,
+            status, plan, max_users, max_surveys, max_responses,
+            storage_limit_mb, billing_email, billing_address, tax_id, notes
+        } = req.body;
+
+        const result = await query(`
+            UPDATE tenants
+            SET name = COALESCE($1, name),
+                domain = COALESCE($2, domain),
+                subdomain = COALESCE($3, subdomain),
+                contact_email = COALESCE($4, contact_email),
+                contact_phone = COALESCE($5, contact_phone),
+                status = COALESCE($6, status),
+                plan = COALESCE($7, plan),
+                max_users = COALESCE($8, max_users),
+                max_surveys = COALESCE($9, max_surveys),
+                max_responses = COALESCE($10, max_responses),
+                storage_limit_mb = COALESCE($11, storage_limit_mb),
+                billing_email = COALESCE($12, billing_email),
+                billing_address = COALESCE($13, billing_address),
+                tax_id = COALESCE($14, tax_id),
+                notes = COALESCE($15, notes),
+                updated_at = NOW()
+            WHERE id = $16
+            RETURNING *
+        `, [
+            name, domain, subdomain, contact_email, contact_phone,
+            status, plan, max_users, max_surveys, max_responses,
+            storage_limit_mb, billing_email, billing_address, tax_id, notes, id
+        ]);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Tenant not found' });
+        }
+
+        logger.info('Tenant updated', { tenantId: id });
+        res.json(result.rows[0]);
+    } catch (error) {
+        logger.error('Error updating tenant:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// DELETE tenant
+router.delete('/:id', authenticate, requireRole('global_admin'), async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const result = await query('DELETE FROM tenants WHERE id = $1 RETURNING id', [id]);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Tenant not found' });
+        }
+
+        logger.info('Tenant deleted', { tenantId: id });
+        res.json({ message: 'Tenant deleted successfully', id });
+    } catch (error) {
+        logger.error('Error deleting tenant:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// GET available modules
+router.get('/modules/available', authenticate, requireRole('global_admin'), async (req, res) => {
+    try {
+        const result = await query(`
+            SELECT * FROM subscription_modules
+            WHERE is_active = true
+            ORDER BY sort_order, module_name
+        `);
+        res.json(result.rows);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// GET tenant modules
+router.get('/:id/modules', authenticate, requireRole('global_admin'), async (req, res) => {
+    try {
+        const { id } = req.params;
+        const result = await query(`
+            SELECT
+                sm.*,
+                COALESCE(tsm.enabled, false) as enabled,
+                tsm.enabled_at,
+                tsm.expires_at
+            FROM subscription_modules sm
+            LEFT JOIN tenant_subscription_modules tsm
+                ON sm.id = tsm.module_id AND tsm.tenant_id = $1
+            WHERE sm.is_active = true
+            ORDER BY sm.sort_order, sm.module_name
+        `, [id]);
+        res.json(result.rows);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// UPDATE tenant modules
+router.post('/:id/modules', authenticate, requireRole('global_admin'), async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { modules } = req.body;
+
+        await transaction(async (client) => {
+            await client.query(`
+                DELETE FROM tenant_subscription_modules
+                WHERE tenant_id = $1
+                AND module_id NOT IN (SELECT id FROM subscription_modules WHERE is_core = true)
+            `, [id]);
+
+            for (const module of modules) {
+                if (module.enabled) {
+                    await client.query(`
+                        INSERT INTO tenant_subscription_modules (tenant_id, module_id, enabled, expires_at)
+                        VALUES ($1, $2, $3, $4)
+                        ON CONFLICT (tenant_id, module_id)
+                        DO UPDATE SET enabled = $3, expires_at = $4, updated_at = NOW()
+                    `, [id, module.module_id, module.enabled, module.expires_at || null]);
+                }
             }
-
-            return tenant.id;
         });
 
-        res.status(201).json({ message: "Registration successful", tenantId });
-
-    } catch (e) {
-        logger.error('Registration failed', { error: e.message });
-        res.status(500).json({ error: e.message });
+        res.json({ message: 'Modules updated successfully' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
     }
 });
 
