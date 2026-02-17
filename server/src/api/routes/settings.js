@@ -1235,4 +1235,231 @@ router.delete('/theme/saved/:id', authenticate, async (req, res) => {
     }
 });
 
+// FIGMA THEME IMPORT
+
+const FigmaThemeImporter = require('../../services/FigmaThemeImporter');
+
+/**
+ * @swagger
+ * /api/settings/theme/import/figma:
+ *   post:
+ *     tags: [Settings]
+ *     summary: Import theme from Figma
+ *     description: Imports design tokens (colors, typography, spacing) from a Figma file and transforms them into application theme format.
+ *     security:
+ *       - cookieAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - figmaFileUrl
+ *               - figmaAccessToken
+ *             properties:
+ *               figmaFileUrl:
+ *                 type: string
+ *                 description: Figma file URL (e.g., https://www.figma.com/file/ABC123/MyDesign)
+ *               figmaAccessToken:
+ *                 type: string
+ *                 description: Figma Personal Access Token (from Figma Account Settings)
+ *               applyImmediately:
+ *                 type: boolean
+ *                 default: false
+ *                 description: Apply imported theme immediately to tenant
+ *               saveAsPreset:
+ *                 type: boolean
+ *                 default: true
+ *                 description: Save imported theme as a preset
+ *               presetName:
+ *                 type: string
+ *                 description: Name for saved preset (auto-generated if not provided)
+ *     responses:
+ *       200:
+ *         description: Theme imported successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 theme:
+ *                   type: object
+ *                   description: Imported theme object
+ *                 metadata:
+ *                   type: object
+ *                   properties:
+ *                     fileName:
+ *                       type: string
+ *                     lastModified:
+ *                       type: string
+ *                     version:
+ *                       type: string
+ *                     importedAt:
+ *                       type: string
+ *                 applied:
+ *                   type: boolean
+ *                   description: Whether theme was applied to tenant
+ *                 saved:
+ *                   type: boolean
+ *                   description: Whether theme was saved as preset
+ *       400:
+ *         description: Invalid Figma URL or missing access token
+ *       401:
+ *         description: Unauthorized or invalid Figma access token
+ *       500:
+ *         description: Server error
+ */
+router.post('/theme/import/figma', authenticate, async (req, res) => {
+    try {
+        const { figmaFileUrl, figmaAccessToken, applyImmediately, saveAsPreset, presetName } = req.body;
+        const tenantId = req.user.tenant_id;
+
+        // Validate input
+        if (!figmaFileUrl || !figmaAccessToken) {
+            return res.status(400).json({
+                error: 'Missing required fields: figmaFileUrl and figmaAccessToken'
+            });
+        }
+
+        // Extract file key from URL
+        const fileKey = FigmaThemeImporter.extractFileKeyFromUrl(figmaFileUrl);
+        if (!fileKey) {
+            return res.status(400).json({
+                error: 'Invalid Figma URL. Expected format: https://www.figma.com/file/{fileKey}/{fileName}'
+            });
+        }
+
+        logger.info('[FigmaImport] Starting import', {
+            tenantId,
+            fileKey,
+            applyImmediately,
+            saveAsPreset
+        });
+
+        // Validate Figma token
+        const tokenValidation = await FigmaThemeImporter.validateToken(figmaAccessToken);
+        if (!tokenValidation.valid) {
+            return res.status(401).json({
+                error: 'Invalid Figma access token',
+                details: tokenValidation.error
+            });
+        }
+
+        // Import theme from Figma
+        const importer = new FigmaThemeImporter(figmaAccessToken);
+        const importResult = await importer.importTheme(fileKey);
+
+        if (!importResult.success) {
+            return res.status(500).json({
+                error: 'Failed to import theme from Figma',
+                details: importResult.error
+            });
+        }
+
+        const response = {
+            success: true,
+            theme: importResult.theme,
+            metadata: importResult.metadata,
+            applied: false,
+            saved: false
+        };
+
+        // Apply theme immediately if requested
+        if (applyImmediately) {
+            await query(
+                "UPDATE tenants SET theme = $1 WHERE id = $2",
+                [importResult.theme, tenantId]
+            );
+            response.applied = true;
+            logger.info('[FigmaImport] Theme applied to tenant', { tenantId });
+        }
+
+        // Save as preset if requested
+        if (saveAsPreset !== false) {
+            const themeName = presetName || `Figma Import - ${importResult.metadata.fileName}`;
+            await query(
+                "INSERT INTO themes (tenant_id, name, config) VALUES ($1, $2, $3)",
+                [tenantId, themeName, importResult.theme]
+            );
+            response.saved = true;
+            response.presetName = themeName;
+            logger.info('[FigmaImport] Theme saved as preset', { tenantId, themeName });
+        }
+
+        logger.info('[FigmaImport] Import completed', {
+            tenantId,
+            applied: response.applied,
+            saved: response.saved
+        });
+
+        res.json(response);
+
+    } catch (error) {
+        logger.error('[FigmaImport] Import failed', {
+            error: error.message,
+            stack: error.stack
+        });
+        res.status(500).json({
+            error: 'Failed to import theme from Figma',
+            details: error.message
+        });
+    }
+});
+
+/**
+ * @swagger
+ * /api/settings/theme/import/figma/validate:
+ *   post:
+ *     tags: [Settings]
+ *     summary: Validate Figma access token
+ *     description: Validates a Figma Personal Access Token before importing.
+ *     security:
+ *       - cookieAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - figmaAccessToken
+ *             properties:
+ *               figmaAccessToken:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Token validation result
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 valid:
+ *                   type: boolean
+ *                 user:
+ *                   type: object
+ *                   description: Figma user info (if valid)
+ *       400:
+ *         description: Missing access token
+ */
+router.post('/theme/import/figma/validate', authenticate, async (req, res) => {
+    try {
+        const { figmaAccessToken } = req.body;
+
+        if (!figmaAccessToken) {
+            return res.status(400).json({ error: 'Missing figmaAccessToken' });
+        }
+
+        const validation = await FigmaThemeImporter.validateToken(figmaAccessToken);
+        res.json(validation);
+
+    } catch (error) {
+        logger.error('[FigmaImport] Token validation failed', { error: error.message });
+        res.status(500).json({ error: 'Failed to validate token' });
+    }
+});
+
 module.exports = router;

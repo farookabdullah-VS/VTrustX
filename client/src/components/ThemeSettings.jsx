@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useToast } from './common/Toast';
 import { useTheme } from '../contexts/ThemeContext';
+import FigmaThemeImporter from './FigmaThemeImporter';
 
 const DEFAULT_THEME = {
     // Colors
@@ -247,6 +248,7 @@ export function ThemeSettings() {
     const [theme, setTheme] = useState(DEFAULT_THEME);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('colors'); // colors, typography, company, logos, email, social, layout, buttons, forms, darkmode, mobile, notifications, animations, brandAssets, accessibility, localization, advanced
+    const [showFigmaImporter, setShowFigmaImporter] = useState(false);
 
     useEffect(() => {
         axios.get('/api/settings/theme')
@@ -333,6 +335,27 @@ export function ThemeSettings() {
                     <p style={{ color: 'var(--text-muted)' }}>Customize the look and feel of your platform and surveys.</p>
                 </div>
                 <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                    {/* Figma Import Button */}
+                    <button
+                        onClick={() => setShowFigmaImporter(true)}
+                        style={{
+                            padding: '10px 20px', borderRadius: '8px', cursor: 'pointer', fontWeight: '600',
+                            background: '#f8fafc',
+                            color: '#0f172a',
+                            border: '1px solid #e2e8f0',
+                            fontSize: '0.9em',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px'
+                        }}
+                    >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="7 10 12 15 17 10"/>
+                            <line x1="12" y1="15" x2="12" y2="3"/>
+                        </svg>
+                        Import from Figma
+                    </button>
                     {/* Dark/Light mode toggle */}
                     <button
                         onClick={toggleDarkMode}
@@ -1492,126 +1515,159 @@ export function ThemeSettings() {
                     )}
                 </div>
 
-            {/* PREVIEW COLUMN */}
-            <div>
-                <h3 style={{ marginTop: 0, marginBottom: '20px', color: 'var(--text-muted)' }}>Live Preview</h3>
+                {/* PREVIEW COLUMN */}
+                <div>
+                    <h3 style={{ marginTop: 0, marginBottom: '20px', color: 'var(--text-muted)' }}>Live Preview</h3>
 
-                <div style={{
-                    background: theme.backgroundColor,
-                    color: theme.textColor,
-                    padding: '30px',
-                    borderRadius: theme.borderRadius,
-                    border: '1px solid var(--glass-border)',
-                    boxShadow: 'var(--glass-shadow)',
-                    fontFamily: theme.bodyFont || theme.fontFamily,
-                    fontSize: theme.fontSize || '16px',
-                }}>
-                    {/* Logo Preview */}
-                    {theme.logoUrl && (
-                        <div style={{ marginBottom: '24px', paddingBottom: '20px', borderBottom: '1px solid var(--glass-border)' }}>
-                            <img src={theme.logoUrl} alt="Company Logo" style={{ maxWidth: '180px', maxHeight: '60px' }} />
-                        </div>
-                    )}
+                    <div style={{
+                        background: theme.backgroundColor,
+                        color: theme.textColor,
+                        padding: '30px',
+                        borderRadius: theme.borderRadius,
+                        border: '1px solid var(--glass-border)',
+                        boxShadow: 'var(--glass-shadow)',
+                        fontFamily: theme.bodyFont || theme.fontFamily,
+                        fontSize: theme.fontSize || '16px',
+                    }}>
+                        {/* Logo Preview */}
+                        {theme.logoUrl && (
+                            <div style={{ marginBottom: '24px', paddingBottom: '20px', borderBottom: '1px solid var(--glass-border)' }}>
+                                <img src={theme.logoUrl} alt="Company Logo" style={{ maxWidth: '180px', maxHeight: '60px' }} />
+                            </div>
+                        )}
 
-                    {/* Company Info Preview */}
-                    {theme.companyName && (
+                        {/* Company Info Preview */}
+                        {theme.companyName && (
+                            <div style={{ marginBottom: '20px' }}>
+                                <h2 style={{ color: theme.primaryColor, marginTop: 0, marginBottom: '8px', fontFamily: theme.headingFont || theme.fontFamily, fontWeight: theme.headingWeight || '700' }}>{theme.companyName}</h2>
+                                {theme.tagline && (
+                                    <p style={{ margin: 0, fontSize: '0.9em', color: theme.secondaryColor, fontStyle: 'italic' }}>{theme.tagline}</p>
+                                )}
+                            </div>
+                        )}
+
+                        <h2 style={{ color: theme.primaryColor, marginTop: 0, fontFamily: theme.headingFont || theme.fontFamily, fontWeight: theme.headingWeight || '700' }}>Survey Title Preview</h2>
+                        <p style={{ lineHeight: '1.6', marginBottom: '20px' }}>This is how your survey content will look with your selected branding. The colors, fonts, and styling you choose will be applied consistently across all surveys and forms.</p>
+
                         <div style={{ marginBottom: '20px' }}>
-                            <h2 style={{ color: theme.primaryColor, marginTop: 0, marginBottom: '8px', fontFamily: theme.headingFont || theme.fontFamily, fontWeight: theme.headingWeight || '700' }}>{theme.companyName}</h2>
-                            {theme.tagline && (
-                                <p style={{ margin: 0, fontSize: '0.9em', color: theme.secondaryColor, fontStyle: 'italic' }}>{theme.tagline}</p>
-                            )}
+                            <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>Sample Input Field</label>
+                            <input type="text" placeholder="Type here..." style={{ width: '100%', padding: '12px', borderRadius: theme.borderRadius, border: `1px solid ${theme.secondaryColor}`, boxSizing: 'border-box', fontSize: theme.fontSize || '16px' }} />
                         </div>
-                    )}
 
-                    <h2 style={{ color: theme.primaryColor, marginTop: 0, fontFamily: theme.headingFont || theme.fontFamily, fontWeight: theme.headingWeight || '700' }}>Survey Title Preview</h2>
-                    <p style={{ lineHeight: '1.6', marginBottom: '20px' }}>This is how your survey content will look with your selected branding. The colors, fonts, and styling you choose will be applied consistently across all surveys and forms.</p>
+                        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '24px' }}>
+                            <button style={{
+                                background: theme.primaryColor,
+                                color: 'white',
+                                padding: '12px 24px',
+                                border: 'none',
+                                borderRadius: theme.borderRadius,
+                                fontWeight: '600',
+                                cursor: 'pointer',
+                                fontSize: theme.fontSize || '16px',
+                            }}>Primary Button</button>
 
-                    <div style={{ marginBottom: '20px' }}>
-                        <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500' }}>Sample Input Field</label>
-                        <input type="text" placeholder="Type here..." style={{ width: '100%', padding: '12px', borderRadius: theme.borderRadius, border: `1px solid ${theme.secondaryColor}`, boxSizing: 'border-box', fontSize: theme.fontSize || '16px' }} />
-                    </div>
-
-                    <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '24px' }}>
-                        <button style={{
-                            background: theme.primaryColor,
-                            color: 'white',
-                            padding: '12px 24px',
-                            border: 'none',
-                            borderRadius: theme.borderRadius,
-                            fontWeight: '600',
-                            cursor: 'pointer',
-                            fontSize: theme.fontSize || '16px',
-                        }}>Primary Button</button>
-
-                        <button style={{
-                            background: 'transparent',
-                            color: theme.primaryColor,
-                            border: `2px solid ${theme.primaryColor}`,
-                            padding: '10px 22px',
-                            borderRadius: theme.borderRadius,
-                            fontWeight: '600',
-                            cursor: 'pointer',
-                            fontSize: theme.fontSize || '16px',
-                        }}>Secondary</button>
-                    </div>
-
-                    {/* Status Colors Preview */}
-                    <div style={{ display: 'flex', gap: '12px', marginBottom: '24px', flexWrap: 'wrap' }}>
-                        <div style={{ padding: '8px 16px', borderRadius: theme.borderRadius, background: theme.successColor || '#10b981', color: 'white', fontSize: '0.85em', fontWeight: '600' }}>
-                            ✓ Success
+                            <button style={{
+                                background: 'transparent',
+                                color: theme.primaryColor,
+                                border: `2px solid ${theme.primaryColor}`,
+                                padding: '10px 22px',
+                                borderRadius: theme.borderRadius,
+                                fontWeight: '600',
+                                cursor: 'pointer',
+                                fontSize: theme.fontSize || '16px',
+                            }}>Secondary</button>
                         </div>
-                        <div style={{ padding: '8px 16px', borderRadius: theme.borderRadius, background: theme.warningColor || '#f59e0b', color: 'white', fontSize: '0.85em', fontWeight: '600' }}>
-                            ⚠ Warning
-                        </div>
-                        <div style={{ padding: '8px 16px', borderRadius: theme.borderRadius, background: theme.errorColor || '#ef4444', color: 'white', fontSize: '0.85em', fontWeight: '600' }}>
-                            ✕ Error
-                        </div>
-                    </div>
 
-                    {/* Social Media Preview */}
-                    {(theme.linkedinUrl || theme.twitterUrl || theme.facebookUrl || theme.instagramUrl || theme.youtubeUrl) && (
-                        <div style={{ paddingTop: '20px', borderTop: '1px solid var(--glass-border)' }}>
-                            <p style={{ fontSize: '0.85em', color: theme.secondaryColor, marginBottom: '12px', fontWeight: '600' }}>Connect with us:</p>
-                            <div style={{ display: 'flex', gap: '12px' }}>
-                                {theme.linkedinUrl && <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: theme.primaryColor, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '0.8em', fontWeight: 'bold' }}>in</div>}
-                                {theme.twitterUrl && <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: theme.primaryColor, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '0.8em', fontWeight: 'bold' }}>𝕏</div>}
-                                {theme.facebookUrl && <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: theme.primaryColor, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '0.8em', fontWeight: 'bold' }}>f</div>}
-                                {theme.instagramUrl && <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: theme.primaryColor, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '0.8em', fontWeight: 'bold' }}>📷</div>}
-                                {theme.youtubeUrl && <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: theme.primaryColor, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '0.8em', fontWeight: 'bold' }}>▶</div>}
+                        {/* Status Colors Preview */}
+                        <div style={{ display: 'flex', gap: '12px', marginBottom: '24px', flexWrap: 'wrap' }}>
+                            <div style={{ padding: '8px 16px', borderRadius: theme.borderRadius, background: theme.successColor || '#10b981', color: 'white', fontSize: '0.85em', fontWeight: '600' }}>
+                                ✓ Success
+                            </div>
+                            <div style={{ padding: '8px 16px', borderRadius: theme.borderRadius, background: theme.warningColor || '#f59e0b', color: 'white', fontSize: '0.85em', fontWeight: '600' }}>
+                                ⚠ Warning
+                            </div>
+                            <div style={{ padding: '8px 16px', borderRadius: theme.borderRadius, background: theme.errorColor || '#ef4444', color: 'white', fontSize: '0.85em', fontWeight: '600' }}>
+                                ✕ Error
                             </div>
                         </div>
-                    )}
 
-                    {/* Email Footer Preview */}
-                    {theme.emailFooterText && (
-                        <div style={{ marginTop: '20px', paddingTop: '20px', borderTop: '1px solid var(--glass-border)' }}>
-                            <p style={{ fontSize: '0.75em', color: theme.secondaryColor, lineHeight: '1.6', whiteSpace: 'pre-line', margin: 0 }}>
-                                {theme.emailFooterText}
-                            </p>
-                        </div>
-                    )}
-                </div>
+                        {/* Social Media Preview */}
+                        {(theme.linkedinUrl || theme.twitterUrl || theme.facebookUrl || theme.instagramUrl || theme.youtubeUrl) && (
+                            <div style={{ paddingTop: '20px', borderTop: '1px solid var(--glass-border)' }}>
+                                <p style={{ fontSize: '0.85em', color: theme.secondaryColor, marginBottom: '12px', fontWeight: '600' }}>Connect with us:</p>
+                                <div style={{ display: 'flex', gap: '12px' }}>
+                                    {theme.linkedinUrl && <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: theme.primaryColor, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '0.8em', fontWeight: 'bold' }}>in</div>}
+                                    {theme.twitterUrl && <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: theme.primaryColor, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '0.8em', fontWeight: 'bold' }}>𝕏</div>}
+                                    {theme.facebookUrl && <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: theme.primaryColor, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '0.8em', fontWeight: 'bold' }}>f</div>}
+                                    {theme.instagramUrl && <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: theme.primaryColor, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '0.8em', fontWeight: 'bold' }}>📷</div>}
+                                    {theme.youtubeUrl && <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: theme.primaryColor, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '0.8em', fontWeight: 'bold' }}>▶</div>}
+                                </div>
+                            </div>
+                        )}
 
-                {/* Color accent preview bar */}
-                <div style={{ display: 'flex', gap: '4px', marginTop: '16px', borderRadius: '8px', overflow: 'hidden' }}>
-                    <div style={{ flex: 3, height: '8px', background: theme.primaryColor }} title="Primary Color" />
-                    <div style={{ flex: 2, height: '8px', background: theme.secondaryColor }} title="Secondary Color" />
-                    <div style={{ flex: 1, height: '8px', background: theme.successColor || '#10b981' }} title="Success Color" />
-                    <div style={{ flex: 1, height: '8px', background: theme.warningColor || '#f59e0b' }} title="Warning Color" />
-                    <div style={{ flex: 1, height: '8px', background: theme.errorColor || '#ef4444' }} title="Error Color" />
-                </div>
+                        {/* Email Footer Preview */}
+                        {theme.emailFooterText && (
+                            <div style={{ marginTop: '20px', paddingTop: '20px', borderTop: '1px solid var(--glass-border)' }}>
+                                <p style={{ fontSize: '0.75em', color: theme.secondaryColor, lineHeight: '1.6', whiteSpace: 'pre-line', margin: 0 }}>
+                                    {theme.emailFooterText}
+                                </p>
+                            </div>
+                        )}
+                    </div>
 
-                {/* Font Preview */}
-                <div style={{ marginTop: '20px', padding: '16px', background: 'var(--card-bg)', borderRadius: '12px', border: '1px solid var(--glass-border)' }}>
-                    <p style={{ fontSize: '0.85em', color: 'var(--text-muted)', marginBottom: '12px', fontWeight: '600' }}>Typography Preview:</p>
-                    <p style={{ fontFamily: theme.headingFont || theme.fontFamily, fontWeight: theme.headingWeight || '700', fontSize: '1.1em', marginBottom: '8px', color: 'var(--text-color)' }}>
-                        Heading Font: {(theme.headingFont || theme.fontFamily).split(',')[0].replace(/['"]/g, '')}
-                    </p>
-                    <p style={{ fontFamily: theme.bodyFont || theme.fontFamily, fontWeight: theme.bodyWeight || '400', fontSize: theme.fontSize || '16px', margin: 0, color: 'var(--text-color)' }}>
-                        Body Font: {(theme.bodyFont || theme.fontFamily).split(',')[0].replace(/['"]/g, '')} · Size: {theme.fontSize || '16px'}
-                    </p>
+                    {/* Color accent preview bar */}
+                    <div style={{ display: 'flex', gap: '4px', marginTop: '16px', borderRadius: '8px', overflow: 'hidden' }}>
+                        <div style={{ flex: 3, height: '8px', background: theme.primaryColor }} title="Primary Color" />
+                        <div style={{ flex: 2, height: '8px', background: theme.secondaryColor }} title="Secondary Color" />
+                        <div style={{ flex: 1, height: '8px', background: theme.successColor || '#10b981' }} title="Success Color" />
+                        <div style={{ flex: 1, height: '8px', background: theme.warningColor || '#f59e0b' }} title="Warning Color" />
+                        <div style={{ flex: 1, height: '8px', background: theme.errorColor || '#ef4444' }} title="Error Color" />
+                    </div>
+
+                    {/* Font Preview */}
+                    <div style={{ marginTop: '20px', padding: '16px', background: 'var(--card-bg)', borderRadius: '12px', border: '1px solid var(--glass-border)' }}>
+                        <p style={{ fontSize: '0.85em', color: 'var(--text-muted)', marginBottom: '12px', fontWeight: '600' }}>Typography Preview:</p>
+                        <p style={{ fontFamily: theme.headingFont || theme.fontFamily, fontWeight: theme.headingWeight || '700', fontSize: '1.1em', marginBottom: '8px', color: 'var(--text-color)' }}>
+                            Heading Font: {(theme.headingFont || theme.fontFamily).split(',')[0].replace(/['"]/g, '')}
+                        </p>
+                        <p style={{ fontFamily: theme.bodyFont || theme.fontFamily, fontWeight: theme.bodyWeight || '400', fontSize: theme.fontSize || '16px', margin: 0, color: 'var(--text-color)' }}>
+                            Body Font: {(theme.bodyFont || theme.fontFamily).split(',')[0].replace(/['"]/g, '')} · Size: {theme.fontSize || '16px'}
+                        </p>
+                    </div>
                 </div>
             </div>
+
+            {/* Figma Import Modal */}
+            {showFigmaImporter && (
+                <div
+                    style={{
+                        position: 'fixed',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        background: 'rgba(0, 0, 0, 0.5)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        zIndex: 9999,
+                        padding: '20px'
+                    }}
+                    onClick={() => setShowFigmaImporter(false)}
+                >
+                    <div onClick={(e) => e.stopPropagation()}>
+                        <FigmaThemeImporter
+                            onImportSuccess={(importedTheme) => {
+                                // Merge imported theme with current theme
+                                setTheme(prev => ({ ...prev, ...importedTheme }));
+                                toast.success('Theme imported from Figma successfully!');
+                                setShowFigmaImporter(false);
+                            }}
+                            onClose={() => setShowFigmaImporter(false)}
+                        />
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
