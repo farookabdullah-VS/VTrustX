@@ -86,6 +86,7 @@ check_cooldown_columns.js
 !/client/android-sdk/gradlew
 !/client/android-sdk/gradlew.bat
 !/client/android-sdk/docs/
+!/client/android-sdk/gradle/
 !/client/android-sdk/src/
 /client/android-sdk/src/*
 !/client/android-sdk/src/main/
