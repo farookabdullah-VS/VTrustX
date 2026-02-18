@@ -31,7 +31,7 @@ export function EnhancedAuditLogViewer() {
     const fetchLogs = async () => {
         setLoading(true);
         try {
-            const res = await axios.get('/api/v1/persona/audit-logs');
+            const res = await axios.get('/v1/persona/audit-logs');
             setLogs(res.data || []);
         } catch (err) {
             console.error('Failed to fetch logs:', err);
@@ -40,35 +40,41 @@ export function EnhancedAuditLogViewer() {
     };
 
     const applyFilters = () => {
+        // Guard against undefined logs
+        if (!logs || !Array.isArray(logs)) {
+            setFilteredLogs([]);
+            return;
+        }
+
         let filtered = [...logs];
 
         if (filters.action) {
             filtered = filtered.filter(log =>
-                log.action.toLowerCase().includes(filters.action.toLowerCase())
+                log?.action && log.action.toLowerCase().includes(filters.action.toLowerCase())
             );
         }
 
         if (filters.profileId) {
             filtered = filtered.filter(log =>
-                log.profile_id && log.profile_id.toLowerCase().includes(filters.profileId.toLowerCase())
+                log?.profile_id && log.profile_id.toLowerCase().includes(filters.profileId.toLowerCase())
             );
         }
 
         if (filters.changedBy) {
             filtered = filtered.filter(log =>
-                log.changed_by && log.changed_by.toLowerCase().includes(filters.changedBy.toLowerCase())
+                log?.changed_by && log.changed_by.toLowerCase().includes(filters.changedBy.toLowerCase())
             );
         }
 
         if (filters.dateFrom) {
             const fromDate = new Date(filters.dateFrom);
-            filtered = filtered.filter(log => new Date(log.timestamp) >= fromDate);
+            filtered = filtered.filter(log => log?.timestamp && new Date(log.timestamp) >= fromDate);
         }
 
         if (filters.dateTo) {
             const toDate = new Date(filters.dateTo);
             toDate.setHours(23, 59, 59, 999);
-            filtered = filtered.filter(log => new Date(log.timestamp) <= toDate);
+            filtered = filtered.filter(log => log?.timestamp && new Date(log.timestamp) <= toDate);
         }
 
         setFilteredLogs(filtered);

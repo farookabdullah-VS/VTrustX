@@ -807,4 +807,155 @@ router.post('/audience-stats', authenticate, async (req, res) => {
     }
 });
 
+// --- CONFIGURATION MANAGEMENT ---
+
+/**
+ * @swagger
+ * /v1/persona/configuration:
+ *   get:
+ *     summary: Get persona engine configuration
+ *     description: Returns all parameters, lists, and lookup maps for the persona engine
+ *     tags: [PersonaEngine]
+ *     security:
+ *       - cookieAuth: []
+ *     responses:
+ *       200:
+ *         description: Configuration data
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Server error
+ */
+router.get('/configuration', authenticate, async (req, res) => {
+    try {
+        // Fetch parameters
+        const paramsResult = await query(`
+            SELECT key, value, data_type, last_updated 
+            FROM cx_persona_parameters 
+            ORDER BY key
+        `);
+
+        // Fetch lists
+        const listsResult = await query(`
+            SELECT key, values, last_updated 
+            FROM cx_persona_lists 
+            ORDER BY key
+        `);
+
+        // Fetch maps
+        const mapsResult = await query(`
+            SELECT id, map_key, lookup_key, value, last_updated 
+            FROM cx_persona_maps 
+            ORDER BY map_key, lookup_key
+        `);
+
+        res.json({
+            parameters: paramsResult.rows || [],
+            lists: listsResult.rows || [],
+            maps: mapsResult.rows || []
+        });
+    } catch (err) {
+        logger.error('Failed to fetch configuration', { error: err.message });
+        res.status(500).json({ error: 'Failed to fetch configuration' });
+    }
+});
+
+/**
+ * @swagger
+ * /v1/persona/audit-logs:
+ *   get:
+ *     summary: Get persona audit logs
+ *     description: Returns audit trail for all persona assignments and changes
+ *     tags: [PersonaEngine]
+ *     security:
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 100
+ *         description: Maximum number of logs to return
+ *     responses:
+ *       200:
+ *         description: Audit logs
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Server error
+ */
+router.get('/audit-logs', authenticate, async (req, res) => {
+    try {
+        const limit = parseInt(req.query.limit) || 100;
+
+        const result = await query(`
+            SELECT 
+                id, 
+                profile_id, 
+                action, 
+                details, 
+                changed_by, 
+                reason, 
+                timestamp
+            FROM cx_audit_logs
+            ORDER BY timestamp DESC
+            LIMIT $1
+        `, [limit]);
+
+        res.json(result.rows || []);
+    } catch (err) {
+        logger.error('Failed to fetch audit logs', { error: err.message });
+        res.status(500).json({ error: 'Failed to fetch audit logs' });
+    }
+});
+
+/**
+ * @swagger
+ * /v1/persona/health:
+ *   get:
+ *     summary: Get persona engine health metrics
+ *     description: Returns system health and performance metrics
+ *     tags: [PersonaEngine]
+ *     security:
+ *       - cookieAuth: []
+ *     responses:
+ *       200:
+ *         description: Health metrics
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Server error
+ */
+router.get('/health', authenticate, async (req, res) => {
+    try {
+        const startTime = Date.now();
+
+        // Test DB connection
+        await query('SELECT 1');
+        const dbLatency = Date.now() - startTime;
+
+        // Get total profiles processed
+        const profilesResult = await query(`
+            SELECT COUNT(DISTINCT profile_id) as count 
+            FROM cx_profile_personas
+        `);
+
+        const uptime = process.uptime();
+
+        res.json({
+            status: 'Operational',
+            uptime: uptime,
+            dbLatency: dbLatency,
+            profilesProcessed: parseInt(profilesResult.rows[0]?.count) || 0,
+            timestamp: new Date().toISOString()
+        });
+    } catch (err) {
+        logger.error('Health check failed', { error: err.message });
+        res.status(500).json({
+            status: 'Error',
+            error: err.message
+        });
+    }
+});
+
 module.exports = router;

@@ -40,7 +40,7 @@ const TabButton = ({ active, onClick, icon: Icon, label }) => (
     </button>
 );
 
-export function PersonaEngineDashboard() {
+export default function PersonaEngineDashboard() {
     const [activeTab, setActiveTab] = useState('config'); // config, logs, health, simulator
     const [configTab, setConfigTab] = useState('params'); // params, lists, maps
     const [data, setData] = useState({ parameters: [], lists: [], maps: [] });
@@ -125,7 +125,7 @@ export function PersonaEngineDashboard() {
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {data.parameters.map(p => (
+                                            {(data.parameters || []).map(p => (
                                                 <tr key={p.key} style={{ borderBottom: '1px solid var(--input-border)' }}>
                                                     <td style={{ padding: '10px', fontWeight: 'bold', color: 'var(--text-color)' }}>{p.key}</td>
                                                     <td style={{ padding: '10px', color: 'var(--text-color)' }}>{p.value}</td>
@@ -167,7 +167,7 @@ export function PersonaEngineDashboard() {
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {data.lists.map(l => (
+                                            {(data.lists || []).map(l => (
                                                 <tr key={l.key} style={{ borderBottom: '1px solid var(--input-border)' }}>
                                                     <td style={{ padding: '10px', fontWeight: 'bold', color: 'var(--text-color)' }}>{l.key}</td>
                                                     <td style={{ padding: '10px' }}>
@@ -207,7 +207,7 @@ export function PersonaEngineDashboard() {
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {data.maps.map(m => (
+                                            {(data.maps || []).map(m => (
                                                 <tr key={m.id} style={{ borderBottom: '1px solid var(--input-border)' }}>
                                                     <td style={{ padding: '10px', fontWeight: 'bold', color: 'var(--text-color)' }}>{m.map_key}</td>
                                                     <td style={{ padding: '10px', color: 'var(--text-color)' }}>{m.lookup_key}</td>
@@ -322,7 +322,7 @@ function PersonaSimulator() {
                             <div style={{ fontSize: '3em', margin: '20px 0' }}>👤</div>
                             <div style={{ marginBottom: '10px' }}><strong>Assigned Personas:</strong></div>
                             <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '20px' }}>
-                                {result.assignedPersonas.map(p => (
+                                {((result && result.assignedPersonas) || []).map(p => (
                                     <span key={p} style={{ background: 'var(--primary-color)', color: 'white', padding: '6px 12px', borderRadius: '20px', fontWeight: 'bold' }}>{p}</span>
                                 ))}
                             </div>
@@ -357,7 +357,7 @@ function AuditLogViewer() {
                     </tr>
                 </thead>
                 <tbody>
-                    {logs.map(log => (
+                    {(logs || []).map(log => (
                         <tr key={log.id} style={{ borderBottom: '1px solid var(--input-border)' }}>
                             <td style={{ padding: '12px', color: 'var(--text-muted)' }}>{new Date(log.timestamp).toLocaleString()}</td>
                             <td style={{ padding: '12px', fontWeight: 'bold', color: 'var(--text-color)' }}>{log.action}</td>

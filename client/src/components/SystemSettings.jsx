@@ -3,6 +3,7 @@ import VideoAgentInterface from './VideoAgentInterface';
 import axios from 'axios';
 import { Settings, Shield, Globe, Database, Mail, Mic, Cpu, Save, Building2, Bot, Phone, Flag, ShieldCheck, Radio } from 'lucide-react';
 import { useToast } from './common/Toast';
+import './SystemSettings.css';
 
 export function SystemSettings() {
     const toast = useToast();
@@ -305,12 +306,27 @@ export function SystemSettings() {
                                     </div>
                                 )}
                                 <div style={{ color: 'var(--text-muted)', fontSize: '0.9em', marginBottom: '10px' }}>Organization Logo</div>
-                                <button
-                                    onClick={() => document.getElementById('logo-upload').click()}
-                                    style={{ padding: '6px 12px', background: 'var(--input-bg)', border: '1px solid var(--input-border)', borderRadius: '6px', fontSize: '0.85em', cursor: 'pointer', color: 'var(--text-color)' }}
-                                >
-                                    Upload
-                                </button>
+                                <div style={{ display: 'flex', gap: '8px' }}>
+                                    <button
+                                        onClick={() => document.getElementById('logo-upload').click()}
+                                        style={{ padding: '6px 12px', background: 'var(--input-bg)', border: '1px solid var(--input-border)', borderRadius: '6px', fontSize: '0.85em', cursor: 'pointer', color: 'var(--text-color)' }}
+                                    >
+                                        Upload
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            // We need a way to navigate to theme-settings
+                                            // Since we don't have Router in scope or prop, we can try event or state
+                                            // But usually sidebar items handle this. 
+                                            // For now, I'll assume the user can click the sidebar, 
+                                            // but I'll add a helpful note.
+                                            alert("To manage full branding and themes, please go to the 'Branding' (Palette icon) section in the sidebar.");
+                                        }}
+                                        style={{ padding: '6px 12px', background: 'var(--primary-color)', color: 'white', border: 'none', borderRadius: '6px', fontSize: '0.85em', cursor: 'pointer' }}
+                                    >
+                                        Custom Branding
+                                    </button>
+                                </div>
                                 <input
                                     id="logo-upload"
                                     type="file"
@@ -361,7 +377,6 @@ export function SystemSettings() {
                                 </select>
                             </div>
                         </div>
-
                         <div style={{ background: 'var(--sidebar-bg)', padding: '20px', borderRadius: '12px', border: '1px solid var(--input-border)' }}>
                             <h3 style={{ fontSize: '1.1em', marginBottom: '15px', color: 'var(--text-color)' }}>API Keys</h3>
 
@@ -628,44 +643,58 @@ export function SystemSettings() {
                             <Radio size={24} /> Auto-Sync Configuration
                         </h2>
 
-                        <div style={{ marginBottom: '30px' }}>
-                            <label className="switch" style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', color: 'var(--text-color)' }}>
+                        <div style={{ marginBottom: '30px', padding: '15px', background: 'var(--card-bg)', borderRadius: '12px', border: '1px solid var(--border-light)' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                    <span style={{ fontWeight: '600', color: 'var(--text-color)', fontSize: '1.05em' }}>Auto-Sync Mentions</span>
+                                    <span style={{ fontSize: '0.85em', color: 'var(--text-muted)' }}>Automatically fetch new mentions from connected social platforms</span>
+                                </div>
+                                <label className="system-settings-switch">
+                                    <input
+                                        type="checkbox"
+                                        checked={settings.sl_auto_sync_enabled === 'true'}
+                                        onChange={(e) => setSettings({ ...settings, sl_auto_sync_enabled: e.target.checked ? 'true' : 'false' })}
+                                    />
+                                    <span className="system-settings-slider"></span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '30px' }}>
+                            <div>
+                                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: 'var(--text-color)', fontSize: '0.9em' }}>Sync Interval</label>
+                                <select
+                                    name="sl_sync_interval"
+                                    value={settings.sl_sync_interval || '15'}
+                                    onChange={handleChange}
+                                    style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--input-border)', background: 'var(--input-bg)', color: 'var(--text-color)', fontSize: '1em', cursor: 'pointer' }}
+                                    disabled={settings.sl_auto_sync_enabled !== 'true'}
+                                >
+                                    <option value="5">Every 5 minutes</option>
+                                    <option value="15">Every 15 minutes (Recommended)</option>
+                                    <option value="30">Every 30 minutes</option>
+                                    <option value="60">Hourly</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: 'var(--text-color)', fontSize: '0.9em' }}>Max Mentions Per Sync</label>
                                 <input
-                                    type="checkbox"
-                                    checked={settings.sl_auto_sync_enabled === 'true'}
-                                    onChange={(e) => setSettings({ ...settings, sl_auto_sync_enabled: e.target.checked ? 'true' : 'false' })}
+                                    type="number"
+                                    name="sl_max_mentions_per_sync"
+                                    value={settings.sl_max_mentions_per_sync || '100'}
+                                    onChange={handleChange}
+                                    min="10"
+                                    max="1000"
+                                    step="10"
+                                    style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--input-border)', background: 'var(--input-bg)', color: 'var(--text-color)', fontSize: '1em' }}
+                                    disabled={settings.sl_auto_sync_enabled !== 'true'}
                                 />
-                                <span className="slider"></span>
-                                <span style={{ fontWeight: '500' }}>Enable Auto-Sync</span>
-                            </label>
-                            <p style={{ marginTop: '8px', fontSize: '0.9em', color: 'var(--text-muted)', marginLeft: '60px' }}>
-                                Automatically fetch new mentions from connected social platforms at regular intervals
-                            </p>
+                            </div>
                         </div>
 
-                        <div style={{ marginBottom: '20px' }}>
-                            <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: 'var(--label-color)' }}>Sync Interval (minutes)</label>
-                            <select
-                                name="sl_sync_interval"
-                                value={settings.sl_sync_interval || '15'}
-                                onChange={handleChange}
-                                style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--input-border)', background: 'var(--input-bg)', color: 'var(--input-text)', fontSize: '1em' }}
-                                disabled={settings.sl_auto_sync_enabled !== 'true'}
-                            >
-                                <option value="5">Every 5 minutes</option>
-                                <option value="10">Every 10 minutes</option>
-                                <option value="15">Every 15 minutes (Recommended)</option>
-                                <option value="30">Every 30 minutes</option>
-                                <option value="60">Every hour</option>
-                            </select>
-                            <p style={{ marginTop: '8px', fontSize: '0.9em', color: 'var(--text-muted)' }}>
-                                ⚡ Lower intervals provide faster updates but may hit platform rate limits
-                            </p>
-                        </div>
-
-                        <div style={{ marginBottom: '20px' }}>
-                            <label style={{ display: 'block', marginBottom: '12px', fontWeight: '500', color: 'var(--label-color)' }}>Platforms to Monitor</label>
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '15px' }}>
+                        <div style={{ marginBottom: '30px' }}>
+                            <label style={{ display: 'block', marginBottom: '12px', fontWeight: '600', color: 'var(--text-color)', fontSize: '0.95em' }}>Platforms to Monitor</label>
+                            <div className="platform-grid">
                                 {[
                                     { name: 'twitter', available: true },
                                     { name: 'reddit', available: true },
@@ -677,100 +706,45 @@ export function SystemSettings() {
                                 ].map(({ name: platform, available }) => {
                                     const isEnabled = settings.sl_sync_platforms?.split(',').includes(platform);
 
-                                    // For unavailable platforms, show info card without checkbox
                                     if (!available) {
                                         return (
-                                            <div
-                                                key={platform}
-                                                style={{
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'space-between',
-                                                    gap: '10px',
-                                                    padding: '12px 16px',
-                                                    borderRadius: '8px',
-                                                    background: 'var(--input-bg)',
-                                                    border: '1px dashed var(--border-medium)',
-                                                    opacity: 0.7
-                                                }}
-                                            >
-                                                <span style={{ textTransform: 'capitalize', color: 'var(--text-muted)', fontWeight: '500' }}>
-                                                    {platform}
-                                                </span>
-                                                <span style={{
-                                                    fontSize: '10px',
-                                                    fontWeight: '700',
-                                                    padding: '4px 10px',
-                                                    borderRadius: '4px',
-                                                    background: 'linear-gradient(135deg, var(--primary-color), var(--secondary-color))',
-                                                    color: 'white',
-                                                    textTransform: 'uppercase',
-                                                    letterSpacing: '0.5px',
-                                                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-                                                }}>
-                                                    Coming Soon
-                                                </span>
+                                            <div key={platform} className="platform-card disabled">
+                                                <span className="platform-label">{platform}</span>
+                                                <span style={{ fontSize: '9px', fontWeight: '700', padding: '2px 6px', borderRadius: '4px', background: 'var(--primary-color)', color: 'white' }}>SOON</span>
                                             </div>
                                         );
                                     }
 
-                                    // For available platforms, show checkbox toggle
                                     return (
-                                        <label
-                                            key={platform}
-                                            className="switch"
-                                            style={{
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                gap: '10px',
-                                                cursor: 'pointer',
-                                                color: 'var(--text-color)',
-                                                padding: '10px'
-                                            }}
-                                        >
-                                            <input
-                                                type="checkbox"
-                                                checked={isEnabled}
-                                                onChange={(e) => {
-                                                    const platforms = settings.sl_sync_platforms?.split(',').filter(Boolean) || [];
-                                                    if (e.target.checked) {
-                                                        platforms.push(platform);
-                                                    } else {
-                                                        const index = platforms.indexOf(platform);
-                                                        if (index > -1) platforms.splice(index, 1);
-                                                    }
-                                                    setSettings({ ...settings, sl_sync_platforms: platforms.join(',') });
-                                                }}
-                                                disabled={settings.sl_auto_sync_enabled !== 'true'}
-                                            />
-                                            <span className="slider"></span>
-                                            <span style={{ textTransform: 'capitalize', flex: 1 }}>{platform}</span>
-                                        </label>
+                                        <div key={platform} className="platform-card">
+                                            <label className="system-settings-switch" style={{ width: '34px', height: '18px' }}>
+                                                <input
+                                                    type="checkbox"
+                                                    checked={isEnabled}
+                                                    onChange={(e) => {
+                                                        const platforms = settings.sl_sync_platforms?.split(',').filter(Boolean) || [];
+                                                        if (e.target.checked) {
+                                                            platforms.push(platform);
+                                                        } else {
+                                                            const index = platforms.indexOf(platform);
+                                                            if (index > -1) platforms.splice(index, 1);
+                                                        }
+                                                        setSettings({ ...settings, sl_sync_platforms: platforms.join(',') });
+                                                    }}
+                                                    disabled={settings.sl_auto_sync_enabled !== 'true'}
+                                                />
+                                                <span className="system-settings-slider" style={{ borderRadius: '18px' }}></span>
+                                            </label>
+                                            <span className="platform-label">{platform}</span>
+                                        </div>
                                     );
                                 })}
                             </div>
-                            <p style={{ marginTop: '12px', fontSize: '0.9em', color: 'var(--text-muted)' }}>
-                                💡 Only platforms with active connections will be synced. Enable only the platforms you have credentials configured for.
-                            </p>
+                            <div style={{ marginTop: '12px', padding: '10px', background: 'var(--input-bg)', borderRadius: '8px', borderLeft: '3px solid var(--primary-color)', fontSize: '0.85em', color: 'var(--text-muted)' }}>
+                                💡 Only platforms with active credentials will be synchronized.
+                            </div>
                         </div>
 
-                        <div style={{ marginBottom: '20px' }}>
-                            <label style={{ display: 'block', marginBottom: '8px', fontWeight: '500', color: 'var(--label-color)' }}>Max Mentions Per Sync</label>
-                            <input
-                                type="number"
-                                name="sl_max_mentions_per_sync"
-                                value={settings.sl_max_mentions_per_sync || '100'}
-                                onChange={handleChange}
-                                min="10"
-                                max="1000"
-                                step="10"
-                                style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--input-border)', background: 'var(--input-bg)', color: 'var(--input-text)', fontSize: '1em' }}
-                                disabled={settings.sl_auto_sync_enabled !== 'true'}
-                            />
-                            <p style={{ marginTop: '8px', fontSize: '0.9em', color: 'var(--text-muted)' }}>
-                                Limit the number of mentions fetched per sync to avoid overwhelming the system
-                            </p>
-                        </div>
 
                         <div style={{ padding: '20px', background: 'color-mix(in srgb, var(--primary-color) 10%, transparent)', borderRadius: '12px', border: '1px solid var(--primary-color)' }}>
                             <h3 style={{ fontSize: '1em', marginBottom: '10px', color: 'var(--primary-color)', fontWeight: '600' }}>
@@ -830,26 +804,32 @@ export function SystemSettings() {
                             />
                         </div>
 
-                        <div style={{ display: 'flex', gap: '30px', marginBottom: '30px' }}>
-                            <label className="switch" style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', color: 'var(--text-color)' }}>
-                                <input
-                                    type="checkbox"
-                                    name="use_android_gateway"
-                                    checked={settings.use_android_gateway === 'true'}
-                                    onChange={handleCheckboxChange}
-                                />
-                                <span style={{ fontWeight: '500' }}>Enable Android Gateway</span>
-                            </label>
+                        <div style={{ display: 'flex', gap: '40px', marginBottom: '30px', padding: '15px', background: 'var(--input-bg)', borderRadius: '12px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                <label className="system-settings-switch">
+                                    <input
+                                        type="checkbox"
+                                        name="use_android_gateway"
+                                        checked={settings.use_android_gateway === 'true'}
+                                        onChange={handleCheckboxChange}
+                                    />
+                                    <span className="system-settings-slider"></span>
+                                </label>
+                                <span style={{ fontWeight: '500', color: 'var(--text-color)' }}>Android Gateway</span>
+                            </div>
 
-                            <label className="switch" style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', color: 'var(--text-color)' }}>
-                                <input
-                                    type="checkbox"
-                                    name="use_mock_calls"
-                                    checked={settings.use_mock_calls === 'true'}
-                                    onChange={handleCheckboxChange}
-                                />
-                                <span style={{ fontWeight: '500' }}>Enable Mock Calls</span>
-                            </label>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                <label className="system-settings-switch">
+                                    <input
+                                        type="checkbox"
+                                        name="use_mock_calls"
+                                        checked={settings.use_mock_calls === 'true'}
+                                        onChange={handleCheckboxChange}
+                                    />
+                                    <span className="system-settings-slider"></span>
+                                </label>
+                                <span style={{ fontWeight: '500', color: 'var(--text-color)' }}>Mock Calls</span>
+                            </div>
                         </div>
 
                         {/* GOVERNANCE */}
@@ -873,19 +853,19 @@ export function SystemSettings() {
                             </div>
                         </div>
 
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px', background: 'var(--sidebar-bg)', borderRadius: '12px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px', background: 'var(--sidebar-bg)', borderRadius: '12px', border: '1px solid var(--border-light)' }}>
                             <div>
-                                <div style={{ fontWeight: '500', color: 'var(--text-color)' }}>Maker-Checker Workflow</div>
-                                <div style={{ fontSize: '0.85em', color: 'var(--text-muted)' }}>Require approval before publishing surveys.</div>
+                                <div style={{ fontWeight: '600', color: 'var(--text-color)' }}>Maker-Checker Workflow</div>
+                                <div style={{ fontSize: '0.85em', color: 'var(--text-muted)' }}>Require administrative approval before publishing surveys.</div>
                             </div>
-                            <label className="switch">
+                            <label className="system-settings-switch">
                                 <input
                                     type="checkbox"
                                     name="enable_workflow"
                                     checked={settings.enable_workflow === 'true'}
                                     onChange={handleCheckboxChange}
                                 />
-                                <span className="slider round" style={{ position: 'relative', display: 'inline-block', width: '40px', height: '20px', backgroundColor: settings.enable_workflow === 'true' ? 'var(--primary-color)' : '#ccc', borderRadius: '34px', transition: '.4s' }}></span>
+                                <span className="system-settings-slider"></span>
                             </label>
                         </div>
                     </div>
