@@ -125,7 +125,6 @@ exports.up = (pgm) => {
     pgm.createIndex('tenant_subscription_modules', 'tenant_id');
     pgm.createIndex('tenant_subscription_modules', 'module_id');
     pgm.createIndex('tenants', 'status');
-    pgm.createIndex('tenants', 'subscription_status');
 
     // 4. Grant all core modules to existing tenants
     pgm.sql(`

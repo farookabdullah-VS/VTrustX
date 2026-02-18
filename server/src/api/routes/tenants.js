@@ -26,6 +26,20 @@ router.get('/', authenticate, requireRole('global_admin'), async (req, res) => {
     }
 });
 
+// GET available modules (must be before /:id to avoid route conflict)
+router.get('/modules/available', authenticate, requireRole('global_admin'), async (req, res) => {
+    try {
+        const result = await query(`
+            SELECT * FROM subscription_modules
+            WHERE is_active = true
+            ORDER BY sort_order, module_name
+        `);
+        res.json(result.rows);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // GET tenant by ID
 router.get('/:id', authenticate, requireRole('global_admin'), async (req, res) => {
     try {
@@ -149,20 +163,6 @@ router.delete('/:id', authenticate, requireRole('global_admin'), async (req, res
         res.json({ message: 'Tenant deleted successfully', id });
     } catch (error) {
         logger.error('Error deleting tenant:', error);
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// GET available modules
-router.get('/modules/available', authenticate, requireRole('global_admin'), async (req, res) => {
-    try {
-        const result = await query(`
-            SELECT * FROM subscription_modules
-            WHERE is_active = true
-            ORDER BY sort_order, module_name
-        `);
-        res.json(result.rows);
-    } catch (error) {
         res.status(500).json({ error: error.message });
     }
 });
