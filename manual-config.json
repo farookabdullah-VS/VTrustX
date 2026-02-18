@@ -1,0 +1,72 @@
+[
+    {
+        "title": "Login Screen",
+        "path": "/login",
+        "filename": "01_login.png",
+        "description": "The secure entry point to the VTrustX platform. Enter your credentials to access your organization's dashboard.",
+        "waitFor": "input[name='username']"
+    },
+    {
+        "title": "Dashboard Overview",
+        "path": "/",
+        "filename": "02_dashboard.png",
+        "description": "The command center showing key metrics, recent activity, and quick actions.",
+        "waitFor": ".dashboard-container"
+    },
+    {
+        "title": "Survey Management",
+        "path": "/surveys",
+        "filename": "03_surveys_list.png",
+        "description": "Manage all your surveys, forms, and polls. Create new surveys or edit existing ones.",
+        "waitFor": ".survey-list-container"
+    },
+    {
+        "title": "Form Builder",
+        "path": "/surveys/new",
+        "filename": "04_form_builder.png",
+        "description": "Drag-and-drop interface for creating complex surveys and forms with advanced logic.",
+        "waitFor": ".form-builder-container"
+    },
+    {
+        "title": "CX Dashboard",
+        "path": "/cx-ratings",
+        "filename": "05_cx_dashboard.png",
+        "description": "Real-time analytics for Customer Experience metrics like NPS and CSAT.",
+        "waitFor": ".cx-dashboard"
+    },
+    {
+        "title": "Theme Settings",
+        "path": "/theme-settings",
+        "filename": "06_theme_settings.png",
+        "description": "Customize the look and feel of your surveys to match your brand identity.",
+        "waitFor": ".theme-settings-container"
+    },
+    {
+        "title": "System Settings",
+        "path": "/system-settings",
+        "filename": "07_system_settings.png",
+        "description": "Configure global settings, integrations, and security policies.",
+        "waitFor": ".system-settings-wrapper"
+    },
+    {
+        "title": "User Management",
+        "path": "/user-management",
+        "filename": "08_user_management.png",
+        "description": "Manage users, roles, and permissions within your organization.",
+        "waitFor": ".user-management-container"
+    },
+    {
+        "title": "Workflows",
+        "path": "/workflows",
+        "filename": "09_workflows.png",
+        "description": "Automate actions based on survey responses, such as sending email alerts or updating CRM records.",
+        "waitFor": ".workflows-container"
+    },
+    {
+        "title": "Integrations",
+        "path": "/integrations",
+        "filename": "10_integrations.png",
+        "description": "Connect VTrustX with your existing tech stack including Salesforce, Slack, and Google Sheets.",
+        "waitFor": ".integrations-container"
+    }
+]
