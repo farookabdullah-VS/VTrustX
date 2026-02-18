@@ -1,0 +1,2066 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VTrustX SDK Documentation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" />
+  <style>
+    /* ─── CSS Variables ─────────────────────────────────────────── */
+    :root {
+      --brand:        #2563eb;
+      --brand-light:  #eff6ff;
+      --brand-dark:   #1d4ed8;
+      --success:      #16a34a;
+      --warning:      #d97706;
+
+      --bg:           #ffffff;
+      --bg2:          #f8fafc;
+      --bg3:          #f1f5f9;
+      --border:       #e2e8f0;
+      --text:         #0f172a;
+      --text2:        #475569;
+      --text3:        #94a3b8;
+
+      --code-bg:      #1e293b;
+      --sidebar-w:    272px;
+      --header-h:     60px;
+      --radius:       8px;
+    }
+
+    [data-theme="dark"] {
+      --bg:       #0f172a;
+      --bg2:      #1e293b;
+      --bg3:      #334155;
+      --border:   #334155;
+      --text:     #f1f5f9;
+      --text2:    #94a3b8;
+      --text3:    #64748b;
+      --brand-light: #1e3a5f;
+    }
+
+    /* ─── Reset ─────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; font-size: 15px; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    a { color: var(--brand); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    img { max-width: 100%; }
+
+    /* ─── Top Header ─────────────────────────────────────────────── */
+    .header {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: var(--header-h);
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 24px;
+      gap: 16px;
+      z-index: 100;
+    }
+    .header-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: var(--text);
+      white-space: nowrap;
+    }
+    .header-logo .logo-icon {
+      width: 32px; height: 32px;
+      background: var(--brand);
+      border-radius: 7px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-weight: 800;
+      font-size: 0.85rem;
+      letter-spacing: -0.5px;
+    }
+    .header-badge {
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 99px;
+      background: var(--brand-light);
+      color: var(--brand);
+    }
+    .header-spacer { flex: 1; }
+    .header-links {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .header-links a {
+      font-size: 0.85rem;
+      color: var(--text2);
+      padding: 6px 12px;
+      border-radius: var(--radius);
+      font-weight: 500;
+    }
+    .header-links a:hover { background: var(--bg3); text-decoration: none; color: var(--text); }
+    .theme-btn {
+      border: 1px solid var(--border);
+      background: var(--bg2);
+      color: var(--text2);
+      border-radius: var(--radius);
+      padding: 6px 10px;
+      cursor: pointer;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      transition: background .15s;
+    }
+    .theme-btn:hover { background: var(--bg3); }
+
+    /* ─── Layout ─────────────────────────────────────────────────── */
+    .layout {
+      display: flex;
+      margin-top: var(--header-h);
+      flex: 1;
+    }
+
+    /* ─── Sidebar ────────────────────────────────────────────────── */
+    .sidebar {
+      position: fixed;
+      top: var(--header-h);
+      left: 0;
+      width: var(--sidebar-w);
+      height: calc(100vh - var(--header-h));
+      overflow-y: auto;
+      border-right: 1px solid var(--border);
+      background: var(--bg2);
+      padding: 20px 0 40px;
+    }
+    .sidebar::-webkit-scrollbar { width: 4px; }
+    .sidebar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+
+    .nav-section { padding: 4px 16px 0; margin-top: 12px; }
+    .nav-section-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--text3);
+      margin-bottom: 4px;
+    }
+    .nav-link {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 0.875rem;
+      color: var(--text2);
+      font-weight: 450;
+      cursor: pointer;
+      transition: background .1s, color .1s;
+    }
+    .nav-link:hover { background: var(--bg3); color: var(--text); text-decoration: none; }
+    .nav-link.active { background: var(--brand-light); color: var(--brand); font-weight: 600; }
+    .nav-link .nav-icon { font-size: 0.9rem; width: 18px; text-align: center; }
+
+    /* ─── Main Content ────────────────────────────────────────────── */
+    .content {
+      margin-left: var(--sidebar-w);
+      flex: 1;
+      max-width: 900px;
+      padding: 48px 48px 96px;
+    }
+
+    /* ─── Hero ───────────────────────────────────────────────────── */
+    .hero {
+      text-align: center;
+      padding: 48px 0 56px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 56px;
+    }
+    .hero h1 { font-size: 2.6rem; font-weight: 800; letter-spacing: -0.03em; line-height: 1.15; }
+    .hero h1 span { color: var(--brand); }
+    .hero p { margin-top: 16px; color: var(--text2); font-size: 1.1rem; max-width: 560px; margin-inline: auto; }
+    .platform-pills {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 28px;
+      flex-wrap: wrap;
+    }
+    .pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 18px;
+      border-radius: 99px;
+      border: 1.5px solid var(--border);
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text2);
+      background: var(--bg2);
+    }
+
+    /* ─── Section headers ─────────────────────────────────────────── */
+    .doc-section { margin-bottom: 64px; scroll-margin-top: 84px; }
+    .doc-section h2 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 6px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid var(--border);
+    }
+    .doc-section h3 {
+      font-size: 1.1rem;
+      font-weight: 650;
+      margin: 32px 0 10px;
+      color: var(--text);
+    }
+    .doc-section p { color: var(--text2); margin-bottom: 14px; }
+    .doc-section ul, .doc-section ol {
+      color: var(--text2);
+      padding-left: 22px;
+      margin-bottom: 14px;
+    }
+    .doc-section li { margin-bottom: 4px; }
+
+    /* ─── Language Tabs ───────────────────────────────────────────── */
+    .lang-tabs {
+      display: flex;
+      gap: 0;
+      margin-bottom: 0;
+      border: 1px solid var(--border);
+      border-bottom: none;
+      border-radius: var(--radius) var(--radius) 0 0;
+      overflow: hidden;
+      background: var(--bg3);
+    }
+    .lang-tab {
+      padding: 8px 18px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text3);
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      font-family: inherit;
+      transition: background .12s, color .12s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .lang-tab:hover { background: var(--bg2); color: var(--text2); }
+    .lang-tab.active { background: var(--code-bg); color: #fff; }
+    .lang-tab .tab-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+    }
+    .tab-dot.js  { background: #f0db4f; }
+    .tab-dot.kt  { background: #a97bff; }
+    .tab-dot.sw  { background: #f05138; }
+
+    .code-block {
+      position: relative;
+      border-radius: 0 0 var(--radius) var(--radius);
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+    .code-block.standalone {
+      border-radius: var(--radius);
+      margin: 16px 0;
+    }
+    .code-block pre {
+      margin: 0 !important;
+      border-radius: 0 !important;
+      font-size: 0.82rem !important;
+      line-height: 1.6 !important;
+      max-height: 480px;
+      overflow: auto;
+    }
+    .copy-btn {
+      position: absolute;
+      top: 10px; right: 10px;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: #cbd5e1;
+      font-size: 0.72rem;
+      padding: 4px 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background .12s;
+    }
+    .copy-btn:hover { background: rgba(255,255,255,0.2); }
+
+    .lang-panel { display: none; }
+    .lang-panel.active { display: block; }
+
+    /* ─── Info Boxes ─────────────────────────────────────────────── */
+    .info-box {
+      padding: 14px 18px;
+      border-radius: var(--radius);
+      border-left: 4px solid;
+      margin: 20px 0;
+      font-size: 0.9rem;
+    }
+    .info-box.tip    { background: #f0fdf4; border-color: var(--success); color: #15803d; }
+    .info-box.note   { background: var(--brand-light); border-color: var(--brand); color: var(--brand-dark); }
+    .info-box.warn   { background: #fffbeb; border-color: var(--warning); color: #92400e; }
+    [data-theme="dark"] .info-box.tip  { background: #14532d22; color: #4ade80; }
+    [data-theme="dark"] .info-box.note { background: #1e3a5f; color: #93c5fd; }
+    [data-theme="dark"] .info-box.warn { background: #78350f22; color: #fbbf24; }
+    .info-box strong { font-weight: 700; }
+
+    /* ─── Requirement / Badge grid ───────────────────────────────── */
+    .req-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin: 20px 0;
+    }
+    .req-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+    }
+    .req-card .req-platform {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--text3);
+      margin-bottom: 6px;
+    }
+    .req-card .req-item {
+      font-size: 0.82rem;
+      color: var(--text2);
+      margin-bottom: 3px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .req-card .req-item::before { content: '✓'; color: var(--success); font-weight: 700; font-size: 0.75rem; }
+
+    /* ─── Method table ───────────────────────────────────────────── */
+    .method-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+      margin: 16px 0;
+    }
+    .method-table th {
+      text-align: left;
+      padding: 8px 12px;
+      background: var(--bg3);
+      border-bottom: 2px solid var(--border);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      color: var(--text3);
+    }
+    .method-table td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text2);
+      vertical-align: top;
+    }
+    .method-table tr:last-child td { border-bottom: none; }
+    .method-table tr:hover td { background: var(--bg2); }
+    .method-table code {
+      background: var(--bg3);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.78rem;
+      color: var(--brand);
+    }
+
+    /* ─── Inline code ────────────────────────────────────────────── */
+    p code, li code, td code {
+      background: var(--bg3);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.82em;
+    }
+
+    /* ─── Steps ──────────────────────────────────────────────────── */
+    .steps { counter-reset: step; margin: 20px 0; }
+    .step {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+    .step-num {
+      counter-increment: step;
+      min-width: 30px; height: 30px;
+      border-radius: 50%;
+      background: var(--brand);
+      color: #fff;
+      font-weight: 700;
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .step-body h4 { font-weight: 650; margin-bottom: 6px; font-size: 0.95rem; }
+    .step-body p  { font-size: 0.9rem; color: var(--text2); margin-bottom: 0; }
+
+    /* ─── Footer ─────────────────────────────────────────────────── */
+    .footer {
+      margin-left: var(--sidebar-w);
+      padding: 24px 48px;
+      border-top: 1px solid var(--border);
+      font-size: 0.82rem;
+      color: var(--text3);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .footer a { color: var(--text3); }
+    .footer a:hover { color: var(--brand); }
+
+    /* ─── Mobile ─────────────────────────────────────────────────── */
+    @media (max-width: 860px) {
+      .sidebar { display: none; }
+      .content { margin-left: 0; padding: 32px 20px 64px; }
+      .footer  { margin-left: 0; }
+      .req-grid { grid-template-columns: 1fr; }
+      .hero h1 { font-size: 1.9rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════ HEADER ════════════════════════════════ -->
+<header class="header">
+  <div class="header-logo">
+    <div class="logo-icon">VX</div>
+    VTrustX SDK
+  </div>
+  <span class="header-badge">v1.0</span>
+  <div class="header-spacer"></div>
+  <nav class="header-links">
+    <a href="#overview">Overview</a>
+    <a href="#installation">Install</a>
+    <a href="#authentication">Auth</a>
+    <a href="#forms">Forms</a>
+    <a href="#submissions">Submissions</a>
+    <a href="https://github.com/your-org/vtrustx" target="_blank">GitHub ↗</a>
+  </nav>
+  <button class="theme-btn" onclick="toggleTheme()" title="Toggle dark mode">🌙</button>
+</header>
+
+<!-- ═══════════════════════ LAYOUT ════════════════════════════════ -->
+<div class="layout">
+
+  <!-- ─── Sidebar ─────────────────────────────────────────────── -->
+  <aside class="sidebar">
+    <div class="nav-section">
+      <div class="nav-section-label">Getting Started</div>
+      <a class="nav-link active" href="#overview"><span class="nav-icon">🏠</span>Overview</a>
+      <a class="nav-link" href="#installation"><span class="nav-icon">📦</span>Installation</a>
+      <a class="nav-link" href="#quickstart"><span class="nav-icon">⚡</span>Quick Start</a>
+    </div>
+    <div class="nav-section">
+      <div class="nav-section-label">Core API</div>
+      <a class="nav-link" href="#authentication"><span class="nav-icon">🔐</span>Authentication</a>
+      <a class="nav-link" href="#forms"><span class="nav-icon">📋</span>Forms</a>
+      <a class="nav-link" href="#submissions"><span class="nav-icon">📤</span>Submissions</a>
+      <a class="nav-link" href="#notifications"><span class="nav-icon">🔔</span>Notifications</a>
+    </div>
+    <div class="nav-section">
+      <div class="nav-section-label">Survey Engine</div>
+      <a class="nav-link" href="#survey-models"><span class="nav-icon">🧩</span>Data Models</a>
+      <a class="nav-link" href="#survey-ui"><span class="nav-icon">🎨</span>UI Components</a>
+      <a class="nav-link" href="#logic-engine"><span class="nav-icon">🧠</span>Logic & Validation</a>
+      <a class="nav-link" href="#theming"><span class="nav-icon">🎭</span>Theming</a>
+    </div>
+    <div class="nav-section">
+      <div class="nav-section-label">Advanced</div>
+      <a class="nav-link" href="#analytics"><span class="nav-icon">📊</span>Analytics</a>
+      <a class="nav-link" href="#offline"><span class="nav-icon">💾</span>Offline Support</a>
+      <a class="nav-link" href="#security"><span class="nav-icon">🛡️</span>Security</a>
+      <a class="nav-link" href="#testing"><span class="nav-icon">🧪</span>Testing</a>
+    </div>
+    <div class="nav-section">
+      <div class="nav-section-label">Reference</div>
+      <a class="nav-link" href="#api-reference"><span class="nav-icon">📚</span>API Reference</a>
+      <a class="nav-link" href="#changelog"><span class="nav-icon">📝</span>Changelog</a>
+    </div>
+  </aside>
+
+  <!-- ─── Main Content ─────────────────────────────────────────── -->
+  <main class="content">
+
+    <!-- ──────── HERO ──────── -->
+    <div class="hero">
+      <h1>VTrustX <span>SDK Documentation</span></h1>
+      <p>Integrate surveys, collect responses, and analyze customer experience across all your platforms with one consistent API.</p>
+      <div class="platform-pills">
+        <div class="pill">🌐 JavaScript / TypeScript</div>
+        <div class="pill">🤖 Android (Kotlin)</div>
+        <div class="pill">🍎 iOS (Swift)</div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <!-- OVERVIEW -->
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <section class="doc-section" id="overview">
+      <h2>🏠 Overview</h2>
+      <p>The VTrustX SDK provides native client libraries for three platforms. All platforms share the same REST API and survey data model, giving you a consistent developer experience everywhere.</p>
+
+      <div class="req-grid">
+        <div class="req-card">
+          <div class="req-platform">🌐 Web / JavaScript</div>
+          <div class="req-item">Node.js 16+ or Browser</div>
+          <div class="req-item">TypeScript 5.0+ support</div>
+          <div class="req-item">Axios 1.6+ (bundled)</div>
+          <div class="req-item">ESM + CJS exports</div>
+        </div>
+        <div class="req-card">
+          <div class="req-platform">🤖 Android</div>
+          <div class="req-item">Android SDK 23+ (API 23)</div>
+          <div class="req-item">Kotlin 1.8+</div>
+          <div class="req-item">Jetpack Compose 1.4+</div>
+          <div class="req-item">Kotlin Coroutines</div>
+        </div>
+        <div class="req-card">
+          <div class="req-platform">🍎 iOS</div>
+          <div class="req-item">iOS 15.0+</div>
+          <div class="req-item">Swift 5.5+</div>
+          <div class="req-item">Xcode 13.0+</div>
+          <div class="req-item">SwiftUI support</div>
+        </div>
+      </div>
+
+      <div class="info-box note">
+        <strong>Base URL:</strong> All SDK platforms communicate with <code>https://api.rayix.app/api</code>. You can override this for self-hosted instances.
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <!-- INSTALLATION -->
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <section class="doc-section" id="installation">
+      <h2>📦 Installation</h2>
+
+      <div class="lang-tabs" id="install-tabs">
+        <button class="lang-tab active" onclick="switchTab('install','js',this)"><span class="tab-dot js"></span>JavaScript / TypeScript</button>
+        <button class="lang-tab" onclick="switchTab('install','kt',this)"><span class="tab-dot kt"></span>Android (Kotlin)</button>
+        <button class="lang-tab" onclick="switchTab('install','sw',this)"><span class="tab-dot sw"></span>iOS (Swift)</button>
+      </div>
+
+      <!-- JS -->
+      <div id="install-js" class="lang-panel active">
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre><code class="language-bash"># npm
+npm install @vtrustx/sdk
+
+# yarn
+yarn add @vtrustx/sdk
+
+# pnpm
+pnpm add @vtrustx/sdk</code></pre>
+        </div>
+      </div>
+
+      <!-- Kotlin -->
+      <div id="install-kt" class="lang-panel">
+        <h3>Step 1 — Add Maven repository</h3>
+        <p>Add to your project-level <code>settings.gradle.kts</code>:</p>
+        <div class="code-block standalone">
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre><code class="language-kotlin">dependencyResolutionManagement {
+    repositories {
+        google()
+        mavenCentral()
+        maven { url = uri("https://maven.vtrustx.com/releases") }
+    }
+}</code></pre>
+        </div>
+        <h3>Step 2 — Add dependency</h3>
+        <p>In your app-level <code>build.gradle.kts</code>:</p>
+        <div class="code-block standalone">
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre><code class="language-kotlin">dependencies {
+    implementation("com.vtrustx:sdk:1.0.0")
+}</code></pre>
+        </div>
+        <h3>Step 3 — Add permissions</h3>
+        <p>In <code>AndroidManifest.xml</code>:</p>
+        <div class="code-block standalone">
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre><code class="language-xml">&lt;uses-permission android:name="android.permission.INTERNET" /&gt;</code></pre>
+        </div>
+      </div>
+
+      <!-- Swift -->
+      <div id="install-sw" class="lang-panel">
+        <h3>Swift Package Manager (Recommended)</h3>
+        <div class="steps">
+          <div class="step">
+            <div class="step-num">1</div>
+            <div class="step-body">
+              <h4>Open your project in Xcode</h4>
+              <p>File → Add Package Dependencies…</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">2</div>
+            <div class="step-body">
+              <h4>Enter the repository URL</h4>
+              <p><code>https://github.com/your-org/vtrustx-ios-sdk</code></p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">3</div>
+            <div class="step-body">
+              <h4>Select version and add to your target</h4>
+              <p>Choose "Up to Next Major Version" starting from <code>1.0.0</code></p>
+            </div>
+          </div>
+        </div>
+        <h3>Or via Package.swift</h3>
+        <div class="code-block standalone">
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre><code class="language-swift">dependencies: [
+    .package(
+        url: "https://github.com/your-org/vtrustx-ios-sdk.git",
+        from: "1.0.0"
+    )
+]</code></pre>
+        </div>
+        <h3>CocoaPods</h3>
+        <div class="code-block standalone">
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre><code class="language-ruby">pod 'VTrustX', '~> 1.0'</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <!-- QUICK START -->
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <section class="doc-section" id="quickstart">
+      <h2>⚡ Quick Start</h2>
+
+      <div class="lang-tabs">
+        <button class="lang-tab active" onclick="switchTab('qs','js',this)"><span class="tab-dot js"></span>JavaScript / TypeScript</button>
+        <button class="lang-tab" onclick="switchTab('qs','kt',this)"><span class="tab-dot kt"></span>Android (Kotlin)</button>
+        <button class="lang-tab" onclick="switchTab('qs','sw',this)"><span class="tab-dot sw"></span>iOS (Swift)</button>
+      </div>
+
+      <div id="qs-js" class="lang-panel active">
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre><code class="language-typescript">import { VTrustXClient } from '@vtrustx/sdk';
+
+// Initialize the client
+const client = new VTrustXClient('https://api.rayix.app/api');
+
+// Login
+const { user, token } = await client.auth.login('admin', 'password');
+console.log('Logged in as', user.username);
+
+// Load a survey by its slug
+const survey = await client.survey.loadBySlug('my-nps-survey');
+
+// Submit a response
+await client.survey.submit(survey.id, {
+  nps_score: 9,
+  comment: 'Great product!'
+});
+
+console.log('Response submitted!');</code></pre>
+        </div>
+      </div>
+
+      <div id="qs-kt" class="lang-panel">
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre><code class="language-kotlin">import com.vtrustx.sdk.VTrustXClient
+import com.vtrustx.sdk.ui.SurveyView
+
+class MainActivity : ComponentActivity() {
+    private lateinit var client: VTrustXClient
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        client = VTrustXClient(context = this)
+
+        lifecycleScope.launch {
+            // Login
+            client.login("admin", "password").onSuccess { response ->
+                Log.d("SDK", "Logged in as ${response.user.username}")
+            }
+
+            // Load and display a survey
+            client.getFormBySlug("my-nps-survey").onSuccess { form ->
+                form.definition?.let { definition ->
+                    setContent {
+                        SurveyView(
+                            definition = definition,
+                            onComplete = { answers ->
+                                submitAnswers(form.id, answers)
+                            }
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    private fun submitAnswers(formId: String, answers: Map&lt;String, Any&gt;) {
+        lifecycleScope.launch {
+            client.createSubmission(formId, answers).onSuccess {
+                Log.d("SDK", "Submitted successfully!")
+            }
+        }
+    }
+}</code></pre>
+        </div>
+      </div>
+
+      <div id="qs-sw" class="lang-panel">
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre><code class="language-swift">import SwiftUI
+import VTrustX
+
+struct ContentView: View {
+    @State private var survey: NativeSurveyDefinition?
+    @State private var formId: String = ""
+    private let client = VTrustXClient()
+
+    var body: some View {
+        Group {
+            if let definition = survey {
+                SurveyView(
+                    definition: definition,
+                    onComplete: { answers in
+                        Task { await submit(formId: formId, answers: answers) }
+                    }
+                )
+            } else {
+                ProgressView("Loading survey…")
+                    .task { await loadSurvey() }
+            }
+        }
+    }
+
+    func loadSurvey() async {
+        do {
+            // Login first
+            try await client.login(username: "admin", password: "password")
+
+            // Load survey by slug
+            let form = try await client.getFormBySlug(slug: "my-nps-survey")
+            formId = form.id
+            survey = form.definition
+        } catch {
+            print("Error:", error)
+        }
+    }
+
+    func submit(formId: String, answers: [String: Any]) async {
+        do {
+            try await client.createSubmission(formId: formId, data: answers)
+            print("Submitted!")
+        } catch {
+            print("Error:", error)
+        }
+    }
+}</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <!-- AUTHENTICATION -->
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <section class="doc-section" id="authentication">
+      <h2>🔐 Authentication</h2>
+      <p>The SDK supports two authentication methods. The server returns a Bearer token when authenticating from a mobile or API-key context. Cookie-based auth is used in browser environments automatically.</p>
+
+      <div class="info-box note">
+        <strong>Token storage:</strong> On Android, tokens are stored in <strong>EncryptedSharedPreferences</strong> (AES-256-GCM). On iOS, tokens are stored in the <strong>Keychain</strong>. In the JS SDK, token state is held in memory by the client instance.
+      </div>
+
+      <div class="lang-tabs">
+        <button class="lang-tab active" onclick="switchTab('auth','js',this)"><span class="tab-dot js"></span>JavaScript / TypeScript</button>
+        <button class="lang-tab" onclick="switchTab('auth','kt',this)"><span class="tab-dot kt"></span>Android (Kotlin)</button>
+        <button class="lang-tab" onclick="switchTab('auth','sw',this)"><span class="tab-dot sw"></span>iOS (Swift)</button>
+      </div>
+
+      <div id="auth-js" class="lang-panel active">
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre><code class="language-typescript">const client = new VTrustXClient();
+
+// ─── Login ────────────────────────────────────────────
+const { user, token } = await client.auth.login('user@example.com', 'password');
+// token is automatically attached to all future requests
+
+// ─── Register ─────────────────────────────────────────
+await client.auth.register('newuser', 'password123');
+
+// ─── Get current user ─────────────────────────────────
+const me = await client.auth.me();
+console.log(me.role, me.tenant_id);
+
+// ─── Logout ────────────────────────────────────────────
+await client.auth.logout(); // clears token
+
+// ─── Use an API key directly ───────────────────────────
+const apiClient = new VTrustXClient(
+    'https://api.rayix.app/api',
+    'vx_live_xxxxxxxxxxxxxxxxxxxx'  // API key as bearer token
+);</code></pre>
+        </div>
+      </div>
+
+      <div id="auth-kt" class="lang-panel">
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre><code class="language-kotlin">val client = VTrustXClient(context = this)
+
+// ─── Login ─────────────────────────────────────────────
+lifecycleScope.launch {
+    client.login("admin", "password").fold(
+        onSuccess = { response ->
+            Log.d("Auth", "Welcome ${response.user.username}")
+            // Token is saved automatically to EncryptedSharedPreferences
+        },
+        onFailure = { error ->
+            Log.e("Auth", "Login failed: ${error.message}")
+        }
+    )
+}
+
+// ─── Check auth state ──────────────────────────────────
+if (client.isAuthenticated()) {
+    // Already logged in from a previous session
+}
+
+// ─── Get current user ──────────────────────────────────
+client.getMe().onSuccess { user ->
+    Log.d("Auth", "Role: ${user.role}")
+}
+
+// ─── Logout ────────────────────────────────────────────
+client.logout()
+client.clearToken()</code></pre>
+        </div>
+      </div>
+
+      <div id="auth-sw" class="lang-panel">
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre><code class="language-swift">let client = VTrustXClient()
+
+// ─── Login ─────────────────────────────────────────────
+do {
+    let user = try await client.login(username: "admin", password: "password")
+    print("Welcome \(user.username)")
+    // Token is stored in Keychain automatically
+} catch {
+    print("Login error:", error.localizedDescription)
+}
+
+// ─── Check auth state ──────────────────────────────────
+if client.isAuthenticated {
+    // Restore session from Keychain
+}
+
+// ─── Get current user ──────────────────────────────────
+let me = try await client.getMe()
+print("Role:", me.role)
+
+// ─── Logout ────────────────────────────────────────────
+try await client.logout()
+client.clearToken() // removes token from Keychain</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <!-- FORMS -->
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <section class="doc-section" id="forms">
+      <h2>📋 Forms</h2>
+      <p>Forms are the core resource. Each form has an optional <code>definition</code> field — a <code>NativeSurveyDefinition</code> object that the mobile SDKs render natively without a WebView.</p>
+
+      <div class="lang-tabs">
+        <button class="lang-tab active" onclick="switchTab('forms','js',this)"><span class="tab-dot js"></span>JavaScript / TypeScript</button>
+        <button class="lang-tab" onclick="switchTab('forms','kt',this)"><span class="tab-dot kt"></span>Android (Kotlin)</button>
+        <button class="lang-tab" onclick="switchTab('forms','sw',this)"><span class="tab-dot sw"></span>iOS (Swift)</button>
+      </div>
+
+      <div id="forms-js" class="lang-panel active">
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre><code class="language-typescript">// List all forms in the current tenant
+const forms = await client.forms.list();
+
+// Get a specific form by ID
+const form = await client.forms.get('form-uuid');
+
+// Get by public slug (no auth required for published forms)
+const form = await client.forms.getBySlug('customer-nps-q4');
+
+// Create a new form
+const newForm = await client.forms.create({
+    title: 'Post-Purchase Survey',
+    definition: { /* NativeSurveyDefinition */ }
+});
+
+// Update a form
+await client.forms.update(form.id, { title: 'Updated Title' });
+
+// Publish a form (makes it publicly accessible)
+await client.forms.publish(form.id);
+
+// Delete a form
+await client.forms.delete(form.id);
+
+// Load the native survey definition for rendering
+const definition = await client.survey.loadBySlug('customer-nps-q4');
+if (definition) {
+    // Render natively using SurveyEngine
+}</code></pre>
+        </div>
+      </div>
+
+      <div id="forms-kt" class="lang-panel">
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre><code class="language-kotlin">// List all forms
+client.listForms().onSuccess { forms ->
+    forms.forEach { form ->
+        Log.d("Forms", "${form.title} — ${form.status}")
+    }
+}
+
+// Get form by ID
+client.getForm("form-uuid").onSuccess { form ->
+    Log.d("Forms", "Loaded: ${form.title}")
+}
+
+// Get by public slug (published forms)
+client.getFormBySlug("customer-nps-q4").onSuccess { form ->
+    form.definition?.let { definition ->
+        // Render with SurveyView composable
+        setContent {
+            SurveyView(
+                definition = definition,
+                onComplete = { answers -> /* submit */ }
+            )
+        }
+    }
+}</code></pre>
+        </div>
+      </div>
+
+      <div id="forms-sw" class="lang-panel">
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre><code class="language-swift">// List all forms
+let forms = try await client.listForms()
+forms.forEach { print($0.title, $0.status) }
+
+// Get form by ID
+let form = try await client.getForm(id: "form-uuid")
+
+// Get by public slug
+let form = try await client.getFormBySlug(slug: "customer-nps-q4")
+
+// Load native definition for rendering
+if let definition = try await client.loadSurveyBySlug(slug: "customer-nps-q4") {
+    SurveyView(
+        definition: definition,
+        onComplete: { answers in
+            Task { try await client.createSubmission(formId: form.id, data: answers) }
+        }
+    )
+}</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <!-- SUBMISSIONS -->
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <section class="doc-section" id="submissions">
+      <h2>📤 Submissions</h2>
+      <p>A submission captures a respondent's answers to a form. The <code>data</code> field is a key-value map where keys are component IDs from the survey definition.</p>
+
+      <div class="lang-tabs">
+        <button class="lang-tab active" onclick="switchTab('sub','js',this)"><span class="tab-dot js"></span>JavaScript / TypeScript</button>
+        <button class="lang-tab" onclick="switchTab('sub','kt',this)"><span class="tab-dot kt"></span>Android (Kotlin)</button>
+        <button class="lang-tab" onclick="switchTab('sub','sw',this)"><span class="tab-dot sw"></span>iOS (Swift)</button>
+      </div>
+
+      <div id="sub-js" class="lang-panel active">
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre><code class="language-typescript">// Create a submission
+const submission = await client.submissions.create(
+    'form-uuid',
+    {
+        nps_score: 9,
+        open_feedback: 'Excellent support team!',
+        would_recommend: 'yes'
+    },
+    { source: 'web-embed', campaign: 'q4-nps' } // optional metadata
+);
+
+// List submissions (with pagination)
+const submissions = await client.submissions.list({
+    formId: 'form-uuid',
+    page: 1,
+    limit: 50
+});
+
+// Get a single submission
+const sub = await client.submissions.get('submission-uuid');
+
+// Delete a submission
+await client.submissions.delete('submission-uuid');</code></pre>
+        </div>
+      </div>
+
+      <div id="sub-kt" class="lang-panel">
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre><code class="language-kotlin">// Create a submission (inside a coroutine)
+val answers = mapOf(
+    "nps_score" to 9,
+    "open_feedback" to "Excellent support!",
+    "would_recommend" to "yes"
+)
+
+client.createSubmission("form-uuid", answers).onSuccess { submission ->
+    Log.d("Submit", "ID: ${submission.id}")
+}.onFailure { error ->
+    Log.e("Submit", "Failed: ${error.message}")
+}
+
+// List submissions for a form
+client.listSubmissions(
+    formId = "form-uuid",
+    page = 1,
+    limit = 50
+).onSuccess { list ->
+    list.forEach { s -> Log.d("Submissions", s.id) }
+}</code></pre>
+        </div>
+      </div>
+
+      <div id="sub-sw" class="lang-panel">
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre><code class="language-swift">// Create a submission
+let submission = try await client.createSubmission(
+    formId: "form-uuid",
+    data: [
+        "nps_score": 9,
+        "open_feedback": "Excellent support!",
+        "would_recommend": "yes"
+    ],
+    metadata: ["source": "ios-app", "version": "2.1.0"]
+)
+print("Submission ID:", submission.id)
+
+// List submissions
+let submissions = try await client.listSubmissions(
+    formId: "form-uuid",
+    page: 1,
+    limit: 50
+)</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <!-- NOTIFICATIONS -->
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <section class="doc-section" id="notifications">
+      <h2>🔔 Notifications</h2>
+
+      <div class="lang-tabs">
+        <button class="lang-tab active" onclick="switchTab('notif','js',this)"><span class="tab-dot js"></span>JavaScript / TypeScript</button>
+        <button class="lang-tab" onclick="switchTab('notif','kt',this)"><span class="tab-dot kt"></span>Android (Kotlin)</button>
+        <button class="lang-tab" onclick="switchTab('notif','sw',this)"><span class="tab-dot sw"></span>iOS (Swift)</button>
+      </div>
+
+      <div id="notif-js" class="lang-panel active">
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre><code class="language-typescript">// List notifications for the logged-in user
+const notifications = await client.notifications.list();
+const unread = notifications.filter(n => !n.isRead);
+
+// Mark a single notification as read
+await client.notifications.markRead('notif-uuid');
+
+// Mark all as read
+await client.notifications.markAllRead();</code></pre>
+        </div>
+      </div>
+
+      <div id="notif-kt" class="lang-panel">
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre><code class="language-kotlin">// List notifications
+client.listNotifications().onSuccess { list ->
+    val unread = list.filter { it["is_read"] == false }
+    Log.d("Notifs", "Unread: ${unread.size}")
+}
+
+// Mark one as read
+client.markNotificationRead("notif-uuid").onSuccess {
+    Log.d("Notifs", "Marked read")
+}</code></pre>
+        </div>
+      </div>
+
+      <div id="notif-sw" class="lang-panel">
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre><code class="language-swift">// List notifications
+let notifications = try await client.listNotifications()
+let unread = notifications.filter { !$0.isRead }
+print("Unread:", unread.count)
+
+// Mark as read
+try await client.markNotificationRead(id: "notif-uuid")</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <!-- SURVEY DATA MODELS -->
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <section class="doc-section" id="survey-models">
+      <h2>🧩 Survey Data Models</h2>
+      <p>Every survey is described by a <code>NativeSurveyDefinition</code> — a JSON document that all three SDK platforms can parse and render natively.</p>
+
+      <h3>NativeSurveyDefinition</h3>
+      <div class="lang-tabs">
+        <button class="lang-tab active" onclick="switchTab('model','js',this)"><span class="tab-dot js"></span>TypeScript</button>
+        <button class="lang-tab" onclick="switchTab('model','kt',this)"><span class="tab-dot kt"></span>Kotlin</button>
+        <button class="lang-tab" onclick="switchTab('model','sw',this)"><span class="tab-dot sw"></span>Swift</button>
+      </div>
+
+      <div id="model-js" class="lang-panel active">
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre><code class="language-typescript">interface NativeSurveyDefinition {
+    id: string;
+    title: string;
+    description?: string;
+    theme: SurveyTheme;
+    screens: SurveyScreen[];
+    logic?: LogicRule[];
+}
+
+interface SurveyTheme {
+    primaryColor: string;       // hex e.g. "#2563eb"
+    backgroundColor: string;
+    typography?: 'system' | 'serif' | 'sans-serif' | 'monospace';
+    borderRadius?: number;      // default: 8
+    darkMode?: boolean;
+}
+
+interface SurveyScreen {
+    id: string;
+    title?: string;
+    components: SurveyComponent[];
+}
+
+interface SurveyComponent {
+    id: string;
+    type: 'text' | 'multiline_text' | 'number' | 'rating' | 'nps'
+        | 'single_choice' | 'multiple_choice' | 'date' | 'slider' | 'file_upload';
+    label: string;
+    required?: boolean;
+    options?: Array&lt;{ value: string; label: string }&gt;;
+    min?: number;
+    max?: number;
+    step?: number;
+    placeholder?: string;
+}</code></pre>
+        </div>
+      </div>
+
+      <div id="model-kt" class="lang-panel">
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre><code class="language-kotlin">data class NativeSurveyDefinition(
+    val id: String,
+    val title: String,
+    val description: String?,
+    val theme: SurveyTheme,
+    val screens: List&lt;SurveyScreen&gt;,
+    val logic: List&lt;LogicRule&gt;?
+)
+
+data class SurveyTheme(
+    val primaryColor: String,       // hex e.g. "#2563eb"
+    val backgroundColor: String,
+    val typography: String?,
+    val borderRadius: Double?,
+    val darkMode: Boolean?
+)
+
+data class SurveyScreen(
+    val id: String,
+    val title: String?,
+    val components: List&lt;SurveyComponent&gt;
+)
+
+data class SurveyComponent(
+    val id: String,
+    val type: String,          // "text", "rating", "nps", etc.
+    val label: String,
+    val required: Boolean?,
+    val options: List&lt;ChoiceOption&gt;?,
+    val min: Double?,
+    val max: Double?,
+    val step: Double?,
+    val placeholder: String?
+)</code></pre>
+        </div>
+      </div>
+
+      <div id="model-sw" class="lang-panel">
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre><code class="language-swift">public struct NativeSurveyDefinition: Codable {
+    public let id: String
+    public let title: String
+    public let description: String?
+    public let theme: SurveyTheme
+    public let screens: [SurveyScreen]
+    public let logic: [LogicRule]?
+}
+
+public struct SurveyTheme: Codable {
+    public let primaryColor: String    // hex e.g. "#2563eb"
+    public let backgroundColor: String
+    public let typography: TypographyType?
+    public let borderRadius: Double?
+    public let darkMode: Bool?
+}
+
+public struct SurveyScreen: Codable, Identifiable {
+    public let id: String
+    public let title: String?
+    public let components: [SurveyComponent]
+}
+
+public struct SurveyComponent: Codable, Identifiable {
+    public let id: String
+    public let type: ComponentType     // .text, .rating, .nps, etc.
+    public let label: String
+    public let required: Bool?
+    public let options: [ChoiceOption]?
+    public let min: Double?
+    public let max: Double?
+    public let step: Double?
+    public let placeholder: String?
+}</code></pre>
+        </div>
+      </div>
+
+      <h3>Component Types</h3>
+      <table class="method-table">
+        <thead><tr><th>Type</th><th>Description</th><th>Key Properties</th></tr></thead>
+        <tbody>
+          <tr><td><code>text</code></td><td>Single-line text input</td><td><code>placeholder</code></td></tr>
+          <tr><td><code>multiline_text</code></td><td>Multi-line text area</td><td><code>placeholder</code></td></tr>
+          <tr><td><code>number</code></td><td>Numeric input</td><td><code>min</code>, <code>max</code>, <code>step</code></td></tr>
+          <tr><td><code>rating</code></td><td>Star rating</td><td><code>max</code> (default 5)</td></tr>
+          <tr><td><code>nps</code></td><td>Net Promoter Score (0–10)</td><td><code>min</code>=0, <code>max</code>=10</td></tr>
+          <tr><td><code>single_choice</code></td><td>Radio button group</td><td><code>options[]</code></td></tr>
+          <tr><td><code>multiple_choice</code></td><td>Checkbox group</td><td><code>options[]</code></td></tr>
+          <tr><td><code>date</code></td><td>Date picker</td><td>—</td></tr>
+          <tr><td><code>slider</code></td><td>Numeric slider</td><td><code>min</code>, <code>max</code>, <code>step</code></td></tr>
+          <tr><td><code>file_upload</code></td><td>File / photo attachment</td><td>—</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <!-- UI COMPONENTS -->
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <section class="doc-section" id="survey-ui">
+      <h2>🎨 UI Components</h2>
+      <p>The mobile SDKs ship with ready-to-use native UI components that render surveys without a WebView.</p>
+
+      <div class="lang-tabs">
+        <button class="lang-tab active" onclick="switchTab('ui','kt',this)"><span class="tab-dot kt"></span>Android (Kotlin)</button>
+        <button class="lang-tab" onclick="switchTab('ui','sw',this)"><span class="tab-dot sw"></span>iOS (Swift)</button>
+      </div>
+
+      <div id="ui-kt" class="lang-panel active">
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre><code class="language-kotlin">// ── SurveyView ─ complete survey renderer ──────────────────────────
+@Composable
+fun SurveyView(
+    definition: NativeSurveyDefinition,
+    onComplete: (Map&lt;String, Any&gt;) -> Unit,
+    onCancel: () -> Unit = {}
+)
+
+// Usage
+SurveyView(
+    definition = definition,
+    onComplete = { answers ->
+        lifecycleScope.launch {
+            client.createSubmission(formId, answers)
+        }
+    },
+    onCancel = { finish() }
+)
+
+// ── ScreenView ─ renders one screen ────────────────────────────────
+// Called internally by SurveyView — use directly for custom flows
+ScreenView(
+    screen = screens[currentIndex],
+    answers = mutableAnswers,
+    theme = definition.theme,
+    onNext = { validateAndAdvance() }
+)
+
+// ── ComponentView ─ single question ────────────────────────────────
+// All 10 component types handled automatically
+ComponentView(
+    component = component,
+    answer = answers[component.id],
+    onAnswerChange = { value -> answers[component.id] = value },
+    primaryColor = Color(0xFF2563EB)
+)</code></pre>
+        </div>
+      </div>
+
+      <div id="ui-sw" class="lang-panel">
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre><code class="language-swift">// ── SurveyView ─ complete survey renderer ──────────────────────────
+public struct SurveyView: View {
+    public init(
+        definition: NativeSurveyDefinition,
+        onComplete: @escaping ([String: Any]) -> Void,
+        onCancel: (() -> Void)? = nil
+    )
+}
+
+// Usage
+SurveyView(
+    definition: definition,
+    onComplete: { answers in
+        Task {
+            try await client.createSubmission(formId: form.id, data: answers)
+        }
+    },
+    onCancel: { dismiss() }
+)
+
+// ── ScreenView ─ renders one screen ────────────────────────────────
+ScreenView(
+    screen: screens[currentIndex],
+    answers: $answers,
+    theme: definition.theme,
+    onNext: { validateAndAdvance() }
+)
+
+// ── ComponentView ─ single question ────────────────────────────────
+ComponentView(
+    component: component,
+    answer: $answers[component.id]
+)</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <!-- LOGIC ENGINE -->
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <section class="doc-section" id="logic-engine">
+      <h2>🧠 Logic &amp; Validation</h2>
+      <p>The survey engine handles skip logic, conditional branching, and field validation on the client side — no network round-trips required.</p>
+
+      <div class="lang-tabs">
+        <button class="lang-tab active" onclick="switchTab('logic','js',this)"><span class="tab-dot js"></span>TypeScript</button>
+        <button class="lang-tab" onclick="switchTab('logic','kt',this)"><span class="tab-dot kt"></span>Android (Kotlin)</button>
+        <button class="lang-tab" onclick="switchTab('logic','sw',this)"><span class="tab-dot sw"></span>iOS (Swift)</button>
+      </div>
+
+      <div id="logic-js" class="lang-panel active">
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre><code class="language-typescript">import { SurveyEngine } from '@vtrustx/sdk';
+
+const engine = new SurveyEngine(definition);
+
+// Validate a single component answer
+const valid = engine.validateComponent(component, userInput);
+
+// Navigate with skip logic
+const nextId = engine.getNextScreen('screen-1', currentAnswers);
+if (nextId === null) {
+    // Survey finished
+} else {
+    goToScreen(nextId);
+}
+
+// ─── Logic Rule example (in survey definition) ────────────────────
+// "If NPS score < 7  → skip to detractor follow-up screen"
+const rule: LogicRule = {
+    trigger: {
+        questionId: 'nps_score',
+        operator: 'less_than',
+        value: 7
+    },
+    action: 'skip_to',
+    target: 'screen-detractor'
+};</code></pre>
+        </div>
+      </div>
+
+      <div id="logic-kt" class="lang-panel">
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre><code class="language-kotlin">import com.vtrustx.sdk.engine.SurveyEngine
+
+val engine = SurveyEngine(definition)
+
+// Validate current screen before advancing
+val errors = engine.validateScreen(currentScreen, answers)
+if (errors.isNotEmpty()) {
+    errors.forEach { (id, msg) -> showError(id, msg) }
+    return
+}
+
+// Determine next screen (handles skip logic automatically)
+val nextId = engine.getNextScreen(
+    currentScreenId = currentScreen.id,
+    answers = answers
+)
+
+if (nextId == null) {
+    onComplete(answers)          // Survey finished
+} else {
+    navigateToScreen(nextId)
+}
+
+// Validate a single component
+val isValid = engine.validateComponent(component, userInput)</code></pre>
+        </div>
+      </div>
+
+      <div id="logic-sw" class="lang-panel">
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre><code class="language-swift">import VTrustX
+
+let engine = LogicEngine(definition: definition)
+
+// Navigate with skip logic
+let nextId = engine.getNextScreen(
+    currentScreenId: currentScreen.id,
+    answers: answers
+)
+
+switch nextId {
+case .none:
+    onComplete(answers)          // Survey finished
+case .some(let id):
+    navigateToScreen(id)
+}
+
+// Logic operators supported:
+// .equals / .notEquals / .contains / .greaterThan / .lessThan
+let rule = LogicRule(
+    trigger: LogicTrigger(
+        questionId: "nps_score",
+        operatorType: .lessThan,
+        value: AnyCodable(7)
+    ),
+    action: .skipTo,
+    target: "screen-detractor"
+)</code></pre>
+        </div>
+      </div>
+
+      <h3>Supported Logic Operators</h3>
+      <table class="method-table">
+        <thead><tr><th>Operator</th><th>Description</th><th>Example</th></tr></thead>
+        <tbody>
+          <tr><td><code>equals</code></td><td>Strict equality (loose for number/string)</td><td>score equals 10</td></tr>
+          <tr><td><code>not_equals</code></td><td>Not equal</td><td>answer not_equals "skip"</td></tr>
+          <tr><td><code>contains</code></td><td>String contains substring</td><td>feedback contains "price"</td></tr>
+          <tr><td><code>greater_than</code></td><td>Numeric greater than</td><td>score greater_than 6</td></tr>
+          <tr><td><code>less_than</code></td><td>Numeric less than</td><td>score less_than 7</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <!-- THEMING -->
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <section class="doc-section" id="theming">
+      <h2>🎭 Theming</h2>
+      <p>Survey themes are defined in the <code>NativeSurveyDefinition.theme</code> object and automatically applied by the UI components.</p>
+
+      <div class="lang-tabs">
+        <button class="lang-tab active" onclick="switchTab('theme','kt',this)"><span class="tab-dot kt"></span>Android (Kotlin)</button>
+        <button class="lang-tab" onclick="switchTab('theme','sw',this)"><span class="tab-dot sw"></span>iOS (Swift)</button>
+      </div>
+
+      <div id="theme-kt" class="lang-panel active">
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre><code class="language-kotlin">// Theme is embedded in the survey definition from the server.
+// To override locally, wrap SurveyView in a MaterialTheme:
+
+@Composable
+fun BrandedSurveyScreen(definition: NativeSurveyDefinition) {
+    val primary = Color(android.graphics.Color.parseColor(definition.theme.primaryColor))
+    val bg      = Color(android.graphics.Color.parseColor(definition.theme.backgroundColor))
+
+    MaterialTheme(
+        colorScheme = lightColorScheme(
+            primary    = primary,
+            background = bg,
+            surface    = bg
+        )
+    ) {
+        SurveyView(
+            definition = definition,
+            onComplete = { /* submit */ }
+        )
+    }
+}
+
+// Dark mode support
+MaterialTheme(
+    colorScheme = if (isSystemInDarkTheme()) darkColorScheme(...) else lightColorScheme(...)
+) {
+    SurveyView(definition = definition, onComplete = { /* submit */ })
+}</code></pre>
+        </div>
+      </div>
+
+      <div id="theme-sw" class="lang-panel">
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre><code class="language-swift">// The theme is parsed from the definition automatically.
+// SurveyView reads definition.theme and applies it to all child views.
+
+// To programmatically override colors, use SwiftUI's .tint or environment:
+SurveyView(definition: definition, onComplete: { _ in })
+    .tint(Color(hex: definition.theme.primaryColor))
+    .background(Color(hex: definition.theme.backgroundColor))
+    .preferredColorScheme(definition.theme.darkMode == true ? .dark : .light)
+
+// Color(hex:) is a built-in extension provided by the SDK:
+// extension Color {
+//     init(hex: String) { ... }   // supports #RGB, #RRGGBB, #RRGGBBAA
+// }</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <!-- ANALYTICS -->
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <section class="doc-section" id="analytics">
+      <h2>📊 Analytics</h2>
+      <p>The JavaScript/TypeScript SDK exposes analytics endpoints for dashboards and reporting. Mobile SDKs can access raw data via submissions and use their own charting libraries.</p>
+
+      <div class="code-block standalone">
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        <pre><code class="language-typescript">// Overview: delivery performance
+const overview = await client.analytics.deliveryOverview({
+    startDate: '2026-01-01',
+    endDate: '2026-01-31'
+});
+console.log(`Completion rate: ${overview.completionRate}%`);
+
+// Funnel: viewed → started → completed → abandoned
+const funnel = await client.analytics.deliveryFunnel();
+
+// CSAT statistics
+const csat = await client.analytics.csatStats();
+
+// Question-level stats (answer distribution)
+const qStats = await client.analytics.questionStats('form-uuid');
+
+// Daily submission counts
+const daily = await client.analytics.dailyStats();</code></pre>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <!-- OFFLINE SUPPORT -->
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <section class="doc-section" id="offline">
+      <h2>💾 Offline Support</h2>
+
+      <div class="lang-tabs">
+        <button class="lang-tab active" onclick="switchTab('off','kt',this)"><span class="tab-dot kt"></span>Android (Room DB)</button>
+        <button class="lang-tab" onclick="switchTab('off','sw',this)"><span class="tab-dot sw"></span>iOS (UserDefaults)</button>
+      </div>
+
+      <div id="off-kt" class="lang-panel active">
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre><code class="language-kotlin">@Entity(tableName = "pending_submissions")
+data class PendingSubmission(
+    @PrimaryKey(autoGenerate = true) val id: Int = 0,
+    val formId: String,
+    val data: String,       // JSON-encoded Map&lt;String, Any&gt;
+    val timestamp: Long = System.currentTimeMillis(),
+    val synced: Boolean = false
+)
+
+// Save locally when offline
+suspend fun saveOffline(formId: String, answers: Map&lt;String, Any&gt;) {
+    val row = PendingSubmission(
+        formId = formId,
+        data   = Gson().toJson(answers)
+    )
+    db.pendingDao().insert(row)
+}
+
+// Sync when back online
+suspend fun syncPending(client: VTrustXClient) {
+    db.pendingDao().getUnsynced().forEach { row ->
+        val answers = Gson().fromJson(row.data, Map::class.java)
+                          as Map&lt;String, Any&gt;
+        client.createSubmission(row.formId, answers)
+            .onSuccess { db.pendingDao().markSynced(row.id) }
+    }
+}</code></pre>
+        </div>
+      </div>
+
+      <div id="off-sw" class="lang-panel">
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre><code class="language-swift">struct PendingSubmission: Codable {
+    let formId: String
+    let data: [String: AnyCodable]
+    let timestamp: Date
+    var synced: Bool = false
+}
+
+// Save locally when offline
+func saveOffline(formId: String, answers: [String: Any]) {
+    var queue = loadQueue()
+    queue.append(PendingSubmission(
+        formId: formId,
+        data: answers.mapValues { AnyCodable($0) },
+        timestamp: Date()
+    ))
+    saveQueue(queue)
+}
+
+// Sync when back online
+func syncPending(client: VTrustXClient) async {
+    var queue = loadQueue()
+    for (i, item) in queue.enumerated() where !item.synced {
+        do {
+            try await client.createSubmission(
+                formId: item.formId,
+                data: item.data.mapValues { $0.value }
+            )
+            queue[i].synced = true
+        } catch { continue }
+    }
+    saveQueue(queue)
+}
+
+func loadQueue() -> [PendingSubmission] {
+    guard let data = UserDefaults.standard.data(forKey: "pendingQueue"),
+          let queue = try? JSONDecoder().decode([PendingSubmission].self, from: data)
+    else { return [] }
+    return queue
+}
+
+func saveQueue(_ queue: [PendingSubmission]) {
+    if let data = try? JSONEncoder().encode(queue) {
+        UserDefaults.standard.set(data, forKey: "pendingQueue")
+    }
+}</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <!-- SECURITY -->
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <section class="doc-section" id="security">
+      <h2>🛡️ Security</h2>
+
+      <h3>Token Storage</h3>
+      <table class="method-table">
+        <thead><tr><th>Platform</th><th>Storage</th><th>Encryption</th></tr></thead>
+        <tbody>
+          <tr><td>Android</td><td>EncryptedSharedPreferences</td><td>AES-256-GCM (Jetpack Security)</td></tr>
+          <tr><td>iOS</td><td>Keychain Services</td><td>OS-managed, accessible after first unlock</td></tr>
+          <tr><td>Web (JS)</td><td>In-memory (client instance)</td><td>Use <code>httpOnly</code> cookies for browser sessions</td></tr>
+        </tbody>
+      </table>
+
+      <div class="info-box warn">
+        <strong>Do not store tokens in localStorage.</strong> For browser environments, rely on the cookie-based auth flow — the server sets <code>httpOnly</code> cookies that are not accessible to JavaScript.
+      </div>
+
+      <h3>Android ProGuard</h3>
+      <div class="code-block standalone">
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        <pre><code class="language-proguard"># VTrustX SDK
+-keep class com.vtrustx.sdk.** { *; }
+-keepclassmembers class com.vtrustx.sdk.** { *; }
+
+# Retrofit + Gson
+-keepattributes Signature
+-keepattributes *Annotation*
+-keep class com.google.gson.** { *; }
+-keep class retrofit2.** { *; }</code></pre>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <!-- TESTING -->
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <section class="doc-section" id="testing">
+      <h2>🧪 Testing</h2>
+
+      <div class="lang-tabs">
+        <button class="lang-tab active" onclick="switchTab('test','js',this)"><span class="tab-dot js"></span>TypeScript (Jest)</button>
+        <button class="lang-tab" onclick="switchTab('test','kt',this)"><span class="tab-dot kt"></span>Android (JUnit)</button>
+        <button class="lang-tab" onclick="switchTab('test','sw',this)"><span class="tab-dot sw"></span>iOS (XCTest)</button>
+      </div>
+
+      <div id="test-js" class="lang-panel active">
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre><code class="language-typescript">import { SurveyEngine } from '@vtrustx/sdk';
+
+describe('SurveyEngine', () => {
+    const definition = {
+        id: 'test', title: 'Test', theme: { primaryColor: '#000', backgroundColor: '#fff' },
+        screens: [
+            { id: 'screen-1', components: [{ id: 'q1', type: 'text', label: 'Name', required: true }] },
+            { id: 'screen-2', components: [{ id: 'q2', type: 'nps', label: 'Score', max: 10 }] }
+        ],
+        logic: []
+    };
+
+    it('validates required text fields', () => {
+        const engine = new SurveyEngine(definition as any);
+        expect(engine.validateComponent(definition.screens[0].components[0] as any, 'Alice')).toBe(true);
+        expect(engine.validateComponent(definition.screens[0].components[0] as any, '')).toBe(false);
+    });
+
+    it('advances to next screen by default', () => {
+        const engine = new SurveyEngine(definition as any);
+        const next = engine.getNextScreen('screen-1', { q1: 'Alice' });
+        expect(next).toBe('screen-2');
+    });
+
+    it('returns null at last screen', () => {
+        const engine = new SurveyEngine(definition as any);
+        const next = engine.getNextScreen('screen-2', { q2: 8 });
+        expect(next).toBeNull();
+    });
+});</code></pre>
+        </div>
+      </div>
+
+      <div id="test-kt" class="lang-panel">
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre><code class="language-kotlin">class SurveyEngineTest {
+
+    private val definition = NativeSurveyDefinition(
+        id      = "test",
+        title   = "Test Survey",
+        description = null,
+        theme   = SurveyTheme("#000000", "#ffffff"),
+        screens = listOf(
+            SurveyScreen("screen-1", null, listOf(
+                SurveyComponent("q1", "text", "Name?", required = true)
+            )),
+            SurveyScreen("screen-2", null, listOf(
+                SurveyComponent("q2", "nps", "NPS", max = 10.0)
+            ))
+        ),
+        logic = null
+    )
+
+    @Test
+    fun `validates required field`() {
+        val engine = SurveyEngine(definition)
+        assertTrue(engine.validateScreen(definition.screens[0], mapOf("q1" to "Alice")).isEmpty())
+        assertFalse(engine.validateScreen(definition.screens[0], emptyMap()).isEmpty())
+    }
+
+    @Test
+    fun `advances to next screen`() {
+        val engine = SurveyEngine(definition)
+        assertEquals("screen-2", engine.getNextScreen("screen-1", mapOf("q1" to "Alice")))
+    }
+
+    @Test
+    fun `returns null at last screen`() {
+        val engine = SurveyEngine(definition)
+        assertNull(engine.getNextScreen("screen-2", mapOf("q2" to 8)))
+    }
+}</code></pre>
+        </div>
+      </div>
+
+      <div id="test-sw" class="lang-panel">
+        <div class="code-block">
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre><code class="language-swift">import XCTest
+@testable import VTrustX
+
+class LogicEngineTests: XCTestCase {
+
+    let definition = NativeSurveyDefinition(
+        id: "test", title: "Test", description: nil,
+        theme: SurveyTheme(primaryColor: "#000000", backgroundColor: "#ffffff"),
+        screens: [
+            SurveyScreen(id: "screen-1", title: nil, components: [
+                SurveyComponent(id: "q1", type: .text, label: "Name", required: true)
+            ]),
+            SurveyScreen(id: "screen-2", title: nil, components: [
+                SurveyComponent(id: "q2", type: .nps, label: "NPS", max: 10)
+            ])
+        ],
+        logic: nil
+    )
+
+    func testAdvancesToNextScreen() {
+        let engine = LogicEngine(definition: definition)
+        let next = engine.getNextScreen(currentScreenId: "screen-1", answers: ["q1": "Alice"])
+        XCTAssertEqual(next, "screen-2")
+    }
+
+    func testReturnsNilAtLastScreen() {
+        let engine = LogicEngine(definition: definition)
+        let next = engine.getNextScreen(currentScreenId: "screen-2", answers: ["q2": 8])
+        XCTAssertNil(next)
+    }
+
+    func testSkipLogic() {
+        var def = definition
+        def = NativeSurveyDefinition(
+            id: def.id, title: def.title, description: nil, theme: def.theme,
+            screens: def.screens,
+            logic: [LogicRule(
+                trigger: LogicTrigger(questionId: "q2", operatorType: .lessThan, value: AnyCodable(7)),
+                action: .endSurvey,
+                target: ""
+            )]
+        )
+        let engine = LogicEngine(definition: def)
+        XCTAssertNil(engine.getNextScreen(currentScreenId: "screen-2", answers: ["q2": 5]))
+    }
+}</code></pre>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <!-- API REFERENCE -->
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <section class="doc-section" id="api-reference">
+      <h2>📚 API Reference</h2>
+
+      <h3>VTrustXClient (JS/TS)</h3>
+      <table class="method-table">
+        <thead><tr><th>Namespace</th><th>Method</th><th>Returns</th></tr></thead>
+        <tbody>
+          <tr><td><code>auth</code></td><td><code>login(username, password)</code></td><td><code>AuthResponse</code></td></tr>
+          <tr><td><code>auth</code></td><td><code>register(username, password)</code></td><td><code>AuthResponse</code></td></tr>
+          <tr><td><code>auth</code></td><td><code>logout()</code></td><td><code>void</code></td></tr>
+          <tr><td><code>auth</code></td><td><code>me()</code></td><td><code>User</code></td></tr>
+          <tr><td><code>forms</code></td><td><code>list()</code></td><td><code>Form[]</code></td></tr>
+          <tr><td><code>forms</code></td><td><code>get(id)</code></td><td><code>Form</code></td></tr>
+          <tr><td><code>forms</code></td><td><code>getBySlug(slug)</code></td><td><code>Form</code></td></tr>
+          <tr><td><code>forms</code></td><td><code>create(data)</code></td><td><code>Form</code></td></tr>
+          <tr><td><code>forms</code></td><td><code>update(id, data)</code></td><td><code>Form</code></td></tr>
+          <tr><td><code>forms</code></td><td><code>delete(id)</code></td><td><code>void</code></td></tr>
+          <tr><td><code>forms</code></td><td><code>publish(id)</code></td><td><code>Form</code></td></tr>
+          <tr><td><code>submissions</code></td><td><code>list(params?)</code></td><td><code>Submission[]</code></td></tr>
+          <tr><td><code>submissions</code></td><td><code>get(id)</code></td><td><code>Submission</code></td></tr>
+          <tr><td><code>submissions</code></td><td><code>create(formId, data, meta?)</code></td><td><code>Submission</code></td></tr>
+          <tr><td><code>submissions</code></td><td><code>delete(id)</code></td><td><code>void</code></td></tr>
+          <tr><td><code>survey</code></td><td><code>loadBySlug(slug)</code></td><td><code>NativeSurveyDefinition | null</code></td></tr>
+          <tr><td><code>survey</code></td><td><code>submit(formId, answers, meta?)</code></td><td><code>Submission</code></td></tr>
+          <tr><td><code>analytics</code></td><td><code>deliveryOverview(params?)</code></td><td><code>DeliveryOverview</code></td></tr>
+          <tr><td><code>analytics</code></td><td><code>deliveryFunnel()</code></td><td><code>DeliveryFunnel</code></td></tr>
+          <tr><td><code>analytics</code></td><td><code>dailyStats()</code></td><td><code>any</code></td></tr>
+          <tr><td><code>notifications</code></td><td><code>list()</code></td><td><code>Notification[]</code></td></tr>
+          <tr><td><code>notifications</code></td><td><code>markRead(id)</code></td><td><code>void</code></td></tr>
+          <tr><td><code>notifications</code></td><td><code>markAllRead()</code></td><td><code>void</code></td></tr>
+          <tr><td><code>users</code></td><td><code>list() / get(id) / create / update / delete</code></td><td><code>User / User[]</code></td></tr>
+          <tr><td><code>crm.tickets</code></td><td><code>list() / get(id) / create / update</code></td><td><code>Ticket / Ticket[]</code></td></tr>
+          <tr><td><code>workflows</code></td><td><code>list() / create / run(id)</code></td><td><code>Workflow[]</code></td></tr>
+          <tr><td><code>apiKeys</code></td><td><code>list() / create / revoke(id) / delete(id)</code></td><td><code>ApiKey[]</code></td></tr>
+        </tbody>
+      </table>
+
+      <h3>SurveyEngine (JS/TS)</h3>
+      <table class="method-table">
+        <thead><tr><th>Method</th><th>Signature</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td><code>validateComponent</code></td><td><code>(component, answer) → boolean</code></td><td>Validate a single answer against component rules</td></tr>
+          <tr><td><code>evaluateLogic</code></td><td><code>(answers) → Action[]</code></td><td>Evaluate all logic rules, return triggered actions</td></tr>
+          <tr><td><code>getNextScreen</code></td><td><code>(currentId, answers) → string | null</code></td><td>Get next screen ID applying skip logic; null = survey end</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <!-- CHANGELOG -->
+    <!-- ══════════════════════════════════════════════════════════ -->
+    <section class="doc-section" id="changelog">
+      <h2>📝 Changelog</h2>
+
+      <h3>v1.0.0 — February 2026</h3>
+      <ul>
+        <li>Initial release across Web, Android, and iOS</li>
+        <li>Core API: authentication, forms, submissions, notifications</li>
+        <li>Native survey rendering with 10 component types</li>
+        <li>Skip logic engine with 5 operators</li>
+        <li>Secure token storage on all platforms</li>
+        <li>Analytics endpoints in JS/TS SDK</li>
+        <li>CRM, workflows, API keys management in JS/TS SDK</li>
+        <li>Offline submission queue examples for Android and iOS</li>
+      </ul>
+    </section>
+
+  </main>
+</div>
+
+<!-- ═══════════════════════ FOOTER ════════════════════════════════ -->
+<footer class="footer">
+  <span>© 2026 VTrustX · SDK v1.0.0</span>
+  <span>
+    <a href="https://github.com/your-org/vtrustx" target="_blank">GitHub</a> ·
+    <a href="mailto:sdk@vtrustx.com">Support</a> ·
+    <a href="#">Privacy</a>
+  </span>
+</footer>
+
+<!-- ═══════════════════════ SCRIPTS ═══════════════════════════════ -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-typescript.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-kotlin.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-swift.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-xml-doc.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-ruby.min.js"></script>
+
+<script>
+  // ─── Language tab switching ────────────────────────────────────────────────
+  function switchTab(group, lang, btn) {
+    // Deactivate all panels and tabs in the same section
+    const section = btn.closest('.doc-section, .content');
+    const tabGroup = btn.closest('.lang-tabs');
+    const nextEl = tabGroup.nextElementSibling;
+
+    // Collect all panels that belong to this tab group
+    // They follow the tab bar directly and are siblings
+    tabGroup.querySelectorAll('.lang-tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+
+    // Find all sibling panels
+    let el = tabGroup.nextElementSibling;
+    while (el && el.classList.contains('lang-panel')) {
+      el.classList.remove('active');
+      el = el.nextElementSibling;
+    }
+
+    const panel = document.getElementById(`${group}-${lang}`);
+    if (panel) panel.classList.add('active');
+  }
+
+  // ─── Copy to clipboard ─────────────────────────────────────────────────────
+  function copyCode(btn) {
+    const code = btn.nextElementSibling.querySelector('code');
+    if (!code) return;
+    navigator.clipboard.writeText(code.innerText).then(() => {
+      btn.textContent = 'Copied!';
+      setTimeout(() => (btn.textContent = 'Copy'), 2000);
+    });
+  }
+
+  // ─── Active sidebar link on scroll ────────────────────────────────────────
+  const sections = document.querySelectorAll('.doc-section[id]');
+  const navLinks = document.querySelectorAll('.nav-link');
+
+  const observer = new IntersectionObserver(
+    entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          navLinks.forEach(l => l.classList.remove('active'));
+          const active = document.querySelector(`.nav-link[href="#${entry.target.id}"]`);
+          if (active) active.classList.add('active');
+        }
+      });
+    },
+    { rootMargin: '-60px 0px -70% 0px' }
+  );
+  sections.forEach(s => observer.observe(s));
+
+  // ─── Dark / Light theme toggle ─────────────────────────────────────────────
+  function toggleTheme() {
+    const html = document.documentElement;
+    const isDark = html.getAttribute('data-theme') === 'dark';
+    html.setAttribute('data-theme', isDark ? 'light' : 'dark');
+    document.querySelector('.theme-btn').textContent = isDark ? '🌙' : '☀️';
+    localStorage.setItem('vtx-theme', isDark ? 'light' : 'dark');
+  }
+
+  // Restore saved theme
+  const savedTheme = localStorage.getItem('vtx-theme');
+  if (savedTheme) {
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    if (savedTheme === 'dark') {
+      document.querySelector('.theme-btn').textContent = '☀️';
+    }
+  }
+</script>
+</body>
+</html>
