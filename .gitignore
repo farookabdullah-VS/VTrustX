@@ -92,6 +92,7 @@ check_cooldown_columns.js
 # Development tools
 lighthouserc.js
 start-db.bat
+db-init-gcp.ps1
 
 # Keep these exceptions
 !server/check_schema.js
