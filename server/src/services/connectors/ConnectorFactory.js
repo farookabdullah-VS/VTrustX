@@ -4,12 +4,20 @@ const FacebookConnector  = require('./FacebookConnector');
 const InstagramConnector = require('./InstagramConnector');
 const LinkedInConnector  = require('./LinkedInConnector');
 const YouTubeConnector   = require('./YouTubeConnector');
+const TwitterConnector   = require('./TwitterConnector');
+const RedditConnector    = require('./RedditConnector');
+const TikTokConnector    = require('./TikTokConnector');
+const RSSConnector       = require('./RSSConnector');
 
 const CONNECTORS = {
     facebook:  FacebookConnector,
     instagram: InstagramConnector,
     linkedin:  LinkedInConnector,
-    youtube:   YouTubeConnector
+    youtube:   YouTubeConnector,
+    twitter:   TwitterConnector,
+    reddit:    RedditConnector,
+    tiktok:    TikTokConnector,
+    rss:       RSSConnector
 };
 
 class ConnectorFactory {
