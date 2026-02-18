@@ -1,6 +1,7 @@
 **/node_modules
 **/dist
 .env
+**/.env
 .git
 .gitignore
 .DS_Store
@@ -11,7 +12,44 @@ coverage
 sdk
 e2e
 docs
-*.md
+
+# Windows null device — causes "operation not permitted" on Linux Docker
+server/nul
+**/nul
+
+# Runtime / local-dev directories (not needed in image)
+server/uploads
+server/logs
+server/exports
+server/data
+server/debug
+server/scripts
+
+# Temp/debug files
 *.log
+*.txt
 *.tmp
 *.backup
+*.json.bak
+server/debug_*.js
+server/check_*.js
+server/test_*.js
+server/fix_*.js
+server/apply_*.js
+server/run_*.js
+server/migrate_*.js
+server/add_*.js
+server/insert_*.js
+server/delete_*.js
+server/list_*.js
+server/compare_*.js
+server/crash.log
+server/output_log*.txt
+server/server_output.log
+server/start_error*.log
+server/current_error*.log
+server/error*.log
+server/cols.txt
+server/users_dump*.txt
+server/users_schema_check.txt
+server/debug_output*.txt
