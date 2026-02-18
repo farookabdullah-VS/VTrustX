@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { useTranslation } from 'react-i18next';
 import { SkeletonCard, SkeletonChart, SkeletonList } from './common/Skeleton';
 
 export function CxDashboard() {
+    const { t, i18n } = useTranslation();
     const [stats, setStats] = useState({
         nps: 0,
         promoters: 0,
@@ -112,9 +114,9 @@ export function CxDashboard() {
         <div style={containerStyle}>
             <div style={{ marginBottom: '40px' }}>
                 <h1 style={{ fontSize: '3em', fontWeight: '800', color: 'var(--text-color)', margin: 0 }}>
-                    CX Intelligence
+                    {t('cx.dashboard.title')}
                 </h1>
-                <p style={{ color: 'var(--text-muted)', fontSize: '1.1em', marginTop: '10px' }}>Real-time Customer Experience Analytics</p>
+                <p style={{ color: 'var(--text-muted)', fontSize: '1.1em', marginTop: '10px' }}>{t('cx.dashboard.subtitle')}</p>
             </div>
 
             {loading ? (
@@ -132,7 +134,7 @@ export function CxDashboard() {
 
                     {/* BIG NPS SCORE */}
                     <div style={{ ...cardStyle, gridColumn: 'span 4', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-                        <h3 style={{ color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '2px', fontSize: '0.9em' }}>Net Promoter Score</h3>
+                        <h3 style={{ color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '2px', fontSize: '0.9em' }}>{t('cx.metrics.nps')}</h3>
                         <div style={{ fontSize: '6em', fontWeight: '900', color: npsColor, textShadow: `0 0 20px ${npsColor}40` }}>
                             {stats.nps}
                         </div>
@@ -148,15 +150,15 @@ export function CxDashboard() {
                             </div>
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', marginTop: '8px', fontSize: '0.8em', color: 'var(--text-muted)' }}>
-                            <span>Promoters</span>
-                            <span>Passives</span>
-                            <span>Detractors</span>
+                            <span>{t('cx.metrics.promoters')}</span>
+                            <span>{t('cx.metrics.passives')}</span>
+                            <span>{t('cx.metrics.detractors')}</span>
                         </div>
                     </div>
 
                     {/* CSAT GAUGE & METRICS */}
                     <div style={{ ...cardStyle, gridColumn: 'span 4' }}>
-                        <h3 style={{ color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '2px', fontSize: '0.9em', marginBottom: '20px' }}>CSAT Average</h3>
+                        <h3 style={{ color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '2px', fontSize: '0.9em', marginBottom: '20px' }}>{t('cx.metrics.csat_avg')}</h3>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '150px' }}>
                             <div style={{ position: 'relative', width: '120px', height: '120px', borderRadius: '50%', background: `conic-gradient(#ef4444 ${stats.csatAverage * 72}deg, var(--input-bg) 0deg)`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                 <div style={{ width: '100px', height: '100px', background: 'var(--card-bg)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.05)' }}>
@@ -165,19 +167,19 @@ export function CxDashboard() {
                                 </div>
                             </div>
                         </div>
-                        <div style={{ marginTop: '20px', textAlign: 'center', color: 'var(--text-muted)' }}>Customer Satisfaction is trending <strong>Upside</strong></div>
+                        <div style={{ marginTop: '20px', textAlign: 'center', color: 'var(--text-muted)' }}>{t('cx.metrics.csat_trend')} <strong>{t('cx.metrics.upside')}</strong></div>
                     </div>
 
                     {/* RECENT FEEDBACK LIST */}
                     <div style={{ ...cardStyle, gridColumn: 'span 4', overflowY: 'auto', maxHeight: '400px' }}>
-                        <h3 style={{ color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '2px', fontSize: '0.9em', marginBottom: '20px' }}>Voice of Customer</h3>
-                        {stats.recentFeedback.length === 0 ? <div style={{ color: 'var(--text-muted)', textAlign: 'center' }}>No qualitative feedback yet.</div> : (
+                        <h3 style={{ color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '2px', fontSize: '0.9em', marginBottom: '20px' }}>{t('cx.metrics.voc')}</h3>
+                        {stats.recentFeedback.length === 0 ? <div style={{ color: 'var(--text-muted)', textAlign: 'center' }}>{t('cx.metrics.no_feedback')}</div> : (
                             stats.recentFeedback.map((fb, i) => (
                                 <div key={i} style={{ padding: '15px', background: 'var(--sidebar-bg)', borderRadius: '12px', marginBottom: '10px', border: '1px solid var(--input-border)' }}>
                                     <div style={{ fontSize: '0.95em', fontStyle: 'italic', marginBottom: '8px', color: 'var(--text-color)' }}>"{fb.text}"</div>
                                     <div style={{ fontSize: '0.75em', color: 'var(--text-muted)', display: 'flex', justifyContent: 'space-between' }}>
-                                        <span>{new Date(fb.date).toLocaleDateString()}</span>
-                                        <span>User_{Math.floor(Math.random() * 1000)}</span>
+                                        <span>{new Date(fb.date).toLocaleDateString(i18n.language)}</span>
+                                        <span>{t('cx.metrics.user_prefix')}_{Math.floor(Math.random() * 1000)}</span>
                                     </div>
                                 </div>
                             ))
@@ -186,10 +188,10 @@ export function CxDashboard() {
 
                     {/* WIDE CHART AREA (Sentiment Timeline) */}
                     <div style={{ ...cardStyle, gridColumn: 'span 12', height: '300px', display: 'flex', flexDirection: 'column' }}>
-                        <h3 style={{ color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '2px', fontSize: '0.9em' }}>Response Sentiment Timeline (Hourly)</h3>
+                        <h3 style={{ color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '2px', fontSize: '0.9em' }}>{t('cx.metrics.sentiment_timeline')}</h3>
                         <div style={{ flex: 1, display: 'flex', alignItems: 'flex-end', justifyContent: 'space-around', gap: '5px', paddingBottom: '20px', paddingTop: '20px' }}>
                             {sentimentData.length === 0 ? (
-                                <div style={{ width: '100%', textAlign: 'center', color: 'var(--text-muted)' }}>No traffic data for the last 40 hours.</div>
+                                <div style={{ width: '100%', textAlign: 'center', color: 'var(--text-muted)' }}>{t('cx.metrics.no_traffic')}</div>
                             ) : (
                                 sentimentData.map((d, i) => {
                                     const height = 30 + (d.value * 50); // Map -1..1 to 0..80%

@@ -174,7 +174,7 @@ export function AppLayout({ onNavigate, viewTitles }) {
           )}
 
           <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: '700', color: 'var(--sidebar-text)' }}>
-            {viewTitle}
+            {t(viewTitle)}
           </h3>
         </div>
 
@@ -311,7 +311,7 @@ export function AppLayout({ onNavigate, viewTitles }) {
                     <span style={{ fontSize: '0.9em', fontWeight: '600', color: 'var(--manage-profile-color)', letterSpacing: '0.5px' }}>{t('header.language')}</span>
                   </div>
                   <span style={{ fontSize: '0.7em', padding: '2px 8px', borderRadius: '4px', background: 'var(--profile-badge-bg)', color: 'var(--profile-badge-text)', border: '1px solid var(--profile-badge-border)', fontWeight: '600', textTransform: 'uppercase' }}>
-                    {i18n.language.startsWith('ar') ? 'Arabic' : 'English'}
+                    {i18n.language.startsWith('ar') ? 'English' : 'Arabic'}
                   </span>
                 </div>
 

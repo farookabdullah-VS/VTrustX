@@ -7,6 +7,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { AlertCircle } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 // Core components
 import ReportList from './core/ReportList';
@@ -143,6 +144,7 @@ class AnalyticsErrorBoundary extends React.Component {
  * Main New Analytics Studio Component
  */
 export default function NewAnalyticsStudio() {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState('custom-reports');
   const [activeView, setActiveView] = useState('list'); // 'list' or 'designer'
   const [selectedReport, setSelectedReport] = useState(null);
@@ -154,11 +156,11 @@ export default function NewAnalyticsStudio() {
 
   // Available tabs
   const tabs = [
-    { id: 'custom-reports', label: 'Custom Reports' },
-    { id: 'survey-analytics', label: 'Survey Analytics' },
-    { id: 'delivery-performance', label: 'Delivery Performance' },
-    { id: 'sentiment-analysis', label: 'Sentiment Analysis' },
-    { id: 'ai-insights', label: 'AI Insights' }
+    { id: 'custom-reports', label: t('analytics.tabs.custom_reports') },
+    { id: 'survey-analytics', label: t('analytics.tabs.survey_analytics') },
+    { id: 'delivery-performance', label: t('analytics.tabs.delivery_performance') },
+    { id: 'sentiment-analysis', label: t('analytics.tabs.sentiment_analysis') },
+    { id: 'ai-insights', label: t('analytics.tabs.ai_insights') }
   ];
 
   // Load reports on mount
@@ -382,10 +384,10 @@ export default function NewAnalyticsStudio() {
         {/* Header */}
         <div style={{ marginBottom: '24px' }}>
           <h1 style={{ fontSize: '2rem', fontWeight: '700', marginBottom: '8px' }}>
-            Analytics Studio
+            {t('analytics.title')}
           </h1>
           <p style={{ color: '#6b7280', fontSize: '1rem' }}>
-            Create, customize, and share powerful analytics reports
+            {t('analytics.subtitle')}
           </p>
         </div>
 

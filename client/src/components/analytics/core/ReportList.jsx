@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Database, Share2, BarChart2, Trash2, Globe, Link as LinkIcon } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { getReports, deleteReport } from '../../../services/reportService';
 import { useToast } from '../../common/Toast';
 import styles from '../styles/Analytics.module.css';
@@ -9,12 +10,13 @@ import styles from '../styles/Analytics.module.css';
  */
 function ReportCard({ report, onOpen, onDelete, isPublic }) {
   const toast = useToast();
+  const { t } = useTranslation();
 
   const handleCopyLink = (e) => {
     e.stopPropagation();
     const url = `${window.location.origin}/report/${report.public_token}`;
     navigator.clipboard.writeText(url);
-    toast.success("Public link copied!");
+    toast.success(t('reports.card.copy_success'));
   };
 
   return (
@@ -43,7 +45,7 @@ function ReportCard({ report, onOpen, onDelete, isPublic }) {
           alignItems: 'center',
           gap: '4px'
         }}>
-          <Globe size={10} /> PUBLIC
+          <Globe size={10} /> {t('reports.card.public_badge')}
         </div>
       )}
 
@@ -113,6 +115,7 @@ function ReportCard({ report, onOpen, onDelete, isPublic }) {
  */
 export function ReportList({ onOpenReport, onCreateReport }) {
   const toast = useToast();
+  const { t } = useTranslation();
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -135,7 +138,7 @@ export function ReportList({ onOpenReport, onCreateReport }) {
 
   const handleDelete = async (e, id) => {
     e.stopPropagation();
-    if (window.confirm('Are you sure you want to delete this report?')) {
+    if (window.confirm(t('reports.card.delete_confirm'))) {
       try {
         await deleteReport(id);
         toast.success('Report deleted successfully');
@@ -156,10 +159,10 @@ export function ReportList({ onOpenReport, onCreateReport }) {
       <div className={styles.flexBetween} style={{ marginBottom: '30px' }}>
         <div>
           <h1 style={{ fontSize: '2rem', fontWeight: 'bold', color: '#1e293b', marginBottom: '10px' }}>
-            Analytics Studio
+            {t('analytics.title')}
           </h1>
           <p style={{ color: '#64748b' }}>
-            Create, design, and analyze survey-based reports.
+            {t('reports.list.subtitle')}
           </p>
         </div>
         <button
@@ -168,7 +171,7 @@ export function ReportList({ onOpenReport, onCreateReport }) {
           style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
           aria-label="Create new report"
         >
-          <Plus size={20} /> New Report
+          <Plus size={20} /> {t('reports.list.new_report')}
         </button>
       </div>
 
@@ -182,13 +185,13 @@ export function ReportList({ onOpenReport, onCreateReport }) {
         alignItems: 'center',
         gap: '10px'
       }}>
-        <Database size={18} /> Your Reports
+        <Database size={18} /> {t('reports.list.your_reports')}
       </h3>
 
       {loading ? (
         <div className={styles.loading}>
           <div className={styles.loadingSpinner} />
-          <div>Loading reports...</div>
+          <div>{t('reports.list.loading')}</div>
         </div>
       ) : (
         <>
@@ -210,7 +213,7 @@ export function ReportList({ onOpenReport, onCreateReport }) {
                 <BarChart2 size={64} />
               </div>
               <div className={styles.emptyStateText}>
-                No reports found. Create your first report to get started!
+                {t('reports.list.no_reports')}
               </div>
             </div>
           )}
@@ -230,7 +233,7 @@ export function ReportList({ onOpenReport, onCreateReport }) {
             alignItems: 'center',
             gap: '10px'
           }}>
-            <Share2 size={18} /> Publicly Shared / Published
+            <Share2 size={18} /> {t('reports.list.public')}
           </h3>
 
           <div className={styles.reportGrid}>

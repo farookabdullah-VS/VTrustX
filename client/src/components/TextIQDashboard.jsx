@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { MessageSquare, RefreshCw, BarChart2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 export function TextIQDashboard() {
     const [topics, setTopics] = useState([]);
     const [verbatims, setVerbatims] = useState([]);
     const [selectedTopic, setSelectedTopic] = useState(null);
     const [loading, setLoading] = useState(true);
+    const { t } = useTranslation();
 
     useEffect(() => {
         loadTopics();
@@ -63,8 +65,8 @@ export function TextIQDashboard() {
         <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '40px', fontFamily: "'Outfit', sans-serif" }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
                 <div>
-                    <h1 style={{ fontSize: '2rem', fontWeight: '800', margin: 0 }}>CogniVue</h1>
-                    <p style={{ color: '#64748b', marginTop: '8px' }}>AI-powered Text Analytics</p>
+                    <h1 style={{ fontSize: '2rem', fontWeight: '800', margin: 0 }}>{t('textiq.title')}</h1>
+                    <p style={{ color: '#64748b', marginTop: '8px' }}>{t('textiq.subtitle')}</p>
                 </div>
             </div>
 
@@ -72,20 +74,20 @@ export function TextIQDashboard() {
 
                 {/* LEFT: BUBBLE CHART */}
                 <div style={{ flex: 2, background: 'white', borderRadius: '16px', border: '1px solid #e2e8f0', padding: '24px', position: 'relative' }}>
-                    <h3 style={{ margin: '0 0 24px 0', color: '#334155' }}>Topic Landscape</h3>
-                    {loading && <div>Loading AI Models...</div>}
+                    <h3 style={{ margin: '0 0 24px 0', color: '#334155' }}>{t('textiq.topics')}</h3>
+                    {loading && <div>{t('textiq.loading')}</div>}
 
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '20px', justifyContent: 'center', alignItems: 'center', height: '90%', overflow: 'auto' }}>
-                        {topics.map(t => (
+                        {topics.map(topic => (
                             <div
-                                key={t.id}
-                                style={getBubbleStyle(t)}
-                                onClick={() => loadVerbatims(t.topic)}
+                                key={topic.id}
+                                style={getBubbleStyle(topic)}
+                                onClick={() => loadVerbatims(topic.topic)}
                             >
-                                <div style={{ fontWeight: '700', fontSize: '1em', color: '#1e293b' }}>{t.topic}</div>
-                                <div style={{ fontSize: '0.85em', color: '#64748b' }}>{t.count} mentions</div>
-                                <div style={{ fontSize: '0.8em', fontWeight: 'bold', marginTop: '4px', color: t.sentiment > 0 ? '#15803d' : '#b91c1c' }}>
-                                    {(t.sentiment * 100).toFixed(0)} Sentiment
+                                <div style={{ fontWeight: '700', fontSize: '1em', color: '#1e293b' }}>{topic.topic}</div>
+                                <div style={{ fontSize: '0.85em', color: '#64748b' }}>{topic.count} {t('textiq.mentions')}</div>
+                                <div style={{ fontSize: '0.8em', fontWeight: 'bold', marginTop: '4px', color: topic.sentiment > 0 ? '#15803d' : '#b91c1c' }}>
+                                    {(topic.sentiment * 100).toFixed(0)} {t('textiq.sentiment')}
                                 </div>
                             </div>
                         ))}
@@ -95,11 +97,11 @@ export function TextIQDashboard() {
                 {/* RIGHT: DRILLDOWN */}
                 <div style={{ flex: 1, background: 'white', borderRadius: '16px', border: '1px solid #e2e8f0', padding: '24px', display: 'flex', flexDirection: 'column' }}>
                     <h3 style={{ margin: '0 0 16px 0', color: '#334155' }}>
-                        {selectedTopic ? `Comments: ${selectedTopic}` : 'Select a topic to view comments'}
+                        {selectedTopic ? `${t('textiq.comments')}: ${selectedTopic}` : t('textiq.select_topic')}
                     </h3>
 
                     <div style={{ flex: 1, overflowY: 'auto' }}>
-                        {!selectedTopic && <div style={{ color: '#94a3b8', textAlign: 'center', marginTop: '40px' }}>Click a bubble to see what people are saying.</div>}
+                        {!selectedTopic && <div style={{ color: '#94a3b8', textAlign: 'center', marginTop: '40px' }}>{t('textiq.click_hint')}</div>}
 
                         {verbatims.map(v => (
                             <div key={v.id} style={{ padding: '16px', borderBottom: '1px solid #f1f5f9', marginBottom: '8px' }}>
@@ -110,7 +112,7 @@ export function TextIQDashboard() {
                                         background: v.sentiment > 0 ? '#dcfce7' : '#fee2e2',
                                         color: v.sentiment > 0 ? '#15803d' : '#b91c1c'
                                     }}>
-                                        Sentiment: {v.sentiment}
+                                        {t('textiq.sentiment')}: {v.sentiment}
                                     </span>
                                 </div>
                             </div>

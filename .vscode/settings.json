@@ -2,5 +2,5 @@
     "java.project.sourcePaths": [
         "docs/plans"
     ],
-    "java.configuration.updateBuildConfiguration": "interactive"
+    "java.configuration.updateBuildConfiguration": "automatic"
 }

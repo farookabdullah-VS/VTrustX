@@ -3,6 +3,7 @@ import axios from 'axios';
 import { getCurrentUser, logout as logoutService } from '../services/authService';
 import { toast } from '../components/common/Toast';
 import { setUser as setSentryUser, clearUser as clearSentryUser } from '../config/sentry';
+import i18n from '../i18n';
 
 const AuthContext = createContext(null);
 
@@ -11,6 +12,14 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
   const [idleTimeout, setIdleTimeout] = useState(0);
   const lastActivity = useRef(Date.now());
+
+  // Update language based on user preference
+  useEffect(() => {
+    if (user?.preferred_language) {
+      i18n.changeLanguage(user.preferred_language);
+    }
+  }, [user]);
+
 
   // On mount, check if user is authenticated via httpOnly cookie
   useEffect(() => {
@@ -56,7 +65,7 @@ export function AuthProvider({ children }) {
             setIdleTimeout(parseInt(res.data.idle_timeout, 10));
           }
         })
-        .catch(() => {});
+        .catch(() => { });
     }
   }, [user]);
 

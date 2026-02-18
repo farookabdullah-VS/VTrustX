@@ -6,6 +6,7 @@
 
 import React, { lazy, Suspense, useEffect } from 'react';
 import { Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { SocialListeningProvider } from '../../contexts/SocialListeningContext';
 import { Radio, Ear, MessageCircle, TrendingUp, Users, Award, Bell, Settings, AlertTriangle, Reply } from 'lucide-react';
 import { LoadingSpinner } from '../common/LoadingSpinner';
@@ -25,21 +26,22 @@ const SourcesTab = lazy(() => import('./tabs/SourcesTab'));
 const SocialListeningDashboard = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { t } = useTranslation();
 
   // Extract active tab from URL path
   const pathParts = location.pathname.split('/');
   const activeTab = pathParts[2] || 'overview';
 
   const tabs = [
-    { id: 'overview', label: 'Overview', icon: Radio },
-    { id: 'mentions', label: 'Mentions', icon: MessageCircle },
-    { id: 'topics', label: 'Topics', icon: TrendingUp },
-    { id: 'influencers', label: 'Influencers', icon: Award },
-    { id: 'competitors', label: 'Competitors', icon: Users },
-    { id: 'alerts', label: 'Alerts', icon: Bell },
-    { id: 'responses', label: 'Responses', icon: Reply },
-    { id: 'crisis', label: 'Crisis Control', icon: AlertTriangle },
-    { id: 'sources', label: 'Sources', icon: Settings }
+    { id: 'overview', label: t('Overview'), icon: Radio },
+    { id: 'mentions', label: t('Mentions'), icon: MessageCircle },
+    { id: 'topics', label: t('Topics'), icon: TrendingUp },
+    { id: 'influencers', label: t('Influencers'), icon: Award },
+    { id: 'competitors', label: t('Competitors'), icon: Users },
+    { id: 'alerts', label: t('Alerts'), icon: Bell },
+    { id: 'responses', label: t('Responses'), icon: Reply },
+    { id: 'crisis', label: t('Crisis Control'), icon: AlertTriangle },
+    { id: 'sources', label: t('Sources'), icon: Settings }
   ];
 
   const handleTabClick = (tabId) => {

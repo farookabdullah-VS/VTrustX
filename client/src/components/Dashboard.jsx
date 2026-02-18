@@ -321,7 +321,7 @@ export function Dashboard({ onNavigate, onEdit, onEditSubmission }) {
                                         </div>
                                         <div style={{ fontSize: '0.9em', color: '#10b981', marginTop: '5px', display: 'flex', alignItems: 'center', gap: '5px', fontWeight: '600' }}>
                                             <ArrowUp size={14} />
-                                            {stats.newResponses} new (24h)
+                                            {stats.newResponses} {t('dashboard.metrics.new_responses_24h')}
                                         </div>
                                     </div>
                                     <div style={{ background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)', color: 'white', padding: '14px', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 10px rgba(59, 130, 246, 0.4)' }}>
@@ -346,7 +346,7 @@ export function Dashboard({ onNavigate, onEdit, onEditSubmission }) {
                                             <AnimatedCounter value={stats.totalSurveys} />
                                         </div>
                                         <div style={{ fontSize: '0.9em', color: 'var(--text-muted)', marginTop: '5px', fontWeight: '500' }}>
-                                            <span style={{ color: '#10b981' }}>{stats.activeSurveys} Active</span> • <span style={{ color: '#f59e0b' }}>{stats.draftSurveys} Draft</span>
+                                            <span style={{ color: '#10b981' }}>{stats.activeSurveys} {t('dashboard.metrics.active')}</span> • <span style={{ color: '#f59e0b' }}>{stats.draftSurveys} {t('dashboard.metrics.draft')}</span>
                                         </div>
                                     </div>
                                     <div style={{ background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)', color: 'white', padding: '14px', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 10px rgba(239, 68, 68, 0.4)' }}>
@@ -371,7 +371,7 @@ export function Dashboard({ onNavigate, onEdit, onEditSubmission }) {
                                             {stats.completionRate}%
                                         </div>
                                         <div style={{ fontSize: '0.9em', color: 'var(--text-muted)', marginTop: '5px', fontWeight: '500', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                            <Zap size={14} /> {stats.averageTime ? `${stats.averageTime} avg` : 'No data yet'}
+                                            <Zap size={14} /> {stats.averageTime ? `${stats.averageTime} ${t('dashboard.metrics.avg_suffix')}` : t('dashboard.metrics.no_data_yet')}
                                         </div>
                                     </div>
                                     <div style={{ background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)', color: 'white', padding: '14px', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 10px rgba(245, 158, 11, 0.4)' }}>
@@ -388,10 +388,10 @@ export function Dashboard({ onNavigate, onEdit, onEditSubmission }) {
                                     <div>
                                         <div style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.9em', fontWeight: '600', textTransform: 'uppercase' }}>{t('dashboard.metrics.ai_analysis')}</div>
                                         <div style={{ fontSize: '2rem', fontWeight: '700', marginTop: '10px', lineHeight: '1.2' }}>
-                                            {stats.totalResponses > 0 ? 'Analysis Ready' : 'No Data Yet'}
+                                            {stats.totalResponses > 0 ? t('dashboard.metrics.analysis_ready') : t('dashboard.metrics.no_data_yet')}
                                         </div>
                                         <div style={{ fontSize: '0.9em', color: 'rgba(255,255,255,0.9)', marginTop: '10px' }}>
-                                            {stats.totalResponses > 0 ? 'AI sentiment analysis coming soon' : 'Collect responses to enable AI analysis'}
+                                            {stats.totalResponses > 0 ? t('dashboard.metrics.analysis_coming_soon') : t('dashboard.metrics.collect_responses')}
                                         </div>
                                     </div>
                                     <div style={{ background: 'rgba(255,255,255,0.2)', color: 'white', padding: '12px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -412,7 +412,7 @@ export function Dashboard({ onNavigate, onEdit, onEditSubmission }) {
                                     <ThemeBarChart
                                         data={stats.dailyTrend.map(d => ({
                                             ...d,
-                                            label: new Date(d.date).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' }),
+                                            label: new Date(d.date).toLocaleDateString(i18n.language, { weekday: 'short', month: 'short', day: 'numeric' }),
                                         }))}
                                         xKey="label"
                                         yKey="count"
@@ -587,7 +587,8 @@ export function Dashboard({ onNavigate, onEdit, onEditSubmission }) {
                     </div>
 
                 </div>
-            )}
-        </div>
+            )
+            }
+        </div >
     );
 }
