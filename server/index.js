@@ -54,8 +54,8 @@ const createRateLimiter = (limit = 100, windowSec = 60) => {
     };
 };
 
-app.use(createRateLimiter(1000)); // Global limit
-app.use('/api/auth', createRateLimiter(100));
+app.use(createRateLimiter(5000)); // Global limit - increased for testing
+app.use('/api/auth', createRateLimiter(1000));
 app.use('/api/ai', createRateLimiter(100));
 app.use('/api/exports', createRateLimiter(50));
 
@@ -255,7 +255,6 @@ app.use('/api/webhooks/sms', require('./src/api/routes/webhooks/sms-webhooks'));
 app.use('/api/reputation', require('./src/api/routes/reputation/index'));
 app.use('/api/directory', require('./src/api/routes/directory/index'));
 app.use('/api/textiq', require('./src/api/routes/textiq/index'));
-app.use('/api/workflows', require('./src/api/routes/workflows/index'));
 app.use('/api/workflow-executions', require('./src/api/routes/workflow-executions'));
 app.use('/api/workflow-templates', require('./src/api/routes/workflow-templates'));
 app.use('/api/workflows-automation', require('./src/api/routes/workflows-automation'));
@@ -279,7 +278,17 @@ app.use('/api/identity', require('./src/api/routes/identity_dashboard'));
 logger.info('All routes loaded');
 
 // Serve static files from the React app
-app.use(express.static(path.join(__dirname, '../client/dist')));
+app.use(express.static(path.join(__dirname, '../client/dist'), {
+    setHeaders: (res, path) => {
+        if (path.endsWith('.html')) {
+            // Never cache index.html
+            res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+        } else if (path.match(/\.(js|css|png|jpg|jpeg|gif|ico|svg|woff2|woff|ttf)$/)) {
+            // Cache assets for 1 year (immutable)
+            res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+        }
+    }
+}));
 
 // Serve Uploads (Local/Tmp)
 const uploadDir = process.env.K_SERVICE ? '/tmp/uploads' : path.join(__dirname, 'uploads');
@@ -299,6 +308,7 @@ app.use(errorHandler);
 // --- Run Migrations ---
 async function runMigrations() {
     const scripts = [
+        { name: 'base_schema', fn: require('./src/scripts/ensure_base_schema') },
         { name: 'reports', fn: require('./src/scripts/ensure_reports_table') },
         { name: 'analytics', fn: require('./src/scripts/ensure_analytics_tables') },
         { name: 'quotas', fn: require('./src/scripts/ensure_quotas_table') },
@@ -307,6 +317,7 @@ async function runMigrations() {
         { name: 'refresh_tokens', fn: require('./src/scripts/ensure_refresh_tokens_table') },
         { name: 'social_listening', fn: require('./src/scripts/ensure_social_listening_tables') },
         { name: 'users', fn: require('./src/scripts/ensure_users_columns') },
+        { name: 'tenants', fn: require('./src/scripts/ensure_tenant_tables') },
     ];
 
     for (const script of scripts) {
