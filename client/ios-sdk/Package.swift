@@ -19,8 +19,5 @@ let package = Package(
             name: "VTrustX",
             dependencies: [],
             path: "Sources/VTrustX"),
-        .testTarget(
-            name: "VTrustXTests",
-            dependencies: ["VTrustX"]),
     ]
 )

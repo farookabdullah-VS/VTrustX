@@ -6,4 +6,4 @@
   does not require them — all runtime permissions (INTERNET, etc.) must be
   declared by the consuming application.
 -->
-<manifest package="com.vtrustx.sdk" />
+<manifest />
