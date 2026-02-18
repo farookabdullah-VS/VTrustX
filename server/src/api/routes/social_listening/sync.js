@@ -192,6 +192,71 @@ router.get('/platforms', authenticate, async (req, res) => {
 });
 
 /**
+ * @route   POST /api/v1/social-listening/sync/analytics
+ * @desc    Manually trigger analytics computation (trend detection, influencer scoring, share-of-voice)
+ * @access  Private
+ */
+router.post('/analytics', authenticate, async (req, res) => {
+  try {
+    let slAnalyticsJob;
+    try {
+      slAnalyticsJob = require('../../../jobs/socialListeningAnalyticsJob');
+    } catch (e) {
+      return res.status(503).json({ error: 'Analytics job not available' });
+    }
+
+    logger.info('[Sync API] Manual analytics computation triggered', {
+      tenantId: req.user.tenant_id,
+      userId: req.user.id
+    });
+
+    // Run in background — respond immediately
+    slAnalyticsJob.runNow()
+      .then(result => {
+        logger.info('[Sync API] Analytics computation completed', result);
+      })
+      .catch(err => {
+        logger.error('[Sync API] Analytics computation failed', { error: err.message });
+      });
+
+    res.json({
+      success: true,
+      message: 'Analytics computation started. Results will be available shortly.'
+    });
+
+  } catch (error) {
+    logger.error('[Sync API] Failed to trigger analytics', { error: error.message });
+    res.status(500).json({ error: 'Failed to trigger analytics: ' + error.message });
+  }
+});
+
+/**
+ * @route   GET /api/v1/social-listening/sync/analytics-status
+ * @desc    Get analytics job status
+ * @access  Private
+ */
+router.get('/analytics-status', authenticate, async (req, res) => {
+  try {
+    let slAnalyticsJob;
+    try {
+      slAnalyticsJob = require('../../../jobs/socialListeningAnalyticsJob');
+    } catch (e) {
+      return res.json({ success: true, available: false });
+    }
+
+    res.json({
+      success: true,
+      available: true,
+      ...slAnalyticsJob.getStatus()
+    });
+
+  } catch (error) {
+    logger.error('[Sync API] Failed to get analytics status', { error: error.message });
+    res.status(500).json({ error: 'Failed to get analytics status: ' + error.message });
+  }
+});
+
+/**
  * @route   POST /api/v1/social-listening/sync/generate-mock-data
  * @desc    Generate mock mentions for testing (DEVELOPMENT ONLY)
  * @access  Private

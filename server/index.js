@@ -138,18 +138,23 @@ app.use((req, res, next) => {
     if (publicPaths.some(p => req.path.startsWith(p))) return next();
     // Skip CSRF for form password check (public endpoint)
     if (req.path.match(/^\/api\/forms\/[^/]+\/check-password$/)) return next();
-
     doubleCsrfProtection(req, res, next);
 });
 
 // Request ID + structured HTTP logging (replaces console.log request logger)
 app.use(requestLogger);
 
+app.use((req, res, next) => {
+    if (req.path.startsWith('/api')) {
+        logger.info('API REQUEST', { method: req.method, path: req.path });
+    }
+    next();
+});
+
 // Initialize Passport
 const passport = require('./src/config/passport');
 app.use(passport.initialize());
 logger.info('Passport initialized');
-
 // --- Health & Readiness Endpoints ---
 const db = require('./src/infrastructure/database/db');
 
@@ -269,6 +274,8 @@ app.use('/api/qr-codes', require('./src/api/routes/qr-codes'));
 app.use('/api/qr', require('./src/api/routes/qr-codes')); // Public redirect endpoint
 app.use('/api/api-keys', require('./src/api/routes/api-keys'));
 app.use('/api/webhooks', require('./src/api/routes/webhooks-api'));
+app.use('/api/identity', require('./src/api/routes/identity_dashboard'));
+
 logger.info('All routes loaded');
 
 // Serve static files from the React app
@@ -443,6 +450,21 @@ if (process.env.ENABLE_WORKFLOW_RETRIES !== 'false') {
     }
 }
 
+// Social Listening Analytics Job (optional - can be disabled via env var)
+if (process.env.ENABLE_SL_ANALYTICS !== 'false') {
+    try {
+        const slAnalyticsJob = require('./src/jobs/socialListeningAnalyticsJob');
+        slAnalyticsJob.start();
+        logger.info('[Cron] Social listening analytics job enabled');
+    } catch (err) {
+        logger.error('[Cron] Failed to start social listening analytics job', {
+            error: err.message,
+            stack: err.stack,
+            name: err.name
+        });
+    }
+}
+
 // Drip Campaign Processor (optional - can be disabled via env var)
 if (process.env.ENABLE_DRIP_CAMPAIGNS !== 'false') {
     try {
@@ -506,3 +528,5 @@ setTimeout(() => {
     }
 }, 5000);
 
+ 
+ 
