@@ -7,10 +7,12 @@ import { useSocialListening } from '../../../contexts/SocialListeningContext';
 import {
   MessageCircle, Filter, Search, ThumbsUp, ThumbsDown, Minus,
   ExternalLink, Reply, Flag, CheckCircle, Clock, AlertCircle,
-  Instagram, Twitter, Facebook, Linkedin, Youtube, Music, MessageSquare, Eye
+  Instagram, Twitter, Facebook, Linkedin, Youtube, Music, MessageSquare, Eye,
+  Download
 } from 'lucide-react';
 import { LoadingSpinner } from '../../common/LoadingSpinner';
 import socialListeningApi from '../../../services/socialListeningApi';
+import axios from '../../../axiosConfig';
 import './MentionsTab.css';
 
 const MentionsTab = () => {
@@ -58,6 +60,17 @@ const MentionsTab = () => {
     setSearchQuery(e.target.value);
     setPagination(prev => ({ ...prev, offset: 0 })); // Reset to first page
   }, []);
+
+  const handleExport = (format) => {
+    const params = new URLSearchParams({ format });
+    if (filters.platform) params.set('platform', filters.platform);
+    if (filters.sentiment) params.set('sentiment', filters.sentiment);
+    if (filters.intent) params.set('intent', filters.intent);
+    if (filters.date_from) params.set('date_from', filters.date_from);
+    if (filters.date_to) params.set('date_to', filters.date_to);
+    params.set('limit', 5000);
+    window.open(`/api/v1/social-listening/export/mentions?${params.toString()}`, '_blank');
+  };
 
   const handleFilterChange = (key, value) => {
     updateFilters({ [key]: value });
@@ -172,6 +185,24 @@ const MentionsTab = () => {
             <Filter size={18} />
             Filters
           </button>
+          <div style={{ position: 'relative', display: 'inline-flex' }}>
+            <button
+              className="sl-button-secondary"
+              title="Export mentions"
+              onClick={() => handleExport('csv')}
+              style={{ borderRight: 'none', borderRadius: '8px 0 0 8px' }}
+            >
+              <Download size={16} /> CSV
+            </button>
+            <button
+              className="sl-button-secondary"
+              title="Export as Excel"
+              onClick={() => handleExport('xlsx')}
+              style={{ borderRadius: '0 8px 8px 0', borderLeft: '1px solid #dee2e6' }}
+            >
+              XLSX
+            </button>
+          </div>
         </div>
 
         {/* Filters Panel */}

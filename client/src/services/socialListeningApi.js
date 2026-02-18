@@ -106,6 +106,22 @@ export const socialListeningApi = {
     }
   },
 
+  // Export
+  export: {
+    mentions: (params = {}) => {
+      const qs = new URLSearchParams(params).toString();
+      return `${BASE_URL}/export/mentions?${qs}`;
+    },
+    influencers: (params = {}) => {
+      const qs = new URLSearchParams(params).toString();
+      return `${BASE_URL}/export/influencers?${qs}`;
+    },
+    analytics: (params = {}) => {
+      const qs = new URLSearchParams(params).toString();
+      return `${BASE_URL}/export/analytics?${qs}`;
+    }
+  },
+
   // Responses
   responses: {
     list: (params) => axios.get(`${BASE_URL}/responses`, { params }),

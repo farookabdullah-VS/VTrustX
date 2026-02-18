@@ -3,7 +3,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { Award, Users, TrendingUp, ExternalLink, MessageCircle } from 'lucide-react';
+import { Award, Users, TrendingUp, ExternalLink, MessageCircle, Download } from 'lucide-react';
 import { LoadingSpinner } from '../../common/LoadingSpinner';
 import socialListeningApi from '../../../services/socialListeningApi';
 import './InfluencersTab.css';
@@ -62,14 +62,30 @@ const InfluencersTab = () => {
             <Award size={20} />
             Top Influencers
           </h2>
-          <div className="sort-selector">
-            <label>Sort by:</label>
-            <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
-              <option value="reach">Reach</option>
-              <option value="engagement">Engagement</option>
-              <option value="mentions">Mentions</option>
-              <option value="sentiment">Sentiment</option>
-            </select>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div className="sort-selector">
+              <label>Sort by:</label>
+              <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+                <option value="reach">Reach</option>
+                <option value="engagement">Engagement</option>
+                <option value="mentions">Mentions</option>
+                <option value="sentiment">Sentiment</option>
+              </select>
+            </div>
+            <button
+              className="sl-button-secondary"
+              onClick={() => window.open('/api/v1/social-listening/export/influencers?format=csv', '_blank')}
+              title="Export as CSV"
+            >
+              <Download size={15} /> Export
+            </button>
+            <button
+              className="sl-button-secondary"
+              onClick={() => window.open('/api/v1/social-listening/export/influencers?format=xlsx', '_blank')}
+              title="Export as Excel"
+            >
+              XLSX
+            </button>
           </div>
         </div>
       </div>

@@ -17,6 +17,8 @@ const { query } = require('../../../infrastructure/database/db');
 const authenticate = require('../../middleware/auth');
 const validate = require('../../middleware/validate');
 const logger = require('../../../infrastructure/logger');
+const axios = require('axios');
+const socialListeningClassifier = require('../../../core/socialListeningClassifier');
 const {
     createSourceSchema,
     updateSourceSchema,
@@ -711,8 +713,8 @@ router.get('/analytics/sentiment-trend', authenticate, async (req, res) => {
         const { date_from, date_to, interval = 'day' } = req.query;
 
         const dateFormat = interval === 'hour' ? 'YYYY-MM-DD HH24:00:00' :
-                          interval === 'day' ? 'YYYY-MM-DD' :
-                          'YYYY-MM';
+            interval === 'day' ? 'YYYY-MM-DD' :
+                'YYYY-MM';
 
         const result = await query(
             `SELECT
@@ -743,8 +745,8 @@ router.get('/analytics/volume-trend', authenticate, async (req, res) => {
         const { date_from, date_to, interval = 'day' } = req.query;
 
         const dateFormat = interval === 'hour' ? 'YYYY-MM-DD HH24:00:00' :
-                          interval === 'day' ? 'YYYY-MM-DD' :
-                          'YYYY-MM';
+            interval === 'day' ? 'YYYY-MM-DD' :
+                'YYYY-MM';
 
         const result = await query(
             `SELECT
@@ -881,15 +883,83 @@ router.get('/analytics/campaign-impact', authenticate, async (req, res) => {
         const tenantId = req.user.tenant_id;
         const { campaign_id } = req.query;
 
-        // TODO: Implement campaign hashtag/keyword matching
-        // For now, return mock data
-        res.json({
-            campaign_id,
-            mentions_generated: 150,
-            engagement_rate: 4.2,
-            sentiment_improvement: 12.5,
-            top_hashtags: ['#RayiX', '#CX', '#CustomerExperience']
-        });
+        // Fetch all campaigns for the tenant (or a specific one)
+        const campaignQuery = campaign_id
+            ? `SELECT id, name, keywords, hashtags, start_date, end_date, platforms
+               FROM social_media_campaigns WHERE id = $2 AND tenant_id = $1`
+            : `SELECT id, name, keywords, hashtags, start_date, end_date, platforms
+               FROM social_media_campaigns WHERE tenant_id = $1 ORDER BY created_at DESC LIMIT 10`;
+
+        const campaignValues = campaign_id ? [tenantId, campaign_id] : [tenantId];
+        const campaignsRes = await query(campaignQuery, campaignValues);
+
+        if (campaignsRes.rows.length === 0) {
+            return res.json({ campaigns: [] });
+        }
+
+        // For each campaign, count mentions whose content matches campaign keywords/hashtags
+        // and compare avg sentiment before/during campaign
+        const campaignImpact = await Promise.all(
+            campaignsRes.rows.map(async (campaign) => {
+                const keywords = [
+                    ...(Array.isArray(campaign.keywords) ? campaign.keywords : []),
+                    ...(Array.isArray(campaign.hashtags) ? campaign.hashtags : [])
+                ].filter(Boolean);
+
+                if (keywords.length === 0) {
+                    return {
+                        campaign_id: campaign.id,
+                        campaign_name: campaign.name,
+                        mentions_count: 0,
+                        avg_sentiment: null,
+                        sentiment_label: 'neutral',
+                        top_platforms: [],
+                        date_range: { start: campaign.start_date, end: campaign.end_date }
+                    };
+                }
+
+                // Build keyword ILIKE conditions
+                const keywordConditions = keywords.map((kw, i) =>
+                    `content ILIKE $${i + 3}`
+                ).join(' OR ');
+
+                const mentionValues = [tenantId, campaign.start_date || '2020-01-01', ...keywords.map(k => `%${k}%`)];
+
+                const mentionsRes = await query(
+                    `SELECT COUNT(*) as count,
+                            AVG(sentiment_score) as avg_sentiment,
+                            AVG(engagement_score) as avg_engagement,
+                            platform
+                     FROM sl_mentions
+                     WHERE tenant_id = $1
+                       AND published_at >= $2
+                       ${campaign.end_date ? `AND published_at <= '${campaign.end_date}'` : ''}
+                       AND (${keywordConditions})
+                     GROUP BY platform
+                     ORDER BY count DESC`,
+                    mentionValues
+                ).catch(() => ({ rows: [] }));
+
+                const totalCount = mentionsRes.rows.reduce((sum, r) => sum + parseInt(r.count), 0);
+                const allSentimentScores = mentionsRes.rows.filter(r => r.avg_sentiment).map(r => parseFloat(r.avg_sentiment));
+                const avgSentiment = allSentimentScores.length > 0
+                    ? allSentimentScores.reduce((a, b) => a + b, 0) / allSentimentScores.length
+                    : 0;
+
+                return {
+                    campaign_id: campaign.id,
+                    campaign_name: campaign.name,
+                    mentions_count: totalCount,
+                    avg_sentiment: parseFloat(avgSentiment.toFixed(3)),
+                    sentiment_label: avgSentiment > 0.2 ? 'positive' : avgSentiment < -0.2 ? 'negative' : 'neutral',
+                    top_platforms: mentionsRes.rows.map(r => ({ platform: r.platform, count: parseInt(r.count) })),
+                    date_range: { start: campaign.start_date, end: campaign.end_date },
+                    keywords_tracked: keywords
+                };
+            })
+        );
+
+        res.json({ campaigns: campaignImpact });
     } catch (error) {
         logger.error('[SocialListening] Failed to fetch campaign impact', { error: error.message });
         res.status(500).json({ error: 'Failed to fetch campaign impact' });
@@ -1378,5 +1448,10 @@ router.use('/sync', require('./sync'));
 // ============================================================================
 // Mount crisis detection routes
 router.use('/crisis', require('./crisis'));
+
+// ============================================================================
+// EXPORT - CSV/XLSX exports for mentions, influencers, analytics
+// ============================================================================
+router.use('/export', require('./export'));
 
 module.exports = router;

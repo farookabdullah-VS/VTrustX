@@ -4,7 +4,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useSocialListening } from '../../../contexts/SocialListeningContext';
-import { MessageCircle, TrendingUp, ThumbsUp, ThumbsDown, BarChart3 } from 'lucide-react';
+import { MessageCircle, TrendingUp, ThumbsUp, ThumbsDown, BarChart3, Download } from 'lucide-react';
 import { LoadingSpinner } from '../../common/LoadingSpinner';
 import SentimentTrendChart from '../components/SentimentTrendChart';
 import VolumeTrendChart from '../components/VolumeTrendChart';
@@ -54,24 +54,34 @@ const OverviewTab = () => {
             <BarChart3 size={20} />
             Performance Overview
           </h2>
-          <div className="date-range-selector">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div className="date-range-selector">
+              <button
+                className={`range-btn ${dateRange === '7d' ? 'active' : ''}`}
+                onClick={() => setDateRange('7d')}
+              >
+                Last 7 Days
+              </button>
+              <button
+                className={`range-btn ${dateRange === '30d' ? 'active' : ''}`}
+                onClick={() => setDateRange('30d')}
+              >
+                Last 30 Days
+              </button>
+              <button
+                className={`range-btn ${dateRange === '90d' ? 'active' : ''}`}
+                onClick={() => setDateRange('90d')}
+              >
+                Last 90 Days
+              </button>
+            </div>
             <button
-              className={`range-btn ${dateRange === '7d' ? 'active' : ''}`}
-              onClick={() => setDateRange('7d')}
+              className="sl-button-secondary"
+              onClick={() => window.open('/api/v1/social-listening/export/analytics?format=xlsx', '_blank')}
+              title="Export analytics report"
+              style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
             >
-              Last 7 Days
-            </button>
-            <button
-              className={`range-btn ${dateRange === '30d' ? 'active' : ''}`}
-              onClick={() => setDateRange('30d')}
-            >
-              Last 30 Days
-            </button>
-            <button
-              className={`range-btn ${dateRange === '90d' ? 'active' : ''}`}
-              onClick={() => setDateRange('90d')}
-            >
-              Last 90 Days
+              <Download size={15} /> Export Report
             </button>
           </div>
         </div>
