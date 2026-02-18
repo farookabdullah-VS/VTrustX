@@ -7,12 +7,14 @@
 import { defaultTheme } from './default.theme';
 import { darkTheme } from './dark.theme';
 import { foundingDayTheme } from './founding-day.theme';
+import { aiNeuralTheme } from './ai-neural.theme';
 
 // Theme registry
 const themes = {
   default: defaultTheme,
   dark: darkTheme,
-  founding: foundingDayTheme
+  founding: foundingDayTheme,
+  'ai-neural': aiNeuralTheme
 };
 
 /**

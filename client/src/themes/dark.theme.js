@@ -37,11 +37,17 @@ export const darkTheme = {
     headerBg: '#1a2332',
     headerBorder: 'rgba(226, 232, 240, 0.1)',
 
-    // Text
+    // Text - Enhanced for better visibility
     textPrimary: '#f8fafc',
     textSecondary: '#cbd5e1',
     textMuted: '#94a3b8',
     textDisabled: '#64748b',
+    textColor: '#f8fafc',  // Main text color
+
+    // Additional text colors for components
+    headingColor: '#ffffff',
+    labelColor: '#e2e8f0',
+    placeholderColor: '#94a3b8',
 
     // Status
     statusError: '#EF4444',
@@ -53,6 +59,8 @@ export const darkTheme = {
     inputBg: '#2d3748',
     inputBorder: '#4a5568',
     inputFocusBorder: '#26A69A',
+    inputText: '#f8fafc',
+    inputPlaceholder: '#94a3b8',
 
     // Buttons
     buttonPrimaryBg: '#26A69A',
@@ -64,7 +72,13 @@ export const darkTheme = {
 
     // Borders
     borderLight: '#2d3748',
-    borderMedium: '#4a5568'
+    borderMedium: '#4a5568',
+
+    // Additional UI elements
+    dividerColor: 'rgba(226, 232, 240, 0.1)',
+    hoverBg: 'rgba(226, 232, 240, 0.05)',
+    selectedBg: 'rgba(38, 166, 154, 0.15)',
+    focusRing: 'rgba(38, 166, 154, 0.5)'
   },
 
   typography: {

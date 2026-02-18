@@ -281,6 +281,15 @@ export function ThemeSettings() {
     const [newThemeName, setNewThemeName] = useState('');
     const [deleteConfirmId, setDeleteConfirmId] = useState(null);
 
+    const resetToNew = () => {
+        if (editingThemeId && !confirm('Stop editing current theme and start a new one?')) return;
+        setTheme(DEFAULT_THEME);
+        setEditingThemeId(null);
+        setEditingThemeName('');
+        setActiveTab('colors');
+        toast.info('Started a new theme. Customize and click "Save as New Preset".');
+    };
+
     const loadSavedThemes = () => {
         axios.get('/api/settings/theme/saved')
             .then(res => setSavedThemes(res.data))
@@ -439,9 +448,9 @@ export function ThemeSettings() {
                         }}
                     >
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                            <polyline points="7 10 12 15 17 10"/>
-                            <line x1="12" y1="15" x2="12" y2="3"/>
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                            <polyline points="7 10 12 15 17 10" />
+                            <line x1="12" y1="15" x2="12" y2="3" />
                         </svg>
                         Import from Figma
                     </button>
@@ -457,6 +466,25 @@ export function ThemeSettings() {
                         }}
                     >
                         {isDark ? 'Light Mode' : 'Dark Mode'}
+                    </button>
+                    <button
+                        onClick={resetToNew}
+                        style={{
+                            padding: '10px 20px', borderRadius: '8px', cursor: 'pointer', fontWeight: '600',
+                            background: '#f8fafc',
+                            color: 'var(--primary-color)',
+                            border: '1px solid var(--primary-color)',
+                            fontSize: '0.9em',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px'
+                        }}
+                    >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                        Create New Theme
                     </button>
                     {editingThemeId && (
                         <button
@@ -478,7 +506,23 @@ export function ThemeSettings() {
                             boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
                         }}
                     >
-                        {editingThemeId ? 'Update Theme' : 'Save Changes'}
+                        {editingThemeId ? 'Update Theme' : 'Apply Active Theme'}
+                    </button>
+                    <button
+                        onClick={() => setShowSaveAsDialog(true)}
+                        style={{
+                            background: 'var(--secondary-color)', color: 'white', padding: '12px 24px',
+                            border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold',
+                            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+                            display: 'flex', alignItems: 'center', gap: '8px'
+                        }}
+                    >
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                            <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                            <polyline points="7 3 7 8 15 8"></polyline>
+                        </svg>
+                        Save as Preset
                     </button>
                 </div>
             </div>
@@ -1726,10 +1770,22 @@ export function ThemeSettings() {
                             </div>
 
                             {savedThemes.length === 0 ? (
-                                <div style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--text-muted)' }}>
-                                    <div style={{ fontSize: '2em', marginBottom: '12px' }}>📚</div>
-                                    <p style={{ margin: 0, fontSize: '0.95em' }}>No saved themes yet.</p>
-                                    <p style={{ margin: '8px 0 0', fontSize: '0.85em' }}>Configure your colors and settings, then click "Save Current as Theme" to create a reusable preset.</p>
+                                <div style={{ textAlign: 'center', padding: '60px 20px', background: 'var(--input-bg)', borderRadius: '16px', border: '2px dashed var(--glass-border)' }}>
+                                    <div style={{ fontSize: '3em', marginBottom: '16px', opacity: 0.5 }}>🎨</div>
+                                    <h4 style={{ margin: '0 0 8px', color: 'var(--text-color)' }}>No custom themes yet</h4>
+                                    <p style={{ margin: 0, fontSize: '0.9em', color: 'var(--text-muted)', maxWidth: '300px', margin: '0 auto' }}>
+                                        Customize your platform branding and save it as a preset to switch between different looks.
+                                    </p>
+                                    <button
+                                        onClick={resetToNew}
+                                        style={{
+                                            marginTop: '24px', padding: '10px 24px', background: 'var(--primary-color)',
+                                            color: 'white', border: 'none', borderRadius: '8px', fontWeight: 'bold',
+                                            cursor: 'pointer'
+                                        }}
+                                    >
+                                        Create Your First Theme
+                                    </button>
                                 </div>
                             ) : (
                                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '16px' }}>
@@ -1794,7 +1850,7 @@ export function ThemeSettings() {
                                                                 cursor: 'pointer', fontSize: '0.8em', fontWeight: '600', width: '100%'
                                                             }}
                                                         >
-                                                            Set as Default
+                                                            Assign as Org Default
                                                         </button>
                                                     )}
                                                     {deleteConfirmId === st.id ? (

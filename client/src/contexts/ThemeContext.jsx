@@ -166,6 +166,13 @@ export function ThemeProvider({ children, user }) {
     console.log('[ThemeContext] Custom theme updated');
   }, [currentTheme]);
 
+  // Manual theme application - force re-apply current theme
+  const manualApplyTheme = useCallback(() => {
+    const themeId = isDark ? 'dark' : currentTheme;
+    applyTheme(themeId, customTheme);
+    console.log(`[ThemeContext] Manually applied theme: ${themeId}`);
+  }, [currentTheme, isDark, customTheme]);
+
   return (
     <ThemeContext.Provider value={{
       currentTheme,
@@ -175,6 +182,7 @@ export function ThemeProvider({ children, user }) {
       switchTheme,
       toggleDarkMode,
       updateCustomTheme,
+      manualApplyTheme,
       availableThemes: getAvailableThemes()
     }}>
       {children}
@@ -184,6 +192,19 @@ export function ThemeProvider({ children, user }) {
 
 export const useTheme = () => {
   const ctx = useContext(ThemeContext);
-  if (!ctx) throw new Error('useTheme must be used within ThemeProvider');
+  if (!ctx) {
+    console.warn('useTheme called outside ThemeProvider, returning defaults');
+    return {
+      currentTheme: 'default',
+      isDark: false,
+      isRtl: false,
+      customTheme: null,
+      switchTheme: () => { },
+      toggleDarkMode: () => { },
+      updateCustomTheme: () => { },
+      manualApplyTheme: () => { },
+      availableThemes: []
+    };
+  }
   return ctx;
 };
