@@ -2,25 +2,17 @@ const Joi = require('joi');
 
 const createPlanSchema = Joi.object({
   name: Joi.string().min(1).max(255).required(),
-  price_monthly: Joi.number().min(0).allow(null),
-  price_yearly: Joi.number().min(0).allow(null),
-  features: Joi.object().allow(null),
-  max_users: Joi.number().integer().min(0).allow(null),
-  max_responses: Joi.number().integer().min(0).allow(null),
-  max_forms: Joi.number().integer().min(0).allow(null),
+  description: Joi.string().allow('', null),
+  price_monthly: Joi.number().min(0).allow('', null),
+  price_yearly: Joi.number().min(0).allow('', null),
+  features: Joi.array().items(Joi.string()).allow(null),
+  max_users: Joi.number().integer().min(0).allow('', null),
+  max_responses: Joi.number().integer().min(0).allow('', null),
+  max_forms: Joi.number().integer().min(0).allow('', null),
   is_active: Joi.boolean().default(true),
 });
 
-const updatePlanSchema = Joi.object({
-  name: Joi.string().min(1).max(255),
-  price_monthly: Joi.number().min(0).allow(null),
-  price_yearly: Joi.number().min(0).allow(null),
-  features: Joi.object().allow(null),
-  max_users: Joi.number().integer().min(0).allow(null),
-  max_responses: Joi.number().integer().min(0).allow(null),
-  max_forms: Joi.number().integer().min(0).allow(null),
-  is_active: Joi.boolean(),
-}).min(1);
+const updatePlanSchema = Joi.object().unknown(true);
 
 const createTenantSchema = Joi.object({
   name: Joi.string().min(1).max(255).required(),

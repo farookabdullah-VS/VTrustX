@@ -33,9 +33,18 @@ const WorkflowTemplatesBrowser = ({ onTemplateSelect }) => {
     const [showPreview, setShowPreview] = useState(false);
     const [creating, setCreating] = useState(false);
 
+    // Fetch categories only once on mount
     useEffect(() => {
-        fetchTemplates();
         fetchCategories();
+    }, []);
+
+    // Fetch templates with debouncing
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            fetchTemplates();
+        }, 300); // 300ms debounce
+
+        return () => clearTimeout(timer);
     }, [selectedCategory, searchQuery]);
 
     const fetchTemplates = async () => {
@@ -161,20 +170,17 @@ const WorkflowTemplatesBrowser = ({ onTemplateSelect }) => {
                     >
                         All Templates
                     </button>
-                    {categories.map((cat) => {
-                        const Icon = getCategoryIcon(cat.category);
-                        return (
-                            <button
-                                key={cat.category}
-                                className={selectedCategory === cat.category ? 'active' : ''}
-                                onClick={() => setSelectedCategory(cat.category)}
-                            >
-                                <Icon />
-                                {getCategoryLabel(cat.category)}
-                                <span className="count">({cat.template_count})</span>
-                            </button>
-                        );
-                    })}
+                    {categories.map((cat) => (
+                        <button
+                            key={cat.category}
+                            className={selectedCategory === cat.category ? 'active' : ''}
+                            onClick={() => setSelectedCategory(cat.category)}
+                        >
+                            {getCategoryIcon(cat.category)}
+                            {getCategoryLabel(cat.category)}
+                            <span className="count">({cat.template_count})</span>
+                        </button>
+                    ))}
                 </div>
             </div>
 

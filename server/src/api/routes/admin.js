@@ -9,6 +9,11 @@ const { createPlanSchema, updatePlanSchema, createTenantSchema, updateTenantSche
 const { requireRole } = require('../middleware/authorize');
 const checkGlobalAdmin = requireRole('global_admin');
 
+router.use((req, res, next) => {
+    logger.info('ADMIN ROUTER HIT', { method: req.method, path: req.path });
+    next();
+});
+
 /**
  * @swagger
  * /api/admin/stats:
@@ -198,11 +203,11 @@ router.get('/plans', authenticate, checkGlobalAdmin, async (req, res) => {
  */
 router.post('/plans', authenticate, checkGlobalAdmin, validate(createPlanSchema), async (req, res) => {
     try {
-        const { name, description, price_monthly, price_yearly, features, max_users, max_responses } = req.body;
+        const { name, description, price_monthly, price_yearly, features, max_users, max_responses, max_forms } = req.body;
         const result = await query(
-            `INSERT INTO pricing_plans (name, description, price_monthly, price_yearly, features, max_users, max_responses) 
-             VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
-            [name, description || '', price_monthly || 0, price_yearly || 0, JSON.stringify(features || []), max_users || 1, max_responses || 100]
+            `INSERT INTO pricing_plans (name, description, price_monthly, price_yearly, features, max_users, max_responses, max_forms) 
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
+            [name, description || '', price_monthly || 0, price_yearly || 0, JSON.stringify(features || []), max_users || 1, max_responses || 100, max_forms || 10]
         );
         res.status(201).json(result.rows[0]);
     } catch (e) {
@@ -262,16 +267,18 @@ router.post('/plans', authenticate, checkGlobalAdmin, validate(createPlanSchema)
  *       500:
  *         description: Server error
  */
-router.put('/plans/:id', authenticate, checkGlobalAdmin, validate(updatePlanSchema), async (req, res) => {
+// router.put('/plans/:id', authenticate, checkGlobalAdmin, validate(updatePlanSchema), async (req, res) => {
+router.put('/plans/:id', authenticate, checkGlobalAdmin, async (req, res) => {
+    logger.info('UPDATE PLAN REACHED', { id: req.params.id, body: req.body });
     try {
-        const { name, description, price_monthly, price_yearly, features, max_users, max_responses, is_active } = req.body;
+        const { name, description, price_monthly, price_yearly, features, max_users, max_responses, max_forms, is_active } = req.body;
         const id = req.params.id;
 
         await query(
             `UPDATE pricing_plans 
-             SET name=$1, description=$2, price_monthly=$3, price_yearly=$4, features=$5, max_users=$6, max_responses=$7, is_active=$8
-             WHERE id=$9`,
-            [name, description, price_monthly, price_yearly, JSON.stringify(features), max_users, max_responses, is_active, id]
+             SET name=$1, description=$2, price_monthly=$3, price_yearly=$4, features=$5, max_users=$6, max_responses=$7, max_forms=$8, is_active=$9
+             WHERE id=$10`,
+            [name, description || '', price_monthly || 0, price_yearly || 0, JSON.stringify(features || []), max_users || 1, max_responses || 100, max_forms || 10, is_active ?? true, id]
         );
         res.json({ success: true, message: 'Plan updated' });
     } catch (e) {
@@ -329,14 +336,9 @@ router.post('/tenants', authenticate, checkGlobalAdmin, validate(createTenantSch
         const { name, planId } = req.body;
         if (!name) return res.status(400).json({ error: 'Name is required' });
 
-        // Use random ID or let DB handle if serial (my script used VARCHAR for id)
-        // My script: id VARCHAR(50) PRIMARY KEY.
-        const crypto = require('crypto');
-        const id = crypto.randomUUID();
-
         const result = await query(
-            'INSERT INTO tenants (id, name, plan_id, status) VALUES ($1, $2, $3, $4) RETURNING *',
-            [id, name, planId || null, 'active']
+            'INSERT INTO tenants (name, plan_id, status) VALUES ($1, $2, $3) RETURNING *',
+            [name, planId || null, 'active']
         );
         res.status(201).json(result.rows[0]);
     } catch (e) {

@@ -1,13 +1,23 @@
+const logger = require('../../infrastructure/logger');
+
 const validate = (schema, source = 'body') => {
   return (req, res, next) => {
     const data = source === 'query' ? req.query : req.body;
     const { error, value } = schema.validate(data, {
       abortEarly: false,
       stripUnknown: true,
-      allowUnknown: false,
+      allowUnknown: true,
     });
 
     if (error) {
+      logger.error('Validation failed', {
+        source,
+        data,
+        errors: error.details.map(d => ({
+          field: d.path.join('.'),
+          message: d.message,
+        })),
+      });
       return res.status(400).json({
         error: {
           message: 'Validation failed',

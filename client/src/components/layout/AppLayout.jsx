@@ -64,6 +64,8 @@ export function AppLayout({ onNavigate, viewTitles }) {
     currentView = 'smartreach';
   } else if (pathParts.includes('surveys') || pathParts.includes('viewer')) {
     currentView = 'surveys';
+  } else if (location.pathname.startsWith('/social-listening')) {
+    currentView = location.pathname.substring(1).replace(/\/$/, "");
   }
 
   // Auto-hide/Collapse Sidebar Logic
@@ -283,8 +285,19 @@ export function AppLayout({ onNavigate, viewTitles }) {
                 <div
                   role="menuitem"
                   tabIndex={0}
-                  onClick={() => { i18n.changeLanguage(i18n.language === 'en' ? 'ar' : 'en'); setIsProfileMenuOpen(false); }}
-                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); i18n.changeLanguage(i18n.language === 'en' ? 'ar' : 'en'); setIsProfileMenuOpen(false); } }}
+                  onClick={() => {
+                    const newLang = i18n.language.startsWith('ar') ? 'en' : 'ar';
+                    i18n.changeLanguage(newLang);
+                    setIsProfileMenuOpen(false);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      const newLang = i18n.language.startsWith('ar') ? 'en' : 'ar';
+                      i18n.changeLanguage(newLang);
+                      setIsProfileMenuOpen(false);
+                    }
+                  }}
                   style={{
                     background: 'var(--profile-menu-item-bg)', padding: '12px 16px', borderRadius: '10px', marginBottom: '8px',
                     display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer',
@@ -298,7 +311,7 @@ export function AppLayout({ onNavigate, viewTitles }) {
                     <span style={{ fontSize: '0.9em', fontWeight: '600', color: 'var(--manage-profile-color)', letterSpacing: '0.5px' }}>{t('header.language')}</span>
                   </div>
                   <span style={{ fontSize: '0.7em', padding: '2px 8px', borderRadius: '4px', background: 'var(--profile-badge-bg)', color: 'var(--profile-badge-text)', border: '1px solid var(--profile-badge-border)', fontWeight: '600', textTransform: 'uppercase' }}>
-                    {i18n.language === 'en' ? 'English' : 'Arabic'}
+                    {i18n.language.startsWith('ar') ? 'Arabic' : 'English'}
                   </span>
                 </div>
 
@@ -336,7 +349,7 @@ export function AppLayout({ onNavigate, viewTitles }) {
           <div className={`sidebar-container ${isMobile && isMobileSidebarOpen ? 'mobile-open' : ''}`} style={{
             position: 'fixed',
             top: isMobile ? '56px' : '70px',
-            left: 0,
+            [isRtl ? 'right' : 'left']: 0,
             bottom: 0,
             zIndex: 1050,
           }}>

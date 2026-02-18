@@ -3,7 +3,7 @@ import axios from 'axios';
 import { Star, RefreshCw, MessageCircle, MapPin, ExternalLink, ThumbsUp, ThumbsDown } from 'lucide-react';
 import { useToast } from './common/Toast';
 
-export function ReputationManager() {
+export default function ReputationManager() {
     const toast = useToast();
     const [sources, setSources] = useState([]);
     const [reviews, setReviews] = useState([]);

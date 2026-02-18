@@ -3,7 +3,7 @@ import axios from 'axios';
 import { Plus, Edit, Trash2, Tag, CreditCard, Save, X } from 'lucide-react';
 import { useToast } from './common/Toast';
 
-export function SubscriptionConfig() {
+export default function SubscriptionConfig() {
     const [activeTab, setActiveTab] = useState('plans'); // plans, discounts
 
     return (

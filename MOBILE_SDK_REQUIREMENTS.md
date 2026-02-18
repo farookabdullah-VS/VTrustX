@@ -34,4 +34,4 @@ A fully native SDK for iOS (Swift/Obj-C) and Android (Kotlin/Java) to enable in-
 - [x] Phase 1: Define JSON Schema & Core Logic Reference (TS Implementation).
 - [x] Phase 2: Build iOS Core & UI Components (SwiftUI Implementation).
 - [x] Phase 3: Build Android Core & UI Components (Jetpack Compose Implementation).
-- [ ] Phase 4: SDK Documentation & Example Apps.
+- [x] Phase 4: SDK Documentation & Example Apps.

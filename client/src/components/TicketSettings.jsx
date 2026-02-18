@@ -55,7 +55,13 @@ export function TicketSettings() {
             setChannels(chanRes.data);
             setTemplates(tplRes.data);
             setRules(rulesRes.data);
-            setUsers(usersRes.data);
+            if (usersRes.data.users && Array.isArray(usersRes.data.users)) {
+                setUsers(usersRes.data.users);
+            } else if (Array.isArray(usersRes.data)) {
+                setUsers(usersRes.data);
+            } else {
+                setUsers([]);
+            }
         } catch (e) {
             console.error("Failed to load settings:", e);
         } finally {

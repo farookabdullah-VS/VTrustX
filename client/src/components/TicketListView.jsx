@@ -59,7 +59,15 @@ export function TicketListView({ onSelectTicket, user }) {
     }, [search]);
 
     const loadUsers = () => {
-        axios.get('/api/users').then(r => setUsers(r.data)).catch(() => { });
+        axios.get('/api/users?limit=100').then(r => {
+            if (r.data.users && Array.isArray(r.data.users)) {
+                setUsers(r.data.users);
+            } else if (Array.isArray(r.data)) {
+                setUsers(r.data);
+            } else {
+                setUsers([]);
+            }
+        }).catch(() => { });
     };
 
     const loadStats = () => {

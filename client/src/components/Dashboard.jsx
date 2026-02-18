@@ -18,7 +18,7 @@ import { Users, BarChart3, Zap, Sparkles, FileText, Settings, Calendar, ArrowUp,
 
 export function Dashboard({ onNavigate, onEdit, onEditSubmission }) {
     const { t, i18n } = useTranslation();
-    const { isDark } = useTheme();
+    const { isDark } = useTheme(); // Now safe - returns defaults if provider missing
     const isRtl = i18n.language === 'ar';
     const navigate = useNavigate();
 

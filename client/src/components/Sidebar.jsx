@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import './Sidebar.css';
 import { useTranslation } from 'react-i18next';
 import { Notifications } from './Notifications';
@@ -55,7 +55,20 @@ const getInitialGroups = (user) => [
         title: "sidebar.group.marketing",
         items: [
             { id: 'social-media', label: 'sidebar.item.smm', icon: <Share2 size={16} /> },
-            { id: 'social-listening', label: 'sidebar.item.social_listening', icon: <Radio size={16} /> },
+            {
+                id: 'social-listening',
+                label: 'sidebar.item.social_listening',
+                icon: <Radio size={16} />,
+                subItems: [
+                    { id: 'social-listening/overview', label: 'Overview' },
+                    { id: 'social-listening/mentions', label: 'Mentions' },
+                    { id: 'social-listening/topics', label: 'Topics' },
+                    { id: 'social-listening/influencers', label: 'Influencers' },
+                    { id: 'social-listening/competitors', label: 'Competitors' },
+                    { id: 'social-listening/alerts', label: 'Alerts' },
+                    { id: 'social-listening/crisis', label: 'Crisis Control' }
+                ]
+            },
             { id: 'reputation', label: 'sidebar.item.reputation_manager', icon: <Star size={16} /> }
         ]
     },
@@ -92,7 +105,9 @@ const getInitialGroups = (user) => [
         title: "sidebar.group.c360",
         items: [
             { id: 'customer360', label: 'sidebar.item.unified_profile', icon: <UserCircle size={16} /> },
-            { id: 'contact-master', label: 'sidebar.item.contacts', icon: <Contact size={16} /> }
+            { id: 'contact-master', label: 'sidebar.item.contacts', icon: <Contact size={16} /> },
+            { id: 'contact-duplicates', label: 'Duplicate Contacts', icon: <Users size={16} /> },
+            { id: 'suppression-list', label: 'Suppression List', icon: <Shield size={16} /> }
         ]
     },
     {
@@ -106,8 +121,8 @@ const getInitialGroups = (user) => [
         id: 'ai-decisioning',
         title: "sidebar.group.ai",
         items: [
-            { id: 'workflows', label: 'sidebar.item.rules', icon: <Bot size={16} /> },
-            { id: 'workflows-automation', label: 'Workflow Automations', icon: <Zap size={16} /> },
+            { id: 'workflows', label: 'Workflows', icon: <Zap size={16} /> },
+            { id: 'workflows-automation', label: 'Workflow Automations', icon: <Bot size={16} /> },
             { id: 'ai-settings', label: 'sidebar.item.ai_models', icon: <Settings size={16} /> }
         ]
     },
@@ -371,37 +386,73 @@ export function Sidebar({ user, view, onViewChange, onLogout, isCollapsed, toggl
                             <ul>
                                 {group.items.map(item => {
                                     const isFav = favorites.includes(item.id);
-                                    return (
-                                        <li key={item.id} title={isCollapsed ? t(item.label) : ''} className={view === item.id ? 'active' : ''} aria-current={view === item.id ? 'page' : undefined} onClick={() => onViewChange(item.id)}
-                                            style={{ position: 'relative', paddingRight: '30px' }} /* Make space for star */
-                                        >
-                                            <span className="icon">{item.icon}</span>
-                                            {!isCollapsed && <span className="label">{t(item.label)}</span>}
+                                    const hasSubItems = item.subItems && item.subItems.length > 0;
+                                    const isParentActive = view.startsWith(item.id);
 
-                                            {/* Favorite Toggle Star */}
-                                            {!isCollapsed && (
-                                                <div
-                                                    className="fav-star"
-                                                    role="button"
-                                                    tabIndex={0}
-                                                    aria-label={isFav ? `Remove ${t(item.label)} from favorites` : `Add ${t(item.label)} to favorites`}
-                                                    aria-pressed={isFav}
-                                                    onClick={(e) => toggleFavorite(e, item.id)}
-                                                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleFavorite(e, item.id); } }}
-                                                    style={{
-                                                        position: 'absolute', right: '8px',
-                                                        opacity: isFav ? 1 : 0.2,
-                                                        transition: 'opacity 0.2s', cursor: 'pointer'
-                                                    }}
-                                                    onMouseOver={e => e.currentTarget.style.opacity = 1}
-                                                    onMouseOut={e => e.currentTarget.style.opacity = isFav ? 1 : 0.2}
-                                                    onFocus={e => e.currentTarget.style.opacity = 1}
-                                                    onBlur={e => e.currentTarget.style.opacity = isFav ? 1 : 0.2}
-                                                >
-                                                    <Star size={14} fill={isFav ? "#f59e0b" : "none"} color={isFav ? "#f59e0b" : "currentColor"} />
-                                                </div>
+                                    return (
+                                        <React.Fragment key={item.id}>
+                                            <li title={isCollapsed ? t(item.label) : ''} className={view === item.id || (hasSubItems && isParentActive) ? 'active' : ''} aria-current={view === item.id ? 'page' : undefined} onClick={() => onViewChange(item.id)}
+                                                style={{ position: 'relative', paddingRight: '30px' }} /* Make space for star */
+                                            >
+                                                <span className="icon">{item.icon}</span>
+                                                {!isCollapsed && <span className="label" style={{ fontWeight: hasSubItems && isParentActive ? '700' : 'inherit' }}>{t(item.label)}</span>}
+                                                {!isCollapsed && hasSubItems && (
+                                                    <span style={{ marginLeft: 'auto', fontSize: '10px', opacity: 0.5 }}>{isParentActive ? '▼' : '▶'}</span>
+                                                )}
+
+                                                {/* Favorite Toggle Star */}
+                                                {!isCollapsed && (
+                                                    <div
+                                                        className="fav-star"
+                                                        role="button"
+                                                        tabIndex={0}
+                                                        aria-label={isFav ? `Remove ${t(item.label)} from favorites` : `Add ${t(item.label)} to favorites`}
+                                                        aria-pressed={isFav}
+                                                        onClick={(e) => toggleFavorite(e, item.id)}
+                                                        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleFavorite(e, item.id); } }}
+                                                        style={{
+                                                            position: 'absolute', right: '8px',
+                                                            opacity: isFav ? 1 : 0.2,
+                                                            transition: 'opacity 0.2s', cursor: 'pointer'
+                                                        }}
+                                                        onMouseOver={e => e.currentTarget.style.opacity = 1}
+                                                        onMouseOut={e => e.currentTarget.style.opacity = isFav ? 1 : 0.2}
+                                                        onFocus={e => e.currentTarget.style.opacity = 1}
+                                                        onBlur={e => e.currentTarget.style.opacity = isFav ? 1 : 0.2}
+                                                    >
+                                                        <Star size={14} fill={isFav ? "#f59e0b" : "none"} color={isFav ? "#f59e0b" : "currentColor"} />
+                                                    </div>
+                                                )}
+                                            </li>
+
+                                            {/* Render Sub-items */}
+                                            {!isCollapsed && hasSubItems && isParentActive && (
+                                                <ul className="sidebar-sub-items" style={{ margin: '0 0 8px 30px', padding: 0, listStyle: 'none', borderLeft: '1px solid var(--sidebar-border)' }}>
+                                                    {item.subItems.map(subItem => (
+                                                        <li
+                                                            key={subItem.id}
+                                                            className={view === subItem.id ? 'active sub-active' : ''}
+                                                            onClick={(e) => { e.stopPropagation(); onViewChange(subItem.id); }}
+                                                            onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--sidebar-hover-bg)'; e.currentTarget.style.opacity = '1'; }}
+                                                            onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.opacity = view === subItem.id ? '1' : '0.7'; }}
+                                                            style={{
+                                                                padding: '6px 12px',
+                                                                fontSize: '12.5px',
+                                                                color: view === subItem.id ? 'var(--sidebar-active-text)' : 'var(--sidebar-text)',
+                                                                opacity: view === subItem.id ? 1 : 0.7,
+                                                                cursor: 'pointer',
+                                                                borderRadius: '0 4px 4px 0',
+                                                                borderLeft: view === subItem.id ? '2px solid var(--primary-color)' : 'none',
+                                                                marginLeft: '-1px',
+                                                                transition: 'all 0.2s'
+                                                            }}
+                                                        >
+                                                            {subItem.label}
+                                                        </li>
+                                                    ))}
+                                                </ul>
                                             )}
-                                        </li>
+                                        </React.Fragment>
                                     );
                                 })}
                             </ul>

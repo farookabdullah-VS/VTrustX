@@ -296,7 +296,11 @@ function AppRoutes() {
                   <Route path="personas" element={<CxPersonaBuilder onNavigate={(v) => navigate(`/${v}`)} />} />
                   <Route path="journeys" element={<JourneyBuilder />} />
                   <Route path="persona-templates" element={
-                    <PersonaTemplatesRoute navigate={navigate} />
+                    <CxPersonaTemplates
+                      onSelectTemplate={(tmpl) => {
+                        navigate('/personas', { state: { template: tmpl } });
+                      }}
+                    />
                   } />
                   <Route path="templates" element={
                     <div style={{ height: 'calc(100vh - 100px)' }}>

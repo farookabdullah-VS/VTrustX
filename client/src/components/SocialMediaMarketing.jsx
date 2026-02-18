@@ -17,7 +17,7 @@ import { SmmProvider } from './smm/context/SmmContext';
  * Implements the left sidebar navigation and top bar context.
  * Opens in a FULL PAGE OVERLAY (outside parent layout)
  */
-export function SocialMediaMarketing() {
+export default function SocialMediaMarketing() {
     return (
         <SmmProvider>
             {/* Full Page Overlay to breakout of parent sidebar */}

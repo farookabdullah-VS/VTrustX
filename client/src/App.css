@@ -86,3 +86,98 @@ input:focus+.slider {
 input:checked+.slider:before {
   transform: translateX(16px);
 }
+
+/* Dark Theme Text Visibility Fixes */
+[data-theme="dark"] {
+  color: var(--text-primary, #f8fafc);
+}
+
+[data-theme="dark"] * {
+  color: inherit;
+}
+
+[data-theme="dark"] h1,
+[data-theme="dark"] h2,
+[data-theme="dark"] h3,
+[data-theme="dark"] h4,
+[data-theme="dark"] h5,
+[data-theme="dark"] h6 {
+  color: var(--heading-color, #ffffff);
+}
+
+[data-theme="dark"] p,
+[data-theme="dark"] span,
+[data-theme="dark"] div {
+  color: var(--text-color, #f8fafc);
+}
+
+[data-theme="dark"] label {
+  color: var(--label-color, #e2e8f0);
+}
+
+[data-theme="dark"] input,
+[data-theme="dark"] textarea,
+[data-theme="dark"] select {
+  color: var(--input-text, #f8fafc);
+  background-color: var(--input-bg, #2d3748);
+  border-color: var(--input-border, #4a5568);
+}
+
+[data-theme="dark"] input::placeholder,
+[data-theme="dark"] textarea::placeholder {
+  color: var(--input-placeholder, #94a3b8);
+}
+
+[data-theme="dark"] button {
+  color: var(--text-primary, #f8fafc);
+}
+
+[data-theme="dark"] a {
+  color: var(--primary, #26A69A);
+}
+
+[data-theme="dark"] .card,
+[data-theme="dark"] .panel,
+[data-theme="dark"] .modal {
+  background-color: var(--card-bg, #242b3d);
+  color: var(--text-primary, #f8fafc);
+}
+
+/* Ensure survey cards and form elements are visible */
+[data-theme="dark"] .survey-card,
+[data-theme="dark"] .form-card {
+  background-color: var(--card-bg, #242b3d);
+  color: var(--text-primary, #f8fafc);
+}
+
+[data-theme="dark"] .survey-card *,
+[data-theme="dark"] .form-card * {
+  color: var(--text-primary, #f8fafc);
+}
+
+[data-theme="dark"] .survey-card h3,
+[data-theme="dark"] .form-card h3 {
+  color: var(--heading-color, #ffffff);
+}
+
+/* Fix for muted text */
+[data-theme="dark"] .text-muted,
+[data-theme="dark"] .muted {
+  color: var(--text-muted, #94a3b8) !important;
+}
+
+/* Fix for secondary text */
+[data-theme="dark"] .text-secondary {
+  color: var(--text-secondary, #cbd5e1) !important;
+}
+
+/* Ensure header text is visible */
+[data-theme="dark"] header {
+  background: var(--header-bg, #1a2332);
+  color: var(--text-primary, #f8fafc);
+  border-bottom-color: var(--header-border, rgba(226, 232, 240, 0.1));
+}
+
+[data-theme="dark"] header * {
+  color: var(--text-primary, #f8fafc);
+}

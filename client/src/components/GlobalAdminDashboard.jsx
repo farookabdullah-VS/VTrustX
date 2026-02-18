@@ -331,7 +331,7 @@ export function GlobalAdminDashboard() {
 function PlanModal({ plan, onSave, onClose }) {
     const [formData, setFormData] = useState(plan || {
         name: '', description: '', price_monthly: 0, price_yearly: 0,
-        max_users: 5, max_responses: 1000, features: [], is_active: true
+        max_users: 5, max_responses: 1000, max_forms: 10, features: [], is_active: true
     });
     const [featureInput, setFeatureInput] = useState('');
 
@@ -371,7 +371,7 @@ function PlanModal({ plan, onSave, onClose }) {
                     <textarea name="description" value={formData.description} onChange={handleChange} style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid var(--input-border)', background: 'var(--input-bg)', color: 'var(--text-color)' }} />
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '15px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '15px', marginBottom: '15px' }}>
                     <div>
                         <label style={{ display: 'block', fontSize: '0.9em', marginBottom: '5px', color: 'var(--text-muted)' }}>Max Users</label>
                         <input type="number" name="max_users" value={formData.max_users} onChange={handleChange} style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid var(--input-border)', background: 'var(--input-bg)', color: 'var(--text-color)' }} />
@@ -379,6 +379,10 @@ function PlanModal({ plan, onSave, onClose }) {
                     <div>
                         <label style={{ display: 'block', fontSize: '0.9em', marginBottom: '5px', color: 'var(--text-muted)' }}>Max Responses</label>
                         <input type="number" name="max_responses" value={formData.max_responses} onChange={handleChange} style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid var(--input-border)', background: 'var(--input-bg)', color: 'var(--text-color)' }} />
+                    </div>
+                    <div>
+                        <label style={{ display: 'block', fontSize: '0.9em', marginBottom: '5px', color: 'var(--text-muted)' }}>Max Forms</label>
+                        <input type="number" name="max_forms" value={formData.max_forms} onChange={handleChange} style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid var(--input-border)', background: 'var(--input-bg)', color: 'var(--text-color)' }} />
                     </div>
                 </div>
 
