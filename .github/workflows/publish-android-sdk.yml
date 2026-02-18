@@ -1,0 +1,149 @@
+name: Publish Android SDK
+
+on:
+  push:
+    tags:
+      - 'sdk-v*'       # e.g. sdk-v1.0.1  — triggers both Android + iOS publish
+      - 'sdk-android-v*'  # e.g. sdk-android-v1.0.1  — Android only
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'SDK version to publish (e.g. 1.0.1)'
+        required: true
+        default: '1.0.0'
+
+env:
+  JAVA_VERSION: '17'
+
+jobs:
+  # ─────────────────────────────────────────────────────────────────
+  # 1. Build & publish the AAR to GitHub Packages Maven
+  # ─────────────────────────────────────────────────────────────────
+  publish-aar:
+    name: Build & Publish AAR → GitHub Packages
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write       # create GitHub release
+      packages: write       # publish to GitHub Packages Maven
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: gradle
+
+      # Resolve SDK version from tag (sdk-v1.0.1 → 1.0.1) or manual input
+      - name: Resolve version
+        id: ver
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+          else
+            TAG="${GITHUB_REF_NAME}"
+            # Strip leading "sdk-v" or "sdk-android-v"
+            VERSION="${TAG#sdk-android-v}"
+            VERSION="${VERSION#sdk-v}"
+            echo "version=$VERSION" >> $GITHUB_OUTPUT
+          fi
+
+      # Patch versionName in build.gradle before building
+      - name: Patch version in build.gradle
+        working-directory: client/android-sdk
+        run: |
+          VERSION="${{ steps.ver.outputs.version }}"
+          sed -i "s/version    = '[^']*'/version    = '${VERSION}'/" build.gradle
+          sed -i "s/versionName \"[^\"]*\"/versionName \"${VERSION}\"/" build.gradle
+          echo "Building version: ${VERSION}"
+          grep -E 'versionName|version\s*=' build.gradle
+
+      - name: Grant Gradle execute permission
+        working-directory: client/android-sdk
+        run: chmod +x gradlew
+
+      # assembleRelease → produces the AAR
+      - name: Build release AAR
+        working-directory: client/android-sdk
+        run: ./gradlew assembleRelease --no-daemon --stacktrace
+
+      # publishReleasePublicationToGitHubPackagesRepository
+      # uses GITHUB_TOKEN for auth — no extra secret required
+      - name: Publish to GitHub Packages
+        working-directory: client/android-sdk
+        env:
+          GITHUB_ACTOR: ${{ github.actor }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: ./gradlew publishReleasePublicationToGitHubPackagesRepository --no-daemon --stacktrace
+
+      # Locate AAR for upload
+      - name: Find AAR path
+        id: aar
+        working-directory: client/android-sdk
+        run: |
+          AAR=$(find . -name "*-release.aar" | head -1)
+          echo "path=${AAR}" >> $GITHUB_OUTPUT
+          echo "Found AAR: ${AAR}"
+          ls -lh "${AAR}"
+
+      # Upload AAR as workflow artifact (always available, even without a release)
+      - name: Upload AAR artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: VTrustX-Android-SDK-${{ steps.ver.outputs.version }}
+          path: client/android-sdk/${{ steps.aar.outputs.path }}
+          retention-days: 90
+
+      # Create or update a GitHub release and attach the AAR
+      - name: Create GitHub release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: Android SDK v${{ steps.ver.outputs.version }}
+          body: |
+            ## VTrustX Android SDK v${{ steps.ver.outputs.version }}
+
+            ### Installation
+
+            **Gradle (GitHub Packages):**
+            ```kotlin
+            repositories {
+                maven {
+                    url = uri("https://maven.pkg.github.com/farookabdullah-VS/VTrustX")
+                    credentials {
+                        username = System.getenv("GITHUB_ACTOR")
+                        password = System.getenv("GITHUB_TOKEN")
+                    }
+                }
+            }
+
+            dependencies {
+                implementation("com.vtrustx:sdk:${{ steps.ver.outputs.version }}")
+            }
+            ```
+
+            **Or download the AAR** from the assets below and add it as a local dependency.
+
+            See [SDK Documentation](https://github.com/farookabdullah-VS/VTrustX/blob/main/sdk/docs/index.html) for full usage.
+          files: client/android-sdk/${{ steps.aar.outputs.path }}
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build summary
+        run: |
+          echo "### ✅ Android SDK Published!" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| **Version** | ${{ steps.ver.outputs.version }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **GroupId** | com.vtrustx |" >> $GITHUB_STEP_SUMMARY
+          echo "| **ArtifactId** | sdk |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Registry** | GitHub Packages Maven |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Gradle coordinate:** \`com.vtrustx:sdk:${{ steps.ver.outputs.version }}\`" >> $GITHUB_STEP_SUMMARY

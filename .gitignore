@@ -79,11 +79,27 @@ check_cooldown_columns.js
 # Backup files
 *.backup
 
-# SDK directories (keep separate, but allow documentation)
+# SDK directories — ignore build artifacts, allow source + config
 /client/android-sdk/*
+!/client/android-sdk/build.gradle
+!/client/android-sdk/settings.gradle
+!/client/android-sdk/gradlew
+!/client/android-sdk/gradlew.bat
 !/client/android-sdk/docs/
+!/client/android-sdk/src/
+/client/android-sdk/src/*
+!/client/android-sdk/src/main/
+/client/android-sdk/src/main/*
+!/client/android-sdk/src/main/AndroidManifest.xml
+!/client/android-sdk/src/main/java/
+
 /client/ios-sdk/*
+!/client/ios-sdk/Package.swift
+!/client/ios-sdk/VTrustX.podspec
 !/client/ios-sdk/docs/
+!/client/ios-sdk/Sources/
+!/client/ios-sdk/examples/
+
 /sdk/*
 !/sdk/docs/
 !/sdk/examples/

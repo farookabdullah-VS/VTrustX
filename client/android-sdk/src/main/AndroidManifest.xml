@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Minimal manifest for the VTrustX Android SDK library.
+  Library manifests are merged into the host app's manifest at build time;
+  no activities, services, or permissions are declared here because the SDK
+  does not require them — all runtime permissions (INTERNET, etc.) must be
+  declared by the consuming application.
+-->
+<manifest package="com.vtrustx.sdk" />

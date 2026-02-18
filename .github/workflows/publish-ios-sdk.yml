@@ -1,0 +1,196 @@
+name: Publish iOS SDK
+
+on:
+  push:
+    tags:
+      - 'sdk-v*'          # e.g. sdk-v1.0.1  — triggers both Android + iOS
+      - 'sdk-ios-v*'      # e.g. sdk-ios-v1.0.1  — iOS only
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'SDK version to publish (e.g. 1.0.1)'
+        required: true
+        default: '1.0.0'
+      push_cocoapods:
+        description: 'Push to CocoaPods trunk?'
+        type: boolean
+        required: false
+        default: false
+
+# iOS builds must run on macOS (Xcode requirement)
+jobs:
+  publish-ios-sdk:
+    name: Build XCFramework & Publish iOS SDK
+    runs-on: macos-latest
+    permissions:
+      contents: write   # create GitHub release + upload assets
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Select Xcode 15
+        run: sudo xcode-select -s /Applications/Xcode_15.2.app/Contents/Developer
+
+      - name: Show Xcode version
+        run: xcodebuild -version && swift --version
+
+      # ── Resolve version ─────────────────────────────────────────────
+      - name: Resolve version
+        id: ver
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+          else
+            TAG="${GITHUB_REF_NAME}"
+            VERSION="${TAG#sdk-ios-v}"
+            VERSION="${VERSION#sdk-v}"
+            echo "version=$VERSION" >> $GITHUB_OUTPUT
+          fi
+
+      # Patch version in podspec
+      - name: Patch podspec version
+        working-directory: client/ios-sdk
+        run: |
+          VERSION="${{ steps.ver.outputs.version }}"
+          sed -i '' "s/s.version\s*=\s*'[^']*'/s.version          = '${VERSION}'/" VTrustX.podspec
+          echo "Podspec version:"
+          grep "s.version" VTrustX.podspec
+
+      # ── Swift build (validates the package compiles) ─────────────────
+      - name: Build Swift package (validation)
+        working-directory: client/ios-sdk
+        run: swift build -c release 2>&1
+
+      # ── Build XCFramework ────────────────────────────────────────────
+      # Archive for physical iOS devices (arm64)
+      - name: Archive — iOS device (arm64)
+        working-directory: client/ios-sdk
+        run: |
+          xcodebuild archive \
+            -scheme VTrustX \
+            -destination "generic/platform=iOS" \
+            -archivePath ../build/VTrustX-iOS.xcarchive \
+            SKIP_INSTALL=NO \
+            BUILD_LIBRARY_FOR_DISTRIBUTION=YES \
+            | xcpretty || true
+
+      # Archive for iOS Simulator (arm64 + x86_64 via rosetta)
+      - name: Archive — iOS Simulator
+        working-directory: client/ios-sdk
+        run: |
+          xcodebuild archive \
+            -scheme VTrustX \
+            -destination "generic/platform=iOS Simulator" \
+            -archivePath ../build/VTrustX-iOS-Simulator.xcarchive \
+            SKIP_INSTALL=NO \
+            BUILD_LIBRARY_FOR_DISTRIBUTION=YES \
+            | xcpretty || true
+
+      # Combine both archives into a universal XCFramework
+      - name: Create XCFramework
+        working-directory: client
+        run: |
+          xcodebuild -create-xcframework \
+            -framework build/VTrustX-iOS.xcarchive/Products/Library/Frameworks/VTrustX.framework \
+            -framework build/VTrustX-iOS-Simulator.xcarchive/Products/Library/Frameworks/VTrustX.framework \
+            -output build/VTrustX.xcframework
+
+          echo "XCFramework created:"
+          ls -lh build/VTrustX.xcframework/
+
+      # Zip the XCFramework for distribution
+      - name: Zip XCFramework
+        working-directory: client/build
+        run: |
+          zip -r VTrustX-${{ steps.ver.outputs.version }}.xcframework.zip VTrustX.xcframework
+          echo "xcframework_zip=client/build/VTrustX-${{ steps.ver.outputs.version }}.xcframework.zip" >> $GITHUB_ENV
+
+          # Compute checksum (used in Package.swift for binary targets)
+          CHECKSUM=$(swift package compute-checksum VTrustX-${{ steps.ver.outputs.version }}.xcframework.zip)
+          echo "XCFRAMEWORK_CHECKSUM=${CHECKSUM}" >> $GITHUB_ENV
+          echo "XCFramework checksum: ${CHECKSUM}"
+
+      # Upload XCFramework as artifact
+      - name: Upload XCFramework artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: VTrustX-iOS-SDK-${{ steps.ver.outputs.version }}
+          path: ${{ env.xcframework_zip }}
+          retention-days: 90
+
+      # ── Validate CocoaPods podspec ───────────────────────────────────
+      - name: Validate podspec
+        working-directory: client/ios-sdk
+        run: |
+          gem install cocoapods --no-document --quiet
+          pod spec lint VTrustX.podspec --allow-warnings --verbose
+
+      # ── Create GitHub Release ────────────────────────────────────────
+      - name: Create GitHub release
+        if: startsWith(github.ref, 'refs/tags/')
+        id: release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: iOS SDK v${{ steps.ver.outputs.version }}
+          body: |
+            ## VTrustX iOS SDK v${{ steps.ver.outputs.version }}
+
+            ### Installation
+
+            #### Swift Package Manager (Recommended)
+            ```swift
+            // Package.swift
+            dependencies: [
+                .package(
+                    url: "https://github.com/farookabdullah-VS/VTrustX.git",
+                    from: "${{ steps.ver.outputs.version }}"
+                )
+            ]
+            ```
+            Or in Xcode: **File → Add Package Dependencies** → enter the URL above.
+
+            #### CocoaPods
+            ```ruby
+            pod 'VTrustX', '~> ${{ steps.ver.outputs.version }}'
+            ```
+
+            #### Binary XCFramework
+            Download `VTrustX-${{ steps.ver.outputs.version }}.xcframework.zip` from the assets
+            below, unzip it, and drag `VTrustX.xcframework` into your Xcode project.
+
+            **SHA-256 checksum:** `${{ env.XCFRAMEWORK_CHECKSUM }}`
+
+            ---
+            See [SDK Documentation](https://github.com/farookabdullah-VS/VTrustX/blob/main/sdk/docs/index.html) for full usage.
+          files: ${{ env.xcframework_zip }}
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # ── Optional: push to CocoaPods trunk ───────────────────────────
+      - name: Push to CocoaPods trunk
+        # Runs when: manual trigger with push_cocoapods=true  OR
+        #            the secret COCOAPODS_TRUNK_TOKEN is present and it's a tag push
+        if: |
+          (github.event_name == 'workflow_dispatch' && github.event.inputs.push_cocoapods == 'true') ||
+          (startsWith(github.ref, 'refs/tags/') && env.HAS_CP_TOKEN == 'true')
+        env:
+          COCOAPODS_TRUNK_TOKEN: ${{ secrets.COCOAPODS_TRUNK_TOKEN }}
+          HAS_CP_TOKEN: ${{ secrets.COCOAPODS_TRUNK_TOKEN != '' }}
+        working-directory: client/ios-sdk
+        run: |
+          pod trunk push VTrustX.podspec --allow-warnings --verbose
+
+      - name: Build summary
+        run: |
+          echo "### ✅ iOS SDK Published!" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Property | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| **Version** | ${{ steps.ver.outputs.version }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **XCFramework checksum** | \`${{ env.XCFRAMEWORK_CHECKSUM }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **SPM URL** | https://github.com/farookabdullah-VS/VTrustX |" >> $GITHUB_STEP_SUMMARY
+          echo "| **CocoaPods** | VTrustX |" >> $GITHUB_STEP_SUMMARY
