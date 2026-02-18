@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { GripVertical, Trash2, Settings, MessageCircle } from 'lucide-react';
+import { GripVertical, Trash2, Settings, MessageCircle, X } from 'lucide-react';
 import { CellControl } from './CellControl';
 import { AICellAssistant } from './AICellAssistant';
 
@@ -99,21 +99,75 @@ export function SectionRow({ section, stages, onUpdateCell, onUpdateSection, onD
         );
     };
 
+    const [showSettings, setShowSettings] = useState(false);
+
     return (
         <div ref={setNodeRef} style={style} className="cjm-section-row-wrapper">
-            <div className={`cjm-section-header ${section.type}`} style={{ borderColor: section.style_defaults?.line_color }}>
+            <div className={`cjm-section-header ${section.type}`} style={{ borderLeftColor: section.style_defaults?.line_color || '#cbd5e1' }}>
                 <div className="cjm-drag-handle" {...attributes} {...listeners}><GripVertical size={16} /></div>
 
-                <div className="cjm-section-title-wrapper">
+                <div className="cjm-section-title-wrapper" style={{ position: 'relative' }}>
                     <input
                         value={section.title}
                         onChange={(e) => onUpdateSection(section.id, { title: e.target.value })}
                         className="cjm-section-input"
                     />
-                    <div className="cjm-section-actions">
+                    <div className="cjm-section-actions" style={{ opacity: showSettings ? 1 : undefined }}>
                         <button onClick={() => onDeleteSection(section.id)} className="cjm-icon-mini danger" aria-label={`Delete section ${section.title}`}><Trash2 size={12} aria-hidden="true" /></button>
-                        <button className="cjm-icon-mini" aria-label={`Settings for section ${section.title}`}><Settings size={12} aria-hidden="true" /></button>
+                        <button className="cjm-icon-mini" onClick={() => setShowSettings(!showSettings)} style={{ color: showSettings ? 'var(--primary-color)' : undefined }} aria-label={`Settings for section ${section.title}`} aria-expanded={showSettings}><Settings size={12} aria-hidden="true" /></button>
                     </div>
+
+                    {showSettings && (
+                        <div className="cjm-color-picker-popover row-settings" style={{ left: '0', top: '24px', right: 'auto', zIndex: 1000, background: 'var(--card-bg)', border: '1px solid var(--border-light)' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                                <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-primary)' }}>Row Settings</span>
+                                <button onClick={() => setShowSettings(false)} className="cjm-icon-mini" style={{ padding: '2px' }}><X size={14} /></button>
+                            </div>
+
+                            <div style={{ marginBottom: '12px' }}>
+                                <label style={{ display: 'block', fontSize: '11px', color: 'var(--text-muted)', fontWeight: '600', marginBottom: '4px' }}>Theme Color</label>
+                                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                    <input
+                                        type="color"
+                                        value={section.style_defaults?.line_color || '#cbd5e1'}
+                                        onChange={e => onUpdateSection(section.id, { style_defaults: { ...(section.style_defaults || {}), line_color: e.target.value } })}
+                                        style={{ width: '40px', height: '24px', border: '1px solid var(--border-light)', borderRadius: '4px', cursor: 'pointer', padding: '1px', background: 'transparent' }}
+                                    />
+                                    <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{section.style_defaults?.line_color || '#cbd5e1'}</span>
+                                </div>
+                            </div>
+
+                            <div style={{ marginBottom: '8px' }}>
+                                <label style={{ display: 'block', fontSize: '11px', color: 'var(--text-muted)', fontWeight: '600', marginBottom: '4px' }}>Section Type</label>
+                                <select
+                                    value={section.type}
+                                    onChange={e => onUpdateSection(section.id, { type: e.target.value })}
+                                    style={{ width: '100%', padding: '6px', fontSize: '12px', border: '1px solid var(--border-light)', borderRadius: '4px', outline: 'none', background: 'var(--input-bg)', color: 'var(--text-primary)' }}
+                                >
+                                    <option value="text">Text Box</option>
+                                    <option value="touchpoints">Touchpoints</option>
+                                    <option value="sentiment_graph">Sentiment Graph</option>
+                                    <option value="think_feel">Think & Feel</option>
+                                    <option value="goals">User Goals</option>
+                                    <option value="actions">Customer Actions</option>
+                                    <option value="pain_point">Pain Points</option>
+                                    <option value="opportunity">Opportunities</option>
+                                    <option value="kpi">KPI Data</option>
+                                    <option value="channels">Channels</option>
+                                    <option value="process_flow">Process Flow</option>
+                                </select>
+                            </div>
+
+                            <div style={{ marginTop: '8px', paddingTop: '8px', borderTop: '1px solid var(--border-light)' }}>
+                                <button
+                                    onClick={() => onDeleteSection(section.id)}
+                                    style={{ width: '100%', background: 'var(--status-error-bg, #fff1f2)', color: 'var(--status-error, #e11d48)', border: '1px solid var(--status-error-border, #fda4af)', borderRadius: '4px', padding: '6px', fontSize: '11px', fontWeight: '600', cursor: 'pointer' }}
+                                >
+                                    Delete Row
+                                </button>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
 

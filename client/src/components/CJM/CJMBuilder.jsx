@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import { useTranslation } from 'react-i18next';
 import { useToast } from '../common/Toast';
@@ -17,11 +18,20 @@ import { AIMapGenerator } from './AIMapGenerator';
 
 import './CJMBuilder.css';
 
-export function CJMBuilder({ mapId, onBack }) {
+export default function CJMBuilder({ onBack }) {
+    const { mapId } = useParams();
     const { t } = useTranslation();
     const toast = useToast();
     const [loading, setLoading] = useState(true);
     const [currentMapId, setCurrentMapId] = useState(mapId);
+
+    // Sync state with URL params
+    useEffect(() => {
+        if (mapId && mapId !== currentMapId) {
+            setCurrentMapId(mapId);
+            setLoading(true); // Trigger reload
+        }
+    }, [mapId]);
     const [mapData, setMapData] = useState({
         project_name: "Untitled Journey",
         stages: [],
@@ -73,7 +83,7 @@ export function CJMBuilder({ mapId, onBack }) {
                 });
 
             // Load comments
-            axios.get(`/api/cjm/${currentMapId}/comments`).then(res => setComments(res.data)).catch(() => {});
+            axios.get(`/api/cjm/${currentMapId}/comments`).then(res => setComments(res.data)).catch(() => { });
         } else {
             const md = {
                 project_name: "New Journey Map",
@@ -95,7 +105,7 @@ export function CJMBuilder({ mapId, onBack }) {
         }
 
         // Load personas
-        axios.get('/api/cx-personas').then(res => setPersonas(res.data || [])).catch(() => {});
+        axios.get('/api/cx-personas').then(res => setPersonas(res.data || [])).catch(() => { });
     }, [currentMapId]);
 
     // Auto-save: debounced 30 seconds

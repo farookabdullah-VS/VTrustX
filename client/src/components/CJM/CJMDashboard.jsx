@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Plus, Search, Grid, List, Copy, Trash2, Edit3, Filter, Clock, MoreVertical, Wand2 } from 'lucide-react';
 import { TemplateGallery } from './TemplateGallery';
@@ -72,7 +73,8 @@ function MapListItem({ map, onEdit, onDuplicate, onDelete }) {
     );
 }
 
-export function CJMDashboard({ onSelectMap }) {
+export default function CJMDashboard() {
+    const navigate = useNavigate();
     const toast = useToast();
     const [maps, setMaps] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -81,6 +83,8 @@ export function CJMDashboard({ onSelectMap }) {
     const [viewMode, setViewMode] = useState('gallery');
     const [showTemplates, setShowTemplates] = useState(false);
     const [showAIGenerator, setShowAIGenerator] = useState(false);
+
+    const onSelectMap = (id) => navigate(`/cjm/${id}`);
 
     const loadMaps = async () => {
         try {

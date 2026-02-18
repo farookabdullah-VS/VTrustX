@@ -14,7 +14,11 @@ export function ShareDialog({ mapId, onClose }) {
 
     useEffect(() => {
         loadShares();
-        axios.get('/api/users').then(res => setUsers(res.data || [])).catch(() => {});
+        axios.get('/api/users?limit=100').then(res => {
+            if (res.data.users && Array.isArray(res.data.users)) setUsers(res.data.users);
+            else if (Array.isArray(res.data)) setUsers(res.data);
+            else setUsers([]);
+        }).catch(() => { });
     }, []);
 
     const loadShares = async () => {

@@ -72,7 +72,34 @@ export function CJMGrid({ stages, sections, onUpdateCell, onAddStage, onAddSecti
     return (
         <div className="cjm-grid">
             <div className="cjm-stages-row">
-                <div className="cjm-corner-header">Journey Stages</div>
+                <div className="cjm-corner-header" style={{ position: 'relative' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', padding: '0 8px' }}>
+                        <span style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-muted)' }}>Journey Stages</span>
+                        <button
+                            className="cjm-icon-mini primary"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onAddSection && onAddSection('text');
+                            }}
+                            title="Add Row"
+                            style={{
+                                background: 'var(--primary-color)',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '4px',
+                                width: '24px',
+                                height: '24px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s'
+                            }}
+                        >
+                            <Plus size={14} />
+                        </button>
+                    </div>
+                </div>
                 <SortableContext items={stages.map(s => s.id)} strategy={horizontalListSortingStrategy}>
                     {stages.map(stage => (
                         <StageHeader

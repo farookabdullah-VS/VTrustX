@@ -9,7 +9,7 @@ import { DashboardSkeleton } from '../common/Skeleton';
 
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316'];
 
-export function CJMAnalyticsDashboard() {
+export default function CJMAnalyticsDashboard() {
     const [maps, setMaps] = useState([]);
     const [loading, setLoading] = useState(true);
 
