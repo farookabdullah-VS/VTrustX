@@ -1,3 +1,4 @@
+$ErrorActionPreference = "Stop"
 $PROJECT_ID = "rayixcx"
 $REGION = "me-central1"
 $IMAGE = "gcr.io/$PROJECT_ID/rayix"
@@ -21,7 +22,11 @@ Write-Host "Starting Build and Deploy Process (Retry)..."
 # 1. Build
 Write-Host "Building Docker Image..."
 # Use --quiet to avoid interactive prompts
-gcloud builds submit --quiet --timeout=20m --project $PROJECT_ID --tag $IMAGE .
+# Increased timeout and machine type for heavier builds
+gcloud builds submit --quiet --timeout=20m --machine-type=e2-highcpu-8 --project $PROJECT_ID --tag $IMAGE .
+if ($LASTEXITCODE -ne 0) {
+  Write-Error "Build failed with exit code $LASTEXITCODE"
+}
 
 # 2. Deploy
 Write-Host "Deploying Service to Cloud Run..."
