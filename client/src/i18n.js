@@ -432,7 +432,28 @@ const resources = {
             "Loading": "Loading",
             "Please wait": "Please wait",
             "No data": "No data",
-            "No results": "No results"
+            "No results": "No results",
+
+            // Report Selector
+            "reports.selector.title": "Survey Reports & Insights",
+            "reports.selector.subtitle": "Select a survey to view detailed analytics and AI-powered insights.",
+            "reports.selector.loading": "Loading surveys...",
+            "reports.selector.no_description": "No description available for this survey.",
+            "reports.selector.updated": "Updated",
+            "reports.selector.view_report": "View Report",
+            "reports.selector.no_surveys": "No surveys found",
+            "reports.selector.create_first": "Create your first survey to see analytics here.",
+
+            // Report List
+            "reports.list.subtitle": "Create, design, and analyze reports based on your surveys.",
+            "reports.list.new_report": "New Report",
+            "reports.list.your_reports": "Your Reports",
+            "reports.list.loading": "Loading reports...",
+            "reports.list.no_reports": "No reports found. Create your first report to get started!",
+            "reports.list.public": "Publicly shared / Published",
+            "reports.card.public_badge": "Public",
+            "reports.card.copy_success": "Public link copied!",
+            "reports.card.delete_confirm": "Are you sure you want to delete this report?"
         }
     },
     ar: {
